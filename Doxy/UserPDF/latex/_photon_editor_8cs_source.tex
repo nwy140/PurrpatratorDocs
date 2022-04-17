@@ -1,0 +1,854 @@
+\doxysection{Photon\+Editor.\+cs}
+\label{_photon_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonEditor.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   MenuItems and in-\/Editor scripts for PhotonNetwork.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} UnityEditor.Callbacks;}
+\DoxyCodeLine{00019 \textcolor{keyword}{using} UnityEditor.Compilation;}
+\DoxyCodeLine{00020 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00023 \{}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} Realtime;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{class }PunWizardText}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{string} WindowTitle = \textcolor{stringliteral}{"{}PUN Wizard"{}};}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupWizardWarningTitle = \textcolor{stringliteral}{"{}Warning"{}};}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupWizardWarningMessage = \textcolor{stringliteral}{"{}You have not yet run the Photon setup wizard! Your game won't be able to connect. See Windows -\/> Photon Unity Networking."{}};}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keywordtype}{string} MainMenuButton = \textcolor{stringliteral}{"{}Main Menu"{}};}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupWizardTitle = \textcolor{stringliteral}{"{}PUN Setup"{}};}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupWizardInfo = \textcolor{stringliteral}{"{}Thanks for importing Photon Unity Networking.\(\backslash\)nThis window should set you up.\(\backslash\)n\(\backslash\)n<b>-\/</b> To use an existing Photon Cloud App, enter your AppId.\(\backslash\)n<b>-\/</b> To register an account or access an existing one, enter the account's mail address.\(\backslash\)n<b>-\/</b> To use Photon OnPremise, skip this step."{}};}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{string} EmailOrAppIdLabel = \textcolor{stringliteral}{"{}AppId or Email"{}};}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AlreadyRegisteredInfo = \textcolor{stringliteral}{"{}The email is registered so we can't fetch your AppId (without password).\(\backslash\)n\(\backslash\)nPlease login online to get your AppId and paste it above."{}};}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SkipRegistrationInfo = \textcolor{stringliteral}{"{}Skipping? No problem:\(\backslash\)nEdit your server settings in the PhotonServerSettings file."{}};}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{string} RegisteredNewAccountInfo = \textcolor{stringliteral}{"{}We created a (free) account and fetched you an AppId.\(\backslash\)nWelcome. Your PUN project is setup."{}};}
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AppliedToSettingsInfo = \textcolor{stringliteral}{"{}Your AppId is now applied to this project."{}};}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupCompleteInfo = \textcolor{stringliteral}{"{}<b>Done!</b>\(\backslash\)nAll connection settings can be edited in the <b>PhotonServerSettings</b> now.\(\backslash\)nHave a look."{}};}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{string} CloseWindowButton = \textcolor{stringliteral}{"{}Close"{}};}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SkipButton = \textcolor{stringliteral}{"{}Skip"{}};}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupButton = \textcolor{stringliteral}{"{}Setup Project"{}};}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keywordtype}{string} CancelButton = \textcolor{stringliteral}{"{}Cancel"{}};}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{string} PUNWizardLabel = \textcolor{stringliteral}{"{}PUN Wizard"{}};}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SettingsButton = \textcolor{stringliteral}{"{}Settings:"{}};}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SetupServerCloudLabel = \textcolor{stringliteral}{"{}Setup wizard for setting up your own server or the cloud."{}};}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{string} WarningPhotonDisconnect = \textcolor{stringliteral}{"{}Disconnecting PUN due to recompile. Exit PlayMode."{}};}
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keywordtype}{string} StartButton = \textcolor{stringliteral}{"{}Start"{}};}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{string} LocateSettingsButton = \textcolor{stringliteral}{"{}Locate PhotonServerSettings"{}};}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SettingsHighlightLabel = \textcolor{stringliteral}{"{}Highlights the used photon settings file in the project."{}};}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keywordtype}{string} DocumentationLabel = \textcolor{stringliteral}{"{}Documentation:"{}};}
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenPDFText = \textcolor{stringliteral}{"{}Reference PDF"{}};}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenPDFTooltip = \textcolor{stringliteral}{"{}Opens the local documentation pdf."{}};}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenDevNetText = \textcolor{stringliteral}{"{}Doc Pages / Manual"{}};}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenDevNetTooltip = \textcolor{stringliteral}{"{}Online documentation for Photon."{}};}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenCloudDashboardText = \textcolor{stringliteral}{"{}Cloud Dashboard Login"{}};}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenCloudDashboardTooltip = \textcolor{stringliteral}{"{}Review Cloud App information and statistics."{}};}
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenForumText = \textcolor{stringliteral}{"{}Open Forum"{}};}
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OpenForumTooltip = \textcolor{stringliteral}{"{}Online support for Photon."{}};}
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OkButton = \textcolor{stringliteral}{"{}Ok"{}};}
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{string} OwnHostCloudCompareLabel = \textcolor{stringliteral}{"{}How 'my own host' compares to 'cloud'."{}};}
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ComparisonPageButton = \textcolor{stringliteral}{"{}Cloud versus OnPremise"{}};}
+\DoxyCodeLine{00064         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ConnectionTitle = \textcolor{stringliteral}{"{}Connecting"{}};}
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ConnectionInfo = \textcolor{stringliteral}{"{}Connecting to the account service..."{}};}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ErrorTextTitle = \textcolor{stringliteral}{"{}Error"{}};}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keywordtype}{string} IncorrectRPCListTitle = \textcolor{stringliteral}{"{}Warning: RPC-\/list becoming incompatible!"{}};}
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keywordtype}{string} IncorrectRPCListLabel = \textcolor{stringliteral}{"{}Your project's RPC-\/list is full, so we can't add some RPCs just compiled.\(\backslash\)n\(\backslash\)nBy removing outdated RPCs, the list will be long enough but incompatible with older client builds!\(\backslash\)n\(\backslash\)nMake sure you change the game version where you use PhotonNetwork.ConnectUsingSettings()."{}};}
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keywordtype}{string} RemoveOutdatedRPCsLabel = \textcolor{stringliteral}{"{}Remove outdated RPCs"{}};}
+\DoxyCodeLine{00070         \textcolor{keyword}{public} \textcolor{keywordtype}{string} FullRPCListTitle = \textcolor{stringliteral}{"{}Warning: RPC-\/list is full!"{}};}
+\DoxyCodeLine{00071         \textcolor{keyword}{public} \textcolor{keywordtype}{string} FullRPCListLabel = \textcolor{stringliteral}{"{}Your project's RPC-\/list is too long for PUN.\(\backslash\)n\(\backslash\)nYou can change PUN's source to use short-\/typed RPC index. Look for comments 'LIMITS RPC COUNT'\(\backslash\)n\(\backslash\)nAlternatively, remove some RPC methods (use more parameters per RPC maybe).\(\backslash\)n\(\backslash\)nAfter a RPC-\/list refresh, make sure you change the game version where you use PhotonNetwork.ConnectUsingSettings()."{}};}
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SkipRPCListUpdateLabel = \textcolor{stringliteral}{"{}Skip RPC-\/list update"{}};}
+\DoxyCodeLine{00073         \textcolor{keyword}{public} \textcolor{keywordtype}{string} PUNNameReplaceTitle = \textcolor{stringliteral}{"{}Warning: RPC-\/list Compatibility"{}};}
+\DoxyCodeLine{00074         \textcolor{keyword}{public} \textcolor{keywordtype}{string} PUNNameReplaceLabel = \textcolor{stringliteral}{"{}PUN replaces RPC names with numbers by using the RPC-\/list. All clients must use the same list for that.\(\backslash\)n\(\backslash\)nClearing it most likely makes your client incompatible with previous versions! Change your game version or make sure the RPC-\/list matches other clients."{}};}
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{string} RPCListCleared = \textcolor{stringliteral}{"{}Clear RPC-\/list"{}};}
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ServerSettingsCleanedWarning = \textcolor{stringliteral}{"{}Cleared the PhotonServerSettings.RpcList, which breaks compatibility with older builds. You should update the \(\backslash\)"{}App Version\(\backslash\)"{} in the PhotonServerSettings to avoid issues."{}};}
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{string} WizardMainWindowInfo = \textcolor{stringliteral}{"{}This window should help you find important settings for PUN, as well as documentation."{}};}
+\DoxyCodeLine{00078     \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonEditor : EditorWindow}
+\DoxyCodeLine{00082     \{}
+\DoxyCodeLine{00083         \textcolor{keyword}{protected} \textcolor{keyword}{static} Type WindowType = typeof(PhotonEditor);}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{protected} Vector2 scrollPos = Vector2.zero;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087         \textcolor{keyword}{private} readonly Vector2 preferredSize = \textcolor{keyword}{new} Vector2(350, 400);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{private} \textcolor{keyword}{static} Texture2D BackgroundImage;}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{static} PunWizardText CurrentLang = \textcolor{keyword}{new} PunWizardText();}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00096         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} CustomToken = \textcolor{keyword}{null};}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} CustomContext = \textcolor{keyword}{null};}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} DocumentationLocation = \textcolor{stringliteral}{"{}Assets/Photon/PhotonNetworking-\/Documentation.pdf"{}};}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} UrlFreeLicense = \textcolor{stringliteral}{"{}https://dashboard.photonengine.com/en-\/US/SelfHosted"{}};}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} UrlDevNet = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/v2"{}};}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} UrlForum = \textcolor{stringliteral}{"{}https://forum.photonengine.com"{}};}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} UrlCompare = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/realtime/current/getting-\/started/onpremise-\/or-\/saas"{}};}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} UrlHowToSetup = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/onpremise/current/getting-\/started/photon-\/server-\/in-\/5min"{}};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{string} UrlAppIDExplained = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/realtime/current/getting-\/started/obtain-\/your-\/app-\/id"{}};}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} UrlCloudDashboard = \textcolor{stringliteral}{"{}https://dashboard.photonengine.com/en-\/US/account/signin?email="{}};}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} UrlPunSettings = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/v2/getting-\/started/initial-\/setup"{}}; \textcolor{comment}{// the SeverSettings class has this url directly in it's HelpURL attribute.}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{private} \textcolor{keyword}{enum} PhotonSetupStates}
+\DoxyCodeLine{00122         \{}
+\DoxyCodeLine{00123             MainUi,}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             RegisterForPhotonCloud,}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             EmailAlreadyRegistered,}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             GoEditPhotonServerSettings,}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             EmailRegistrationPending}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isSetupWizard = \textcolor{keyword}{false};}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136         \textcolor{keyword}{private} PhotonSetupStates photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} minimumInput = \textcolor{keyword}{false};}
+\DoxyCodeLine{00140         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} useMail = \textcolor{keyword}{false};}
+\DoxyCodeLine{00141         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} useAppId = \textcolor{keyword}{false};}
+\DoxyCodeLine{00142         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} useSkip = \textcolor{keyword}{false};}
+\DoxyCodeLine{00143         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} highlightedSettings = \textcolor{keyword}{false};}
+\DoxyCodeLine{00144         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} close = \textcolor{keyword}{false};}
+\DoxyCodeLine{00145         \textcolor{keyword}{private} \textcolor{keywordtype}{string} mailOrAppId = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{double} lastWarning = 0;}
+\DoxyCodeLine{00149         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} postInspectorUpdate;}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         [MenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/PUN Wizard \&p"{}}, \textcolor{keyword}{false}, 0)]}
+\DoxyCodeLine{00154         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{void} MenuItemOpenWizard()}
+\DoxyCodeLine{00155         \{}
+\DoxyCodeLine{00156             PhotonEditor win = GetWindow<PhotonEditor>(\textcolor{keyword}{false}, CurrentLang.WindowTitle, \textcolor{keyword}{true});}
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (win == \textcolor{keyword}{null})}
+\DoxyCodeLine{00158             \{}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161             win.photonSetupState = PhotonSetupStates.MainUi;}
+\DoxyCodeLine{00162             win.isSetupWizard = \textcolor{keyword}{false};}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         [MenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/Highlight Server Settings \%\#\&p"{}}, \textcolor{keyword}{false}, 1)]}
+\DoxyCodeLine{00166         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{void} MenuItemHighlightSettings()}
+\DoxyCodeLine{00167         \{}
+\DoxyCodeLine{00168             HighlightSettings();}
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         [UnityEditor.InitializeOnLoadMethod]}
+\DoxyCodeLine{00174         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InitializeOnLoadMethod()}
+\DoxyCodeLine{00175         \{}
+\DoxyCodeLine{00176             \textcolor{comment}{//Debug.Log("{}InitializeOnLoadMethod()"{});}}
+\DoxyCodeLine{00177             EditorApplication.delayCall += OnDelayCall;}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{comment}{// used to register for various events (post-\/load)}}
+\DoxyCodeLine{00182         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnDelayCall()}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             \textcolor{comment}{//Debug.Log("{}OnDelayCall()"{});}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             postInspectorUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             EditorApplication.playModeStateChanged -\/= PlayModeStateChanged;}
+\DoxyCodeLine{00189             EditorApplication.playModeStateChanged += PlayModeStateChanged;}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191 \textcolor{preprocessor}{            \#if UNITY\_2021\_1\_OR\_NEWER}}
+\DoxyCodeLine{00192             CompilationPipeline.compilationStarted -\/= OnCompileStarted21;}
+\DoxyCodeLine{00193             CompilationPipeline.compilationStarted += OnCompileStarted21;}
+\DoxyCodeLine{00194 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00195             CompilationPipeline.assemblyCompilationStarted -\/= OnCompileStarted;}
+\DoxyCodeLine{00196             CompilationPipeline.assemblyCompilationStarted += OnCompileStarted;}
+\DoxyCodeLine{00197 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 \textcolor{preprocessor}{            \#if (UNITY\_2018 || UNITY\_2018\_1\_OR\_NEWER)}}
+\DoxyCodeLine{00200             EditorApplication.projectChanged -\/= OnProjectChanged;}
+\DoxyCodeLine{00201             EditorApplication.projectChanged += OnProjectChanged;}
+\DoxyCodeLine{00202 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00203             EditorApplication.projectWindowChanged -\/= OnProjectChanged;}
+\DoxyCodeLine{00204             EditorApplication.projectWindowChanged += OnProjectChanged;}
+\DoxyCodeLine{00205 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             \textcolor{keywordflow}{if} (!EditorApplication.isPlaying \&\& !EditorApplication.isPlayingOrWillChangePlaymode)}
+\DoxyCodeLine{00209             \{}
+\DoxyCodeLine{00210                 OnProjectChanged(); \textcolor{comment}{// call this initially from here, as the project change events happened earlier (on start of the Editor)}}
+\DoxyCodeLine{00211                 PhotonEditor.UpdateRpcList();}
+\DoxyCodeLine{00212             \}}
+\DoxyCodeLine{00213         \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217         \textcolor{comment}{// called in editor, opens wizard for initial setup, keeps scene PhotonViews up to date and closes connections when compiling (to avoid issues)}}
+\DoxyCodeLine{00218         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnProjectChanged()}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             PhotonEditorUtils.ProjectChangedWasCalled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             \textcolor{comment}{// Prevent issues with Unity Cloud Builds where ServerSettings are not found.}}
+\DoxyCodeLine{00224             \textcolor{comment}{// Also, within the context of a Unity Cloud Build, ServerSettings is already present anyway.}}
+\DoxyCodeLine{00225 \textcolor{preprocessor}{            \#if UNITY\_CLOUD\_BUILD}}
+\DoxyCodeLine{00226             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00227 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{keywordflow}{if} (PhotonNetwork.PhotonServerSettings == \textcolor{keyword}{null} || PhotonNetwork.PhotonServerSettings.AppSettings == \textcolor{keyword}{null} || \textcolor{keywordtype}{string}.IsNullOrEmpty(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime))}
+\DoxyCodeLine{00230             \{}
+\DoxyCodeLine{00231                 PhotonNetwork.LoadOrCreateSettings(\textcolor{keyword}{true});}
+\DoxyCodeLine{00232             \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{keywordflow}{if} (PhotonNetwork.PhotonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{00235             \{}
+\DoxyCodeLine{00236                 \textcolor{comment}{// the PhotonServerSettings are loaded or created. If both fails, the Editor should probably not run (anymore).}}
+\DoxyCodeLine{00237                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00238             \}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             PunSceneSettings.SanitizeSceneSettings();}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{comment}{// serverSetting is null when the file gets deleted. otherwise, the wizard should only run once and only if hosting option is not (yet) set}}
+\DoxyCodeLine{00244             \textcolor{keywordflow}{if} (!PhotonNetwork.PhotonServerSettings.DisableAutoOpenWizard)}
+\DoxyCodeLine{00245             \{}
+\DoxyCodeLine{00246                 ShowRegistrationWizard();}
+\DoxyCodeLine{00247                 PhotonNetwork.PhotonServerSettings.DisableAutoOpenWizard = \textcolor{keyword}{true};}
+\DoxyCodeLine{00248                 PhotonEditor.SaveSettings();}
+\DoxyCodeLine{00249             \}}
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253 \textcolor{preprocessor}{        \#if UNITY\_2021\_1\_OR\_NEWER}}
+\DoxyCodeLine{00254         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnCompileStarted21(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{00255         \{}
+\DoxyCodeLine{00256             OnCompileStarted(obj as \textcolor{keywordtype}{string});}
+\DoxyCodeLine{00257         \}}
+\DoxyCodeLine{00258 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnCompileStarted(\textcolor{keywordtype}{string} obj)}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             \textcolor{keywordflow}{if} (PhotonNetwork.IsConnected)}
+\DoxyCodeLine{00263             \{}
+\DoxyCodeLine{00264                 \textcolor{comment}{// log warning, unless there was one recently}}
+\DoxyCodeLine{00265                 \textcolor{keywordflow}{if} (EditorApplication.timeSinceStartup -\/ lastWarning > 3)}
+\DoxyCodeLine{00266                 \{}
+\DoxyCodeLine{00267                     Debug.LogWarning(CurrentLang.WarningPhotonDisconnect);}
+\DoxyCodeLine{00268                     lastWarning = EditorApplication.timeSinceStartup;}
+\DoxyCodeLine{00269                 \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271                 PhotonNetwork.Disconnect();}
+\DoxyCodeLine{00272                 PhotonNetwork.NetworkingClient.LoadBalancingPeer.DispatchIncomingCommands();}
+\DoxyCodeLine{00273 \textcolor{preprocessor}{                \#if UNITY\_2019\_4\_OR\_NEWER \&\& UNITY\_EDITOR}}
+\DoxyCodeLine{00274                 EditorApplication.ExitPlaymode();}
+\DoxyCodeLine{00275 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00276             \}}
+\DoxyCodeLine{00277         \}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         [DidReloadScripts]}
+\DoxyCodeLine{00281         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnDidReloadScripts()}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{comment}{//Debug.Log("{}OnDidReloadScripts() postInspectorUpdate: "{}+postInspectorUpdate + "{} isPlayingOrWillChangePlaymode: "{}+EditorApplication.isPlayingOrWillChangePlaymode);}}
+\DoxyCodeLine{00284             \textcolor{keywordflow}{if} (postInspectorUpdate \&\& !EditorApplication.isPlayingOrWillChangePlaymode)}
+\DoxyCodeLine{00285             \{}
+\DoxyCodeLine{00286                 PhotonEditor.UpdateRpcList(); \textcolor{comment}{// could be called when compilation finished (instead of when reload / compile starts)}}
+\DoxyCodeLine{00287             \}}
+\DoxyCodeLine{00288         \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} PlayModeStateChanged(PlayModeStateChange state)}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292             \textcolor{comment}{//Debug.Log("{}PlayModeStateChanged"{});}}
+\DoxyCodeLine{00293             \textcolor{keywordflow}{if} (EditorApplication.isPlaying || !EditorApplication.isPlayingOrWillChangePlaymode)}
+\DoxyCodeLine{00294             \{}
+\DoxyCodeLine{00295                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00296             \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime) \&\& !PhotonNetwork.PhotonServerSettings.AppSettings.IsMasterServerAddress)}
+\DoxyCodeLine{00299             \{}
+\DoxyCodeLine{00300                 EditorUtility.DisplayDialog(CurrentLang.SetupWizardWarningTitle, CurrentLang.SetupWizardWarningMessage, CurrentLang.OkButton);}
+\DoxyCodeLine{00301             \}}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305 \textcolor{preprocessor}{        \#region GUI and Wizard}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308         \textcolor{comment}{// setup per window}}
+\DoxyCodeLine{00309         \textcolor{keyword}{public} PhotonEditor()}
+\DoxyCodeLine{00310         \{}
+\DoxyCodeLine{00311             this.minSize = this.preferredSize;}
+\DoxyCodeLine{00312         \}}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00315         \{}
+\DoxyCodeLine{00316             \textcolor{comment}{// check if some appid is set. if so, we can avoid registration calls.}}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{if} (PhotonNetwork.PhotonServerSettings != \textcolor{keyword}{null} \&\& PhotonNetwork.PhotonServerSettings.AppSettings != \textcolor{keyword}{null} \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime))}
+\DoxyCodeLine{00318             \{}
+\DoxyCodeLine{00319                 this.mailOrAppId = PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime;}
+\DoxyCodeLine{00320             \}}
+\DoxyCodeLine{00321         \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00324         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ShowRegistrationWizard()}
+\DoxyCodeLine{00325         \{}
+\DoxyCodeLine{00326             PhotonEditor win = GetWindow(WindowType, \textcolor{keyword}{false}, CurrentLang.WindowTitle, \textcolor{keyword}{true}) as PhotonEditor;}
+\DoxyCodeLine{00327             \textcolor{keywordflow}{if} (win == \textcolor{keyword}{null})}
+\DoxyCodeLine{00328             \{}
+\DoxyCodeLine{00329                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00330             \}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332             win.photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;}
+\DoxyCodeLine{00333             win.isSetupWizard = \textcolor{keyword}{true};}
+\DoxyCodeLine{00334         \}}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336         \textcolor{comment}{// Window Update() callback. On-\/demand, when Window is open}}
+\DoxyCodeLine{00337         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00338         \{}
+\DoxyCodeLine{00339             \textcolor{keywordflow}{if} (this.close)}
+\DoxyCodeLine{00340             \{}
+\DoxyCodeLine{00341                 this.Close();}
+\DoxyCodeLine{00342             \}}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnGUI()}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             \textcolor{keywordflow}{if} (BackgroundImage == \textcolor{keyword}{null})}
+\DoxyCodeLine{00348             \{}
+\DoxyCodeLine{00349                 \textcolor{keywordtype}{string}[] paths = AssetDatabase.FindAssets(\textcolor{stringliteral}{"{}PunGradient t:Texture2D"{}});}
+\DoxyCodeLine{00350                 \textcolor{keywordflow}{if} (paths != \textcolor{keyword}{null} \&\& paths.Length > 0)}
+\DoxyCodeLine{00351                 \{}
+\DoxyCodeLine{00352                     BackgroundImage = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(paths[0]));}
+\DoxyCodeLine{00353                 \}}
+\DoxyCodeLine{00354             \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356             PhotonSetupStates oldGuiState = this.photonSetupState; \textcolor{comment}{// used to fix an annoying Editor input field issue: wont refresh until focus is changed.}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358             GUI.SetNextControlName(\textcolor{keywordtype}{string}.Empty);}
+\DoxyCodeLine{00359             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             \textcolor{keywordflow}{if} (this.photonSetupState == PhotonSetupStates.MainUi)}
+\DoxyCodeLine{00363             \{}
+\DoxyCodeLine{00364                 this.UiMainWizard();}
+\DoxyCodeLine{00365             \}}
+\DoxyCodeLine{00366             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00367             \{}
+\DoxyCodeLine{00368                 EditorGUI.BeginDisabledGroup(this.photonSetupState == PhotonSetupStates.EmailRegistrationPending);}
+\DoxyCodeLine{00369                 this.UiSetupApp();}
+\DoxyCodeLine{00370                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00371             \}}
+\DoxyCodeLine{00372 }
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374             GUILayout.EndScrollView();}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376             \textcolor{keywordflow}{if} (oldGuiState != this.photonSetupState)}
+\DoxyCodeLine{00377             \{}
+\DoxyCodeLine{00378                 GUI.FocusControl(\textcolor{keywordtype}{string}.Empty);}
+\DoxyCodeLine{00379             \}}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382         \textcolor{keyword}{private} \textcolor{keywordtype}{string} emailSentToAccount;}
+\DoxyCodeLine{00383         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} emailSentToAccountIsRegistered;}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} UiSetupApp()}
+\DoxyCodeLine{00387         \{}
+\DoxyCodeLine{00388             GUI.skin.label.wordWrap = \textcolor{keyword}{true};}
+\DoxyCodeLine{00389             \textcolor{keywordflow}{if} (!this.isSetupWizard)}
+\DoxyCodeLine{00390             \{}
+\DoxyCodeLine{00391                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00392                 GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00393                 \textcolor{keywordflow}{if} (GUILayout.Button(CurrentLang.MainMenuButton, GUILayout.ExpandWidth(\textcolor{keyword}{false})))}
+\DoxyCodeLine{00394                 \{}
+\DoxyCodeLine{00395                     this.photonSetupState = PhotonSetupStates.MainUi;}
+\DoxyCodeLine{00396                 \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00399             \}}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00402             \textcolor{comment}{// setup header}}
+\DoxyCodeLine{00403             this.UiTitleBox(CurrentLang.SetupWizardTitle, BackgroundImage);}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405             \textcolor{comment}{// setup info text}}
+\DoxyCodeLine{00406             GUI.skin.label.richText = \textcolor{keyword}{true};}
+\DoxyCodeLine{00407             GUILayout.Label(CurrentLang.SetupWizardInfo);}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409             \textcolor{comment}{// input of appid or mail}}
+\DoxyCodeLine{00410             EditorGUILayout.Separator();}
+\DoxyCodeLine{00411             GUILayout.Label(CurrentLang.EmailOrAppIdLabel);}
+\DoxyCodeLine{00412             this.minimumInput = \textcolor{keyword}{false};}
+\DoxyCodeLine{00413             this.useMail = \textcolor{keyword}{false};}
+\DoxyCodeLine{00414             this.useAppId = \textcolor{keyword}{false};}
+\DoxyCodeLine{00415             this.mailOrAppId = EditorGUILayout.TextField(this.mailOrAppId);}
+\DoxyCodeLine{00416             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(this.mailOrAppId))}
+\DoxyCodeLine{00417             \{}
+\DoxyCodeLine{00418                 this.mailOrAppId = this.mailOrAppId.Trim(); \textcolor{comment}{// note: we trim all input}}
+\DoxyCodeLine{00419                 \textcolor{keywordflow}{if} (AccountService.IsValidEmail(\textcolor{keyword}{this}.mailOrAppId))}
+\DoxyCodeLine{00420                 \{}
+\DoxyCodeLine{00421                     \textcolor{comment}{// input should be a mail address}}
+\DoxyCodeLine{00422                     this.useMail = \textcolor{keyword}{true};}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424                     \textcolor{comment}{// check if the current input equals earlier input, which is known to be registered already}}
+\DoxyCodeLine{00425                     this.minimumInput = !this.mailOrAppId.Equals(this.emailSentToAccount) || !this.emailSentToAccountIsRegistered;}
+\DoxyCodeLine{00426                 \}}
+\DoxyCodeLine{00427                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (ServerSettings.IsAppId(\textcolor{keyword}{this}.mailOrAppId))}
+\DoxyCodeLine{00428                 \{}
+\DoxyCodeLine{00429                     \textcolor{comment}{// this should be an appId}}
+\DoxyCodeLine{00430                     this.minimumInput = \textcolor{keyword}{true};}
+\DoxyCodeLine{00431                     this.useAppId = \textcolor{keyword}{true};}
+\DoxyCodeLine{00432                 \}}
+\DoxyCodeLine{00433             \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{comment}{// button to skip setup}}
+\DoxyCodeLine{00436             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00437             GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00438             \textcolor{keywordflow}{if} (GUILayout.Button(CurrentLang.SkipButton, GUILayout.Width(100)))}
+\DoxyCodeLine{00439             \{}
+\DoxyCodeLine{00440                 this.photonSetupState = PhotonSetupStates.GoEditPhotonServerSettings;}
+\DoxyCodeLine{00441                 this.useSkip = \textcolor{keyword}{true};}
+\DoxyCodeLine{00442                 this.useMail = \textcolor{keyword}{false};}
+\DoxyCodeLine{00443                 this.useAppId = \textcolor{keyword}{false};}
+\DoxyCodeLine{00444             \}}
+\DoxyCodeLine{00445 }
+\DoxyCodeLine{00446             \textcolor{comment}{// SETUP button}}
+\DoxyCodeLine{00447             EditorGUI.BeginDisabledGroup(!this.minimumInput);}
+\DoxyCodeLine{00448             \textcolor{keywordflow}{if} (GUILayout.Button(CurrentLang.SetupButton, GUILayout.Width(100)))}
+\DoxyCodeLine{00449             \{}
+\DoxyCodeLine{00450                 this.useSkip = \textcolor{keyword}{false};}
+\DoxyCodeLine{00451                 GUIUtility.keyboardControl = 0;}
+\DoxyCodeLine{00452                 \textcolor{keywordflow}{if} (this.useMail)}
+\DoxyCodeLine{00453                 \{}
+\DoxyCodeLine{00454                     this.RegisterWithEmail(this.mailOrAppId);       \textcolor{comment}{// sets state}}
+\DoxyCodeLine{00455                 \}}
+\DoxyCodeLine{00456                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.useAppId)}
+\DoxyCodeLine{00457                 \{}
+\DoxyCodeLine{00458                     this.photonSetupState = PhotonSetupStates.GoEditPhotonServerSettings;}
+\DoxyCodeLine{00459                     Undo.RecordObject(PhotonNetwork.PhotonServerSettings, \textcolor{stringliteral}{"{}Update PhotonServerSettings for PUN"{}});}
+\DoxyCodeLine{00460                     PhotonNetwork.PhotonServerSettings.UseCloud(this.mailOrAppId);}
+\DoxyCodeLine{00461                     PhotonEditor.SaveSettings();}
+\DoxyCodeLine{00462                 \}}
+\DoxyCodeLine{00463             \}}
+\DoxyCodeLine{00464             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00465             GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00466             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468 }
+\DoxyCodeLine{00469             \textcolor{comment}{// existing account needs to fetch AppId online}}
+\DoxyCodeLine{00470             \textcolor{keywordflow}{if} (this.photonSetupState == PhotonSetupStates.EmailAlreadyRegistered)}
+\DoxyCodeLine{00471             \{}
+\DoxyCodeLine{00472                 \textcolor{comment}{// button to open dashboard and get the AppId}}
+\DoxyCodeLine{00473                 GUILayout.Space(15);}
+\DoxyCodeLine{00474                 GUILayout.Label(CurrentLang.AlreadyRegisteredInfo);}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476 }
+\DoxyCodeLine{00477                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00478                 GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00479                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.OpenCloudDashboardText, CurrentLang.OpenCloudDashboardTooltip), GUILayout.Width(205)))}
+\DoxyCodeLine{00480                 \{}
+\DoxyCodeLine{00481                     Application.OpenURL(\textcolor{keywordtype}{string}.Concat(UrlCloudDashboard, Uri.EscapeUriString(\textcolor{keyword}{this}.mailOrAppId)));}
+\DoxyCodeLine{00482                     this.mailOrAppId = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00483                 \}}
+\DoxyCodeLine{00484                 GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00485                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00486             \}}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488 }
+\DoxyCodeLine{00489             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.photonSetupState == PhotonSetupStates.GoEditPhotonServerSettings)}
+\DoxyCodeLine{00490             \{}
+\DoxyCodeLine{00491                 \textcolor{keywordflow}{if} (!this.highlightedSettings)}
+\DoxyCodeLine{00492                 \{}
+\DoxyCodeLine{00493                     this.highlightedSettings = \textcolor{keyword}{true};}
+\DoxyCodeLine{00494                     HighlightSettings();}
+\DoxyCodeLine{00495                 \}}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497                 GUILayout.Space(15);}
+\DoxyCodeLine{00498                 \textcolor{keywordflow}{if} (this.useSkip)}
+\DoxyCodeLine{00499                 \{}
+\DoxyCodeLine{00500                     GUILayout.Label(CurrentLang.SkipRegistrationInfo);}
+\DoxyCodeLine{00501                 \}}
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.useMail)}
+\DoxyCodeLine{00503                 \{}
+\DoxyCodeLine{00504                     GUILayout.Label(CurrentLang.RegisteredNewAccountInfo);}
+\DoxyCodeLine{00505                 \}}
+\DoxyCodeLine{00506                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.useAppId)}
+\DoxyCodeLine{00507                 \{}
+\DoxyCodeLine{00508                     GUILayout.Label(CurrentLang.AppliedToSettingsInfo);}
+\DoxyCodeLine{00509                 \}}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512                 \textcolor{comment}{// setup-\/complete info}}
+\DoxyCodeLine{00513                 GUILayout.Space(15);}
+\DoxyCodeLine{00514                 GUILayout.Label(CurrentLang.SetupCompleteInfo);}
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00516 }
+\DoxyCodeLine{00517                 \textcolor{comment}{// close window (done)}}
+\DoxyCodeLine{00518                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00519                 GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00520                 \textcolor{keywordflow}{if} (GUILayout.Button(CurrentLang.CloseWindowButton, GUILayout.Width(205)))}
+\DoxyCodeLine{00521                 \{}
+\DoxyCodeLine{00522                     this.close = \textcolor{keyword}{true};}
+\DoxyCodeLine{00523                 \}}
+\DoxyCodeLine{00524                 GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00525                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00526             \}}
+\DoxyCodeLine{00527             GUI.skin.label.richText = \textcolor{keyword}{false};}
+\DoxyCodeLine{00528         \}}
+\DoxyCodeLine{00529 }
+\DoxyCodeLine{00530         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UiTitleBox(\textcolor{keywordtype}{string} title, Texture2D bgIcon)}
+\DoxyCodeLine{00531         \{}
+\DoxyCodeLine{00532             GUIStyle bgStyle = EditorGUIUtility.isProSkin ? \textcolor{keyword}{new} GUIStyle(GUI.skin.GetStyle(\textcolor{stringliteral}{"{}Label"{}})) : new GUIStyle(GUI.skin.GetStyle(\textcolor{stringliteral}{"{}WhiteLabel"{}}));}
+\DoxyCodeLine{00533             bgStyle.padding = \textcolor{keyword}{new} RectOffset(10, 10, 10, 10);}
+\DoxyCodeLine{00534             bgStyle.fontSize = 22;}
+\DoxyCodeLine{00535             bgStyle.fontStyle = FontStyle.Bold;}
+\DoxyCodeLine{00536             \textcolor{keywordflow}{if} (bgIcon != \textcolor{keyword}{null})}
+\DoxyCodeLine{00537             \{}
+\DoxyCodeLine{00538                 bgStyle.normal.background = bgIcon;}
+\DoxyCodeLine{00539             \}}
+\DoxyCodeLine{00540 }
+\DoxyCodeLine{00541             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00542             GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00543             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00544             Rect scale = GUILayoutUtility.GetLastRect();}
+\DoxyCodeLine{00545             scale.height = 44;}
+\DoxyCodeLine{00546 }
+\DoxyCodeLine{00547             GUI.Label(scale, title, bgStyle);}
+\DoxyCodeLine{00548             GUILayout.Space(scale.height + 5);}
+\DoxyCodeLine{00549         \}}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} UiMainWizard()}
+\DoxyCodeLine{00552         \{}
+\DoxyCodeLine{00553             GUILayout.Space(15);}
+\DoxyCodeLine{00554 }
+\DoxyCodeLine{00555             \textcolor{comment}{// title}}
+\DoxyCodeLine{00556             this.UiTitleBox(CurrentLang.PUNWizardLabel, BackgroundImage);}
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558             EditorGUILayout.BeginVertical(\textcolor{keyword}{new} GUIStyle() \{ padding = \textcolor{keyword}{new} RectOffset(10, 10, 10, 10) \});}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560             \textcolor{comment}{// wizard info text}}
+\DoxyCodeLine{00561             GUILayout.Label(CurrentLang.WizardMainWindowInfo, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}Label"{}}) \{ wordWrap = \textcolor{keyword}{true} \});}
+\DoxyCodeLine{00562             GUILayout.Space(15);}
+\DoxyCodeLine{00563 }
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565             \textcolor{comment}{// settings button}}
+\DoxyCodeLine{00566             GUILayout.Label(CurrentLang.SettingsButton, EditorStyles.boldLabel);}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.LocateSettingsButton, CurrentLang.SettingsHighlightLabel)))}
+\DoxyCodeLine{00569             \{}
+\DoxyCodeLine{00570                 HighlightSettings();}
+\DoxyCodeLine{00571             \}}
+\DoxyCodeLine{00572             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.OpenCloudDashboardText, CurrentLang.OpenCloudDashboardTooltip)))}
+\DoxyCodeLine{00573             \{}
+\DoxyCodeLine{00574                 Application.OpenURL(UrlCloudDashboard + Uri.EscapeUriString(\textcolor{keyword}{this}.mailOrAppId));}
+\DoxyCodeLine{00575             \}}
+\DoxyCodeLine{00576             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.SetupButton, CurrentLang.SetupServerCloudLabel)))}
+\DoxyCodeLine{00577             \{}
+\DoxyCodeLine{00578                 this.photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;}
+\DoxyCodeLine{00579             \}}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581             GUILayout.Space(15);}
+\DoxyCodeLine{00582 }
+\DoxyCodeLine{00583 }
+\DoxyCodeLine{00584             \textcolor{comment}{// documentation}}
+\DoxyCodeLine{00585             GUILayout.Label(CurrentLang.DocumentationLabel, EditorStyles.boldLabel);}
+\DoxyCodeLine{00586 }
+\DoxyCodeLine{00587             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.OpenPDFText, CurrentLang.OpenPDFTooltip)))}
+\DoxyCodeLine{00588             \{}
+\DoxyCodeLine{00589                 EditorUtility.OpenWithDefaultApp(DocumentationLocation);}
+\DoxyCodeLine{00590             \}}
+\DoxyCodeLine{00591 }
+\DoxyCodeLine{00592             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.OpenDevNetText, CurrentLang.OpenDevNetTooltip)))}
+\DoxyCodeLine{00593             \{}
+\DoxyCodeLine{00594                 Application.OpenURL(UrlDevNet);}
+\DoxyCodeLine{00595             \}}
+\DoxyCodeLine{00596 }
+\DoxyCodeLine{00597             GUI.skin.label.wordWrap = \textcolor{keyword}{true};}
+\DoxyCodeLine{00598             GUILayout.Label(CurrentLang.OwnHostCloudCompareLabel);}
+\DoxyCodeLine{00599             \textcolor{keywordflow}{if} (GUILayout.Button(CurrentLang.ComparisonPageButton))}
+\DoxyCodeLine{00600             \{}
+\DoxyCodeLine{00601                 Application.OpenURL(UrlCompare);}
+\DoxyCodeLine{00602             \}}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604 }
+\DoxyCodeLine{00605             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{keyword}{new} GUIContent(CurrentLang.OpenForumText, CurrentLang.OpenForumTooltip)))}
+\DoxyCodeLine{00606             \{}
+\DoxyCodeLine{00607                 Application.OpenURL(UrlForum);}
+\DoxyCodeLine{00608             \}}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00610             GUILayout.EndVertical();}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612         \}}
+\DoxyCodeLine{00613 }
+\DoxyCodeLine{00614 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00615 }
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00617         \textcolor{keyword}{private} AccountService serviceClient;}
+\DoxyCodeLine{00618         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} RegisterWithEmail(\textcolor{keywordtype}{string} email)}
+\DoxyCodeLine{00619         \{}
+\DoxyCodeLine{00620             List<ServiceTypes> types = \textcolor{keyword}{new} List<ServiceTypes>();}
+\DoxyCodeLine{00621             types.Add(ServiceTypes.Pun);}
+\DoxyCodeLine{00622             \textcolor{keywordflow}{if} (PhotonEditorUtils.HasChat)}
+\DoxyCodeLine{00623             \{}
+\DoxyCodeLine{00624                 types.Add(ServiceTypes.Chat);}
+\DoxyCodeLine{00625             \}}
+\DoxyCodeLine{00626             \textcolor{keywordflow}{if} (PhotonEditorUtils.HasVoice)}
+\DoxyCodeLine{00627             \{}
+\DoxyCodeLine{00628                 types.Add(ServiceTypes.Voice);}
+\DoxyCodeLine{00629             \}}
+\DoxyCodeLine{00630 }
+\DoxyCodeLine{00631 }
+\DoxyCodeLine{00632             \textcolor{keywordflow}{if} (this.serviceClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00633             \{}
+\DoxyCodeLine{00634                 this.serviceClient = \textcolor{keyword}{new} AccountService();}
+\DoxyCodeLine{00635                 this.serviceClient.CustomToken = CustomToken;}
+\DoxyCodeLine{00636                 this.serviceClient.CustomContext = CustomContext;}
+\DoxyCodeLine{00637             \}}
+\DoxyCodeLine{00638             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00639             \{}
+\DoxyCodeLine{00640                 \textcolor{comment}{// while RegisterByEmail will check RequestPendingResult below, it would also display an error message. no needed in this case}}
+\DoxyCodeLine{00641                 \textcolor{keywordflow}{if} (this.serviceClient.RequestPendingResult)}
+\DoxyCodeLine{00642                 \{}
+\DoxyCodeLine{00643                     Debug.LogWarning(\textcolor{stringliteral}{"{}Registration request is pending a response. Please wait."{}});}
+\DoxyCodeLine{00644                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00645                 \}}
+\DoxyCodeLine{00646             \}}
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648             this.emailSentToAccount = email;}
+\DoxyCodeLine{00649             this.emailSentToAccountIsRegistered = \textcolor{keyword}{false};}
+\DoxyCodeLine{00650 }
+\DoxyCodeLine{00651             \textcolor{keywordflow}{if} (this.serviceClient.RegisterByEmail(email, types, RegisterWithEmailSuccessCallback, RegisterWithEmailErrorCallback, \textcolor{stringliteral}{"{}PUN"{}}+PhotonNetwork.PunVersion))}
+\DoxyCodeLine{00652             \{}
+\DoxyCodeLine{00653                 this.photonSetupState = PhotonSetupStates.EmailRegistrationPending;}
+\DoxyCodeLine{00654                 EditorUtility.DisplayProgressBar(CurrentLang.ConnectionTitle, CurrentLang.ConnectionInfo, 0.5f);}
+\DoxyCodeLine{00655             \}}
+\DoxyCodeLine{00656             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00657             \{}
+\DoxyCodeLine{00658                 this.DisplayErrorMessage(\textcolor{stringliteral}{"{}Email registration request could not be sent. Retry again or check error logs and contact support."{}});}
+\DoxyCodeLine{00659             \}}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661 }
+\DoxyCodeLine{00662         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RegisterWithEmailSuccessCallback(AccountServiceResponse res)}
+\DoxyCodeLine{00663         \{}
+\DoxyCodeLine{00664             EditorUtility.ClearProgressBar();}
+\DoxyCodeLine{00665             this.emailSentToAccountIsRegistered = \textcolor{keyword}{true}; \textcolor{comment}{// email is either registered now, or was already}}
+\DoxyCodeLine{00666 }
+\DoxyCodeLine{00667             \textcolor{keywordflow}{if} (res.ReturnCode == AccountServiceReturnCodes.Success)}
+\DoxyCodeLine{00668             \{}
+\DoxyCodeLine{00669                 \textcolor{keywordtype}{string} key = ((int) ServiceTypes.Pun).ToString();}
+\DoxyCodeLine{00670                 \textcolor{keywordtype}{string} appId;}
+\DoxyCodeLine{00671                 \textcolor{keywordflow}{if} (res.ApplicationIds.TryGetValue(key, out appId))}
+\DoxyCodeLine{00672                 \{}
+\DoxyCodeLine{00673                     this.mailOrAppId = appId;}
+\DoxyCodeLine{00674                     PhotonNetwork.PhotonServerSettings.UseCloud(this.mailOrAppId, \textcolor{keyword}{null});}
+\DoxyCodeLine{00675                     key = ((int) ServiceTypes.Chat).ToString();}
+\DoxyCodeLine{00676                     \textcolor{keywordflow}{if} (res.ApplicationIds.TryGetValue(key, out appId))}
+\DoxyCodeLine{00677                     \{}
+\DoxyCodeLine{00678                         PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat = appId;}
+\DoxyCodeLine{00679                     \}}
+\DoxyCodeLine{00680                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonEditorUtils.HasChat)}
+\DoxyCodeLine{00681                     \{}
+\DoxyCodeLine{00682                         Debug.LogWarning(\textcolor{stringliteral}{"{}Registration successful but no Chat AppId returned"{}});}
+\DoxyCodeLine{00683                     \}}
+\DoxyCodeLine{00684                     key = ((int) ServiceTypes.Voice).ToString();}
+\DoxyCodeLine{00685                     \textcolor{keywordflow}{if} (res.ApplicationIds.TryGetValue(key, out appId))}
+\DoxyCodeLine{00686                     \{}
+\DoxyCodeLine{00687                         PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice = appId;}
+\DoxyCodeLine{00688                     \}}
+\DoxyCodeLine{00689                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonEditorUtils.HasVoice)}
+\DoxyCodeLine{00690                     \{}
+\DoxyCodeLine{00691                         Debug.LogWarning(\textcolor{stringliteral}{"{}Registration successful but no Voice AppId returned"{}});}
+\DoxyCodeLine{00692                     \}}
+\DoxyCodeLine{00693                     PhotonEditor.SaveSettings();}
+\DoxyCodeLine{00694                     this.photonSetupState = PhotonSetupStates.GoEditPhotonServerSettings;}
+\DoxyCodeLine{00695                 \}}
+\DoxyCodeLine{00696                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00697                 \{}
+\DoxyCodeLine{00698                     DisplayErrorMessage(\textcolor{stringliteral}{"{}Registration successful but no PUN AppId returned"{}});}
+\DoxyCodeLine{00699                 \}}
+\DoxyCodeLine{00700             \}}
+\DoxyCodeLine{00701             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00702             \{}
+\DoxyCodeLine{00703                 PhotonEditor.SaveSettings();}
+\DoxyCodeLine{00704 }
+\DoxyCodeLine{00705                 \textcolor{keywordflow}{if} (res.ReturnCode == AccountServiceReturnCodes.EmailAlreadyRegistered)}
+\DoxyCodeLine{00706                 \{}
+\DoxyCodeLine{00707                     this.photonSetupState = PhotonSetupStates.EmailAlreadyRegistered;}
+\DoxyCodeLine{00708                 \}}
+\DoxyCodeLine{00709                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00710                 \{}
+\DoxyCodeLine{00711                     DisplayErrorMessage(res.Message);}
+\DoxyCodeLine{00712                 \}}
+\DoxyCodeLine{00713             \}}
+\DoxyCodeLine{00714         \}}
+\DoxyCodeLine{00715 }
+\DoxyCodeLine{00716         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RegisterWithEmailErrorCallback(\textcolor{keywordtype}{string} error)}
+\DoxyCodeLine{00717         \{}
+\DoxyCodeLine{00718             EditorUtility.ClearProgressBar();}
+\DoxyCodeLine{00719             DisplayErrorMessage(error);}
+\DoxyCodeLine{00720         \}}
+\DoxyCodeLine{00721 }
+\DoxyCodeLine{00722         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DisplayErrorMessage(\textcolor{keywordtype}{string} error)}
+\DoxyCodeLine{00723         \{}
+\DoxyCodeLine{00724             EditorUtility.DisplayDialog(CurrentLang.ErrorTextTitle, error, CurrentLang.OkButton);}
+\DoxyCodeLine{00725             this.photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;}
+\DoxyCodeLine{00726         \}}
+\DoxyCodeLine{00727 }
+\DoxyCodeLine{00728         \textcolor{comment}{// Pings PhotonServerSettings and makes it selected (show in Inspector)}}
+\DoxyCodeLine{00729         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} HighlightSettings()}
+\DoxyCodeLine{00730         \{}
+\DoxyCodeLine{00731             ServerSettings serverSettings = (ServerSettings)Resources.Load(PhotonNetwork.ServerSettingsFileName, typeof(ServerSettings));}
+\DoxyCodeLine{00732             Selection.objects = \textcolor{keyword}{new} UnityEngine.Object[] \{ serverSettings \};}
+\DoxyCodeLine{00733             EditorGUIUtility.PingObject(serverSettings);}
+\DoxyCodeLine{00734         \}}
+\DoxyCodeLine{00735 }
+\DoxyCodeLine{00736         \textcolor{comment}{// Marks settings object as dirty, so it gets saved.}}
+\DoxyCodeLine{00737         \textcolor{comment}{// unity 5.3 changes the usecase for SetDirty(). but here we don't modify a scene object! so it's ok to use}}
+\DoxyCodeLine{00738         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SaveSettings()}
+\DoxyCodeLine{00739         \{}
+\DoxyCodeLine{00740             EditorUtility.SetDirty(PhotonNetwork.PhotonServerSettings);}
+\DoxyCodeLine{00741         \}}
+\DoxyCodeLine{00742 }
+\DoxyCodeLine{00743 \textcolor{preprocessor}{        \#region RPC List Handling}}
+\DoxyCodeLine{00744 }
+\DoxyCodeLine{00745 }
+\DoxyCodeLine{00746         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} UpdateRpcList()}
+\DoxyCodeLine{00747         \{}
+\DoxyCodeLine{00748             \textcolor{comment}{//Debug.Log("{}UpdateRpcList()"{});}}
+\DoxyCodeLine{00749 }
+\DoxyCodeLine{00750             \textcolor{keywordflow}{if} (PhotonNetwork.PhotonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{00751             \{}
+\DoxyCodeLine{00752                 Debug.LogWarning(\textcolor{stringliteral}{"{}UpdateRpcList() wasn not able to access the PhotonServerSettings. Not updating the RPCs."{}});}
+\DoxyCodeLine{00753                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00754             \}}
+\DoxyCodeLine{00755 }
+\DoxyCodeLine{00756 }
+\DoxyCodeLine{00757             \textcolor{comment}{// check all "{}script assemblies"{} for methods with PunRPC attribute}}
+\DoxyCodeLine{00758             List<string> additionalRpcs = \textcolor{keyword}{new} List<string>();       \textcolor{comment}{// not yet listed rpc-\/method names go here}}
+\DoxyCodeLine{00759             List<string> allRpcs = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00760 }
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762 \textcolor{preprocessor}{            \#if UNITY\_2019\_2\_OR\_NEWER}}
+\DoxyCodeLine{00763 }
+\DoxyCodeLine{00764             \textcolor{comment}{// we can make use of the new TypeCache to find methods with PunRPC attribute}}
+\DoxyCodeLine{00765             var extractedMethods = TypeCache.GetMethodsWithAttribute<PunRPC>();}
+\DoxyCodeLine{00766             \textcolor{keywordflow}{foreach} (var methodInfo \textcolor{keywordflow}{in} extractedMethods)}
+\DoxyCodeLine{00767             \{}
+\DoxyCodeLine{00768                 allRpcs.Add(methodInfo.Name);}
+\DoxyCodeLine{00769                 \textcolor{keywordflow}{if} (!PhotonNetwork.PhotonServerSettings.RpcList.Contains(methodInfo.Name) \&\& !additionalRpcs.Contains(methodInfo.Name))}
+\DoxyCodeLine{00770                 \{}
+\DoxyCodeLine{00771                     additionalRpcs.Add(methodInfo.Name);}
+\DoxyCodeLine{00772                 \}}
+\DoxyCodeLine{00773             \}}
+\DoxyCodeLine{00774 }
+\DoxyCodeLine{00775 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00776 }
+\DoxyCodeLine{00777             System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies().Where(a => !(a.ManifestModule is System.Reflection.Emit.ModuleBuilder)).ToArray();}
+\DoxyCodeLine{00778 }
+\DoxyCodeLine{00779             \textcolor{keywordflow}{foreach} (var assembly \textcolor{keywordflow}{in} assemblies)}
+\DoxyCodeLine{00780             \{}
+\DoxyCodeLine{00781                 \textcolor{keywordflow}{if} (!assembly.Location.Contains(\textcolor{stringliteral}{"{}ScriptAssemblies"{}}) || assembly.FullName.StartsWith(\textcolor{stringliteral}{"{}Assembly-\/CSharp-\/Editor"{}}))}
+\DoxyCodeLine{00782                 \{}
+\DoxyCodeLine{00783                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00784                 \}}
+\DoxyCodeLine{00785 }
+\DoxyCodeLine{00786                 var types = assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(MonoBehaviour)));}
+\DoxyCodeLine{00787                 var methodInfos = types.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance));}
+\DoxyCodeLine{00788                 var methodNames = methodInfos.Where(m => m.IsDefined(typeof(PunRPC), \textcolor{keyword}{false})).Select(mi => mi.Name).ToArray();}
+\DoxyCodeLine{00789                 var additional = methodNames.Where(n => !PhotonNetwork.PhotonServerSettings.RpcList.Contains(n) \&\& !additionalRpcs.Contains(n));}
+\DoxyCodeLine{00790 }
+\DoxyCodeLine{00791                 allRpcs.AddRange(methodNames);}
+\DoxyCodeLine{00792                 additionalRpcs.AddRange(additional);}
+\DoxyCodeLine{00793             \}}
+\DoxyCodeLine{00794 }
+\DoxyCodeLine{00795 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797 }
+\DoxyCodeLine{00798             \textcolor{keywordflow}{if} (additionalRpcs.Count <= 0)}
+\DoxyCodeLine{00799             \{}
+\DoxyCodeLine{00800                 \textcolor{comment}{//Debug.Log("{}UpdateRPCs did not found new."{});}}
+\DoxyCodeLine{00801                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00802             \}}
+\DoxyCodeLine{00803 }
+\DoxyCodeLine{00804 }
+\DoxyCodeLine{00805             \textcolor{keywordflow}{if} (additionalRpcs.Count + PhotonNetwork.PhotonServerSettings.RpcList.Count >= \textcolor{keywordtype}{byte}.MaxValue)}
+\DoxyCodeLine{00806             \{}
+\DoxyCodeLine{00807                 \textcolor{keywordflow}{if} (allRpcs.Count <= \textcolor{keywordtype}{byte}.MaxValue)}
+\DoxyCodeLine{00808                 \{}
+\DoxyCodeLine{00809                     \textcolor{keywordtype}{bool} clearList = EditorUtility.DisplayDialog(CurrentLang.IncorrectRPCListTitle, CurrentLang.IncorrectRPCListLabel, CurrentLang.RemoveOutdatedRPCsLabel, CurrentLang.CancelButton);}
+\DoxyCodeLine{00810                     \textcolor{keywordflow}{if} (clearList)}
+\DoxyCodeLine{00811                     \{}
+\DoxyCodeLine{00812                         PhotonNetwork.PhotonServerSettings.RpcList.Clear();}
+\DoxyCodeLine{00813                         additionalRpcs = allRpcs.Distinct().ToList();   \textcolor{comment}{// we add all unique names}}
+\DoxyCodeLine{00814                     \}}
+\DoxyCodeLine{00815                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00816                     \{}
+\DoxyCodeLine{00817                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00818                     \}}
+\DoxyCodeLine{00819                 \}}
+\DoxyCodeLine{00820                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00821                 \{}
+\DoxyCodeLine{00822                     EditorUtility.DisplayDialog(CurrentLang.FullRPCListTitle, CurrentLang.FullRPCListLabel, CurrentLang.SkipRPCListUpdateLabel);}
+\DoxyCodeLine{00823                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00824                 \}}
+\DoxyCodeLine{00825             \}}
+\DoxyCodeLine{00826 }
+\DoxyCodeLine{00827 }
+\DoxyCodeLine{00828             additionalRpcs.Sort();}
+\DoxyCodeLine{00829             Undo.RecordObject(PhotonNetwork.PhotonServerSettings, \textcolor{stringliteral}{"{}RPC-\/list update of PUN."{}});}
+\DoxyCodeLine{00830             PhotonNetwork.PhotonServerSettings.RpcList.AddRange(additionalRpcs);}
+\DoxyCodeLine{00831             EditorUtility.SetDirty(PhotonNetwork.PhotonServerSettings);}
+\DoxyCodeLine{00832 }
+\DoxyCodeLine{00833             \textcolor{comment}{//Debug.Log("{}Updated RPCs. Added: "{}+additionalRpcs.Count);}}
+\DoxyCodeLine{00834         \}}
+\DoxyCodeLine{00835 }
+\DoxyCodeLine{00836 }
+\DoxyCodeLine{00837         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ClearRpcList()}
+\DoxyCodeLine{00838         \{}
+\DoxyCodeLine{00839             \textcolor{keywordtype}{bool} clearList = EditorUtility.DisplayDialog(CurrentLang.PUNNameReplaceTitle, CurrentLang.PUNNameReplaceLabel, CurrentLang.RPCListCleared, CurrentLang.CancelButton);}
+\DoxyCodeLine{00840             \textcolor{keywordflow}{if} (clearList)}
+\DoxyCodeLine{00841             \{}
+\DoxyCodeLine{00842                 ServerSettings serverSettings = PhotonNetwork.PhotonServerSettings;}
+\DoxyCodeLine{00843 }
+\DoxyCodeLine{00844                 Undo.RecordObject(serverSettings, \textcolor{stringliteral}{"{}RPC-\/list cleared for PUN."{}});}
+\DoxyCodeLine{00845                 serverSettings.RpcList.Clear();}
+\DoxyCodeLine{00846                 EditorUtility.SetDirty(serverSettings);}
+\DoxyCodeLine{00847 }
+\DoxyCodeLine{00848                 Debug.LogWarning(CurrentLang.ServerSettingsCleanedWarning);}
+\DoxyCodeLine{00849             \}}
+\DoxyCodeLine{00850         \}}
+\DoxyCodeLine{00851 }
+\DoxyCodeLine{00852 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00853 }
+\DoxyCodeLine{00854     \}}
+\DoxyCodeLine{00855 \}}
+
+\end{DoxyCode}

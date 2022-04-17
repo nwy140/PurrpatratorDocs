@@ -1,0 +1,188 @@
+\doxysection{Player\+Control.\+cs}
+\label{_player_control_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/PlayerControl.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/PlayerControl.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerControl.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Used in SlotRacer Demo}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun.Demo.SlotRacer.Utils;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{namespace }Photon.Pun.Demo.SlotRacer}
+\DoxyCodeLine{00019 \{}
+\DoxyCodeLine{00025     [RequireComponent(typeof(SplineWalker))]}
+\DoxyCodeLine{00026     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerControl : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} GameObject[] CarPrefabs;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{float} MaximumSpeed = 20;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{float} Drag = 5;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keywordtype}{float} CurrentSpeed;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00053         \textcolor{keyword}{private} \textcolor{keywordtype}{float} CurrentDistance;}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00058         \textcolor{keyword}{private} GameObject CarInstance;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00063         \textcolor{keyword}{private} SplineWalker SplineWalker;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_firstTake = \textcolor{keyword}{true};}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_input;}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075 \textcolor{preprocessor}{        \#region IPunObservable implementation}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00082         \textcolor{keywordtype}{void} IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             \textcolor{comment}{// currently there is no strategy to improve on bandwidth, just passing the current distance and speed is enough, }}
+\DoxyCodeLine{00085             \textcolor{comment}{// Input could be passed and then used to better control speed value}}
+\DoxyCodeLine{00086             \textcolor{comment}{//  Data could be wrapped as a vector2 or vector3 to save a couple of bytes}}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 stream.SendNext(this.CurrentDistance);}
+\DoxyCodeLine{00090                 stream.SendNext(this.CurrentSpeed);}
+\DoxyCodeLine{00091                 stream.SendNext(this.m\_input);}
+\DoxyCodeLine{00092             \}}
+\DoxyCodeLine{00093             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00094             \{}
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{if} (this.m\_firstTake)}
+\DoxyCodeLine{00096                 \{}
+\DoxyCodeLine{00097                     this.m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00098                 \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 this.CurrentDistance = (float) stream.ReceiveNext();}
+\DoxyCodeLine{00101                 this.CurrentSpeed = (float) stream.ReceiveNext();}
+\DoxyCodeLine{00102                 this.m\_input = (float) stream.ReceiveNext();}
+\DoxyCodeLine{00103             \}}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106 \textcolor{preprocessor}{        \#endregion IPunObservable implementation}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 \textcolor{preprocessor}{        \#region private}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00115         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SetupCarOnTrack(\textcolor{keywordtype}{int} gridStartIndex)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             \textcolor{comment}{// Setup the SplineWalker to be on the right starting grid position.}}
+\DoxyCodeLine{00118             this.SplineWalker.spline = SlotLanes.Instance.GridPositions[gridStartIndex].Spline;}
+\DoxyCodeLine{00119             this.SplineWalker.currentDistance = SlotLanes.Instance.GridPositions[gridStartIndex].currentDistance;}
+\DoxyCodeLine{00120             this.SplineWalker.ExecutePositioning();}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             \textcolor{comment}{// create a new car}}
+\DoxyCodeLine{00123             this.CarInstance = (GameObject) Instantiate(this.CarPrefabs[gridStartIndex], this.transform.position, \textcolor{keyword}{this}.transform.rotation);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{comment}{// We'll wait for the first serializatin to pass, else we'll have a glitch where the car is positioned at the wrong position.}}
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (!this.photonView.IsMine)}
+\DoxyCodeLine{00127             \{}
+\DoxyCodeLine{00128                 this.CarInstance.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{comment}{// depending on wether we control this instance locally, we force the car to become active ( because when you are alone in the room, serialization doesn't happen, but still we want to allow the user to race around)}}
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom.PlayerCount == 1)}
+\DoxyCodeLine{00133             \{}
+\DoxyCodeLine{00134                 this.m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00135             \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             this.CarInstance.transform.SetParent(this.transform);}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140 \textcolor{preprocessor}{        \#endregion private}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143 \textcolor{preprocessor}{        \#region Monobehaviour}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00148         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             this.SplineWalker = this.GetComponent<SplineWalker>();}
+\DoxyCodeLine{00151             this.m\_firstTake = \textcolor{keyword}{true};}
+\DoxyCodeLine{00152         \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00158         \textcolor{keyword}{private} IEnumerator Start()}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00160             \textcolor{comment}{// Wait until a Player Number is assigned}}
+\DoxyCodeLine{00161             \textcolor{comment}{// PlayerNumbering component must be in the scene.}}
+\DoxyCodeLine{00162             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitUntil(() => this.photonView.Owner.GetPlayerNumber() >= 0);}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{comment}{// now we can set it up.}}
+\DoxyCodeLine{00165             this.SetupCarOnTrack(this.photonView.Owner.GetPlayerNumber());}
+\DoxyCodeLine{00166         \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             Destroy(this.CarInstance);}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{comment}{// Update is called once per frame}}
+\DoxyCodeLine{00177         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (this.SplineWalker == \textcolor{keyword}{null} || this.CarInstance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{keywordflow}{if} (this.photonView.IsMine)}
+\DoxyCodeLine{00185             \{}
+\DoxyCodeLine{00186                 this.m\_input = Input.GetAxis(\textcolor{stringliteral}{"{}Vertical"{}});}
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{if} (this.m\_input == 0f)}
+\DoxyCodeLine{00188                 \{}
+\DoxyCodeLine{00189                     this.CurrentSpeed -\/= Time.deltaTime * this.Drag;}
+\DoxyCodeLine{00190                 \}}
+\DoxyCodeLine{00191                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00192                 \{}
+\DoxyCodeLine{00193                     this.CurrentSpeed += this.m\_input;}
+\DoxyCodeLine{00194                 \}}
+\DoxyCodeLine{00195                 this.CurrentSpeed = Mathf.Clamp(this.CurrentSpeed, 0f, this.MaximumSpeed);}
+\DoxyCodeLine{00196                 this.SplineWalker.Speed = this.CurrentSpeed;}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198                 this.CurrentDistance = this.SplineWalker.currentDistance;}
+\DoxyCodeLine{00199             \}}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00201             \{}
+\DoxyCodeLine{00202                 \textcolor{keywordflow}{if} (this.m\_input == 0f)}
+\DoxyCodeLine{00203                 \{}
+\DoxyCodeLine{00204                     this.CurrentSpeed -\/= Time.deltaTime * this.Drag;}
+\DoxyCodeLine{00205                 \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 this.CurrentSpeed = Mathf.Clamp (this.CurrentSpeed, 0f, this.MaximumSpeed);}
+\DoxyCodeLine{00208                 this.SplineWalker.Speed = this.CurrentSpeed;}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{if} (this.CurrentDistance != 0 \&\& this.SplineWalker.currentDistance != \textcolor{keyword}{this}.CurrentDistance)}
+\DoxyCodeLine{00213                 \{}
+\DoxyCodeLine{00214                     \textcolor{comment}{//Debug.Log ("{}SplineWalker.currentDistance="{} + SplineWalker.currentDistance + "{} CurrentDistance="{} + CurrentDistance);}}
+\DoxyCodeLine{00215                     this.SplineWalker.Speed += (this.CurrentDistance -\/ this.SplineWalker.currentDistance) * Time.deltaTime * 50f;}
+\DoxyCodeLine{00216                 \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             \}}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             \textcolor{comment}{// Only activate the car if we are sure we have the proper positioning, else it will glitch visually during the initialisation process.}}
+\DoxyCodeLine{00221             \textcolor{keywordflow}{if} (!this.m\_firstTake \&\& !this.CarInstance.activeSelf)}
+\DoxyCodeLine{00222             \{}
+\DoxyCodeLine{00223                 this.CarInstance.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00224                 this.SplineWalker.Speed = this.CurrentSpeed;}
+\DoxyCodeLine{00225                 this.SplineWalker.SetPositionOnSpline (this.CurrentDistance);}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             \}}
+\DoxyCodeLine{00228         \}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230 \textcolor{preprocessor}{        \#endregion Monobehaviour}}
+\DoxyCodeLine{00231     \}}
+\DoxyCodeLine{00232 \}}
+
+\end{DoxyCode}

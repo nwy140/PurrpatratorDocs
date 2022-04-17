@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__account_service_8cs_source" xml:lang="en-US">
+<title>AccountService.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonRealtime/Code/Unity/Editor/AccountService.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__account_service_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;----------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&#32;file=&quot;AccountService.cs&quot;&#32;company=&quot;Exit&#32;Games&#32;GmbH&quot;&gt;</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&#32;&#32;Photon&#32;Cloud&#32;Account&#32;Service&#32;-&#32;Copyright&#32;(C)&#32;2012&#32;Exit&#32;Games&#32;GmbH</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00005"/>00005 <emphasis role="comment">//&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00006"/>00006 <emphasis role="comment">//&#32;&#32;&#32;Provides&#32;methods&#32;to&#32;register&#32;a&#32;new&#32;user-account&#32;for&#32;the&#32;Photon&#32;Cloud&#32;and</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00007"/>00007 <emphasis role="comment">//&#32;&#32;&#32;get&#32;the&#32;resulting&#32;appId.</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00008"/>00008 <emphasis role="comment">//&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00009"/>00009 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00010"/>00010 <emphasis role="comment">//&#32;----------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00011"/>00011 
+<anchor xml:id="__account_service_8cs_source_1l00012"/>00012 <emphasis role="preprocessor">#if&#32;UNITY_2017_4_OR_NEWER</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00013"/>00013 <emphasis role="preprocessor">#define&#32;SUPPORTED_UNITY</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00014"/>00014 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00015"/>00015 
+<anchor xml:id="__account_service_8cs_source_1l00016"/>00016 
+<anchor xml:id="__account_service_8cs_source_1l00017"/>00017 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00018"/>00018 
+<anchor xml:id="__account_service_8cs_source_1l00019"/>00019 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_realtime">Photon.Realtime</link>
+<anchor xml:id="__account_service_8cs_source_1l00020"/>00020 {
+<anchor xml:id="__account_service_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__account_service_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__account_service_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System.<link linkend="_namespace_system_1_1_collections">Collections</link>.Generic;
+<anchor xml:id="__account_service_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System.Text.RegularExpressions;
+<anchor xml:id="__account_service_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;ExitGames.Client.Photon;
+<anchor xml:id="__account_service_8cs_source_1l00026"/>00026 
+<anchor xml:id="__account_service_8cs_source_1l00027"/>00027 
+<anchor xml:id="__account_service_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>AccountService
+<anchor xml:id="__account_service_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;ServiceUrl&#32;=&#32;<emphasis role="stringliteral">&quot;https://partner.photonengine.com/api/{0}/User/RegisterEx&quot;</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00034"/>00034 
+<anchor xml:id="__account_service_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;readonly&#32;Dictionary&lt;string,&#32;string&gt;&#32;RequestHeaders&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Dictionary&lt;string,&#32;string&gt;
+<anchor xml:id="__account_service_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{&#32;<emphasis role="stringliteral">&quot;Content-Type&quot;</emphasis>,&#32;<emphasis role="stringliteral">&quot;application/json&quot;</emphasis>&#32;},
+<anchor xml:id="__account_service_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{&#32;<emphasis role="stringliteral">&quot;x-functions-key&quot;</emphasis>,&#32;<emphasis role="stringliteral">&quot;&quot;</emphasis>&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};
+<anchor xml:id="__account_service_8cs_source_1l00040"/>00040 
+<anchor xml:id="__account_service_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;DefaultContext&#32;=&#32;<emphasis role="stringliteral">&quot;Unity&quot;</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00042"/>00042 
+<anchor xml:id="__account_service_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;DefaultToken&#32;=&#32;<emphasis role="stringliteral">&quot;VQ920wVUieLHT9c3v1ZCbytaLXpXbktUztKb3iYLCdiRKjUagcl6eg==&quot;</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00044"/>00044 
+<anchor xml:id="__account_service_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;CustomContext&#32;=&#32;<emphasis role="keyword">null</emphasis>;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&quot;PartnerCode&quot;&#32;on&#32;the&#32;server</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00049"/>00049 
+<anchor xml:id="__account_service_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;CustomToken&#32;=&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00054"/>00054 
+<anchor xml:id="__account_service_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;RequestPendingResult&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00059"/>00059 
+<anchor xml:id="__account_service_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;RegisterByEmail(<emphasis role="keywordtype">string</emphasis>&#32;email,&#32;List&lt;ServiceTypes&gt;&#32;serviceTypes,&#32;Action&lt;AccountServiceResponse&gt;&#32;callback&#32;=&#32;<emphasis role="keyword">null</emphasis>,&#32;Action&lt;string&gt;&#32;errorCallback&#32;=&#32;<emphasis role="keyword">null</emphasis>,&#32;<emphasis role="keywordtype">string</emphasis>&#32;origin&#32;=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__account_service_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RequestPendingResult)
+<anchor xml:id="__account_service_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogError(<emphasis role="stringliteral">&quot;Registration&#32;request&#32;pending&#32;result.&#32;Not&#32;sending&#32;another.&quot;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00078"/>00078 
+<anchor xml:id="__account_service_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!IsValidEmail(email))
+<anchor xml:id="__account_service_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogErrorFormat(<emphasis role="stringliteral">&quot;Email&#32;\&quot;{0}\&quot;&#32;is&#32;not&#32;valid&quot;</emphasis>,&#32;email);
+<anchor xml:id="__account_service_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00084"/>00084 
+<anchor xml:id="__account_service_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;serviceTypeString&#32;=&#32;GetServiceTypesFromList(serviceTypes);
+<anchor xml:id="__account_service_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(serviceTypeString))
+<anchor xml:id="__account_service_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogError(<emphasis role="stringliteral">&quot;serviceTypes&#32;string&#32;is&#32;null&#32;or&#32;empty&quot;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00091"/>00091 
+<anchor xml:id="__account_service_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;fullUrl&#32;=&#32;GetUrlWithQueryStringEscaped(email,&#32;serviceTypeString,&#32;origin);
+<anchor xml:id="__account_service_8cs_source_1l00093"/>00093 
+<anchor xml:id="__account_service_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;RequestHeaders[<emphasis role="stringliteral">&quot;x-functions-key&quot;</emphasis>]&#32;=&#32;<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(CustomToken)&#32;?&#32;DefaultToken&#32;:&#32;CustomToken;
+<anchor xml:id="__account_service_8cs_source_1l00095"/>00095 
+<anchor xml:id="__account_service_8cs_source_1l00096"/>00096 
+<anchor xml:id="__account_service_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RequestPendingResult&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00098"/>00098 
+<anchor xml:id="__account_service_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PhotonEditorUtils.StartCoroutine(
+<anchor xml:id="__account_service_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PhotonEditorUtils.HttpPost(fullUrl,
+<anchor xml:id="__account_service_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;RequestHeaders,
+<anchor xml:id="__account_service_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">null</emphasis>,
+<anchor xml:id="__account_service_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;s&#32;=&gt;
+<anchor xml:id="__account_service_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RequestPendingResult&#32;=&#32;false;
+<anchor xml:id="__account_service_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.LogWarningFormat(&quot;received&#32;response&#32;{0}&quot;,&#32;s);</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(string.IsNullOrEmpty(s))
+<anchor xml:id="__account_service_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(errorCallback&#32;!=&#32;null)
+<anchor xml:id="__account_service_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;errorCallback(<emphasis role="stringliteral">&quot;Server&apos;s&#32;response&#32;was&#32;empty.&#32;Please&#32;register&#32;through&#32;account&#32;website&#32;during&#32;this&#32;service&#32;interruption.&quot;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00113"/>00113 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;AccountServiceResponse&#32;ase&#32;=&#32;this.ParseResult(s);
+<anchor xml:id="__account_service_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(ase&#32;==&#32;null)
+<anchor xml:id="__account_service_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(errorCallback&#32;!=&#32;null)
+<anchor xml:id="__account_service_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;errorCallback(<emphasis role="stringliteral">&quot;Error&#32;parsing&#32;registration&#32;response.&#32;Please&#32;try&#32;registering&#32;from&#32;account&#32;website&quot;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;if&#32;(callback&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__account_service_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00126"/>00126 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;callback(ase);
+<anchor xml:id="__account_service_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00128"/>00128 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00129"/>00129 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;},
+<anchor xml:id="__account_service_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;e&#32;=&gt;
+<anchor xml:id="__account_service_8cs_source_1l00131"/>00131 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RequestPendingResult&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(errorCallback&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__account_service_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00135"/>00135 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;errorCallback(e);
+<anchor xml:id="__account_service_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00137"/>00137 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;})
+<anchor xml:id="__account_service_8cs_source_1l00138"/>00138 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;);
+<anchor xml:id="__account_service_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00141"/>00141 
+<anchor xml:id="__account_service_8cs_source_1l00142"/>00142 
+<anchor xml:id="__account_service_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;GetUrlWithQueryStringEscaped(<emphasis role="keywordtype">string</emphasis>&#32;email,&#32;<emphasis role="keywordtype">string</emphasis>&#32;serviceTypes,&#32;<emphasis role="keywordtype">string</emphasis>&#32;originAv)
+<anchor xml:id="__account_service_8cs_source_1l00144"/>00144 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00145"/>00145 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;emailEscaped&#32;=&#32;UnityEngine.Networking.UnityWebRequest.EscapeURL(email);
+<anchor xml:id="__account_service_8cs_source_1l00146"/>00146 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;st&#32;=&#32;UnityEngine.Networking.UnityWebRequest.EscapeURL(serviceTypes);
+<anchor xml:id="__account_service_8cs_source_1l00147"/>00147 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;uv&#32;=&#32;UnityEngine.Networking.UnityWebRequest.EscapeURL(Application.unityVersion);
+<anchor xml:id="__account_service_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;serviceUrl&#32;=&#32;<emphasis role="keywordtype">string</emphasis>.Format(ServiceUrl,&#32;<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(CustomContext)&#32;?&#32;DefaultContext&#32;:&#32;CustomContext&#32;);
+<anchor xml:id="__account_service_8cs_source_1l00149"/>00149 
+<anchor xml:id="__account_service_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(<emphasis role="stringliteral">&quot;{0}?email={1}&amp;st={2}&amp;uv={3}&amp;av={4}&quot;</emphasis>,&#32;serviceUrl,&#32;emailEscaped,&#32;st,&#32;uv,&#32;originAv);
+<anchor xml:id="__account_service_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00152"/>00152 
+<anchor xml:id="__account_service_8cs_source_1l00157"/>00157 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;AccountServiceResponse&#32;ParseResult(<emphasis role="keywordtype">string</emphasis>&#32;result)
+<anchor xml:id="__account_service_8cs_source_1l00158"/>00158 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00159"/>00159 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">try</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00160"/>00160 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00161"/>00161 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;AccountServiceResponse&#32;res&#32;=&#32;JsonUtility.FromJson&lt;AccountServiceResponse&gt;(result);
+<anchor xml:id="__account_service_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Unity&apos;s&#32;JsonUtility&#32;does&#32;not&#32;support&#32;deserializing&#32;Dictionary,&#32;we&#32;manually&#32;parse&#32;it,&#32;dirty&#32;&amp;&#32;ugly&#32;af,&#32;better&#32;then&#32;using&#32;a&#32;3rd&#32;party&#32;lib</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(res.ReturnCode&#32;==&#32;AccountServiceReturnCodes.Success)
+<anchor xml:id="__account_service_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00165"/>00165 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>[]&#32;parts&#32;=&#32;result.Split(<emphasis role="keyword">new</emphasis>[]&#32;{&#32;<emphasis role="stringliteral">&quot;\&quot;ApplicationIds\&quot;:{&quot;</emphasis>&#32;},&#32;StringSplitOptions.RemoveEmptyEntries);
+<anchor xml:id="__account_service_8cs_source_1l00166"/>00166 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;parts&#32;=&#32;parts[1].Split(<emphasis role="charliteral">&apos;}&apos;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;applicationIds&#32;=&#32;parts[0];
+<anchor xml:id="__account_service_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(applicationIds))
+<anchor xml:id="__account_service_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00170"/>00170 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;parts&#32;=&#32;applicationIds.Split(<emphasis role="keyword">new</emphasis>[]&#32;{&#32;<emphasis role="charliteral">&apos;,&apos;</emphasis>,&#32;<emphasis role="charliteral">&apos;&quot;&apos;</emphasis>,&#32;<emphasis role="charliteral">&apos;:&apos;</emphasis>&#32;},&#32;StringSplitOptions.RemoveEmptyEntries);
+<anchor xml:id="__account_service_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;res.ApplicationIds&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Dictionary&lt;string,&#32;string&gt;(parts.Length&#32;/&#32;2);
+<anchor xml:id="__account_service_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;parts.Length;&#32;i&#32;=&#32;i&#32;+&#32;2)
+<anchor xml:id="__account_service_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;res.ApplicationIds.Add(parts[i],&#32;parts[i&#32;+&#32;1]);
+<anchor xml:id="__account_service_8cs_source_1l00175"/>00175 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00176"/>00176 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogError(<emphasis role="stringliteral">&quot;The&#32;server&#32;did&#32;not&#32;return&#32;any&#32;AppId,&#32;ApplicationIds&#32;was&#32;empty&#32;in&#32;the&#32;response.&quot;</emphasis>);
+<anchor xml:id="__account_service_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00183"/>00183 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;res;
+<anchor xml:id="__account_service_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">catch</emphasis>&#32;(Exception&#32;ex)&#32;<emphasis role="comment">//&#32;probably&#32;JSON&#32;parsing&#32;exception,&#32;check&#32;if&#32;returned&#32;string&#32;is&#32;valid&#32;JSON</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00187"/>00187 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogException(ex);
+<anchor xml:id="__account_service_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00191"/>00191 
+<anchor xml:id="__account_service_8cs_source_1l00197"/>00197 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;GetServiceTypesFromList(List&lt;ServiceTypes&gt;&#32;appTypes)
+<anchor xml:id="__account_service_8cs_source_1l00198"/>00198 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(appTypes&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;||&#32;appTypes.Count&#32;&lt;=&#32;0)
+<anchor xml:id="__account_service_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00203"/>00203 
+<anchor xml:id="__account_service_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;serviceTypes&#32;=&#32;((int)appTypes[0]).ToString();
+<anchor xml:id="__account_service_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;1;&#32;i&#32;&lt;&#32;appTypes.Count;&#32;i++)
+<anchor xml:id="__account_service_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00207"/>00207 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;appType&#32;=&#32;(int)appTypes[i];
+<anchor xml:id="__account_service_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;serviceTypes&#32;=&#32;<emphasis role="keywordtype">string</emphasis>.Format(<emphasis role="stringliteral">&quot;{0},{1}&quot;</emphasis>,&#32;serviceTypes,&#32;appType);
+<anchor xml:id="__account_service_8cs_source_1l00209"/>00209 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00210"/>00210 
+<anchor xml:id="__account_service_8cs_source_1l00211"/>00211 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;serviceTypes;
+<anchor xml:id="__account_service_8cs_source_1l00212"/>00212 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00213"/>00213 
+<anchor xml:id="__account_service_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;RFC2822&#32;compliant&#32;matching&#32;99.9%&#32;of&#32;all&#32;email&#32;addresses&#32;in&#32;actual&#32;use&#32;today</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;according&#32;to&#32;http://www.regular-expressions.info/email.html&#32;[22.02.2012]</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00216"/>00216 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;Regex&#32;reg&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Regex(<emphasis role="stringliteral">&quot;^((?&gt;[a-zA-Z\\d!#$%&amp;&apos;*+\\-/=?^_{|}~]+\\x20*|\&quot;((?=[\\x01-\\x7f])[^\&quot;\\]|\\[\\x01-\\x7f])*\&quot;\\x20*)*(?&lt;angle&gt;&lt;))?((?!\\.)(?&gt;\\.?[a-zA-Z\\d!#$%&amp;&apos;*+\\-/=?^_{|}~]+)+|\&quot;((?=[\\x01-\\x7f])[^\&quot;\\]|\\[\\x01-\\x7f])*\&quot;)@(((?!-)[a-zA-Z\\d\\-]+(?&lt;!-)\\.)+[a-zA-Z]{2,}|\\[(((?(?&lt;!\\[)\\.)(25[0-5]|2[0-4]\\d|[01]?\\d?\\d)){4}|[a-zA-Z\\d\\-]*[a-zA-Z\\d]:((?=[\\x01-\\x7f])[^\\\\[\\]]|\\[\\x01-\\x7f])+)\\])(?(angle)&gt;)$&quot;</emphasis>,
+<anchor xml:id="__account_service_8cs_source_1l00217"/>00217 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;RegexOptions.CultureInvariant&#32;|&#32;RegexOptions.IgnoreCase);
+<anchor xml:id="__account_service_8cs_source_1l00218"/>00218 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;IsValidEmail(<emphasis role="keywordtype">string</emphasis>&#32;mailAddress)
+<anchor xml:id="__account_service_8cs_source_1l00219"/>00219 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00220"/>00220 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(mailAddress))
+<anchor xml:id="__account_service_8cs_source_1l00221"/>00221 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00222"/>00222 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__account_service_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;result&#32;=&#32;reg.Match(mailAddress);
+<anchor xml:id="__account_service_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;result.Success;
+<anchor xml:id="__account_service_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00228"/>00228 
+<anchor xml:id="__account_service_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;[Serializable]
+<anchor xml:id="__account_service_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>AccountServiceResponse
+<anchor xml:id="__account_service_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00232"/>00232 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;ReturnCode;
+<anchor xml:id="__account_service_8cs_source_1l00233"/>00233 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;Message;
+<anchor xml:id="__account_service_8cs_source_1l00234"/>00234 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Dictionary&lt;string,&#32;string&gt;&#32;ApplicationIds;&#32;<emphasis role="comment">//&#32;Unity&apos;s&#32;JsonUtility&#32;does&#32;not&#32;support&#32;deserializing&#32;Dictionary</emphasis>
+<anchor xml:id="__account_service_8cs_source_1l00235"/>00235 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00236"/>00236 
+<anchor xml:id="__account_service_8cs_source_1l00237"/>00237 
+<anchor xml:id="__account_service_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>AccountServiceReturnCodes
+<anchor xml:id="__account_service_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;Success&#32;=&#32;0;
+<anchor xml:id="__account_service_8cs_source_1l00241"/>00241 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;EmailAlreadyRegistered&#32;=&#32;8;
+<anchor xml:id="__account_service_8cs_source_1l00242"/>00242 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;InvalidParameters&#32;=&#32;12;
+<anchor xml:id="__account_service_8cs_source_1l00243"/>00243 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00244"/>00244 
+<anchor xml:id="__account_service_8cs_source_1l00245"/>00245 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">enum</emphasis>&#32;ServiceTypes
+<anchor xml:id="__account_service_8cs_source_1l00246"/>00246 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__account_service_8cs_source_1l00247"/>00247 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_realtime_1aa38fa4af1bcb3dcd4ae2d2faf507aa33aa5ff58bda67e2160b5e5d5a47a4333c3">Realtime</link>&#32;=&#32;0,
+<anchor xml:id="__account_service_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Turnbased&#32;=&#32;1,
+<anchor xml:id="__account_service_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Chat&#32;=&#32;2,
+<anchor xml:id="__account_service_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_realtime_1aa38fa4af1bcb3dcd4ae2d2faf507aa33ad7a3fdf1351b72249a47454751549deb">Voice</link>&#32;=&#32;3,
+<anchor xml:id="__account_service_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TrueSync&#32;=&#32;4,
+<anchor xml:id="__account_service_8cs_source_1l00252"/>00252 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Pun&#32;=&#32;5,
+<anchor xml:id="__account_service_8cs_source_1l00253"/>00253 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Thunder&#32;=&#32;6,
+<anchor xml:id="__account_service_8cs_source_1l00254"/>00254 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Quantum&#32;=&#32;7,
+<anchor xml:id="__account_service_8cs_source_1l00255"/>00255 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_realtime_1aa38fa4af1bcb3dcd4ae2d2faf507aa33aadc69293e8fd256b2609664f1e11cb53">Fusion</link>&#32;=&#32;8,
+<anchor xml:id="__account_service_8cs_source_1l00256"/>00256 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Bolt&#32;=&#32;20
+<anchor xml:id="__account_service_8cs_source_1l00257"/>00257 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__account_service_8cs_source_1l00258"/>00258 }
+<anchor xml:id="__account_service_8cs_source_1l00259"/>00259 
+<anchor xml:id="__account_service_8cs_source_1l00260"/>00260 <emphasis role="preprocessor">#endif</emphasis>
+</programlisting></section>

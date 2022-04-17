@@ -1,0 +1,76 @@
+\doxysection{Custom\+Types.\+cs}
+\label{_custom_types_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/CustomTypes.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/CustomTypes.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CustomTypes.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Sets up support for Unity-\/specific types. Can be a blueprint how to register your own Custom Types for sending.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00022     \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keyword}{class }CustomTypes}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00025         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Register()}
+\DoxyCodeLine{00026         \{}
+\DoxyCodeLine{00027             PhotonPeer.RegisterType(typeof(Player), (\textcolor{keywordtype}{byte}) \textcolor{charliteral}{'P'}, SerializePhotonPlayer, DeserializePhotonPlayer);}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031 \textcolor{preprocessor}{        \#region Custom De/Serializer Methods}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] memPlayer = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[4];}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{short} SerializePhotonPlayer(StreamBuffer outStream, \textcolor{keywordtype}{object} customobject)}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordtype}{int} ID = ((Player) customobject).ActorNumber;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039             lock (memPlayer)}
+\DoxyCodeLine{00040             \{}
+\DoxyCodeLine{00041                 \textcolor{keywordtype}{byte}[] bytes = memPlayer;}
+\DoxyCodeLine{00042                 \textcolor{keywordtype}{int} off = 0;}
+\DoxyCodeLine{00043                 Protocol.Serialize(ID, bytes, ref off);}
+\DoxyCodeLine{00044                 outStream.Write(bytes, 0, 4);}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{return} 4;}
+\DoxyCodeLine{00046             \}}
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} DeserializePhotonPlayer(StreamBuffer inStream, \textcolor{keywordtype}{short} length)}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (length != 4)}
+\DoxyCodeLine{00052             \{}
+\DoxyCodeLine{00053                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordtype}{int} ID;}
+\DoxyCodeLine{00057             lock (memPlayer)}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 inStream.Read(memPlayer, 0, length);}
+\DoxyCodeLine{00060                 \textcolor{keywordtype}{int} off = 0;}
+\DoxyCodeLine{00061                 Protocol.Deserialize(out ID, memPlayer, ref off);}
+\DoxyCodeLine{00062             \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 Player player = PhotonNetwork.CurrentRoom.GetPlayer(ID);}
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{return} player;}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00073     \}}
+\DoxyCodeLine{00074 \}}
+
+\end{DoxyCode}

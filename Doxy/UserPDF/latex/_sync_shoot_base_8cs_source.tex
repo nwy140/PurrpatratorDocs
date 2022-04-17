@@ -1,0 +1,231 @@
+\doxysection{Sync\+Shoot\+Base.\+cs}
+\label{_sync_shoot_base_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncShootBase.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncShootBase.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SyncShootBase : SyncObject<SyncShootBase.Frame>}
+\DoxyCodeLine{00020         , IOnNetSerialize}
+\DoxyCodeLine{00021         , IOnPostSimulate}
+\DoxyCodeLine{00022         , IOnPreUpdate}
+\DoxyCodeLine{00023         , IOnIncrementFrame}
+\DoxyCodeLine{00024         , IOnSnapshot}
+\DoxyCodeLine{00025         , IOnInterpolate}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [Tooltip(\textcolor{stringliteral}{"{}Specify the transform hitscans/projectiles will originate from. If null this gameObject will be used as the origin."{}})]}
+\DoxyCodeLine{00030         [SerializeField] \textcolor{keyword}{protected} Transform origin;}
+\DoxyCodeLine{00031         [SerializeField] \textcolor{keyword}{public} KeyCode triggerKey = KeyCode.None;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{comment}{// Cached}}
+\DoxyCodeLine{00036         \textcolor{keyword}{protected} IContactTrigger contactTrigger;}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} IContactTrigger ContactTrigger \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} contactTrigger; \} \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} hasSyncContact;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{comment}{// internal States}}
+\DoxyCodeLine{00042         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} triggerQueued;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             \textcolor{keyword}{get}}
+\DoxyCodeLine{00047             \{}
+\DoxyCodeLine{00048                 \textcolor{keywordflow}{return} ApplyOrderConstants.HITSCAN;}
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             \textcolor{keyword}{public} uint triggerMask;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00057             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId) \{ \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00062                 triggerMask = 0;}
+\DoxyCodeLine{00063             \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00066             \{}
+\DoxyCodeLine{00067                 base.Clear();}
+\DoxyCodeLine{00068                 triggerMask = 0;}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwakeInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             base.OnAwakeInitialize(isNetObject);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             contactTrigger = transform.GetNestedComponentInParents<IContactTrigger, NetObject>();}
+\DoxyCodeLine{00077             hasSyncContact = contactTrigger.SyncContact != \textcolor{keyword}{null};}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (origin == \textcolor{keyword}{null})}
+\DoxyCodeLine{00080                 origin = transform;}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPreUpdate()}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (IsMine \&\& Input.GetKeyDown(triggerKey))}
+\DoxyCodeLine{00087                 QueueTrigger();}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00093         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} QueueTrigger()}
+\DoxyCodeLine{00094         \{}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (enabled \&\& gameObject.activeInHierarchy)}
+\DoxyCodeLine{00096                 triggerQueued = \textcolor{keyword}{true};}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keyword}{virtual} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             Frame frame = frames[frameId];}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{keywordtype}{int} sendEveryXTick = TickEngineSettings.sendEveryXTick;}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00111             \textcolor{keywordflow}{if} (frame.triggerMask != 0)}
+\DoxyCodeLine{00112             \{}
+\DoxyCodeLine{00113                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00114                 buffer.Write(frame.triggerMask, ref bitposition, sendEveryXTick);}
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{return} SerializationFlags.HasContent \textcolor{comment}{/*| SerializationFlags.ForceReliable*/};}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00119             \{}
+\DoxyCodeLine{00120                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124         \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keyword}{virtual} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             Frame frame = frames[originFrameId];}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130             \textcolor{keywordtype}{int} sendEveryXTick = TickEngineSettings.sendEveryXTick;}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00133             \{}
+\DoxyCodeLine{00134                 frame.triggerMask = buffer.ReadUInt32(ref bitposition, sendEveryXTick);}
+\DoxyCodeLine{00135                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{00137             \}}
+\DoxyCodeLine{00138             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00139             \{}
+\DoxyCodeLine{00140                 frame.triggerMask = 0;}
+\DoxyCodeLine{00141                 frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146 \textcolor{preprocessor}{        \#endregion Serialization}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPostSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{bool} isNetTick)}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00152                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             Frame frame = frames[frameId];}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (subFrameId == 0)}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 frame.Clear();}
+\DoxyCodeLine{00161             \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00164             \textcolor{keywordflow}{if} (triggerQueued) \textcolor{comment}{//subFrameId < SimpleSyncSettings.sendEveryXTick)}}
+\DoxyCodeLine{00165             \{}
+\DoxyCodeLine{00166                 frame.triggerMask |= (uint)1 << subFrameId;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{if} (Trigger(frame, subFrameId))}
+\DoxyCodeLine{00169                     TriggerCosmetic(frame, subFrameId);}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171                 triggerQueued = \textcolor{keyword}{false};}
+\DoxyCodeLine{00173                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175         \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnIncrementFrame(\textcolor{keywordtype}{int} newFrameId, \textcolor{keywordtype}{int} newSubFrameId, \textcolor{keywordtype}{int} previousFrameId, \textcolor{keywordtype}{int} prevSubFrameId)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185             \textcolor{keywordflow}{if} (ReferenceEquals(targFrame, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00186                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (targFrame.content == FrameContents.Complete)}
+\DoxyCodeLine{00189             \{}
+\DoxyCodeLine{00190                 \textcolor{keywordtype}{int} offset = (newSubFrameId == 0) ? (TickEngineSettings.sendEveryXTick -\/ 1) : newSubFrameId -\/ 1;}
+\DoxyCodeLine{00191                 ApplySubframe(newFrameId, newSubFrameId, offset);}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             \}}
+\DoxyCodeLine{00194         \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ApplySubframe(\textcolor{keywordtype}{int} newFrameId, \textcolor{keywordtype}{int} newSubFrameId, \textcolor{keywordtype}{int} offset)}
+\DoxyCodeLine{00198         \{}
+\DoxyCodeLine{00199             \textcolor{keywordflow}{if} ((targFrame.triggerMask \& (1 << offset)) != 0)}
+\DoxyCodeLine{00200             \{}
+\DoxyCodeLine{00201                 \textcolor{keywordflow}{if} (Trigger(targFrame, newSubFrameId, NetMaster.RTT))}
+\DoxyCodeLine{00202                     TriggerCosmetic(targFrame, newSubFrameId, NetMaster.RTT);}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204         \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00210         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{bool} Trigger(Frame frame, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{float} timeshift = 0);}
+\DoxyCodeLine{00211         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} TriggerCosmetic(Frame frame, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{float} timeshift = 0)}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216     \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220     [CustomEditor(typeof(SyncShootBase), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00221     [CanEditMultipleObjects]}
+\DoxyCodeLine{00222     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncShootBaseEditor : SyncObjectEditor}
+\DoxyCodeLine{00223     \{}
+\DoxyCodeLine{00224         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}subsystems\#projectiles\_and\_hitscans"{}}; \}}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00230         \{}
+\DoxyCodeLine{00231             \textcolor{keyword}{get}}
+\DoxyCodeLine{00232             \{}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Trigger by calling this"{}} + typeof(SyncShootBase).Name + \textcolor{stringliteral}{"{}.QueueTrigger()"{}};}
+\DoxyCodeLine{00234             \}}
+\DoxyCodeLine{00235         \}}
+\DoxyCodeLine{00236         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00237         \{}
+\DoxyCodeLine{00238             \textcolor{keyword}{get}}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncNetHitText"{}};}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242         \}}
+\DoxyCodeLine{00243     \}}
+\DoxyCodeLine{00244 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00245 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,297 @@
+\doxysection{Launcher.\+cs}
+\label{___developers_2___shared_2___netcode_photon_2_scripts_2_match_making_2_launcher_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/MatchMaking/Launcher.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/MatchMaking/Launcher.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} TMPro;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} SInt.Netcode.PhotonPUN;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{public} \textcolor{keyword}{class }Launcher : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{static} Launcher Instance;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     [Header(\textcolor{stringliteral}{"{}TMP\_Text"{}})]}
+\DoxyCodeLine{00017     [SerializeField] TMP\_InputField CreateInput;}
+\DoxyCodeLine{00018     [SerializeField] TMP\_InputField JoinInput;}
+\DoxyCodeLine{00019     [SerializeField] TMP\_Text errorMainText;}
+\DoxyCodeLine{00020     [SerializeField] TMP\_Text errorText;}
+\DoxyCodeLine{00021     [SerializeField] TMP\_Text roomNameText;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023     [Header(\textcolor{stringliteral}{"{}Prefab"{}})]}
+\DoxyCodeLine{00024     [SerializeField] Transform roomListContent;}
+\DoxyCodeLine{00025     [SerializeField] GameObject roomListItemPrefab;}
+\DoxyCodeLine{00026     [SerializeField] Transform playerListContent;}
+\DoxyCodeLine{00027     [SerializeField] GameObject PlayerListItemPrefab;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029     [Header(\textcolor{stringliteral}{"{}Button"{}})]}
+\DoxyCodeLine{00030     [SerializeField] Button hostReadyButton;}
+\DoxyCodeLine{00031     [SerializeField] Button readyButton;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033     [Header(\textcolor{stringliteral}{"{}RoomLoadingAssets"{}})]}
+\DoxyCodeLine{00034     [SerializeField] GameObject loadingP1;}
+\DoxyCodeLine{00035     [SerializeField] GameObject loadingP2;}
+\DoxyCodeLine{00036     [SerializeField] GameObject checkmarkP1;}
+\DoxyCodeLine{00037     [SerializeField] GameObject checkmarkP2;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} readyP1, readyP2;}
+\DoxyCodeLine{00040     ExitGames.Client.Photon.Hashtable playerProperties = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042     \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00043     \{}
+\DoxyCodeLine{00044         Instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00045     \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047     \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00048     \{}
+\DoxyCodeLine{00049         \textcolor{keywordflow}{if}(!PhotonNetwork.IsConnected)}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00052             Debug.Log(\textcolor{stringliteral}{"{}Connecting to Master"{}});}
+\DoxyCodeLine{00053             PhotonNetwork.ConnectUsingSettings();}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055     \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnConnectedToMaster()}
+\DoxyCodeLine{00058     \{}
+\DoxyCodeLine{00059         Debug.Log(\textcolor{stringliteral}{"{}Connected to Master"{}});}
+\DoxyCodeLine{00060         PhotonNetwork.JoinLobby();}
+\DoxyCodeLine{00061         PhotonNetwork.AutomaticallySyncScene = \textcolor{keyword}{true};}
+\DoxyCodeLine{00062     \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedLobby()}
+\DoxyCodeLine{00065     \{}
+\DoxyCodeLine{00066         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}title"{}});}
+\DoxyCodeLine{00067         Debug.Log(\textcolor{stringliteral}{"{}Joined Lobby"{}});}
+\DoxyCodeLine{00068     \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070     \textcolor{keyword}{public} \textcolor{keywordtype}{void} CreateRoom()}
+\DoxyCodeLine{00071     \{}
+\DoxyCodeLine{00072         \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(CreateInput.text))}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076         PhotonNetwork.CreateRoom(CreateInput.text, \textcolor{keyword}{new} RoomOptions() \{ MaxPlayers = 2 \});}
+\DoxyCodeLine{00077         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00078     \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080     \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinRoom()}
+\DoxyCodeLine{00081     \{}
+\DoxyCodeLine{00082         \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(JoinInput.text))}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086         PhotonNetwork.JoinRoom(JoinInput.text);}
+\DoxyCodeLine{00087         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00088     \}}
+\DoxyCodeLine{00089     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00090     \{}
+\DoxyCodeLine{00091         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}room"{}});}
+\DoxyCodeLine{00092         roomNameText.text = PhotonNetwork.CurrentRoom.Name;}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         hostReadyButton.interactable = PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00095         readyButton.interactable = !PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098         Player[] players = PhotonNetwork.PlayerList;}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keywordflow}{foreach} (Transform child \textcolor{keywordflow}{in} playerListContent)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             Destroy(child.gameObject);}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < players.Count(); i++)}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             Instantiate(PlayerListItemPrefab, playerListContent).GetComponent<PlayerListItem>().SetUp(players[i]);}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         AssignRoleRandomly();}
+\DoxyCodeLine{00111     \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00114     \{}
+\DoxyCodeLine{00115         \textcolor{keywordflow}{if} (newMasterClient != PhotonNetwork.LocalPlayer) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         hostReadyButton.interactable = PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00118         readyButton.interactable = !PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00119     \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00122     \{}
+\DoxyCodeLine{00123         errorMainText.text = \textcolor{stringliteral}{"{}Room Creation Failed:"{}};}
+\DoxyCodeLine{00124         errorText.text = message;}
+\DoxyCodeLine{00125         Debug.LogError(\textcolor{stringliteral}{"{}Room Creation Failed: "{}} + message);}
+\DoxyCodeLine{00126         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}error"{}});}
+\DoxyCodeLine{00127     \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00130     \{}
+\DoxyCodeLine{00131         errorMainText.text = \textcolor{stringliteral}{"{}Room Join Failed:"{}};}
+\DoxyCodeLine{00132         errorText.text = message;}
+\DoxyCodeLine{00133         Debug.LogError(\textcolor{stringliteral}{"{}Room Join Failed: "{}} + message);}
+\DoxyCodeLine{00134         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}error"{}});}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136     \}}
+\DoxyCodeLine{00137     \textcolor{comment}{//public static readonly int StartGameSceneBuildIndex = 3;}}
+\DoxyCodeLine{00138     \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} StartGameSceneName = \textcolor{stringliteral}{"{}MainGame 1"{}};}
+\DoxyCodeLine{00139     \textcolor{keyword}{public} \textcolor{keywordtype}{void} StartGame()}
+\DoxyCodeLine{00140     \{}
+\DoxyCodeLine{00141         \textcolor{comment}{//PhotonNetwork.LoadLevel(1);}}
+\DoxyCodeLine{00142         \textcolor{comment}{//PhotonNetwork.LoadLevel(StartGameSceneBuildIndex);}}
+\DoxyCodeLine{00143         PhotonNetwork.LoadLevel(StartGameSceneName);}
+\DoxyCodeLine{00144     \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146     \textcolor{keyword}{public} \textcolor{keywordtype}{void} BackToMenu()}
+\DoxyCodeLine{00147     \{}
+\DoxyCodeLine{00148         SceneManager.LoadScene(0);}
+\DoxyCodeLine{00149     \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151     \textcolor{keyword}{public} \textcolor{keywordtype}{void} LeaveRoom()}
+\DoxyCodeLine{00152     \{}
+\DoxyCodeLine{00153         PhotonNetwork.LeaveRoom();}
+\DoxyCodeLine{00154         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00155     \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157     \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinRoom(RoomInfo info)}
+\DoxyCodeLine{00158     \{}
+\DoxyCodeLine{00159         PhotonNetwork.JoinRoom(info.Name);}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00162     \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00165     \{}
+\DoxyCodeLine{00166         MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}title"{}});}
+\DoxyCodeLine{00167     \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomListUpdate(List<RoomInfo> roomList)}
+\DoxyCodeLine{00170     \{}
+\DoxyCodeLine{00171         \textcolor{keywordflow}{foreach} (Transform trans \textcolor{keywordflow}{in} roomListContent)}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             Destroy(trans.gameObject);}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < roomList.Count; i++)}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178             \textcolor{keywordflow}{if} (roomList[i].RemovedFromList)}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             Instantiate(roomListItemPrefab, roomListContent).GetComponent<RoomListItem>().SetUp(roomList[i]);}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183     \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00186     \{}
+\DoxyCodeLine{00187         Instantiate(PlayerListItemPrefab, playerListContent).GetComponent<PlayerListItem>().SetUp(newPlayer);}
+\DoxyCodeLine{00188     \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190     \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnClick\_Ready()}
+\DoxyCodeLine{00191     \{}
+\DoxyCodeLine{00192         \textcolor{comment}{// Do not use a new hashtable everytime but rather the existing}}
+\DoxyCodeLine{00193         \textcolor{comment}{// in order to not loose any other properties you might have later}}
+\DoxyCodeLine{00194         var hash = PhotonNetwork.LocalPlayer.CustomProperties;}
+\DoxyCodeLine{00195         hash[\textcolor{stringliteral}{"{}Ready"{}}] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         PhotonNetwork.LocalPlayer.SetCustomProperties(hash);}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         readyP1 = PhotonNetwork.LocalPlayer.IsMasterClient;}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         readyP2 = !PhotonNetwork.LocalPlayer.IsMasterClient;}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         CheckAllPlayersReady();}
+\DoxyCodeLine{00205     \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)}
+\DoxyCodeLine{00208     \{}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \textcolor{comment}{//UpdateUI(targetPlayer);}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keywordflow}{if} (!changedProps.ContainsKey(\textcolor{stringliteral}{"{}Ready"{}})) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00213         StartCoroutine(CheckAllPlayersReady());}
+\DoxyCodeLine{00214         \textcolor{comment}{//CheckAllPlayersReady();}}
+\DoxyCodeLine{00215     \}}
+\DoxyCodeLine{00216     \textcolor{keywordtype}{void} UpdateUI(Player targetPlayer)}
+\DoxyCodeLine{00217     \{}
+\DoxyCodeLine{00218         \textcolor{keywordflow}{if} (targetPlayer.CustomProperties.ContainsKey(\textcolor{stringliteral}{"{}Ready"{}}) \&\& targetPlayer.IsMasterClient)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             loadingP1.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00221             checkmarkP1.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00222             readyP1 = \textcolor{keyword}{false};}
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224         \textcolor{keywordflow}{if} (targetPlayer.CustomProperties.ContainsKey(\textcolor{stringliteral}{"{}Ready"{}}) \&\& targetPlayer.IsMasterClient == \textcolor{keyword}{false})}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226             loadingP2.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00227             checkmarkP2.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00228             readyP2 = \textcolor{keyword}{false};}
+\DoxyCodeLine{00229         \}}
+\DoxyCodeLine{00230     \}}
+\DoxyCodeLine{00231     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00232     \{}
+\DoxyCodeLine{00233         \textcolor{keywordflow}{foreach} ( var p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00234         \{}
+\DoxyCodeLine{00235             UpdateUI(p);}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237     \}}
+\DoxyCodeLine{00238     \textcolor{keyword}{public} IEnumerator CheckAllPlayersReady()}
+\DoxyCodeLine{00239     \{}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241         var players = PhotonNetwork.PlayerList;}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244         \textcolor{comment}{// This is just using a shorthand via Linq instead of having a loop with a counter}}
+\DoxyCodeLine{00245         \textcolor{comment}{// for checking whether all players in the list have the key "{}Ready"{} in their custom properties}}
+\DoxyCodeLine{00246         \textcolor{keywordflow}{if} (players.All(p => p.CustomProperties.ContainsKey(\textcolor{stringliteral}{"{}Ready"{}}) \&\& (\textcolor{keywordtype}{bool})p.CustomProperties[\textcolor{stringliteral}{"{}Ready"{}}]) \&\& PhotonNetwork.CurrentRoom.PlayerCount == 2)}
+\DoxyCodeLine{00247         \{}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249             Debug.Log(\textcolor{stringliteral}{"{}All players are ready!"{}});}
+\DoxyCodeLine{00250             MenuManager.Instance.OpenMenu(\textcolor{stringliteral}{"{}loading"{}});}
+\DoxyCodeLine{00251             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(1f); \textcolor{comment}{// wait 1 second before loading scene}}
+\DoxyCodeLine{00252             StartGame();}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254     \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256     \textcolor{keyword}{public} \textcolor{keywordtype}{void} AssignRoleRandomly()}
+\DoxyCodeLine{00257     \{}
+\DoxyCodeLine{00258         playerProperties = PhotonNetwork.LocalPlayer.CustomProperties;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keywordtype}{int} ranNum = Random.Range(0, 100);}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (ranNum > 50)}
+\DoxyCodeLine{00265             \{}
+\DoxyCodeLine{00266                 playerProperties[\textcolor{stringliteral}{"{}Role"{}}] = \textcolor{stringliteral}{"{}Human"{}};}
+\DoxyCodeLine{00267             \}}
+\DoxyCodeLine{00268             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00269             \{}
+\DoxyCodeLine{00270                 playerProperties[\textcolor{stringliteral}{"{}Role"{}}] = \textcolor{stringliteral}{"{}Cat"{}};}
+\DoxyCodeLine{00271             \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         \}}
+\DoxyCodeLine{00274         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (!PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00275         \{}
+\DoxyCodeLine{00276             \textcolor{keywordflow}{if} (PhotonNetwork.MasterClient.CustomProperties.ContainsValue(\textcolor{stringliteral}{"{}Human"{}}))}
+\DoxyCodeLine{00277             \{}
+\DoxyCodeLine{00278                 playerProperties[\textcolor{stringliteral}{"{}Role"{}}] = \textcolor{stringliteral}{"{}Cat"{}};}
+\DoxyCodeLine{00279             \}}
+\DoxyCodeLine{00280             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonNetwork.MasterClient.CustomProperties.ContainsValue(\textcolor{stringliteral}{"{}Cat"{}}))}
+\DoxyCodeLine{00281             \{}
+\DoxyCodeLine{00282                 playerProperties[\textcolor{stringliteral}{"{}Role"{}}] = \textcolor{stringliteral}{"{}Human"{}};}
+\DoxyCodeLine{00283             \}}
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286         playerProperties[\textcolor{stringliteral}{"{}MainScore"{}}] = 0;}
+\DoxyCodeLine{00287         playerProperties[\textcolor{stringliteral}{"{}ExtraScore"{}}] = 0;}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289         PhotonNetwork.SetPlayerCustomProperties(playerProperties);}
+\DoxyCodeLine{00290     \}}
+\DoxyCodeLine{00291 \}}
+
+\end{DoxyCode}

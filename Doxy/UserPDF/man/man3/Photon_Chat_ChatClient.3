@@ -1,0 +1,853 @@
+.TH "Photon.Chat.ChatClient" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Chat.ChatClient \- Central class of the \fBPhoton\fP \fBChat\fP API to connect, handle channels and messages\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits IPhotonPeerListener\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "bool \fBCanChatInChannel\fP (string channelName)"
+.br
+.RI "Checks if this client is ready to publish messages inside a public channel\&. "
+.ti -1c
+.RI "\fBChatClient\fP (\fBIChatClientListener\fP listener, ConnectionProtocol protocol=ConnectionProtocol\&.Udp)"
+.br
+.RI "\fBChat\fP client constructor\&. "
+.ti -1c
+.RI "bool \fBConnectUsingSettings\fP (\fBChatAppSettings\fP appSettings)"
+.br
+.ti -1c
+.RI "bool \fBConnect\fP (string appId, string appVersion, \fBAuthenticationValues\fP authValues)"
+.br
+.RI "Connects this client to the \fBPhoton\fP \fBChat\fP Cloud service, which will also authenticate the user (and set a UserId)\&. "
+.ti -1c
+.RI "bool \fBConnectAndSetStatus\fP (string appId, string appVersion, \fBAuthenticationValues\fP authValues, int status=\fBChatUserStatus\&.Online\fP, object message=null)"
+.br
+.RI "Connects this client to the \fBPhoton\fP \fBChat\fP Cloud service, which will also authenticate the user (and set a UserId)\&. "
+.ti -1c
+.RI "void \fBService\fP ()"
+.br
+.RI "Must be called regularly to keep connection between client and server alive and to process incoming messages\&. "
+.ti -1c
+.RI "void \fBSendAcksOnly\fP ()"
+.br
+.RI "Obsolete: Better use UseBackgroundWorkerForSending and \fBService()\fP\&. "
+.ti -1c
+.RI "void \fBDisconnect\fP (\fBChatDisconnectCause\fP cause=\fBChatDisconnectCause\&.DisconnectByClientLogic\fP)"
+.br
+.RI "Disconnects from the \fBChat\fP Server by sending a 'disconnect command', which prevents a timeout server-side\&. "
+.ti -1c
+.RI "void \fBStopThread\fP ()"
+.br
+.RI "Locally shuts down the connection to the \fBChat\fP Server\&. "
+.ti -1c
+.RI "bool \fBSubscribe\fP (string[] channels)"
+.br
+.RI "Sends operation to subscribe to a list of channels by name\&. "
+.ti -1c
+.RI "bool \fBSubscribe\fP (string[] channels, int[] lastMsgIds)"
+.br
+.RI "Sends operation to subscribe to a list of channels by name and possibly retrieve messages we did not receive while unsubscribed\&. "
+.ti -1c
+.RI "bool \fBSubscribe\fP (string[] channels, int messagesFromHistory)"
+.br
+.RI "Sends operation to subscribe client to channels, optionally fetching a number of messages from the cache\&. "
+.ti -1c
+.RI "bool \fBUnsubscribe\fP (string[] channels)"
+.br
+.RI "Unsubscribes from a list of channels, which stops getting messages from those\&. "
+.ti -1c
+.RI "bool \fBPublishMessage\fP (string channelName, object message, bool forwardAsWebhook=false)"
+.br
+.RI "Sends a message to a public channel which this client subscribed to\&. "
+.ti -1c
+.RI "bool \fBSendPrivateMessage\fP (string target, object message, bool forwardAsWebhook=false)"
+.br
+.RI "Sends a private message to a single target user\&. "
+.ti -1c
+.RI "bool \fBSendPrivateMessage\fP (string target, object message, bool encrypt, bool forwardAsWebhook)"
+.br
+.RI "Sends a private message to a single target user\&. "
+.ti -1c
+.RI "bool \fBSetOnlineStatus\fP (int status)"
+.br
+.RI "Sets the user's status without changing your status-message\&. "
+.ti -1c
+.RI "bool \fBSetOnlineStatus\fP (int status, object message)"
+.br
+.RI "Sets the user's status without changing your status-message\&. "
+.ti -1c
+.RI "bool \fBAddFriends\fP (string[] friends)"
+.br
+.RI "Adds friends to a list on the \fBChat\fP Server which will send you status updates for those\&. "
+.ti -1c
+.RI "bool \fBRemoveFriends\fP (string[] friends)"
+.br
+.RI "Removes the provided entries from the list on the \fBChat\fP Server and stops their status updates\&. "
+.ti -1c
+.RI "string \fBGetPrivateChannelNameByUser\fP (string userName)"
+.br
+.RI "Get you the (locally used) channel name for the chat between this client and another user\&. "
+.ti -1c
+.RI "bool \fBTryGetChannel\fP (string channelName, bool isPrivate, out \fBChatChannel\fP channel)"
+.br
+.RI "Simplified access to either private or public channels by name\&. "
+.ti -1c
+.RI "bool \fBTryGetChannel\fP (string channelName, out \fBChatChannel\fP channel)"
+.br
+.RI "Simplified access to all channels by name\&. "
+.ti -1c
+.RI "bool \fBTryGetPrivateChannelByUser\fP (string userId, out \fBChatChannel\fP channel)"
+.br
+.RI "Simplified access to private channels by target user\&. "
+.ti -1c
+.RI "bool \fBSubscribe\fP (string channel, int lastMsgId=0, int messagesFromHistory=\-1, \fBChannelCreationOptions\fP creationOptions=null)"
+.br
+.RI "Subscribe to a single channel and optionally sets its well-know channel properties in case the channel is created\&. "
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBMessageLimit\fP"
+.br
+.RI "If greater than 0, new channels will limit the number of messages they cache locally\&. "
+.ti -1c
+.RI "int \fBPrivateChatHistoryLength\fP = \-1"
+.br
+.RI "Limits the number of messages from private channel histories\&. "
+.ti -1c
+.RI "readonly Dictionary< string, \fBChatChannel\fP > \fBPublicChannels\fP"
+.br
+.RI "Public channels this client is subscribed to\&. "
+.ti -1c
+.RI "readonly Dictionary< string, \fBChatChannel\fP > \fBPrivateChannels\fP"
+.br
+.RI "Private channels in which this client has exchanged messages\&. "
+.ti -1c
+.RI "\fBChatPeer\fP \fBchatPeer\fP = null"
+.br
+.RI "The \fBChat\fP Peer used by this client\&. "
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "const int \fBDefaultMaxSubscribers\fP = 100"
+.br
+.RI "Default maximum value possible for \fBChatChannel\&.MaxSubscribers\fP when \fBChatChannel\&.PublishSubscribers\fP is enabled"
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "bool \fBEnableProtocolFallback\fP\fC [getset]\fP"
+.br
+.RI "Enables a fallback to another protocol in case a connect to the Name Server fails\&. "
+.ti -1c
+.RI "string \fBNameServerAddress\fP\fC [get]\fP"
+.br
+.RI "The address of last connected Name Server\&."
+.ti -1c
+.RI "string \fBFrontendAddress\fP\fC [get]\fP"
+.br
+.RI "The address of the actual chat server assigned from NameServer\&. Public for read only\&."
+.ti -1c
+.RI "string \fBChatRegion\fP\fC [getset]\fP"
+.br
+.RI "Settable only before you connect! Defaults to 'EU'\&."
+.ti -1c
+.RI "\fBChatState\fP \fBState\fP\fC [get]\fP"
+.br
+.RI "Current state of the \fBChatClient\fP\&. Also use CanChat\&."
+.ti -1c
+.RI "\fBChatDisconnectCause\fP \fBDisconnectedCause\fP\fC [get]\fP"
+.br
+.RI "Disconnection cause\&. Check this inside \fBIChatClientListener\&.OnDisconnected\fP\&. "
+.ti -1c
+.RI "bool \fBCanChat\fP\fC [get]\fP"
+.br
+.RI "Checks if this client is ready to send messages\&. "
+.ti -1c
+.RI "string \fBAppVersion\fP\fC [get]\fP"
+.br
+.RI "The version of your client\&. A new version also creates a new 'virtual app' to separate players from older client versions\&."
+.ti -1c
+.RI "string \fBAppId\fP\fC [get]\fP"
+.br
+.RI "The AppID as assigned from the \fBPhoton\fP Cloud\&."
+.ti -1c
+.RI "\fBAuthenticationValues\fP \fBAuthValues\fP\fC [getset]\fP"
+.br
+.RI "Settable only before you connect!"
+.ti -1c
+.RI "string? \fBUserId\fP\fC [get]\fP"
+.br
+.RI "The unique ID of a user/person, stored in AuthValues\&.UserId\&. "
+.ti -1c
+.RI "bool \fBUseBackgroundWorkerForSending\fP\fC [getset]\fP"
+.br
+.RI "Defines if a background thread will call SendOutgoingCommands, while your code calls Service to dispatch received messages\&. "
+.ti -1c
+.RI "ConnectionProtocol? \fBTransportProtocol\fP\fC [getset]\fP"
+.br
+.RI "Exposes the TransportProtocol of the used PhotonPeer\&. Settable while not connected\&."
+.ti -1c
+.RI "Dictionary< ConnectionProtocol, Type > \fBSocketImplementationConfig\fP\fC [get]\fP"
+.br
+.RI "Defines which IPhotonSocket class to use per ConnectionProtocol\&. "
+.ti -1c
+.RI "DebugLevel \fBDebugOut\fP\fC [getset]\fP"
+.br
+.RI "Sets the level (and amount) of debug output provided by the library\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Central class of the \fBPhoton\fP \fBChat\fP API to connect, handle channels and messages\&. 
+
+This class must be instantiated with a \fBIChatClientListener\fP instance to get the callbacks\&. Integrate it into your game loop by calling Service regularly\&. If the target platform supports Threads/Tasks, set UseBackgroundWorkerForSending = true, to let the \fBChatClient\fP keep the connection by sending from an independent thread\&.
+.PP
+Call Connect with an AppId that is setup as \fBPhoton\fP \fBChat\fP application\&. Note: Connect covers multiple messages between this client and the servers\&. A short workflow will connect you to a chat server\&.
+.PP
+Each \fBChatClient\fP resembles a user in chat (set in Connect)\&. Each user automatically subscribes a channel for incoming private messages and can message any other user privately\&. Before you publish messages in any non-private channel, that channel must be subscribed\&.
+.PP
+PublicChannels is a list of subscribed channels, containing messages and senders\&. PrivateChannels contains all incoming and sent private messages\&. 
+.PP
+Definition at line \fB41\fP of file \fBChatClient\&.cs\fP\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Photon\&.Chat\&.ChatClient\&.ChatClient (\fBIChatClientListener\fP listener, ConnectionProtocol protocol = \fCConnectionProtocol\&.Udp\fP)"
+
+.PP
+\fBChat\fP client constructor\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIlistener\fP The chat listener implementation\&.
+.br
+\fIprotocol\fP Connection protocol to be used by this client\&. Default is ConnectionProtocol\&.Udp\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB220\fP of file \fBChatClient\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "bool Photon\&.Chat\&.ChatClient\&.AddFriends (string[] friends)"
+
+.PP
+Adds friends to a list on the \fBChat\fP Server which will send you status updates for those\&. AddFriends and RemoveFriends enable clients to handle their friend list in the \fBPhoton\fP \fBChat\fP server\&. Having users on your friends list gives you access to their current online status (and whatever info your client sets in it)\&.
+.PP
+Each user can set an online status consisting of an integer and an arbitrary (serializable) object\&. The object can be null, Hashtable, object[] or anything else \fBPhoton\fP can serialize\&.
+.PP
+The status is published automatically to friends (anyone who set your user ID with AddFriends)\&.
+.PP
+\fBPhoton\fP flushes friends-list when a chat client disconnects, so it has to be set each time\&. If your community API gives you access to online status already, you could filter and set online friends in AddFriends\&.
+.PP
+Actual friend relations are not persistent and have to be stored outside of \fBPhoton\fP\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIfriends\fP Array of friend userIds\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the operation could be sent\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB764\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.CanChatInChannel (string channelName)"
+
+.PP
+Checks if this client is ready to publish messages inside a public channel\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannelName\fP The channel to do the check with\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Whether or not this client is ready to publish messages inside the public channel with the specified channelName\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB94\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Connect (string appId, string appVersion, \fBAuthenticationValues\fP authValues)"
+
+.PP
+Connects this client to the \fBPhoton\fP \fBChat\fP Cloud service, which will also authenticate the user (and set a UserId)\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIappId\fP Get your \fBPhoton\fP \fBChat\fP AppId from the \fCDashboard\fP\&.
+.br
+\fIappVersion\fP Any version string you make up\&. Used to separate users and variants of your clients, which might be incompatible\&.
+.br
+\fIauthValues\fP Values for authentication\&. You can leave this null, if you set a UserId before\&. If you set authValues, they will override any UserId set before\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+.RE
+.PP
+
+.PP
+Definition at line \fB269\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.ConnectAndSetStatus (string appId, string appVersion, \fBAuthenticationValues\fP authValues, int status = \fC\fBChatUserStatus\&.Online\fP\fP, object message = \fCnull\fP)"
+
+.PP
+Connects this client to the \fBPhoton\fP \fBChat\fP Cloud service, which will also authenticate the user (and set a UserId)\&. This also sets an online status once connected\&. By default it will set user status to \fBChatUserStatus\&.Online\fP\&. See \fBSetOnlineStatus(int,object)\fP for more information\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIappId\fP Get your \fBPhoton\fP \fBChat\fP AppId from the \fCDashboard\fP\&.
+.br
+\fIappVersion\fP Any version string you make up\&. Used to separate users and variants of your clients, which might be incompatible\&.
+.br
+\fIauthValues\fP Values for authentication\&. You can leave this null, if you set a UserId before\&. If you set authValues, they will override any UserId set before\&.
+.br
+\fIstatus\fP User status to set when connected\&. Predefined states are in class \fBChatUserStatus\fP\&. Other values can be used at will\&.
+.br
+\fImessage\fP Optional status Also sets a status-message which your friends can get\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the connection attempt could be sent at all\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB329\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.ConnectUsingSettings (\fBChatAppSettings\fP appSettings)"
+
+.PP
+Definition at line \fB235\fP of file \fBChatClient\&.cs\fP\&.
+.SS "void Photon\&.Chat\&.ChatClient\&.Disconnect (\fBChatDisconnectCause\fP cause = \fC\fBChatDisconnectCause\&.DisconnectByClientLogic\fP\fP)"
+
+.PP
+Disconnects from the \fBChat\fP Server by sending a 'disconnect command', which prevents a timeout server-side\&. 
+.PP
+Definition at line \fB389\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string Photon\&.Chat\&.ChatClient\&.GetPrivateChannelNameByUser (string userName)"
+
+.PP
+Get you the (locally used) channel name for the chat between this client and another user\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIuserName\fP Remote user's name or UserId\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+The (locally used) channel name for a private channel\&.
+.RE
+.PP
+.PP
+Do not subscribe to this channel\&. Private channels do not need to be explicitly subscribed to\&. Use this for debugging purposes mainly\&.
+.PP
+Definition at line \fB886\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.PublishMessage (string channelName, object message, bool forwardAsWebhook = \fCfalse\fP)"
+
+.PP
+Sends a message to a public channel which this client subscribed to\&. Before you publish to a channel, you have to subscribe it\&. Everyone in that channel will get the message\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannelName\fP Name of the channel to publish to\&.
+.br
+\fImessage\fP Your message (string or any serializable data)\&.
+.br
+\fIforwardAsWebhook\fP Optionally, public messages can be forwarded as webhooks\&. Configure webhooks for your \fBChat\fP app to use this\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+False if the client is not yet ready to send messages\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB555\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.RemoveFriends (string[] friends)"
+
+.PP
+Removes the provided entries from the list on the \fBChat\fP Server and stops their status updates\&. \fBPhoton\fP flushes friends-list when a chat client disconnects\&. Unless you want to remove individual entries, you don't have to RemoveFriends\&.
+.PP
+AddFriends and RemoveFriends enable clients to handle their friend list in the \fBPhoton\fP \fBChat\fP server\&. Having users on your friends list gives you access to their current online status (and whatever info your client sets in it)\&.
+.PP
+Each user can set an online status consisting of an integer and an arbitratry (serializable) object\&. The object can be null, Hashtable, object[] or anything else \fBPhoton\fP can serialize\&.
+.PP
+The status is published automatically to friends (anyone who set your user ID with AddFriends)\&.
+.PP
+\fBPhoton\fP flushes friends-list when a chat client disconnects, so it has to be set each time\&. If your community API gives you access to online status already, you could filter and set online friends in AddFriends\&.
+.PP
+Actual friend relations are not persistent and have to be stored outside of \fBPhoton\fP\&.
+.PP
+AddFriends and RemoveFriends enable clients to handle their friend list in the \fBPhoton\fP \fBChat\fP server\&. Having users on your friends list gives you access to their current online status (and whatever info your client sets in it)\&.
+.PP
+Each user can set an online status consisting of an integer and an arbitratry (serializable) object\&. The object can be null, Hashtable, object[] or anything else \fBPhoton\fP can serialize\&.
+.PP
+The status is published automatically to friends (anyone who set your user ID with AddFriends)\&.
+.PP
+Actual friend relations are not persistent and have to be stored outside of \fBPhoton\fP\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIfriends\fP Array of friend userIds\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the operation could be sent\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB842\fP of file \fBChatClient\&.cs\fP\&.
+.SS "void Photon\&.Chat\&.ChatClient\&.SendAcksOnly ()"
+
+.PP
+Obsolete: Better use UseBackgroundWorkerForSending and \fBService()\fP\&. 
+.PP
+Definition at line \fB380\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.SendPrivateMessage (string target, object message, bool encrypt, bool forwardAsWebhook)"
+
+.PP
+Sends a private message to a single target user\&. Calls OnPrivateMessage on the receiving client\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fItarget\fP Username to send this message to\&.
+.br
+\fImessage\fP The message you want to send\&. Can be a simple string or anything serializable\&.
+.br
+\fIencrypt\fP Optionally, private messages can be encrypted\&. Encryption is not end-to-end as the server decrypts the message\&.
+.br
+\fIforwardAsWebhook\fP Optionally, private messages can be forwarded as webhooks\&. Configure webhooks for your \fBChat\fP app to use this\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if this clients can send the message to the server\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB618\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.SendPrivateMessage (string target, object message, bool forwardAsWebhook = \fCfalse\fP)"
+
+.PP
+Sends a private message to a single target user\&. Calls OnPrivateMessage on the receiving client\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fItarget\fP Username to send this message to\&.
+.br
+\fImessage\fP The message you want to send\&. Can be a simple string or anything serializable\&.
+.br
+\fIforwardAsWebhook\fP Optionally, private messages can be forwarded as webhooks\&. Configure webhooks for your \fBChat\fP app to use this\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if this clients can send the message to the server\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB605\fP of file \fBChatClient\&.cs\fP\&.
+.SS "void Photon\&.Chat\&.ChatClient\&.Service ()"
+
+.PP
+Must be called regularly to keep connection between client and server alive and to process incoming messages\&. This method limits the effort it does automatically using the private variable msDeltaForServiceCalls\&. That value is lower for connect and multiplied by 4 when chat-server connection is ready\&. 
+.PP
+Definition at line \fB344\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.SetOnlineStatus (int status)"
+
+.PP
+Sets the user's status without changing your status-message\&. The predefined status values can be found in class \fBChatUserStatus\fP\&. State \fBChatUserStatus\&.Invisible\fP will make you offline for everyone and send no message\&.
+.PP
+You can set custom values in the status integer\&. Aside from the pre-configured ones, all states will be considered visible and online\&. Else, no one would see the custom state\&.
+.PP
+This overload does not change the set message\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIstatus\fP Predefined states are in class \fBChatUserStatus\fP\&. Other values can be used at will\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if the operation gets called on the server\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB716\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.SetOnlineStatus (int status, object message)"
+
+.PP
+Sets the user's status without changing your status-message\&. The predefined status values can be found in class \fBChatUserStatus\fP\&. State \fBChatUserStatus\&.Invisible\fP will make you offline for everyone and send no message\&.
+.PP
+You can set custom values in the status integer\&. Aside from the pre-configured ones, all states will be considered visible and online\&. Else, no one would see the custom state\&.
+.PP
+The message object can be anything that \fBPhoton\fP can serialize, including (but not limited to) Hashtable, object[] and string\&. This value is defined by your own conventions\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIstatus\fP Predefined states are in class \fBChatUserStatus\fP\&. Other values can be used at will\&.
+.br
+\fImessage\fP Also sets a status-message which your friends can get\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if the operation gets called on the server\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB735\fP of file \fBChatClient\&.cs\fP\&.
+.SS "void Photon\&.Chat\&.ChatClient\&.StopThread ()"
+
+.PP
+Locally shuts down the connection to the \fBChat\fP Server\&. This resets states locally but the server will have to timeout this peer\&. 
+.PP
+Definition at line \fB402\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Subscribe (string channel, int lastMsgId = \fC0\fP, int messagesFromHistory = \fC\-1\fP, \fBChannelCreationOptions\fP creationOptions = \fCnull\fP)"
+
+.PP
+Subscribe to a single channel and optionally sets its well-know channel properties in case the channel is created\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannel\fP name of the channel to subscribe to
+.br
+\fIlastMsgId\fP ID of the last received message from this channel when re subscribing to receive only missed messages, default is 0
+.br
+\fImessagesFromHistory\fP how many missed messages to receive from history, default is -1 (available history)\&. 0 will get you no items\&. Positive values are capped by a server side limit\&.
+.br
+\fIcreationOptions\fP options to be used in case the channel to subscribe to will be created\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+.RE
+.PP
+
+.PP
+Definition at line \fB1586\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Subscribe (string[] channels)"
+
+.PP
+Sends operation to subscribe to a list of channels by name\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannels\fP List of channels to subscribe to\&. Avoid null or empty values\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the operation could be sent at all (Example: Fails if not connected to \fBChat\fP Server)\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB413\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Subscribe (string[] channels, int messagesFromHistory)"
+
+.PP
+Sends operation to subscribe client to channels, optionally fetching a number of messages from the cache\&. Subscribes channels will forward new messages to this user\&. Use PublishMessage to do so\&. The messages cache is limited but can be useful to get into ongoing conversations, if that's needed\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannels\fP List of channels to subscribe to\&. Avoid null or empty values\&.
+.br
+\fImessagesFromHistory\fP 0: no history\&. 1 and higher: number of messages in history\&. -1: all available history\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the operation could be sent at all (Example: Fails if not connected to \fBChat\fP Server)\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB485\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Subscribe (string[] channels, int[] lastMsgIds)"
+
+.PP
+Sends operation to subscribe to a list of channels by name and possibly retrieve messages we did not receive while unsubscribed\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannels\fP List of channels to subscribe to\&. Avoid null or empty values\&.
+.br
+\fIlastMsgIds\fP ID of last message received per channel\&. Useful when re subscribing to receive only messages we missed\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+If the operation could be sent at all (Example: Fails if not connected to \fBChat\fP Server)\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB424\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.TryGetChannel (string channelName, bool isPrivate, out \fBChatChannel\fP channel)"
+
+.PP
+Simplified access to either private or public channels by name\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannelName\fP Name of the channel to get\&. For private channels, the channel-name is composed of both user's names\&.
+.br
+\fIisPrivate\fP Define if you expect a private or public channel\&.
+.br
+\fIchannel\fP Out parameter gives you the found channel, if any\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if the channel was found\&.
+.RE
+.PP
+.PP
+Public channels exist only when subscribed to them\&. Private channels exist only when at least one message is exchanged with the target user privately\&.
+.PP
+Definition at line \fB900\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.TryGetChannel (string channelName, out \fBChatChannel\fP channel)"
+
+.PP
+Simplified access to all channels by name\&. Checks public channels first, then private ones\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannelName\fP Name of the channel to get\&.
+.br
+\fIchannel\fP Out parameter gives you the found channel, if any\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if the channel was found\&.
+.RE
+.PP
+.PP
+Public channels exist only when subscribed to them\&. Private channels exist only when at least one message is exchanged with the target user privately\&.
+.PP
+Definition at line \fB920\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.TryGetPrivateChannelByUser (string userId, out \fBChatChannel\fP channel)"
+
+.PP
+Simplified access to private channels by target user\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIuserId\fP UserId of the target user in the private channel\&.
+.br
+\fIchannel\fP Out parameter gives you the found channel, if any\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+True if the channel was found\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB936\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.Unsubscribe (string[] channels)"
+
+.PP
+Unsubscribes from a list of channels, which stops getting messages from those\&. The client will remove these channels from the PublicChannels dictionary once the server sent a response to this request\&.
+.PP
+The request will be sent to the server and \fBIChatClientListener\&.OnUnsubscribed\fP gets called when the server actually removed the channel subscriptions\&.
+.PP
+Unsubscribe will fail if you include null or empty channel names\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIchannels\fP Names of channels to unsubscribe\&.
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+False, if not connected to a chat server\&.
+.RE
+.PP
+
+.PP
+Definition at line \fB519\fP of file \fBChatClient\&.cs\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "\fBChatPeer\fP Photon\&.Chat\&.ChatClient\&.chatPeer = null"
+
+.PP
+The \fBChat\fP Peer used by this client\&. 
+.PP
+Definition at line \fB164\fP of file \fBChatClient\&.cs\fP\&.
+.SS "const int Photon\&.Chat\&.ChatClient\&.DefaultMaxSubscribers = 100\fC [static]\fP"
+
+.PP
+Default maximum value possible for \fBChatChannel\&.MaxSubscribers\fP when \fBChatChannel\&.PublishSubscribers\fP is enabled
+.PP
+Definition at line \fB46\fP of file \fBChatClient\&.cs\fP\&.
+.SS "int Photon\&.Chat\&.ChatClient\&.MessageLimit"
+
+.PP
+If greater than 0, new channels will limit the number of messages they cache locally\&. This can be useful to limit the amount of memory used by chats\&. You can set a MessageLimit per channel but this value gets applied to new ones\&.
+.PP
+Note: Changing this value, does not affect ChatChannels that are already in use! 
+.PP
+Definition at line \fB142\fP of file \fBChatClient\&.cs\fP\&.
+.SS "readonly Dictionary<string, \fBChatChannel\fP> Photon\&.Chat\&.ChatClient\&.PrivateChannels"
+
+.PP
+Private channels in which this client has exchanged messages\&. 
+.PP
+Definition at line \fB156\fP of file \fBChatClient\&.cs\fP\&.
+.SS "int Photon\&.Chat\&.ChatClient\&.PrivateChatHistoryLength = \-1"
+
+.PP
+Limits the number of messages from private channel histories\&. This is applied to all private channels on reconnect, as there is no explicit re-joining private channels\&.
+.br
+ Default is -1, which gets available messages up to a maximum set by the server\&.
+.br
+ A value of 0 gets you zero messages\&.
+.br
+ The server's limit of messages may be lower\&. If so, the server's value will overrule this\&.
+.br
+ 
+.PP
+Definition at line \fB151\fP of file \fBChatClient\&.cs\fP\&.
+.SS "readonly Dictionary<string, \fBChatChannel\fP> Photon\&.Chat\&.ChatClient\&.PublicChannels"
+
+.PP
+Public channels this client is subscribed to\&. 
+.PP
+Definition at line \fB154\fP of file \fBChatClient\&.cs\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "string Photon\&.Chat\&.ChatClient\&.AppId\fC [get]\fP"
+
+.PP
+The AppID as assigned from the \fBPhoton\fP Cloud\&.
+.PP
+Definition at line \fB108\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string Photon\&.Chat\&.ChatClient\&.AppVersion\fC [get]\fP"
+
+.PP
+The version of your client\&. A new version also creates a new 'virtual app' to separate players from older client versions\&.
+.PP
+Definition at line \fB105\fP of file \fBChatClient\&.cs\fP\&.
+.SS "\fBAuthenticationValues\fP Photon\&.Chat\&.ChatClient\&.AuthValues\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Settable only before you connect!
+.PP
+Definition at line \fB112\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.CanChat\fC [get]\fP"
+
+.PP
+Checks if this client is ready to send messages\&. 
+.PP
+Definition at line \fB85\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string Photon\&.Chat\&.ChatClient\&.ChatRegion\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Settable only before you connect! Defaults to 'EU'\&.
+.PP
+Definition at line \fB71\fP of file \fBChatClient\&.cs\fP\&.
+.SS "DebugLevel Photon\&.Chat\&.ChatClient\&.DebugOut\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Sets the level (and amount) of debug output provided by the library\&. This affects the callbacks to \fBIChatClientListener\&.DebugReturn\fP\&. Default Level: Error\&. 
+.PP
+Definition at line \fB954\fP of file \fBChatClient\&.cs\fP\&.
+.SS "\fBChatDisconnectCause\fP Photon\&.Chat\&.ChatClient\&.DisconnectedCause\fC [get]\fP"
+
+.PP
+Disconnection cause\&. Check this inside \fBIChatClientListener\&.OnDisconnected\fP\&. 
+.PP
+Definition at line \fB81\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.EnableProtocolFallback\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Enables a fallback to another protocol in case a connect to the Name Server fails\&. When connecting to the Name Server fails for a first time, the client will select an alternative network protocol and re-try to connect\&.
+.PP
+The fallback will use the default Name Server port as defined by ProtocolToNameServerPort\&.
+.PP
+The fallback for TCP is UDP\&. All other protocols fallback to TCP\&. 
+.PP
+Definition at line \fB59\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string Photon\&.Chat\&.ChatClient\&.FrontendAddress\fC [get]\fP"
+
+.PP
+The address of the actual chat server assigned from NameServer\&. Public for read only\&.
+.PP
+Definition at line \fB65\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string Photon\&.Chat\&.ChatClient\&.NameServerAddress\fC [get]\fP"
+
+.PP
+The address of last connected Name Server\&.
+.PP
+Definition at line \fB62\fP of file \fBChatClient\&.cs\fP\&.
+.SS "Dictionary<ConnectionProtocol, Type> Photon\&.Chat\&.ChatClient\&.SocketImplementationConfig\fC [get]\fP"
+
+.PP
+Defines which IPhotonSocket class to use per ConnectionProtocol\&. Several platforms have special Socket implementations and slightly different APIs\&. To accomodate this, switching the socket implementation for a network protocol was made available\&. By default, UDP and TCP have socket implementations assigned\&.
+.PP
+You only need to set the SocketImplementationConfig once, after creating a PhotonPeer and before connecting\&. If you switch the TransportProtocol, the correct implementation is being used\&. 
+.PP
+Definition at line \fB210\fP of file \fBChatClient\&.cs\fP\&.
+.SS "\fBChatState\fP Photon\&.Chat\&.ChatClient\&.State\fC [get]\fP"
+
+.PP
+Current state of the \fBChatClient\fP\&. Also use CanChat\&.
+.PP
+Definition at line \fB78\fP of file \fBChatClient\&.cs\fP\&.
+.SS "ConnectionProtocol? Photon\&.Chat\&.ChatClient\&.TransportProtocol\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Exposes the TransportProtocol of the used PhotonPeer\&. Settable while not connected\&.
+.PP
+Definition at line \fB187\fP of file \fBChatClient\&.cs\fP\&.
+.SS "bool Photon\&.Chat\&.ChatClient\&.UseBackgroundWorkerForSending\fC [get]\fP, \fC [set]\fP"
+
+.PP
+Defines if a background thread will call SendOutgoingCommands, while your code calls Service to dispatch received messages\&. The benefit of using a background thread to call SendOutgoingCommands is this:
+.PP
+Even if your game logic is being paused, the background thread will keep the connection to the server up\&. On a lower level, acknowledgements and pings will prevent a server-side timeout while (e\&.g\&.) Unity loads assets\&.
+.PP
+Your game logic still has to call Service regularly, or else incoming messages are not dispatched\&. As this typically triggers UI updates, it's easier to call Service from the main/UI thread\&. 
+.PP
+Definition at line \fB184\fP of file \fBChatClient\&.cs\fP\&.
+.SS "string? Photon\&.Chat\&.ChatClient\&.UserId\fC [get]\fP"
+
+.PP
+The unique ID of a user/person, stored in AuthValues\&.UserId\&. Set it before you connect\&.
+.PP
+This value wraps AuthValues\&.UserId\&. It's not a nickname and we assume users with the same userID are the same person\&.
+.PP
+Definition at line \fB118\fP of file \fBChatClient\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

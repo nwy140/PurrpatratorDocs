@@ -1,0 +1,81 @@
+.TH "Photon.Realtime.IWebRpcCallback" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Realtime.IWebRpcCallback \- Interface for 'WebRpc' callbacks for the \fBRealtime\fP Api\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBPhoton\&.Pun\&.Demo\&.WebRpcImplementationExample\fP, \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP, and Photon\&.Realtime\&.WebRpcCallbacksContainer\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBOnWebRpcResponse\fP (OperationResponse response)"
+.br
+.RI "Called when the response to a WebRPC is available\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Interface for 'WebRpc' callbacks for the \fBRealtime\fP Api\&. 
+
+Currently includes only responses for Web RPCs\&. 
+.PP
+Classes that implement this interface must be registered to get callbacks for various situations\&.
+.PP
+To register for callbacks, call \fBLoadBalancingClient\&.AddCallbackTarget\fP and pass the class implementing this interface To stop getting callbacks, call \fBLoadBalancingClient\&.RemoveCallbackTarget\fP and pass the class implementing this interface
+.PP
+Definition at line \fB3950\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Realtime\&.IWebRpcCallback\&.OnWebRpcResponse (OperationResponse response)"
+
+.PP
+Called when the response to a WebRPC is available\&. See \fBLoadBalancingClient\&.OpWebRpc\fP\&. 
+.PP
+Important: The response\&.ReturnCode is 0 if \fBPhoton\fP was able to reach your web-service\&.
+.br
+ The content of the response is what your web-service sent\&. You can create a \fBWebRpcResponse\fP from it\&.
+.br
+ Example: \fBWebRpcResponse\fP webResponse = new WebRpcResponse(operationResponse);
+.br
+.PP
+Please note: Class OperationResponse is in a namespace which needs to be 'used':
+.br
+ using ExitGames\&.Client\&.Photon; // includes OperationResponse (and other classes) 
+.PP
+public void \fBOnWebRpcResponse(OperationResponse response)\fP { Debug\&.LogFormat('WebRPC operation response {0}', response\&.ToStringFull()); switch (response\&.ReturnCode) { case \fBErrorCode\&.Ok\fP: \fBWebRpcResponse\fP webRpcResponse = new WebRpcResponse(response); Debug\&.LogFormat('Parsed WebRPC response {0}', response\&.ToStringFull()); if (string\&.IsNullOrEmpty(webRpcResponse\&.Name)) { Debug\&.LogError('Unexpected: WebRPC response did not contain WebRPC method name'); } if (webRpcResponse\&.ResultCode == 0) // success { switch (webRpcResponse\&.Name) { // todo: add your code here case GetGameListWebRpcMethodName: // example // \&.\&.\&. break; } } else if (webRpcResponse\&.ResultCode == -1) { Debug\&.LogErrorFormat('Web server did not return ResultCode for WebRPC method=\\'{0}", Message={1}', webRpcResponse\&.Name, webRpcResponse\&.Message);
+           }
+           else
+           {
+               Debug\&.LogErrorFormat('Web server returned ResultCode={0} for WebRPC method="{1}", Message={2}', webRpcResponse\&.ResultCode, webRpcResponse\&.Name, webRpcResponse\&.Message);
+           }
+           break;
+       case ErrorCode\&.ExternalHttpCallFailed: // web service unreachable
+           Debug\&.LogErrorFormat('WebRPC call failed as request could not be sent to the server\&. {0}', response\&.DebugMessage);
+           break;
+       case ErrorCode\&.HttpLimitReached: // too many WebRPCs in a short period of time
+                                        // the debug message should contain the limit exceeded
+          Debug\&.LogErrorFormat('WebRPCs rate limit exceeded: {0}', response\&.DebugMessage);
+           break;
+      case ErrorCode\&.InvalidOperation: // WebRPC not configured at all OR not configured properly OR trying to send on name server
+         if (PhotonNetwork\&.Server == ServerConnection\&.NameServer)
+        {
+            Debug\&.LogErrorFormat('WebRPC not supported on NameServer\&. {0}', response\&.DebugMessage);
+        }
+        else
+        {
+            Debug\&.LogErrorFormat('WebRPC not properly configured or not configured at all\&. {0}', response\&.DebugMessage);
+        }
+        break;
+    default:
+        // other unknown error, unexpected
+        Debug\&.LogErrorFormat('Unexpected error, {0} {1}", response\&.ReturnCode, response\&.DebugMessage); break; } }
+.PP
+Implemented in \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP, and \fBPhoton\&.Pun\&.Demo\&.WebRpcImplementationExample\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

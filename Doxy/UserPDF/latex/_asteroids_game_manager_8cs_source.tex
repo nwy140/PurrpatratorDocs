@@ -1,0 +1,273 @@
+\doxysection{Asteroids\+Game\+Manager.\+cs}
+\label{_asteroids_game_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/AsteroidsGameManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/AsteroidsGameManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}AsteroidsGameManager.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Asteroid demo}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Game Manager for the Asteroid Demo}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{namespace }Photon.Pun.Demo.Asteroids}
+\DoxyCodeLine{00021 \{}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }AsteroidsGameManager : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} AsteroidsGameManager Instance = \textcolor{keyword}{null};}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} Text InfoText;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} GameObject[] AsteroidPrefabs;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             Instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             base.OnEnable();}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             CountdownTimer.OnCountdownTimerHasExpired += OnCountdownTimerIsExpired;}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             Hashtable props = \textcolor{keyword}{new} Hashtable}
+\DoxyCodeLine{00047             \{}
+\DoxyCodeLine{00048                 \{AsteroidsGame.PLAYER\_LOADED\_LEVEL, \textcolor{keyword}{true}\}}
+\DoxyCodeLine{00049             \};}
+\DoxyCodeLine{00050             PhotonNetwork.LocalPlayer.SetCustomProperties(props);}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             base.OnDisable();}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             CountdownTimer.OnCountdownTimerHasExpired -\/= OnCountdownTimerIsExpired;}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 \textcolor{preprocessor}{        \#region COROUTINES}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         \textcolor{keyword}{private} IEnumerator SpawnAsteroid()}
+\DoxyCodeLine{00065         \{}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{while} (\textcolor{keyword}{true})}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(Random.Range(AsteroidsGame.ASTEROIDS\_MIN\_SPAWN\_TIME, AsteroidsGame.ASTEROIDS\_MAX\_SPAWN\_TIME));}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070                 Vector2 direction = Random.insideUnitCircle;}
+\DoxyCodeLine{00071                 Vector3 position = Vector3.zero;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{if} (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))}
+\DoxyCodeLine{00074                 \{}
+\DoxyCodeLine{00075                     \textcolor{comment}{// Make it appear on the left/right side}}
+\DoxyCodeLine{00076                     position = \textcolor{keyword}{new} Vector3(Mathf.Sign(direction.x) * Camera.main.orthographicSize * Camera.main.aspect, 0, direction.y * Camera.main.orthographicSize);}
+\DoxyCodeLine{00077                 \}}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00079                 \{}
+\DoxyCodeLine{00080                     \textcolor{comment}{// Make it appear on the top/bottom}}
+\DoxyCodeLine{00081                     position = \textcolor{keyword}{new} Vector3(direction.x * Camera.main.orthographicSize * Camera.main.aspect, 0, Mathf.Sign(direction.y) * Camera.main.orthographicSize);}
+\DoxyCodeLine{00082                 \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \textcolor{comment}{// Offset slightly so we are not out of screen at creation time (as it would destroy the asteroid right away)}}
+\DoxyCodeLine{00085                 position -\/= position.normalized * 0.1f;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                 Vector3 force = -\/position.normalized * 1000.0f;}
+\DoxyCodeLine{00089                 Vector3 torque = Random.insideUnitSphere * Random.Range(500.0f, 1500.0f);}
+\DoxyCodeLine{00090                 \textcolor{keywordtype}{object}[] instantiationData = \{force, torque, \textcolor{keyword}{true}\};}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092                 PhotonNetwork.InstantiateRoomObject(\textcolor{stringliteral}{"{}BigAsteroid"{}}, position, Quaternion.Euler(Random.value * 360.0f, Random.value * 360.0f, Random.value * 360.0f), 0, instantiationData);}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096         \textcolor{keyword}{private} IEnumerator EndOfGame(\textcolor{keywordtype}{string} winner, \textcolor{keywordtype}{int} score)}
+\DoxyCodeLine{00097         \{}
+\DoxyCodeLine{00098             \textcolor{keywordtype}{float} timer = 5.0f;}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{keywordflow}{while} (timer > 0.0f)}
+\DoxyCodeLine{00101             \{}
+\DoxyCodeLine{00102                 InfoText.text = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Player \{0\} won with \{1\} points.\(\backslash\)n\(\backslash\)n\(\backslash\)nReturning to login screen in \{2\} seconds."{}}, winner, score, timer.ToString(\textcolor{stringliteral}{"{}n2"{}}));}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104                 yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForEndOfFrame();}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                 timer -\/= Time.deltaTime;}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             PhotonNetwork.LeaveRoom();}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114 \textcolor{preprocessor}{        \#region PUN CALLBACKS}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisconnected(DisconnectCause cause)}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             UnityEngine.SceneManagement.SceneManager.LoadScene(\textcolor{stringliteral}{"{}DemoAsteroids-\/LobbyScene"{}});}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00122         \{}
+\DoxyCodeLine{00123             PhotonNetwork.Disconnect();}
+\DoxyCodeLine{00124         \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.ActorNumber == newMasterClient.ActorNumber)}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 StartCoroutine(SpawnAsteroid());}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             CheckEndOfGame();}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00140         \{}
+\DoxyCodeLine{00141             \textcolor{keywordflow}{if} (changedProps.ContainsKey(AsteroidsGame.PLAYER\_LIVES))}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 CheckEndOfGame();}
+\DoxyCodeLine{00144                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00145             \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{keywordflow}{if} (!PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00148             \{}
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{comment}{// if there was no countdown yet, the master client (this one) waits until everyone loaded the level and sets a timer start}}
+\DoxyCodeLine{00154             \textcolor{keywordtype}{int} startTimestamp;}
+\DoxyCodeLine{00155             \textcolor{keywordtype}{bool} startTimeIsSet = CountdownTimer.TryGetStartTime(out startTimestamp);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (changedProps.ContainsKey(AsteroidsGame.PLAYER\_LOADED\_LEVEL))}
+\DoxyCodeLine{00158             \{}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{if} (CheckAllPlayerLoadedLevel())}
+\DoxyCodeLine{00160                 \{}
+\DoxyCodeLine{00161                     \textcolor{keywordflow}{if} (!startTimeIsSet)}
+\DoxyCodeLine{00162                     \{}
+\DoxyCodeLine{00163                         CountdownTimer.SetStartTime();}
+\DoxyCodeLine{00164                     \}}
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00167                 \{}
+\DoxyCodeLine{00168                     \textcolor{comment}{// not all players loaded yet. wait:}}
+\DoxyCodeLine{00169                     Debug.Log(\textcolor{stringliteral}{"{}setting text waiting for players! "{}},this.InfoText);}
+\DoxyCodeLine{00170                     InfoText.text = \textcolor{stringliteral}{"{}Waiting for other players..."{}};}
+\DoxyCodeLine{00171                 \}}
+\DoxyCodeLine{00172             \}}
+\DoxyCodeLine{00173         }
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         }
+\DoxyCodeLine{00179         \textcolor{comment}{// called by OnCountdownTimerIsExpired() when the timer ended}}
+\DoxyCodeLine{00180         \textcolor{keyword}{private} \textcolor{keywordtype}{void} StartGame()}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             Debug.Log(\textcolor{stringliteral}{"{}StartGame!"{}});}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{comment}{// on rejoin, we have to figure out if the spaceship exists or not}}
+\DoxyCodeLine{00185             \textcolor{comment}{// if this is a rejoin (the ship is already network instantiated and will be setup via event) we don't need to call PN.Instantiate}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             }
+\DoxyCodeLine{00188             \textcolor{keywordtype}{float} angularStart = (360.0f / PhotonNetwork.CurrentRoom.PlayerCount) * PhotonNetwork.LocalPlayer.GetPlayerNumber();}
+\DoxyCodeLine{00189             \textcolor{keywordtype}{float} x = 20.0f * Mathf.Sin(angularStart * Mathf.Deg2Rad);}
+\DoxyCodeLine{00190             \textcolor{keywordtype}{float} z = 20.0f * Mathf.Cos(angularStart * Mathf.Deg2Rad);}
+\DoxyCodeLine{00191             Vector3 position = \textcolor{keyword}{new} Vector3(x, 0.0f, z);}
+\DoxyCodeLine{00192             Quaternion rotation = Quaternion.Euler(0.0f, angularStart, 0.0f);}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             PhotonNetwork.Instantiate(\textcolor{stringliteral}{"{}Spaceship"{}}, position, rotation, 0);      \textcolor{comment}{// avoid this call on rejoin (ship was network instantiated before)}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00197             \{}
+\DoxyCodeLine{00198                 StartCoroutine(SpawnAsteroid());}
+\DoxyCodeLine{00199             \}}
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} CheckAllPlayerLoadedLevel()}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204             \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00205             \{}
+\DoxyCodeLine{00206                 \textcolor{keywordtype}{object} playerLoadedLevel;}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208                 \textcolor{keywordflow}{if} (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER\_LOADED\_LEVEL, out playerLoadedLevel))}
+\DoxyCodeLine{00209                 \{}
+\DoxyCodeLine{00210                     \textcolor{keywordflow}{if} ((\textcolor{keywordtype}{bool}) playerLoadedLevel)}
+\DoxyCodeLine{00211                     \{}
+\DoxyCodeLine{00212                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00213                     \}}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00217             \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00220         \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CheckEndOfGame()}
+\DoxyCodeLine{00223         \{}
+\DoxyCodeLine{00224             \textcolor{keywordtype}{bool} allDestroyed = \textcolor{keyword}{true};}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00227             \{}
+\DoxyCodeLine{00228                 \textcolor{keywordtype}{object} lives;}
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{if} (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER\_LIVES, out lives))}
+\DoxyCodeLine{00230                 \{}
+\DoxyCodeLine{00231                     \textcolor{keywordflow}{if} ((\textcolor{keywordtype}{int}) lives > 0)}
+\DoxyCodeLine{00232                     \{}
+\DoxyCodeLine{00233                         allDestroyed = \textcolor{keyword}{false};}
+\DoxyCodeLine{00234                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00235                     \}}
+\DoxyCodeLine{00236                 \}}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239             \textcolor{keywordflow}{if} (allDestroyed)}
+\DoxyCodeLine{00240             \{}
+\DoxyCodeLine{00241                 \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00242                 \{}
+\DoxyCodeLine{00243                     StopAllCoroutines();}
+\DoxyCodeLine{00244                 \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246                 \textcolor{keywordtype}{string} winner = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00247                 \textcolor{keywordtype}{int} score = -\/1;}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249                 \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00250                 \{}
+\DoxyCodeLine{00251                     \textcolor{keywordflow}{if} (p.GetScore() > score)}
+\DoxyCodeLine{00252                     \{}
+\DoxyCodeLine{00253                         winner = p.NickName;}
+\DoxyCodeLine{00254                         score = p.GetScore();}
+\DoxyCodeLine{00255                     \}}
+\DoxyCodeLine{00256                 \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                 StartCoroutine(EndOfGame(winner, score));}
+\DoxyCodeLine{00259             \}}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnCountdownTimerIsExpired()}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             StartGame();}
+\DoxyCodeLine{00265         \}}
+\DoxyCodeLine{00266     \}}
+\DoxyCodeLine{00267 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,97 @@
+\doxysection{State\+Assists.\+cs}
+\label{_state_assists_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/StateAssists.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/StateAssists.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple.Assists}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }StateAssists}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{static} SystemPresence GetSystemPresence(\textcolor{keyword}{this} GameObject go, params MonoBehaviour[] depends)}
+\DoxyCodeLine{00021         \{}
+\DoxyCodeLine{00022             var netobj = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024             var comp = go.transform.GetNestedComponentInParents<SyncState, NetObject>();}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026             \textcolor{keywordflow}{if} (comp)}
+\DoxyCodeLine{00027             \{}
+\DoxyCodeLine{00028                 \textcolor{keywordflow}{if} (!netobj)}
+\DoxyCodeLine{00029                     \textcolor{keywordflow}{return} SystemPresence.Incomplete;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00032                 \textcolor{keywordflow}{if} (netobj.gameObject != comp.gameObject)}
+\DoxyCodeLine{00033                 \{}
+\DoxyCodeLine{00034                     Object.DestroyImmediate(comp);}
+\DoxyCodeLine{00035                     \textcolor{keywordflow}{return} SystemPresence.Absent;}
+\DoxyCodeLine{00036                 \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00039                 \textcolor{keywordflow}{if} (comp.gameObject == go)}
+\DoxyCodeLine{00040                 \{}
+\DoxyCodeLine{00041                     \textcolor{keywordflow}{if} (go.GetComponent<SyncSpawnTimer>())}
+\DoxyCodeLine{00042                         \textcolor{keywordflow}{return} SystemPresence.Complete;}
+\DoxyCodeLine{00043                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00044                         \textcolor{keywordflow}{return} SystemPresence.Partial;}
+\DoxyCodeLine{00045                 \}}
+\DoxyCodeLine{00046                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00047                     \textcolor{keywordflow}{return} SystemPresence.Nested;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{return} SystemPresence.Absent;}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddSystem(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} add, params MonoBehaviour[] depends)}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (add)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 var netobj = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{if} (netobj)}
+\DoxyCodeLine{00060                     go = netobj.gameObject;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062                 var ss = go.EnsureComponentExists<SyncState>();}
+\DoxyCodeLine{00063                 ss.autoOwnerChange = \textcolor{keyword}{false};}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065                 go.EnsureComponentOnNestedChildren<OnStateChangeToggle>(\textcolor{keyword}{false});}
+\DoxyCodeLine{00066                 go.EnsureComponentExists<OnStateChangeKinematic>();}
+\DoxyCodeLine{00067                 go.EnsureComponentExists<SyncSpawnTimer>();}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 go.DestroyComponentOnNestedChildren<OnStateChangeToggle>();}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 var kin = go.GetComponent<OnStateChangeKinematic>();}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{if} (kin)}
+\DoxyCodeLine{00075                     Object.DestroyImmediate(kin);}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 var sst = go.GetComponent<SyncSpawnTimer>();}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{if} (sst)}
+\DoxyCodeLine{00079                     Object.DestroyImmediate(sst);}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081                 var ss = go.GetComponent<SyncState>();}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (ss)}
+\DoxyCodeLine{00083                     Object.DestroyImmediate(ss);}
+\DoxyCodeLine{00084             \}}
+\DoxyCodeLine{00085             }
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087         \}}
+\DoxyCodeLine{00088     \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090 \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00093 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

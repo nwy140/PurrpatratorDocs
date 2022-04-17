@@ -1,0 +1,231 @@
+\doxysection{Third\+Person\+Character.\+cs}
+\label{_third_person_character_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/Shared Assets/Scripts/ThirdPersonCharacter.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/Shared Assets/Scripts/ThirdPersonCharacter.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{namespace }UnityStandardAssets.Characters.ThirdPerson.PunDemos}
+\DoxyCodeLine{00004 \{}
+\DoxyCodeLine{00005     [RequireComponent(typeof(Rigidbody))]}
+\DoxyCodeLine{00006     [RequireComponent(typeof(CapsuleCollider))]}
+\DoxyCodeLine{00007     [RequireComponent(typeof(Animator))]}
+\DoxyCodeLine{00008     \textcolor{keyword}{public} \textcolor{keyword}{class }ThirdPersonCharacter : MonoBehaviour}
+\DoxyCodeLine{00009     \{}
+\DoxyCodeLine{00010         [SerializeField] \textcolor{keywordtype}{float} m\_MovingTurnSpeed = 360;}
+\DoxyCodeLine{00011         [SerializeField] \textcolor{keywordtype}{float} m\_StationaryTurnSpeed = 180;}
+\DoxyCodeLine{00012         [SerializeField] \textcolor{keywordtype}{float} m\_JumpPower = 12f;}
+\DoxyCodeLine{00013         [Range(1f, 4f)][SerializeField] \textcolor{keywordtype}{float} m\_GravityMultiplier = 2f;}
+\DoxyCodeLine{00014         [SerializeField] \textcolor{keywordtype}{float} m\_RunCycleLegOffset = 0.2f; \textcolor{comment}{//specific to the character in sample assets, will need to be modified to work with others}}
+\DoxyCodeLine{00015         [SerializeField] \textcolor{keywordtype}{float} m\_MoveSpeedMultiplier = 1f;}
+\DoxyCodeLine{00016         [SerializeField] \textcolor{keywordtype}{float} m\_AnimSpeedMultiplier = 1f;}
+\DoxyCodeLine{00017         [SerializeField] \textcolor{keywordtype}{float} m\_GroundCheckDistance = 0.1f;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         Rigidbody m\_Rigidbody;}
+\DoxyCodeLine{00020         Animator m\_Animator;}
+\DoxyCodeLine{00021         \textcolor{keywordtype}{bool} m\_IsGrounded;}
+\DoxyCodeLine{00022         \textcolor{keywordtype}{float} m\_OrigGroundCheckDistance;}
+\DoxyCodeLine{00023         \textcolor{keyword}{const} \textcolor{keywordtype}{float} k\_Half = 0.5f;}
+\DoxyCodeLine{00024         \textcolor{keywordtype}{float} m\_TurnAmount;}
+\DoxyCodeLine{00025         \textcolor{keywordtype}{float} m\_ForwardAmount;}
+\DoxyCodeLine{00026         Vector3 m\_GroundNormal;}
+\DoxyCodeLine{00027         \textcolor{keywordtype}{float} m\_CapsuleHeight;}
+\DoxyCodeLine{00028         Vector3 m\_CapsuleCenter;}
+\DoxyCodeLine{00029         CapsuleCollider m\_Capsule;}
+\DoxyCodeLine{00030         \textcolor{keywordtype}{bool} m\_Crouching;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             m\_Animator = GetComponent<Animator>();}
+\DoxyCodeLine{00036             m\_Rigidbody = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00037             m\_Capsule = GetComponent<CapsuleCollider>();}
+\DoxyCodeLine{00038             m\_CapsuleHeight = m\_Capsule.height;}
+\DoxyCodeLine{00039             m\_CapsuleCenter = m\_Capsule.center;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             m\_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;}
+\DoxyCodeLine{00042             m\_OrigGroundCheckDistance = m\_GroundCheckDistance;}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Vector3 move, \textcolor{keywordtype}{bool} crouch, \textcolor{keywordtype}{bool} jump)}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             \textcolor{comment}{// convert the world relative moveInput vector into a local-\/relative}}
+\DoxyCodeLine{00050             \textcolor{comment}{// turn amount and forward amount required to head in the desired}}
+\DoxyCodeLine{00051             \textcolor{comment}{// direction.}}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{if} (move.magnitude > 1f) move.Normalize();}
+\DoxyCodeLine{00053             move = transform.InverseTransformDirection(move);}
+\DoxyCodeLine{00054             CheckGroundStatus();}
+\DoxyCodeLine{00055             move = Vector3.ProjectOnPlane(move, m\_GroundNormal);}
+\DoxyCodeLine{00056             m\_TurnAmount = Mathf.Atan2(move.x, move.z);}
+\DoxyCodeLine{00057             m\_ForwardAmount = move.z;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             ApplyExtraTurnRotation();}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{comment}{// control and velocity handling is different when grounded and airborne:}}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (m\_IsGrounded)}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 HandleGroundedMovement(crouch, jump);}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 HandleAirborneMovement();}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             ScaleCapsuleForCrouching(crouch);}
+\DoxyCodeLine{00072             PreventStandingInLowHeadroom();}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             \textcolor{comment}{// send input and other state parameters to the animator}}
+\DoxyCodeLine{00075             UpdateAnimator(move);}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keywordtype}{void} ScaleCapsuleForCrouching(\textcolor{keywordtype}{bool} crouch)}
+\DoxyCodeLine{00080         \{}
+\DoxyCodeLine{00081             \textcolor{keywordflow}{if} (m\_IsGrounded \&\& crouch)}
+\DoxyCodeLine{00082             \{}
+\DoxyCodeLine{00083                 \textcolor{keywordflow}{if} (m\_Crouching) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00084                 m\_Capsule.height = m\_Capsule.height / 2f;}
+\DoxyCodeLine{00085                 m\_Capsule.center = m\_Capsule.center / 2f;}
+\DoxyCodeLine{00086                 m\_Crouching = \textcolor{keyword}{true};}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089             \{}
+\DoxyCodeLine{00090                 Ray crouchRay = \textcolor{keyword}{new} Ray(m\_Rigidbody.position + Vector3.up * m\_Capsule.radius * k\_Half, Vector3.up);}
+\DoxyCodeLine{00091                 \textcolor{keywordtype}{float} crouchRayLength = m\_CapsuleHeight -\/ m\_Capsule.radius * k\_Half;}
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{if} (Physics.SphereCast(crouchRay, m\_Capsule.radius * k\_Half, crouchRayLength, Physics.AllLayers, QueryTriggerInteraction.Ignore))}
+\DoxyCodeLine{00093                 \{}
+\DoxyCodeLine{00094                     m\_Crouching = \textcolor{keyword}{true};}
+\DoxyCodeLine{00095                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00096                 \}}
+\DoxyCodeLine{00097                 m\_Capsule.height = m\_CapsuleHeight;}
+\DoxyCodeLine{00098                 m\_Capsule.center = m\_CapsuleCenter;}
+\DoxyCodeLine{00099                 m\_Crouching = \textcolor{keyword}{false};}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keywordtype}{void} PreventStandingInLowHeadroom()}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             \textcolor{comment}{// prevent standing up in crouch-\/only zones}}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (!m\_Crouching)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 Ray crouchRay = \textcolor{keyword}{new} Ray(m\_Rigidbody.position + Vector3.up * m\_Capsule.radius * k\_Half, Vector3.up);}
+\DoxyCodeLine{00109                 \textcolor{keywordtype}{float} crouchRayLength = m\_CapsuleHeight -\/ m\_Capsule.radius * k\_Half;}
+\DoxyCodeLine{00110                 \textcolor{keywordflow}{if} (Physics.SphereCast(crouchRay, m\_Capsule.radius * k\_Half, crouchRayLength, Physics.AllLayers, QueryTriggerInteraction.Ignore))}
+\DoxyCodeLine{00111                 \{}
+\DoxyCodeLine{00112                     m\_Crouching = \textcolor{keyword}{true};}
+\DoxyCodeLine{00113                 \}}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118         \textcolor{keywordtype}{void} UpdateAnimator(Vector3 move)}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{comment}{// update the animator parameters}}
+\DoxyCodeLine{00121             m\_Animator.SetFloat(\textcolor{stringliteral}{"{}Forward"{}}, m\_ForwardAmount, 0.1f, Time.deltaTime);}
+\DoxyCodeLine{00122             m\_Animator.SetFloat(\textcolor{stringliteral}{"{}Turn"{}}, m\_TurnAmount, 0.1f, Time.deltaTime);}
+\DoxyCodeLine{00123             m\_Animator.SetBool(\textcolor{stringliteral}{"{}Crouch"{}}, m\_Crouching);}
+\DoxyCodeLine{00124             m\_Animator.SetBool(\textcolor{stringliteral}{"{}OnGround"{}}, m\_IsGrounded);}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{if} (!m\_IsGrounded)}
+\DoxyCodeLine{00126             \{}
+\DoxyCodeLine{00127                 m\_Animator.SetFloat(\textcolor{stringliteral}{"{}Jump"{}}, m\_Rigidbody.velocity.y);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130             \textcolor{comment}{// calculate which leg is behind, so as to leave that leg trailing in the jump animation}}
+\DoxyCodeLine{00131             \textcolor{comment}{// (This code is reliant on the specific run cycle offset in our animations,}}
+\DoxyCodeLine{00132             \textcolor{comment}{// and assumes one leg passes the other at the normalized clip times of 0.0 and 0.5)}}
+\DoxyCodeLine{00133             \textcolor{keywordtype}{float} runCycle =}
+\DoxyCodeLine{00134                 Mathf.Repeat(}
+\DoxyCodeLine{00135                     m\_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m\_RunCycleLegOffset, 1);}
+\DoxyCodeLine{00136             \textcolor{keywordtype}{float} jumpLeg = (runCycle < k\_Half ? 1 : -\/1) * m\_ForwardAmount;}
+\DoxyCodeLine{00137             \textcolor{keywordflow}{if} (m\_IsGrounded)}
+\DoxyCodeLine{00138             \{}
+\DoxyCodeLine{00139                 m\_Animator.SetFloat(\textcolor{stringliteral}{"{}JumpLeg"{}}, jumpLeg);}
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             \textcolor{comment}{// the anim speed multiplier allows the overall speed of walking/running to be tweaked in the inspector,}}
+\DoxyCodeLine{00143             \textcolor{comment}{// which affects the movement speed because of the root motion.}}
+\DoxyCodeLine{00144             \textcolor{keywordflow}{if} (m\_IsGrounded \&\& move.magnitude > 0)}
+\DoxyCodeLine{00145             \{}
+\DoxyCodeLine{00146                 m\_Animator.speed = m\_AnimSpeedMultiplier;}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 \textcolor{comment}{// don't use that while airborne}}
+\DoxyCodeLine{00151                 m\_Animator.speed = 1;}
+\DoxyCodeLine{00152             \}}
+\DoxyCodeLine{00153         \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156         \textcolor{keywordtype}{void} HandleAirborneMovement()}
+\DoxyCodeLine{00157         \{}
+\DoxyCodeLine{00158             \textcolor{comment}{// apply extra gravity from multiplier:}}
+\DoxyCodeLine{00159             Vector3 extraGravityForce = (Physics.gravity * m\_GravityMultiplier) -\/ Physics.gravity;}
+\DoxyCodeLine{00160             m\_Rigidbody.AddForce(extraGravityForce);}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             m\_GroundCheckDistance = m\_Rigidbody.velocity.y < 0 ? m\_OrigGroundCheckDistance : 0.01f;}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166         \textcolor{keywordtype}{void} HandleGroundedMovement(\textcolor{keywordtype}{bool} crouch, \textcolor{keywordtype}{bool} jump)}
+\DoxyCodeLine{00167         \{}
+\DoxyCodeLine{00168             \textcolor{comment}{// check whether conditions are right to allow a jump:}}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (jump \&\& !crouch \&\& m\_Animator.GetCurrentAnimatorStateInfo(0).IsName(\textcolor{stringliteral}{"{}Grounded"{}}))}
+\DoxyCodeLine{00170             \{}
+\DoxyCodeLine{00171                 \textcolor{comment}{// jump!}}
+\DoxyCodeLine{00172                 m\_Rigidbody.velocity = \textcolor{keyword}{new} Vector3(m\_Rigidbody.velocity.x, m\_JumpPower, m\_Rigidbody.velocity.z);}
+\DoxyCodeLine{00173                 m\_IsGrounded = \textcolor{keyword}{false};}
+\DoxyCodeLine{00174                 m\_Animator.applyRootMotion = \textcolor{keyword}{false};}
+\DoxyCodeLine{00175                 m\_GroundCheckDistance = 0.1f;}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177         \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{keywordtype}{void} ApplyExtraTurnRotation()}
+\DoxyCodeLine{00180         \{}
+\DoxyCodeLine{00181             \textcolor{comment}{// help the character turn faster (this is in addition to root rotation in the animation)}}
+\DoxyCodeLine{00182             \textcolor{keywordtype}{float} turnSpeed = Mathf.Lerp(m\_StationaryTurnSpeed, m\_MovingTurnSpeed, m\_ForwardAmount);}
+\DoxyCodeLine{00183             transform.Rotate(0, m\_TurnAmount * turnSpeed * Time.deltaTime, 0);}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnAnimatorMove()}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             \textcolor{comment}{// we implement this function to override the default root motion.}}
+\DoxyCodeLine{00190             \textcolor{comment}{// this allows us to modify the positional speed before it's applied.}}
+\DoxyCodeLine{00191             \textcolor{keywordflow}{if} (m\_IsGrounded \&\& Time.deltaTime > 0)}
+\DoxyCodeLine{00192             \{}
+\DoxyCodeLine{00193                 Vector3 v = (m\_Animator.deltaPosition * m\_MoveSpeedMultiplier) / Time.deltaTime;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                 \textcolor{comment}{// we preserve the existing y part of the current velocity.}}
+\DoxyCodeLine{00196                 v.y = m\_Rigidbody.velocity.y;}
+\DoxyCodeLine{00197                 m\_Rigidbody.velocity = v;}
+\DoxyCodeLine{00198             \}}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keywordtype}{void} CheckGroundStatus()}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204             RaycastHit hitInfo;}
+\DoxyCodeLine{00205 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00206             \textcolor{comment}{// helper to visualise the ground check ray in the scene view}}
+\DoxyCodeLine{00207             Debug.DrawLine(transform.position + (Vector3.up * 0.1f), transform.position + (Vector3.up * 0.1f) + (Vector3.down * m\_GroundCheckDistance));}
+\DoxyCodeLine{00208 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00209             \textcolor{comment}{// 0.1f is a small offset to start the ray from inside the character}}
+\DoxyCodeLine{00210             \textcolor{comment}{// it is also good to note that the transform position in the sample assets is at the base of the character}}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m\_GroundCheckDistance))}
+\DoxyCodeLine{00212             \{}
+\DoxyCodeLine{00213                 m\_GroundNormal = hitInfo.normal;}
+\DoxyCodeLine{00214                 m\_IsGrounded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00215                 m\_Animator.applyRootMotion = \textcolor{keyword}{true};}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00218             \{}
+\DoxyCodeLine{00219                 m\_IsGrounded = \textcolor{keyword}{false};}
+\DoxyCodeLine{00220                 m\_GroundNormal = Vector3.up;}
+\DoxyCodeLine{00221                 m\_Animator.applyRootMotion = \textcolor{keyword}{false};}
+\DoxyCodeLine{00222             \}}
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224     \}}
+\DoxyCodeLine{00225 \}}
+
+\end{DoxyCode}

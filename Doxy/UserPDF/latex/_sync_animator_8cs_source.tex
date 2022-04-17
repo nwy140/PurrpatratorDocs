@@ -1,0 +1,2108 @@
+\doxysection{Sync\+Animator.\+cs}
+\label{_sync_animator_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncAnimator/SyncAnimator.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncAnimator/SyncAnimator.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} UnityEditor.Animations;}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00021 \{}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncAnimator : SyncObject<SyncAnimator.Frame>}
+\DoxyCodeLine{00024         , IOnSnapshot}
+\DoxyCodeLine{00025         , IOnNetSerialize}
+\DoxyCodeLine{00026         , IOnAuthorityChanged}
+\DoxyCodeLine{00027         , ISyncAnimator}
+\DoxyCodeLine{00028         , IReadyable}
+\DoxyCodeLine{00029         , IUseKeyframes}
+\DoxyCodeLine{00030         \textcolor{comment}{//, IAdjustableApplyOrder}}
+\DoxyCodeLine{00031         , IOnInterpolate}
+\DoxyCodeLine{00032         , IOnCaptureState}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{        \#region Shared Cache (to avoid repeats of animator definitions with every prefab instance)}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00038         \textcolor{keyword}{protected} List<string> tempNamesList = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00039         [HideInInspector] \textcolor{keyword}{public} List<string> sharedTriggNames = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00040         [HideInInspector] \textcolor{keyword}{public} List<string> sharedStateNames = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00041         [HideInInspector] \textcolor{keyword}{public} List<string> sharedTransNames = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00042 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00043         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, Dictionary<int, int>> masterSharedTriggHashes = \textcolor{keyword}{new} Dictionary<int, Dictionary<int, int>>();}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, List<int>> masterSharedTriggIndexes = \textcolor{keyword}{new} Dictionary<int, List<int>>();}
+\DoxyCodeLine{00045         [HideInInspector] \textcolor{keyword}{public} List<int> sharedTriggIndexes = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{00046         \textcolor{keyword}{private} Dictionary<int, int> sharedTriggHashes;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, Dictionary<int, int>> masterSharedStateHashes = \textcolor{keyword}{new} Dictionary<int, Dictionary<int, int>>();}
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, List<int>> masterSharedStateIndexes = \textcolor{keyword}{new} Dictionary<int, List<int>>();}
+\DoxyCodeLine{00050         [HideInInspector] \textcolor{keyword}{public} List<int> sharedStateIndexes = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{00051         \textcolor{keyword}{private} Dictionary<int, int> sharedStateHashes;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{comment}{//private static Dictionary<int, Dictionary<int, TransitionInfo>> masterSharedTransHashes = new Dictionary<int, Dictionary<int, TransitionInfo>>();}}
+\DoxyCodeLine{00054         \textcolor{comment}{//private static Dictionary<int, List<TransitionInfo>> masterSharedTransIndexes = new Dictionary<int, List<TransitionInfo>>();}}
+\DoxyCodeLine{00055         \textcolor{comment}{//[HideInInspector] public List<TransitionInfo> sharedTransIndexes = new List<TransitionInfo>();}}
+\DoxyCodeLine{00056         \textcolor{comment}{//private Dictionary<int, TransitionInfo> sharedTransHashes;}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         [Tooltip(\textcolor{stringliteral}{"{}The Animator to sync. If null the first animator on this game object will be found and used."{}})]}
+\DoxyCodeLine{00063         \textcolor{keyword}{public} Animator animator;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         [Tooltip(\textcolor{stringliteral}{"{}Disables applyRootMotion on any non-\/authority instances, to avoid a tug of war between the transform sync and root motion."{}})]}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoRootMotion = \textcolor{keyword}{true};}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00069         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncPassThrus = \textcolor{keyword}{true};}
+\DoxyCodeLine{00070         [HideInInspector] \textcolor{keyword}{public} NormalizedFloatCompression passthruNormTimeCompress = NormalizedFloatCompression.Bits10;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00073         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncStates = \textcolor{keyword}{true};}
+\DoxyCodeLine{00074         \textcolor{comment}{//[HideInInspector] public bool syncTransitions = false;}}
+\DoxyCodeLine{00075         [HideInInspector] \textcolor{keyword}{public} NormalizedFloatCompression normalizedTimeCompress = NormalizedFloatCompression.Bits10;}
+\DoxyCodeLine{00076         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncLayers = \textcolor{keyword}{true};}
+\DoxyCodeLine{00077         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncLayerWeights = \textcolor{keyword}{true};}
+\DoxyCodeLine{00078         [HideInInspector] \textcolor{keyword}{public} NormalizedFloatCompression layerWeightCompress = NormalizedFloatCompression.Bits10;}
+\DoxyCodeLine{00079         [System.NonSerialized] \textcolor{keyword}{public} \textcolor{keywordtype}{int} layerCount;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00082         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncParams = \textcolor{keyword}{true};}
+\DoxyCodeLine{00083         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} useGlobalParamSettings = \textcolor{keyword}{true};}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, ParameterDefaults> masterSharedParamDefaults = \textcolor{keyword}{new} Dictionary<int, ParameterDefaults>();}
+\DoxyCodeLine{00086         [HideInInspector] \textcolor{keyword}{public} ParameterDefaults sharedParamDefaults = \textcolor{keyword}{new} ParameterDefaults();}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, ParameterSettings[]> masterSharedParamSettings = \textcolor{keyword}{new} Dictionary<int, ParameterSettings[]>();}
+\DoxyCodeLine{00089         [HideInInspector] \textcolor{keyword}{public} ParameterSettings[] sharedParamSettings = \textcolor{keyword}{new} ParameterSettings[0];}
+\DoxyCodeLine{00090         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{int} paramCount;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095 \textcolor{preprocessor}{        \#region Local Cache}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00098         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForTriggerIndex;}
+\DoxyCodeLine{00099         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForStateIndex;}
+\DoxyCodeLine{00100         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForTransIndex;}
+\DoxyCodeLine{00101         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForLayerIndex;}
+\DoxyCodeLine{00102         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} defaultRootMotion;}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00105         \textcolor{keyword}{private} \textcolor{keywordtype}{int}[] lastAnimationHash;}
+\DoxyCodeLine{00106         \textcolor{keyword}{private} uint[] lastLayerWeight;}
+\DoxyCodeLine{00107         \textcolor{keyword}{private} SmartVar[] lastSentParams;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{private} Frame currentFrame;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             \textcolor{keyword}{get}}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{return} ApplyOrderConstants.ANIMATOR;}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AllowReconstructionOfEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123 \textcolor{preprocessor}{        \#region Frame Struct/Queue/Pools}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00129         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<int, Stack<Frame[]>> masterSharedFramePool = \textcolor{keyword}{new} Dictionary<int, Stack<Frame[]>>();}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \textcolor{keyword}{public} SyncAnimator syncAnimator;}
+\DoxyCodeLine{00134             \textcolor{keyword}{public} SmartVar[] parameters;}
+\DoxyCodeLine{00135             \textcolor{keyword}{public} \textcolor{keywordtype}{int}?[] stateHashes;}
+\DoxyCodeLine{00136             \textcolor{keyword}{public} \textcolor{keywordtype}{bool}[] layerIsInTransition;}
+\DoxyCodeLine{00137             \textcolor{keyword}{public} \textcolor{keywordtype}{float}[] normalizedTime;}
+\DoxyCodeLine{00138             \textcolor{keyword}{public} \textcolor{keywordtype}{float}?[] layerWeights;}
+\DoxyCodeLine{00139             \textcolor{keyword}{public} Queue<AnimPassThru> passThrus;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00142             \textcolor{keyword}{public} IKState[] ikStates;}
+\DoxyCodeLine{00143 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{keyword}{public} Frame(SyncAnimator syncAnimator, \textcolor{keywordtype}{int} frameId) : base(frameId)}
+\DoxyCodeLine{00148             \{}
+\DoxyCodeLine{00149                 this.syncAnimator = syncAnimator;}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151                 \textcolor{keywordtype}{int} layerCount = syncAnimator.layerCount;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                 stateHashes = \textcolor{keyword}{new} \textcolor{keywordtype}{int}?[layerCount];}
+\DoxyCodeLine{00154                 layerIsInTransition = \textcolor{keyword}{new} \textcolor{keywordtype}{bool}[layerCount];}
+\DoxyCodeLine{00155                 normalizedTime = \textcolor{keyword}{new} \textcolor{keywordtype}{float}[layerCount];}
+\DoxyCodeLine{00156                 layerWeights = \textcolor{keyword}{new} \textcolor{keywordtype}{float}?[layerCount];}
+\DoxyCodeLine{00157                 passThrus = \textcolor{keyword}{new} Queue<AnimPassThru>(2);}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 parameters = \textcolor{keyword}{new} SmartVar[syncAnimator.paramCount];}
+\DoxyCodeLine{00160                 \textcolor{keywordtype}{int} paramcnt = syncAnimator.paramCount;}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramcnt; ++pid)}
+\DoxyCodeLine{00162                 \{}
+\DoxyCodeLine{00163                     parameters[pid] = syncAnimator.sharedParamSettings[pid].defaultValue;}
+\DoxyCodeLine{00164                 \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00169                 var syncfeet = syncAnimator.syncIKFeet;}
+\DoxyCodeLine{00170                 var synchands = syncAnimator.syncIKHands;}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172                 \textcolor{keywordflow}{if} (syncfeet || synchands)}
+\DoxyCodeLine{00173                     ikStates = \textcolor{keyword}{new} IKState[4]}
+\DoxyCodeLine{00174                     \{}
+\DoxyCodeLine{00175                         syncfeet ? \textcolor{keyword}{new} IKState() : \textcolor{keyword}{null},}
+\DoxyCodeLine{00176                         syncfeet ? \textcolor{keyword}{new} IKState() : \textcolor{keyword}{null},}
+\DoxyCodeLine{00177                         synchands ? \textcolor{keyword}{new} IKState() : \textcolor{keyword}{null},}
+\DoxyCodeLine{00178                         synchands ? \textcolor{keyword}{new} IKState() : \textcolor{keyword}{null},}
+\DoxyCodeLine{00179                     \};}
+\DoxyCodeLine{00180 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00181             \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 Frame frame = sourceFrame as Frame;}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{if} (syncAnimator.syncParams)}
+\DoxyCodeLine{00190                 \{}
+\DoxyCodeLine{00191                     var ps = frame.parameters;}
+\DoxyCodeLine{00192                     \textcolor{keywordtype}{int} paramcnt = ps.Length;}
+\DoxyCodeLine{00193                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < paramcnt; ++i)}
+\DoxyCodeLine{00194                         parameters[i] = ps[i];}
+\DoxyCodeLine{00195                 \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197                 \textcolor{keywordflow}{if} (syncAnimator.syncStates)}
+\DoxyCodeLine{00198                 \{}
+\DoxyCodeLine{00199                     \textcolor{keywordtype}{int} lyrCnt = frame.stateHashes.Length;}
+\DoxyCodeLine{00200                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < lyrCnt; ++i)}
+\DoxyCodeLine{00201                     \{}
+\DoxyCodeLine{00202                         stateHashes[i] = frame.stateHashes[i];}
+\DoxyCodeLine{00203                         layerIsInTransition[i] = frame.layerIsInTransition[i];}
+\DoxyCodeLine{00204                         normalizedTime[i] = frame.normalizedTime[i];}
+\DoxyCodeLine{00205                         layerWeights[i] = frame.layerWeights[i];}
+\DoxyCodeLine{00206                     \}}
+\DoxyCodeLine{00207                 \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{if} (syncAnimator.syncIKHands || syncAnimator.syncIKFeet)}
+\DoxyCodeLine{00212                 \{}
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < 4; ++i)}
+\DoxyCodeLine{00214                     \{}
+\DoxyCodeLine{00215                         var ikTrg = ikStates[i];}
+\DoxyCodeLine{00216                         var ikSrc = frame.ikStates[i];}
+\DoxyCodeLine{00217                         ikTrg.pos = ikSrc.pos;}
+\DoxyCodeLine{00218                         ikTrg.rot = ikSrc.rot;}
+\DoxyCodeLine{00219                     \}}
+\DoxyCodeLine{00220                 \}}
+\DoxyCodeLine{00221 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00224                 \textcolor{comment}{//triggers = new Queue<TriggerItem>();}}
+\DoxyCodeLine{00225                 \textcolor{comment}{//crossFades = new Queue<TriggerItem>();}}
+\DoxyCodeLine{00226             \}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00229             \{}
+\DoxyCodeLine{00230                 base.Clear();}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = stateHashes.Length; i < cnt; ++i)}
+\DoxyCodeLine{00233                     stateHashes[i] = \textcolor{keyword}{null};}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235                 passThrus.Clear();}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0, cnt = layerWeights.Length; layer < cnt; ++layer)}
+\DoxyCodeLine{00238                 \{}
+\DoxyCodeLine{00239                     layerWeights[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{00240                     stateHashes[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{00241                     normalizedTime[layer] = 0;}
+\DoxyCodeLine{00242                     layerWeights[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{00243                 \}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248         \textcolor{comment}{//private void InvalidateFrame(Frame frame)}}
+\DoxyCodeLine{00249         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00250         \textcolor{comment}{//    int count = (syncLayers) ? layerCount : 1;}}
+\DoxyCodeLine{00251         \textcolor{comment}{//    for (int layer = 0; layer < count; ++layer)}}
+\DoxyCodeLine{00252         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00253         \textcolor{comment}{//        frame.layerWeights[layer] = null;}}
+\DoxyCodeLine{00254         \textcolor{comment}{//        frame.stateHashes[layer] = null;}}
+\DoxyCodeLine{00255         \textcolor{comment}{//        frame.normalizedTime[layer] = 0;}}
+\DoxyCodeLine{00256         \textcolor{comment}{//        frame.layerWeights[layer] = null;}}
+\DoxyCodeLine{00257         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00258         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} PopulateFrames()}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             Initialize();}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00267             Stack<Frame[]> pool;}
+\DoxyCodeLine{00268             \textcolor{keywordflow}{if} (!masterSharedFramePool.TryGetValue(prefabInstanceId, out pool))}
+\DoxyCodeLine{00269             \{}
+\DoxyCodeLine{00270                 pool = \textcolor{keyword}{new} Stack<Frame[]>();}
+\DoxyCodeLine{00271                 masterSharedFramePool.Add(prefabInstanceId, pool);}
+\DoxyCodeLine{00272             \}}
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (pool.Count == 0)}
+\DoxyCodeLine{00274             \{}
+\DoxyCodeLine{00275                 frames = \textcolor{keyword}{new} Frame[frameCount + 1];}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i <= frameCount; ++i)}
+\DoxyCodeLine{00278                     frames[i] = \textcolor{keyword}{new} Frame(\textcolor{keyword}{this}, i);}
+\DoxyCodeLine{00279             \}}
+\DoxyCodeLine{00280             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00281             \{}
+\DoxyCodeLine{00282                 frames = pool.Pop();}
+\DoxyCodeLine{00283                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i <= frameCount; ++i)}
+\DoxyCodeLine{00284                     frames[i].Clear();}
+\DoxyCodeLine{00285             \}}
+\DoxyCodeLine{00286         \}}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290 \textcolor{preprocessor}{        \#region Unity Timings}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294         \textcolor{keyword}{const} \textcolor{keywordtype}{double} AUTO\_REBUILD\_RATE = 10f;}
+\DoxyCodeLine{00295         \textcolor{keywordtype}{double} lastReuildTime;}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00300         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RebuildIndexedNames()}
+\DoxyCodeLine{00301         \{}
+\DoxyCodeLine{00303             \textcolor{keywordflow}{if} (animator == \textcolor{keyword}{null})}
+\DoxyCodeLine{00304                 animator = GetComponent<Animator>();}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306             \textcolor{keywordflow}{if} (animator \&\& EditorApplication.timeSinceStartup -\/ lastReuildTime > AUTO\_REBUILD\_RATE)}
+\DoxyCodeLine{00307             \{}
+\DoxyCodeLine{00308                 lastReuildTime = EditorApplication.timeSinceStartup;}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310                 AnimatorController ac = animator.GetController();}
+\DoxyCodeLine{00311                 \textcolor{keywordflow}{if} (ac != \textcolor{keyword}{null})}
+\DoxyCodeLine{00312                 \{}
+\DoxyCodeLine{00313                     \textcolor{keywordflow}{if} (ac.animationClips == \textcolor{keyword}{null} || ac.animationClips.Length == 0)}
+\DoxyCodeLine{00314                         Debug.LogWarning(\textcolor{stringliteral}{"{}'"{}} + name + \textcolor{stringliteral}{"{}' has an Animator with no animation clips. Some Animator Controllers require a restart of Unity, or for a Build to be made in order to initialize correctly."{}});}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316                     \textcolor{keywordtype}{bool} haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318                     ac.GetTriggerNames(sharedTriggIndexes);}
+\DoxyCodeLine{00319                     ac.GetStatesNames(sharedStateIndexes);}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321                     ac.GetTriggerNames(tempNamesList);}
+\DoxyCodeLine{00322                     \textcolor{keywordflow}{if} (!CompareNameLists(tempNamesList, sharedTriggNames))}
+\DoxyCodeLine{00323                     \{}
+\DoxyCodeLine{00324                         CopyNameList(tempNamesList, sharedTriggNames);}
+\DoxyCodeLine{00325                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00326                     \}}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328                     ac.GetStatesNames(tempNamesList);}
+\DoxyCodeLine{00329                     \textcolor{keywordflow}{if} (!CompareNameLists(tempNamesList, sharedStateNames))}
+\DoxyCodeLine{00330                     \{}
+\DoxyCodeLine{00331                         CopyNameList(tempNamesList, sharedStateNames);}
+\DoxyCodeLine{00332                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00333                     \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335                     \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00336                     \{}
+\DoxyCodeLine{00337                         Debug.Log(animator.name + \textcolor{stringliteral}{"{} has changed. SyncAnimator indexes updated."{}});}
+\DoxyCodeLine{00338                         EditorUtility.SetDirty(\textcolor{keyword}{this});}
+\DoxyCodeLine{00339                     \}}
+\DoxyCodeLine{00340                 \}}
+\DoxyCodeLine{00341             \}}
+\DoxyCodeLine{00342         \}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CompareNameLists(List<string> one, List<string> two)}
+\DoxyCodeLine{00345         \{}
+\DoxyCodeLine{00346             \textcolor{keywordflow}{if} (one.Count != two.Count)}
+\DoxyCodeLine{00347                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < one.Count; i++)}
+\DoxyCodeLine{00350                 \textcolor{keywordflow}{if} (one[i] != two[i])}
+\DoxyCodeLine{00351                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00354         \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CopyNameList(List<string> src, List<string> trg)}
+\DoxyCodeLine{00357         \{}
+\DoxyCodeLine{00358             trg.Clear();}
+\DoxyCodeLine{00359             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < src.Count; i++)}
+\DoxyCodeLine{00360                 trg.Add(src[i]);}
+\DoxyCodeLine{00361         \}}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00365         \{}
+\DoxyCodeLine{00366             base.Reset();}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368             animator = \textcolor{keyword}{null};}
+\DoxyCodeLine{00369             FindUnsyncedAnimator();}
+\DoxyCodeLine{00370             RebuildIndexedNames();}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00372         \}}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00377         \{}
+\DoxyCodeLine{00378             \textcolor{keywordflow}{if} (animator == \textcolor{keyword}{null})}
+\DoxyCodeLine{00379                 FindUnsyncedAnimator();}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381             base.OnAwake();}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383             ConnectSharedCaches();}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385             \textcolor{keywordflow}{if} (animator)}
+\DoxyCodeLine{00386                 defaultRootMotion = animator.applyRootMotion;}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389             \textcolor{comment}{//Debug.LogError(prefabInstanceId);}}
+\DoxyCodeLine{00390         \}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00393         \{}
+\DoxyCodeLine{00394             base.OnJoinedRoom();}
+\DoxyCodeLine{00395             AutoRootMotion(IsMine);}
+\DoxyCodeLine{00396         \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00399         \{}
+\DoxyCodeLine{00400             base.OnStart();}
+\DoxyCodeLine{00401             AutoRootMotion(IsMine);}
+\DoxyCodeLine{00402         \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00405         \{}
+\DoxyCodeLine{00406             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00407             AutoRootMotion(isMine);}
+\DoxyCodeLine{00408         \}}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411         \textcolor{keyword}{private} \textcolor{keywordtype}{void} AutoRootMotion(\textcolor{keywordtype}{bool} isMine)}
+\DoxyCodeLine{00412         \{}
+\DoxyCodeLine{00413             \textcolor{keywordflow}{if} (autoRootMotion \&\& animator)}
+\DoxyCodeLine{00414             \{}
+\DoxyCodeLine{00415                 animator.applyRootMotion = (isMine) ? defaultRootMotion : \textcolor{keyword}{false};}
+\DoxyCodeLine{00416             \}}
+\DoxyCodeLine{00417         \}}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00419         \textcolor{keyword}{private} \textcolor{keyword}{static} List<Animator> foundAnimators = \textcolor{keyword}{new} List<Animator>();}
+\DoxyCodeLine{00420         \textcolor{keyword}{private} \textcolor{keyword}{static} List<SyncAnimator> foundSyncs = \textcolor{keyword}{new} List<SyncAnimator>();}
+\DoxyCodeLine{00426         \textcolor{keyword}{private} \textcolor{keywordtype}{void} FindUnsyncedAnimator()}
+\DoxyCodeLine{00427         \{}
+\DoxyCodeLine{00428             transform.GetNestedComponentsInChildren<Animator, NetObject>(foundAnimators);}
+\DoxyCodeLine{00429             transform.GetNestedComponentsInChildren<SyncAnimator, NetObject>(foundSyncs);}
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00431             \textcolor{keywordflow}{foreach} (var a \textcolor{keywordflow}{in} foundAnimators)}
+\DoxyCodeLine{00432             \{}
+\DoxyCodeLine{00433                 \textcolor{keywordtype}{bool} used = \textcolor{keyword}{false};}
+\DoxyCodeLine{00434                 \textcolor{keywordflow}{foreach} (var s \textcolor{keywordflow}{in} foundSyncs)}
+\DoxyCodeLine{00435                 \{}
+\DoxyCodeLine{00436                     used = \textcolor{keyword}{false};}
+\DoxyCodeLine{00437                     \textcolor{keywordflow}{if} (s.animator == a)}
+\DoxyCodeLine{00438                     \{}
+\DoxyCodeLine{00439                         used = \textcolor{keyword}{true};}
+\DoxyCodeLine{00440                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00441                     \}}
+\DoxyCodeLine{00442                 \}}
+\DoxyCodeLine{00443                 \textcolor{keywordflow}{if} (!used)}
+\DoxyCodeLine{00444                 \{}
+\DoxyCodeLine{00445                     animator = a;}
+\DoxyCodeLine{00446                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00447                 \}}
+\DoxyCodeLine{00448             \}}
+\DoxyCodeLine{00449         \}}
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00451         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00452         \{}
+\DoxyCodeLine{00453             bitsForTriggerIndex = (sharedTriggIndexes.Count -\/ 1).GetBitsForMaxValue();}
+\DoxyCodeLine{00454             bitsForStateIndex = (sharedStateIndexes.Count -\/ 1).GetBitsForMaxValue();}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00457             \textcolor{keywordflow}{if} (animator == \textcolor{keyword}{null})}
+\DoxyCodeLine{00458                 Debug.LogError(\textcolor{stringliteral}{"{}No Animator component found. Be sure "{}} + name + \textcolor{stringliteral}{"{} has an animator, or remove "{}} + GetType().Name + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00459 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00460             paramCount = animator.parameters.Length;}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462             layerCount = animator.layerCount;}
+\DoxyCodeLine{00464             bitsForLayerIndex = layerCount.GetBitsForMaxValue();}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466             lastSentParams = \textcolor{keyword}{new} SmartVar[paramCount];}
+\DoxyCodeLine{00468             ParameterSettings.RebuildParamSettings(animator, ref sharedParamSettings, ref paramCount, sharedParamDefaults);}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470             lastAnimationHash = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[layerCount];}
+\DoxyCodeLine{00471             lastLayerWeight = \textcolor{keyword}{new} uint[layerCount];}
+\DoxyCodeLine{00472 }
+\DoxyCodeLine{00473             \textcolor{comment}{// Cache some of the readonly parameter attributes}}
+\DoxyCodeLine{00474             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00475             \{}
+\DoxyCodeLine{00477                 lastSentParams[pid] = sharedParamSettings[pid].defaultValue; \textcolor{comment}{// ; paramDefValue[pid];}}
+\DoxyCodeLine{00478             \}}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00481             InitIK();}
+\DoxyCodeLine{00482 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484         \}}
+\DoxyCodeLine{00485 }
+\DoxyCodeLine{00491         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConnectSharedCaches()}
+\DoxyCodeLine{00492         \{}
+\DoxyCodeLine{00494             \textcolor{keywordflow}{if} (!masterSharedTriggHashes.ContainsKey(prefabInstanceId))}
+\DoxyCodeLine{00495             \{}
+\DoxyCodeLine{00496                 sharedTriggHashes = \textcolor{keyword}{new} Dictionary<int, int>();}
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < sharedTriggIndexes.Count; ++i)}
+\DoxyCodeLine{00498                     \textcolor{keywordflow}{if} (sharedTriggHashes.ContainsKey(sharedTriggIndexes[i]))}
+\DoxyCodeLine{00499                     \{}
+\DoxyCodeLine{00500                         Debug.LogError(\textcolor{stringliteral}{"{}There appear to be duplicate Trigger names in the animator controller on '"{}} + name + \textcolor{stringliteral}{"{}'. This will break "{}} + GetType().Name + \textcolor{stringliteral}{"{}'s ability to sync triggers."{}});}
+\DoxyCodeLine{00501                     \}}
+\DoxyCodeLine{00502                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00503                         sharedTriggHashes.Add(sharedTriggIndexes[i], i);}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505                 masterSharedTriggHashes.Add(prefabInstanceId, sharedTriggHashes);}
+\DoxyCodeLine{00506                 masterSharedTriggIndexes.Add(prefabInstanceId, sharedTriggIndexes);}
+\DoxyCodeLine{00507             \}}
+\DoxyCodeLine{00508             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00509             \{}
+\DoxyCodeLine{00510                 sharedTriggHashes = masterSharedTriggHashes[prefabInstanceId];}
+\DoxyCodeLine{00511                 sharedTriggIndexes = masterSharedTriggIndexes[prefabInstanceId];}
+\DoxyCodeLine{00512             \}}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00515             \textcolor{keywordflow}{if} (!masterSharedStateHashes.ContainsKey(prefabInstanceId))}
+\DoxyCodeLine{00516             \{}
+\DoxyCodeLine{00517                 sharedStateHashes = \textcolor{keyword}{new} Dictionary<int, int>();}
+\DoxyCodeLine{00518                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < sharedStateIndexes.Count; ++i)}
+\DoxyCodeLine{00519                     \textcolor{keywordflow}{if} (sharedStateHashes.ContainsKey(sharedStateIndexes[i]))}
+\DoxyCodeLine{00520                     \{}
+\DoxyCodeLine{00521                         Debug.LogError(\textcolor{stringliteral}{"{}There appear to be duplicate State names in the animator controller on '"{}} + name + \textcolor{stringliteral}{"{}'. This will break "{}} + GetType().Name + \textcolor{stringliteral}{"{}'s ability to sync states."{}});}
+\DoxyCodeLine{00522                     \}}
+\DoxyCodeLine{00523                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00524                         sharedStateHashes.Add(sharedStateIndexes[i], i);}
+\DoxyCodeLine{00525 }
+\DoxyCodeLine{00526                 masterSharedStateHashes.Add(prefabInstanceId, sharedStateHashes);}
+\DoxyCodeLine{00527                 masterSharedStateIndexes.Add(prefabInstanceId, sharedStateIndexes);}
+\DoxyCodeLine{00528             \}}
+\DoxyCodeLine{00529             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00530             \{}
+\DoxyCodeLine{00531                 sharedStateHashes = masterSharedStateHashes[prefabInstanceId];}
+\DoxyCodeLine{00532                 sharedStateIndexes = masterSharedStateIndexes[prefabInstanceId];}
+\DoxyCodeLine{00533             \}}
+\DoxyCodeLine{00534 }
+\DoxyCodeLine{00535             ParameterDefaults pd;}
+\DoxyCodeLine{00536             \textcolor{keywordflow}{if} (masterSharedParamDefaults.TryGetValue(prefabInstanceId, out pd))}
+\DoxyCodeLine{00537                 sharedParamDefaults = pd;}
+\DoxyCodeLine{00538             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00539                 masterSharedParamDefaults.Add(prefabInstanceId, sharedParamDefaults);}
+\DoxyCodeLine{00540 }
+\DoxyCodeLine{00541             ParameterSettings[] ps;}
+\DoxyCodeLine{00542             \textcolor{keywordflow}{if} (masterSharedParamSettings.TryGetValue(prefabInstanceId, out ps))}
+\DoxyCodeLine{00543                 sharedParamSettings = ps;}
+\DoxyCodeLine{00544             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00545                 masterSharedParamSettings.Add(prefabInstanceId, sharedParamSettings);}
+\DoxyCodeLine{00546         \}}
+\DoxyCodeLine{00547 }
+\DoxyCodeLine{00548         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00549         \{}
+\DoxyCodeLine{00551             masterSharedFramePool[prefabInstanceId].Push(frames);}
+\DoxyCodeLine{00552         \}}
+\DoxyCodeLine{00553 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00554 }
+\DoxyCodeLine{00555 \textcolor{preprocessor}{        \#region Net Serialization/Deserialization}}
+\DoxyCodeLine{00556 }
+\DoxyCodeLine{00560         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00561         \{}
+\DoxyCodeLine{00562             Frame frame = frames[frameId];}
+\DoxyCodeLine{00563 }
+\DoxyCodeLine{00566             \textcolor{keywordflow}{if} (frame.content == 0)}
+\DoxyCodeLine{00567             \{}
+\DoxyCodeLine{00568                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00569                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00570             \}}
+\DoxyCodeLine{00571 }
+\DoxyCodeLine{00573             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00574 }
+\DoxyCodeLine{00575             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00576 }
+\DoxyCodeLine{00577             \textcolor{keywordflow}{return} WriteAllToBuffer(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00578         \}}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00583         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00584         \{}
+\DoxyCodeLine{00585             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(originFrameId);}
+\DoxyCodeLine{00586 }
+\DoxyCodeLine{00588             var frame = (IsMine) ? offtickFrame : frames[originFrameId];}
+\DoxyCodeLine{00589 }
+\DoxyCodeLine{00591             \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00592             \{}
+\DoxyCodeLine{00593                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00594             \}}
+\DoxyCodeLine{00595 }
+\DoxyCodeLine{00596             frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00597 }
+\DoxyCodeLine{00598             ReadAllFromBuffer(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00599             \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{00600         \}}
+\DoxyCodeLine{00601 }
+\DoxyCodeLine{00602 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604 \textcolor{preprocessor}{        \#region Buffer Writer/Readers}}
+\DoxyCodeLine{00605 }
+\DoxyCodeLine{00606         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00607         \{}
+\DoxyCodeLine{00608             Frame frame = frames[frameId];}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00611             \textcolor{keywordflow}{if} (!isActiveAndEnabled || !animator.isActiveAndEnabled)}
+\DoxyCodeLine{00612             \{}
+\DoxyCodeLine{00613                 frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00614                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00615             \}}
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00617             \textcolor{keywordflow}{if} (syncParams)}
+\DoxyCodeLine{00618                 CaptureParameters(frame);}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00620             \textcolor{keywordflow}{if} (syncPassThrus)}
+\DoxyCodeLine{00621                 CapturePassThrus(frame);}
+\DoxyCodeLine{00622 }
+\DoxyCodeLine{00623             \textcolor{keywordflow}{if} (syncStates)}
+\DoxyCodeLine{00624                 CaptureStates(frame);}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626             \textcolor{keywordflow}{if} (syncStates)}
+\DoxyCodeLine{00627                 CaptureLayerWeights(frame);}
+\DoxyCodeLine{00628 }
+\DoxyCodeLine{00629 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00630             \textcolor{keywordflow}{if} (syncIKFeet)}
+\DoxyCodeLine{00631                 CaptureIK(frame);}
+\DoxyCodeLine{00632 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00633 }
+\DoxyCodeLine{00634             frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00635         \}}
+\DoxyCodeLine{00636 }
+\DoxyCodeLine{00637 }
+\DoxyCodeLine{00638         \textcolor{keyword}{private} SerializationFlags WriteAllToBuffer(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{00639         \{}
+\DoxyCodeLine{00640             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00641 }
+\DoxyCodeLine{00643             \textcolor{keywordflow}{if} (syncPassThrus)}
+\DoxyCodeLine{00644                 flags |= WritePassThrus(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00645 }
+\DoxyCodeLine{00646             \textcolor{keywordflow}{if} (syncParams)}
+\DoxyCodeLine{00647                 flags |= WriteParameters(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00648 }
+\DoxyCodeLine{00649             \textcolor{keywordflow}{if} (syncStates)}
+\DoxyCodeLine{00650                 flags |= WriteStates(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652             \textcolor{keywordflow}{if} (syncLayerWeights)}
+\DoxyCodeLine{00653                 flags |= WriteLayerWeights(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00654 }
+\DoxyCodeLine{00655 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00656             \textcolor{keywordflow}{if} (syncIKFeet)}
+\DoxyCodeLine{00657                 flags |= WriteIK(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00658 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00659             \textcolor{comment}{// Mark as always having content. Can revisit this later.}}
+\DoxyCodeLine{00660             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00661         \}}
+\DoxyCodeLine{00662 }
+\DoxyCodeLine{00663         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ReadAllFromBuffer(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{00664         \{}
+\DoxyCodeLine{00665             \textcolor{keywordflow}{if} (syncPassThrus)}
+\DoxyCodeLine{00666                 ReadPassThrus(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00667 }
+\DoxyCodeLine{00668             \textcolor{keywordflow}{if} (syncParams)}
+\DoxyCodeLine{00669                 ReadParameters(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00670 }
+\DoxyCodeLine{00671             \textcolor{keywordflow}{if} (syncStates)}
+\DoxyCodeLine{00672                 ReadStates(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00673 }
+\DoxyCodeLine{00674             \textcolor{keywordflow}{if} (syncLayerWeights)}
+\DoxyCodeLine{00675                 ReadLayerWeights(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00676 }
+\DoxyCodeLine{00677 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00678             \textcolor{keywordflow}{if} (syncIKFeet)}
+\DoxyCodeLine{00679                 ReadIK(frame, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00680 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00682         \}}
+\DoxyCodeLine{00683 }
+\DoxyCodeLine{00684 \textcolor{preprocessor}{        \#region Parameter Handling}}
+\DoxyCodeLine{00685 }
+\DoxyCodeLine{00689         \textcolor{keyword}{private} SerializationFlags WriteParameters(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{00690         \{}
+\DoxyCodeLine{00691             var paramaters = frame.parameters;}
+\DoxyCodeLine{00692 }
+\DoxyCodeLine{00693             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00694 }
+\DoxyCodeLine{00695             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00696             \{}
+\DoxyCodeLine{00697                 var ps = sharedParamSettings[pid];}
+\DoxyCodeLine{00698 }
+\DoxyCodeLine{00699                 \textcolor{keywordflow}{if} (!useGlobalParamSettings \&\& !ps.include)}
+\DoxyCodeLine{00700                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00701 }
+\DoxyCodeLine{00702                 var type = ps.paramType;}
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00704                 \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Int)}
+\DoxyCodeLine{00705                 \{}
+\DoxyCodeLine{00706                     \textcolor{keywordtype}{int} val = paramaters[pid];}
+\DoxyCodeLine{00707 }
+\DoxyCodeLine{00708                     \textcolor{keywordflow}{if} (isKeyframe || val != lastSentParams[pid])}
+\DoxyCodeLine{00709                     \{}
+\DoxyCodeLine{00710                         \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00711                             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00712 }
+\DoxyCodeLine{00713                         \textcolor{keywordflow}{if} (useGlobalParamSettings)}
+\DoxyCodeLine{00714                             buffer.WriteSignedPackedBytes(val, ref bitposition, 32);}
+\DoxyCodeLine{00715                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00716                             ps.icrusher.WriteValue(val, buffer, ref bitposition);}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00718                         lastSentParams[pid] = val;}
+\DoxyCodeLine{00719                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00720                     \}}
+\DoxyCodeLine{00721                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00722                     \{}
+\DoxyCodeLine{00723                         \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00724                             buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00725                     \}}
+\DoxyCodeLine{00726                 \}}
+\DoxyCodeLine{00727 }
+\DoxyCodeLine{00728                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Float)}
+\DoxyCodeLine{00729                 \{}
+\DoxyCodeLine{00730                     \textcolor{keywordtype}{float} val = paramaters[pid];}
+\DoxyCodeLine{00731                     var fcrusher = ps.fcrusher;}
+\DoxyCodeLine{00732                     uint cval = (useGlobalParamSettings) ? HalfUtilities.Pack(val) : (uint)fcrusher.Encode(val);}
+\DoxyCodeLine{00733 }
+\DoxyCodeLine{00734                     \textcolor{keywordflow}{if} (isKeyframe || cval != lastSentParams[pid].UInt)}
+\DoxyCodeLine{00735                     \{}
+\DoxyCodeLine{00736                         \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00737                             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00738 }
+\DoxyCodeLine{00739                         \textcolor{keywordflow}{if} (useGlobalParamSettings)}
+\DoxyCodeLine{00740                             buffer.Write(cval, ref bitposition, 16);}
+\DoxyCodeLine{00741                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00742                             fcrusher.WriteCValue(cval, buffer, ref bitposition);}
+\DoxyCodeLine{00743 }
+\DoxyCodeLine{00744                         lastSentParams[pid] = cval;}
+\DoxyCodeLine{00745 }
+\DoxyCodeLine{00746                         \textcolor{comment}{//Debug.Log("{}Float "{} + cval + "{}:"{} + val);}}
+\DoxyCodeLine{00747                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00748                     \}}
+\DoxyCodeLine{00749                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00750                     \{}
+\DoxyCodeLine{00751                         \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00752                             buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00753                     \}}
+\DoxyCodeLine{00754 }
+\DoxyCodeLine{00755                 \}}
+\DoxyCodeLine{00756 }
+\DoxyCodeLine{00757                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Bool)}
+\DoxyCodeLine{00758                 \{}
+\DoxyCodeLine{00759                     \textcolor{keywordtype}{bool} val = paramaters[pid];}
+\DoxyCodeLine{00760                     buffer.WriteBool(val, ref bitposition);}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762                     \textcolor{keywordflow}{if} (isKeyframe || val != lastSentParams[pid])}
+\DoxyCodeLine{00763                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00764                 \}}
+\DoxyCodeLine{00765 }
+\DoxyCodeLine{00766                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Trigger)}
+\DoxyCodeLine{00767                 \{}
+\DoxyCodeLine{00768 }
+\DoxyCodeLine{00769                     \textcolor{keywordtype}{bool} val = paramaters[pid];}
+\DoxyCodeLine{00770                     buffer.WriteBool(val, ref bitposition);}
+\DoxyCodeLine{00771 }
+\DoxyCodeLine{00772                     \textcolor{keywordflow}{if} (isKeyframe || val != lastSentParams[pid])}
+\DoxyCodeLine{00773                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00774                 \}}
+\DoxyCodeLine{00775             \}}
+\DoxyCodeLine{00776             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00777         \}}
+\DoxyCodeLine{00778 }
+\DoxyCodeLine{00779         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CaptureParameters(Frame frame)}
+\DoxyCodeLine{00780         \{}
+\DoxyCodeLine{00781             var paramaters = frame.parameters;}
+\DoxyCodeLine{00782 }
+\DoxyCodeLine{00783             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00784             \{}
+\DoxyCodeLine{00785                 var ps = sharedParamSettings[pid];}
+\DoxyCodeLine{00786 }
+\DoxyCodeLine{00787                 \textcolor{keywordflow}{if} (!useGlobalParamSettings \&\& !ps.include)}
+\DoxyCodeLine{00788                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00789 }
+\DoxyCodeLine{00790                 var type = ps.paramType;}
+\DoxyCodeLine{00791                 \textcolor{keywordtype}{int} nameHash = ps.hash;}
+\DoxyCodeLine{00792 }
+\DoxyCodeLine{00793                 \textcolor{keywordflow}{switch} (type)}
+\DoxyCodeLine{00794                 \{}
+\DoxyCodeLine{00795                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Float:}
+\DoxyCodeLine{00796                         paramaters[pid] = animator.GetFloat(nameHash);}
+\DoxyCodeLine{00797                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00798 }
+\DoxyCodeLine{00799                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Int:}
+\DoxyCodeLine{00800                         paramaters[pid] = animator.GetInteger(nameHash);}
+\DoxyCodeLine{00801                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00802 }
+\DoxyCodeLine{00803                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Bool:}
+\DoxyCodeLine{00804                         paramaters[pid] = animator.GetBool(nameHash);}
+\DoxyCodeLine{00805                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00806 }
+\DoxyCodeLine{00807                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Trigger:}
+\DoxyCodeLine{00808                         paramaters[pid] = animator.GetBool(nameHash);}
+\DoxyCodeLine{00809                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00810 }
+\DoxyCodeLine{00811                     \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00812                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00813 }
+\DoxyCodeLine{00814                 \}}
+\DoxyCodeLine{00815             \}}
+\DoxyCodeLine{00816         \}}
+\DoxyCodeLine{00817 }
+\DoxyCodeLine{00818         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ReadParameters(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{00819         \{}
+\DoxyCodeLine{00820             SmartVar[] parms = frame.parameters;}
+\DoxyCodeLine{00821 }
+\DoxyCodeLine{00824             \textcolor{keywordtype}{bool} frameIsInUse = (ReferenceEquals(frame, targFrame)) || (ReferenceEquals(frame, snapFrame));}
+\DoxyCodeLine{00825 }
+\DoxyCodeLine{00826             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00827             \{}
+\DoxyCodeLine{00828                 var ps = sharedParamSettings[pid];}
+\DoxyCodeLine{00829 }
+\DoxyCodeLine{00830                 \textcolor{keywordflow}{if} (!useGlobalParamSettings \&\& !ps.include)}
+\DoxyCodeLine{00831                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00832 }
+\DoxyCodeLine{00833                 var type = ps.paramType;}
+\DoxyCodeLine{00834 }
+\DoxyCodeLine{00835                 \textcolor{keywordflow}{switch} (type)}
+\DoxyCodeLine{00836                 \{}
+\DoxyCodeLine{00837                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Int:}
+\DoxyCodeLine{00838                         \{}
+\DoxyCodeLine{00839                             \textcolor{keywordtype}{bool} used = isKeyframe ? true : buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00840 }
+\DoxyCodeLine{00841                             \textcolor{keywordflow}{if} (used)}
+\DoxyCodeLine{00842                             \{}
+\DoxyCodeLine{00843                                 \textcolor{keywordtype}{int} val = (useGlobalParamSettings) ?}
+\DoxyCodeLine{00844                                     buffer.ReadSignedPackedBytes(ref bitposition, 32) :}
+\DoxyCodeLine{00845                                     ps.icrusher.ReadValue(buffer, ref bitposition);}
+\DoxyCodeLine{00846 }
+\DoxyCodeLine{00847                                 parms[pid] = val;}
+\DoxyCodeLine{00848                             \}}
+\DoxyCodeLine{00849                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00850                             \{}
+\DoxyCodeLine{00851                                 \textcolor{keywordflow}{if} (!frameIsInUse)}
+\DoxyCodeLine{00852                                     parms[pid] = SmartVar.None;}
+\DoxyCodeLine{00853                             \}}
+\DoxyCodeLine{00854                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00855                         \}}
+\DoxyCodeLine{00856                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Float:}
+\DoxyCodeLine{00857                         \{}
+\DoxyCodeLine{00858                             \textcolor{keywordtype}{bool} used = isKeyframe ? true : buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00859 }
+\DoxyCodeLine{00860                             \textcolor{keywordflow}{if} (used)}
+\DoxyCodeLine{00861                             \{}
+\DoxyCodeLine{00862                                 parms[pid] = (useGlobalParamSettings) ?}
+\DoxyCodeLine{00863                                     buffer.ReadHalf(ref bitposition) :}
+\DoxyCodeLine{00864                                     ps.fcrusher.ReadValue(buffer, ref bitposition);}
+\DoxyCodeLine{00865                             \}}
+\DoxyCodeLine{00866                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00867                             \{}
+\DoxyCodeLine{00868                                 \textcolor{keywordflow}{if} (!frameIsInUse)}
+\DoxyCodeLine{00869                                     parms[pid] = SmartVar.None;}
+\DoxyCodeLine{00870                             \}}
+\DoxyCodeLine{00871                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00872                         \}}
+\DoxyCodeLine{00873                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Bool:}
+\DoxyCodeLine{00874                         \{}
+\DoxyCodeLine{00875                             \textcolor{keywordtype}{bool} val = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00876 }
+\DoxyCodeLine{00877                             parms[pid] = val;}
+\DoxyCodeLine{00878                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00879                         \}}
+\DoxyCodeLine{00880 }
+\DoxyCodeLine{00881                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Trigger:}
+\DoxyCodeLine{00882                         \{}
+\DoxyCodeLine{00883                             \textcolor{keywordtype}{bool} val = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00884                             parms[pid] = val;}
+\DoxyCodeLine{00885                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00886                         \}}
+\DoxyCodeLine{00887 }
+\DoxyCodeLine{00888                 \}}
+\DoxyCodeLine{00889 }
+\DoxyCodeLine{00890                 \textcolor{comment}{//if (type == AnimatorControllerParameterType.Int)}}
+\DoxyCodeLine{00891                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00892                 \textcolor{comment}{//  bool used = isKeyframe ? true : buffer.ReadBool(ref bitposition);}}
+\DoxyCodeLine{00893 }
+\DoxyCodeLine{00894                 \textcolor{comment}{//  if (used)}}
+\DoxyCodeLine{00895                 \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00896                 \textcolor{comment}{//      int val = (useGlobalParamSettings) ?}}
+\DoxyCodeLine{00897                 \textcolor{comment}{//          buffer.ReadSignedPackedBytes(ref bitposition, 32) :}}
+\DoxyCodeLine{00898                 \textcolor{comment}{//          ps.icrusher.ReadValue(buffer, ref bitposition);}}
+\DoxyCodeLine{00899 }
+\DoxyCodeLine{00900                 \textcolor{comment}{//      parms[pid] = val;}}
+\DoxyCodeLine{00901                 \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00902                 \textcolor{comment}{//  else}}
+\DoxyCodeLine{00903                 \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00904                 \textcolor{comment}{//      if (!frameIsInUse)}}
+\DoxyCodeLine{00905                 \textcolor{comment}{//          parms[pid] = SmartVar.None;}}
+\DoxyCodeLine{00906                 \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00907                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00908 }
+\DoxyCodeLine{00909                 \textcolor{comment}{//else if (type == AnimatorControllerParameterType.Float)}}
+\DoxyCodeLine{00910                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00911                 \textcolor{comment}{//  bool used = isKeyframe ? true : buffer.ReadBool(ref bitposition);}}
+\DoxyCodeLine{00912 }
+\DoxyCodeLine{00913                 \textcolor{comment}{//  if (used)}}
+\DoxyCodeLine{00914                 \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00915                 \textcolor{comment}{//      parms[pid] = (useGlobalParamSettings) ?}}
+\DoxyCodeLine{00916                 \textcolor{comment}{//          buffer.ReadHalf(ref bitposition) :}}
+\DoxyCodeLine{00917                 \textcolor{comment}{//          ps.fcrusher.ReadValue(buffer, ref bitposition);}}
+\DoxyCodeLine{00918                 \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00919                 \textcolor{comment}{//  else}}
+\DoxyCodeLine{00920                 \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00921                 \textcolor{comment}{//      if (!frameIsInUse)}}
+\DoxyCodeLine{00922                 \textcolor{comment}{//          parms[pid] = SmartVar.None;}}
+\DoxyCodeLine{00923                 \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00924                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00925 }
+\DoxyCodeLine{00927                 \textcolor{comment}{//else if (type == AnimatorControllerParameterType.Bool)}}
+\DoxyCodeLine{00928                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00929                 \textcolor{comment}{//  bool val = buffer.ReadBool(ref bitposition);}}
+\DoxyCodeLine{00930                 \textcolor{comment}{//  parms[pid] = val;}}
+\DoxyCodeLine{00931                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00932 }
+\DoxyCodeLine{00934                 \textcolor{comment}{//else if (type == AnimatorControllerParameterType.Trigger)}}
+\DoxyCodeLine{00935                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00936                 \textcolor{comment}{//  bool val = buffer.ReadBool(ref bitposition);}}
+\DoxyCodeLine{00937                 \textcolor{comment}{//  parms[pid] = val;}}
+\DoxyCodeLine{00938                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00939             \}}
+\DoxyCodeLine{00940         \}}
+\DoxyCodeLine{00941 }
+\DoxyCodeLine{00946         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CompleteTargetParameters()}
+\DoxyCodeLine{00947         \{}
+\DoxyCodeLine{00948             SmartVar[] prevParams = (snapFrame != \textcolor{keyword}{null}) ? snapFrame.parameters : targFrame.parameters;}
+\DoxyCodeLine{00949             SmartVar[] targParams = targFrame.parameters;}
+\DoxyCodeLine{00954             for (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00955             \{}
+\DoxyCodeLine{00956                 SmartVar prevParam = prevParams[pid];}
+\DoxyCodeLine{00957                 SmartVar targParam = targParams[pid];}
+\DoxyCodeLine{00958                 var psettings = sharedParamSettings[pid];}
+\DoxyCodeLine{00959 }
+\DoxyCodeLine{00960                 \textcolor{keywordflow}{if} (prevParam.TypeCode == SmartVarTypeCode.None)}
+\DoxyCodeLine{00961                 \{}
+\DoxyCodeLine{00962                     prevParam = psettings.defaultValue;}
+\DoxyCodeLine{00963                     prevParams[pid] = prevParam;}
+\DoxyCodeLine{00964                 \}}
+\DoxyCodeLine{00965 }
+\DoxyCodeLine{00966                 \textcolor{keywordflow}{if} (targParam.TypeCode == SmartVarTypeCode.None)}
+\DoxyCodeLine{00967                 \{}
+\DoxyCodeLine{00968                     targParam = prevParam;}
+\DoxyCodeLine{00969                     targParams[pid] = prevParam;}
+\DoxyCodeLine{00970                 \}}
+\DoxyCodeLine{00971             \}}
+\DoxyCodeLine{00972         \}}
+\DoxyCodeLine{00973 }
+\DoxyCodeLine{00978         \textcolor{keyword}{private} \textcolor{keywordtype}{void} InterpolateParams(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00979         \{}
+\DoxyCodeLine{00980 }
+\DoxyCodeLine{00981             SmartVar[] prevParams =\textcolor{comment}{/* (snapF != null) ?*/} snapFrame.parameters \textcolor{comment}{/*: targF.parameters*/};}
+\DoxyCodeLine{00982             SmartVar[] targParams = targFrame.parameters;}
+\DoxyCodeLine{00983 }
+\DoxyCodeLine{00984             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{00985             \{}
+\DoxyCodeLine{00986 }
+\DoxyCodeLine{00987                 var psettings = sharedParamSettings[pid];}
+\DoxyCodeLine{00988                 \textcolor{keywordtype}{int} hash = psettings.hash;}
+\DoxyCodeLine{00989                 \textcolor{keywordflow}{if} (!useGlobalParamSettings \&\& !psettings.include)}
+\DoxyCodeLine{00990                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00991 }
+\DoxyCodeLine{00992                 var type = psettings.paramType;}
+\DoxyCodeLine{00993 }
+\DoxyCodeLine{00994                 SmartVar prevParam = prevParams[pid];}
+\DoxyCodeLine{00995                 SmartVar targParam = targParams[pid];}
+\DoxyCodeLine{00996 }
+\DoxyCodeLine{00997                 \textcolor{keywordflow}{if} (prevParam.TypeCode == SmartVarTypeCode.None)}
+\DoxyCodeLine{00998                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00999 }
+\DoxyCodeLine{01000                 \textcolor{keywordflow}{if} (targParam.TypeCode == SmartVarTypeCode.None)}
+\DoxyCodeLine{01001                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01002 }
+\DoxyCodeLine{01003                 \textcolor{keywordflow}{switch} (type)}
+\DoxyCodeLine{01004                 \{}
+\DoxyCodeLine{01005                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Int:}
+\DoxyCodeLine{01006                         \{}
+\DoxyCodeLine{01007                             \textcolor{keywordflow}{if} (sharedParamDefaults.includeInts == \textcolor{keyword}{false})}
+\DoxyCodeLine{01008                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01009 }
+\DoxyCodeLine{01011                             \textcolor{keywordflow}{if} (t == 0)}
+\DoxyCodeLine{01012                             \{}
+\DoxyCodeLine{01013                                 animator.SetInteger(hash, prevParam);}
+\DoxyCodeLine{01014                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01015                             \}}
+\DoxyCodeLine{01016 }
+\DoxyCodeLine{01017                             ParameterInterpolation interpmethod;}
+\DoxyCodeLine{01018 }
+\DoxyCodeLine{01019                             \textcolor{keywordflow}{if} (useGlobalParamSettings)}
+\DoxyCodeLine{01020                                 interpmethod = sharedParamDefaults.interpolateInts;}
+\DoxyCodeLine{01021                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01022                                 interpmethod = psettings.interpolate;}
+\DoxyCodeLine{01023 }
+\DoxyCodeLine{01024                             \textcolor{keywordflow}{if} (interpmethod == ParameterInterpolation.Hold)}
+\DoxyCodeLine{01025                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01026 }
+\DoxyCodeLine{01027                             \textcolor{keywordtype}{int} value =}
+\DoxyCodeLine{01028                                 (interpmethod == ParameterInterpolation.Advance) ? (\textcolor{keywordtype}{int})targParam :}
+\DoxyCodeLine{01029                                 (interpmethod == ParameterInterpolation.Lerp) ? (\textcolor{keywordtype}{int})Mathf.Lerp(prevParam, targParam, t) :}
+\DoxyCodeLine{01030                                 (int)psettings.defaultValue;}
+\DoxyCodeLine{01031 }
+\DoxyCodeLine{01032                             animator.SetInteger(hash, value);}
+\DoxyCodeLine{01033 }
+\DoxyCodeLine{01034                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01035                         \}}
+\DoxyCodeLine{01036 }
+\DoxyCodeLine{01037 }
+\DoxyCodeLine{01038                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Float:}
+\DoxyCodeLine{01039                         \{}
+\DoxyCodeLine{01040                             \textcolor{keywordflow}{if} (sharedParamDefaults.includeFloats == \textcolor{keyword}{false})}
+\DoxyCodeLine{01041                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01042 }
+\DoxyCodeLine{01043 }
+\DoxyCodeLine{01044                             \textcolor{keywordflow}{if} (t == 0)}
+\DoxyCodeLine{01045                             \{}
+\DoxyCodeLine{01046                                 animator.SetFloat(hash, prevParam);}
+\DoxyCodeLine{01047                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01048                             \}}
+\DoxyCodeLine{01049 }
+\DoxyCodeLine{01050                             ParameterInterpolation interpmethod;}
+\DoxyCodeLine{01051                             \textcolor{keywordflow}{if} (useGlobalParamSettings)}
+\DoxyCodeLine{01052 }
+\DoxyCodeLine{01053                                 interpmethod = sharedParamDefaults.interpolateFloats;}
+\DoxyCodeLine{01054                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01055                                 interpmethod = psettings.interpolate;}
+\DoxyCodeLine{01056 }
+\DoxyCodeLine{01057                             \textcolor{keywordflow}{if} (interpmethod == ParameterInterpolation.Hold)}
+\DoxyCodeLine{01058                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01059 }
+\DoxyCodeLine{01060                             SmartVar value =}
+\DoxyCodeLine{01061                                 (interpmethod == ParameterInterpolation.Lerp) ? (SmartVar)(Mathf.Lerp((\textcolor{keywordtype}{float})prevParam, (float)targParam, t)) :}
+\DoxyCodeLine{01062                                 (interpmethod == ParameterInterpolation.Advance) ? targParam :}
+\DoxyCodeLine{01063                                 psettings.defaultValue;}
+\DoxyCodeLine{01064 }
+\DoxyCodeLine{01065                             animator.SetFloat(hash, value);}
+\DoxyCodeLine{01066 }
+\DoxyCodeLine{01067                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01068                         \}}
+\DoxyCodeLine{01069 }
+\DoxyCodeLine{01070 }
+\DoxyCodeLine{01071                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Bool:}
+\DoxyCodeLine{01072                         \{}
+\DoxyCodeLine{01073                             \textcolor{keywordflow}{if} (t != 0)}
+\DoxyCodeLine{01074                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01075 }
+\DoxyCodeLine{01076                             \textcolor{keywordflow}{if} (!sharedParamDefaults.includeBools)}
+\DoxyCodeLine{01077                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01078 }
+\DoxyCodeLine{01079                             animator.SetBool(hash, prevParam);}
+\DoxyCodeLine{01080                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01081                         \}}
+\DoxyCodeLine{01082 }
+\DoxyCodeLine{01083                     \textcolor{keywordflow}{case} AnimatorControllerParameterType.Trigger:}
+\DoxyCodeLine{01084                         \{}
+\DoxyCodeLine{01085                             \textcolor{keywordflow}{if} (t != 0)}
+\DoxyCodeLine{01086                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01087 }
+\DoxyCodeLine{01088                             \textcolor{keywordflow}{if} (!sharedParamDefaults.includeTriggers)}
+\DoxyCodeLine{01089                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01090 }
+\DoxyCodeLine{01091                             \textcolor{keywordflow}{if} (prevParam)}
+\DoxyCodeLine{01092                                 animator.SetTrigger(hash);}
+\DoxyCodeLine{01093                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01094                         \}}
+\DoxyCodeLine{01095 }
+\DoxyCodeLine{01096                     \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{01097                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01098                 \}}
+\DoxyCodeLine{01099             \}}
+\DoxyCodeLine{01100         \}}
+\DoxyCodeLine{01101 }
+\DoxyCodeLine{01107         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ExtrapolateParams(Frame prev, Frame targ, Frame newtarg)}
+\DoxyCodeLine{01108         \{}
+\DoxyCodeLine{01109             \textcolor{keywordflow}{if} (ReferenceEquals(prev, \textcolor{keyword}{null}))}
+\DoxyCodeLine{01110                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01111 }
+\DoxyCodeLine{01112             var prev\_params = prev.parameters;}
+\DoxyCodeLine{01113             var targ\_params = targ.parameters;}
+\DoxyCodeLine{01114 }
+\DoxyCodeLine{01116             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pid = 0; pid < paramCount; ++pid)}
+\DoxyCodeLine{01117             \{}
+\DoxyCodeLine{01118                 var ps = sharedParamSettings[pid];}
+\DoxyCodeLine{01119                 var type = ps.paramType;}
+\DoxyCodeLine{01120 }
+\DoxyCodeLine{01121                 \textcolor{keywordflow}{if} (!useGlobalParamSettings \&\& !ps.include)}
+\DoxyCodeLine{01122                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01123 }
+\DoxyCodeLine{01126 }
+\DoxyCodeLine{01127                 \textcolor{comment}{// Float lerps back toward default value on lost frames as a loss handling compromise currently.}}
+\DoxyCodeLine{01128                 \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Float)}
+\DoxyCodeLine{01129                 \{}
+\DoxyCodeLine{01130                     var extrapmethod = (useGlobalParamSettings) ? sharedParamDefaults.extrapolateFloats : ps.extrapolate;}
+\DoxyCodeLine{01131 }
+\DoxyCodeLine{01132                     newtarg.parameters[pid] =}
+\DoxyCodeLine{01133                         (extrapmethod == ParameterExtrapolation.Hold) ? targ\_params[pid] :}
+\DoxyCodeLine{01134                         (extrapmethod == ParameterExtrapolation.Lerp) ? (SmartVar)(targ\_params[pid] + ((float)targ\_params[pid] -\/ prev\_params[pid])) :}
+\DoxyCodeLine{01135                         ps.defaultValue;}
+\DoxyCodeLine{01136                 \}}
+\DoxyCodeLine{01137 }
+\DoxyCodeLine{01138                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Int)}
+\DoxyCodeLine{01139                 \{}
+\DoxyCodeLine{01140                     var extrapmethod = (useGlobalParamSettings) ? sharedParamDefaults.extrapolateInts : ps.extrapolate;}
+\DoxyCodeLine{01141 }
+\DoxyCodeLine{01142                     newtarg.parameters[pid] =}
+\DoxyCodeLine{01143                         (extrapmethod == ParameterExtrapolation.Hold) ? targ\_params[pid] :}
+\DoxyCodeLine{01144                         (extrapmethod == ParameterExtrapolation.Lerp) ? (SmartVar)(targ\_params[pid] + (targ\_params[pid] -\/ prev\_params[pid])) :}
+\DoxyCodeLine{01145                         ps.defaultValue;}
+\DoxyCodeLine{01146                 \}}
+\DoxyCodeLine{01147 }
+\DoxyCodeLine{01148                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Bool)}
+\DoxyCodeLine{01149                 \{}
+\DoxyCodeLine{01150                     var extrapmethod = (useGlobalParamSettings) ? sharedParamDefaults.extrapolateBools : ps.extrapolate;}
+\DoxyCodeLine{01151 }
+\DoxyCodeLine{01152                     newtarg.parameters[pid] =}
+\DoxyCodeLine{01153                         (extrapmethod == ParameterExtrapolation.Hold) ? targ\_params[pid] : ps.defaultValue;}
+\DoxyCodeLine{01154                 \}}
+\DoxyCodeLine{01155 }
+\DoxyCodeLine{01157                 \textcolor{keywordflow}{else} \textcolor{comment}{/*if (includeTriggers)*/}}
+\DoxyCodeLine{01158                 \{}
+\DoxyCodeLine{01159                     var extrapmethod = (useGlobalParamSettings) ? sharedParamDefaults.extrapolateTriggers : ps.extrapolate;}
+\DoxyCodeLine{01160 }
+\DoxyCodeLine{01161                     newtarg.parameters[pid] =}
+\DoxyCodeLine{01162                         (extrapmethod == ParameterExtrapolation.Hold) ? targ\_params[pid] : ps.defaultValue;}
+\DoxyCodeLine{01163                 \}}
+\DoxyCodeLine{01164             \}}
+\DoxyCodeLine{01165         \}}
+\DoxyCodeLine{01166 }
+\DoxyCodeLine{01167 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01168 }
+\DoxyCodeLine{01169 \textcolor{preprocessor}{        \#region Passhthru Calls}}
+\DoxyCodeLine{01170 }
+\DoxyCodeLine{01171         \textcolor{keyword}{private} readonly Queue<AnimPassThru> passThruQueue = \textcolor{keyword}{new} Queue<AnimPassThru>(2);}
+\DoxyCodeLine{01172 }
+\DoxyCodeLine{01173         \textcolor{keyword}{private} \textcolor{keywordtype}{void} EnqueuePassthrough(PassThruType type, \textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{int} layer, \textcolor{keywordtype}{float} ntime, \textcolor{keywordtype}{float} otime, \textcolor{keywordtype}{float} duration, LocalApplyTiming localApplyTiming)}
+\DoxyCodeLine{01174         \{}
+\DoxyCodeLine{01175             var apt = \textcolor{keyword}{new} AnimPassThru(type, hash, layer, ntime, otime, duration, localApplyTiming);}
+\DoxyCodeLine{01176             passThruQueue.Enqueue(apt);}
+\DoxyCodeLine{01177 }
+\DoxyCodeLine{01180             \textcolor{keywordflow}{if} (localApplyTiming == LocalApplyTiming.Immediately || !syncPassThrus)}
+\DoxyCodeLine{01181                 ExecutePassThru(apt);}
+\DoxyCodeLine{01182         \}}
+\DoxyCodeLine{01183 }
+\DoxyCodeLine{01184         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTrigger(\textcolor{keywordtype}{string} triggerName, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01185         \{}
+\DoxyCodeLine{01186             \textcolor{keywordtype}{int} hash = Animator.StringToHash(triggerName);}
+\DoxyCodeLine{01187             EnqueuePassthrough(PassThruType.SetTrigger, hash, -\/1, -\/1, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01188         \}}
+\DoxyCodeLine{01189         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTrigger(\textcolor{keywordtype}{int} hash, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01190         \{}
+\DoxyCodeLine{01191             EnqueuePassthrough(PassThruType.SetTrigger, hash, -\/1, -\/1, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01192         \}}
+\DoxyCodeLine{01193 }
+\DoxyCodeLine{01194         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetTrigger(\textcolor{keywordtype}{string} triggerName, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01195         \{}
+\DoxyCodeLine{01196             \textcolor{keywordtype}{int} hash = Animator.StringToHash(triggerName);}
+\DoxyCodeLine{01197             EnqueuePassthrough(PassThruType.ResetTrigger, hash, -\/1, -\/1, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01198         \}}
+\DoxyCodeLine{01199         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetTrigger(\textcolor{keywordtype}{int} hash, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01200         \{}
+\DoxyCodeLine{01201             EnqueuePassthrough(PassThruType.ResetTrigger, hash, -\/1, -\/1, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01202         \}}
+\DoxyCodeLine{01203 }
+\DoxyCodeLine{01204         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Play(\textcolor{keywordtype}{string} stateName, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} normalizedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01205         \{}
+\DoxyCodeLine{01206             \textcolor{keywordtype}{int} hash = Animator.StringToHash(stateName);}
+\DoxyCodeLine{01207             EnqueuePassthrough(PassThruType.Play, hash, layer, normalizedTime, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01208         \}}
+\DoxyCodeLine{01209         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Play(\textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} normalizedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01210         \{}
+\DoxyCodeLine{01211             EnqueuePassthrough(PassThruType.Play, hash, layer, normalizedTime, -\/1, -\/1, localApplyTiming);}
+\DoxyCodeLine{01212         \}}
+\DoxyCodeLine{01213 }
+\DoxyCodeLine{01214         \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayInFixedTime(\textcolor{keywordtype}{string} stateName, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} fixedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01215         \{}
+\DoxyCodeLine{01216             \textcolor{keywordtype}{int} hash = Animator.StringToHash(stateName);}
+\DoxyCodeLine{01217             EnqueuePassthrough(PassThruType.PlayFixed, hash, layer, -\/1, fixedTime, -\/1, localApplyTiming);}
+\DoxyCodeLine{01218         \}}
+\DoxyCodeLine{01219         \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayInFixedTime(\textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} fixedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01220         \{}
+\DoxyCodeLine{01221             EnqueuePassthrough(PassThruType.PlayFixed, hash, layer, -\/1, fixedTime, -\/1, localApplyTiming);}
+\DoxyCodeLine{01222         \}}
+\DoxyCodeLine{01223 }
+\DoxyCodeLine{01224         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CrossFade(\textcolor{keywordtype}{string} stateName, \textcolor{keywordtype}{float} duration, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} normalizedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01225         \{}
+\DoxyCodeLine{01226             \textcolor{keywordtype}{int} hash = Animator.StringToHash(stateName);}
+\DoxyCodeLine{01227             EnqueuePassthrough(PassThruType.CrossFade, hash, layer, normalizedTime, -\/1, duration, localApplyTiming);}
+\DoxyCodeLine{01228         \}}
+\DoxyCodeLine{01229         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CrossFade(\textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{float} duration, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} normalizedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01230         \{}
+\DoxyCodeLine{01231             EnqueuePassthrough(PassThruType.CrossFade, hash, layer, normalizedTime, -\/1, duration, localApplyTiming);}
+\DoxyCodeLine{01232         \}}
+\DoxyCodeLine{01233 }
+\DoxyCodeLine{01234         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CrossFadeInFixedTime(\textcolor{keywordtype}{string} stateName, \textcolor{keywordtype}{float} duration, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} fixedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01235         \{}
+\DoxyCodeLine{01236             \textcolor{keywordtype}{int} hash = Animator.StringToHash(stateName);}
+\DoxyCodeLine{01237             EnqueuePassthrough(PassThruType.CrossFadeFixed, hash, layer, -\/1, fixedTime, duration, localApplyTiming);}
+\DoxyCodeLine{01238         \}}
+\DoxyCodeLine{01239         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CrossFadeInFixedTime(\textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{float} duration, \textcolor{keywordtype}{int} layer = -\/1, \textcolor{keywordtype}{float} fixedTime = 0, LocalApplyTiming localApplyTiming = LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01240         \{}
+\DoxyCodeLine{01241             EnqueuePassthrough(PassThruType.CrossFadeFixed, hash, layer, -\/1, fixedTime, duration, localApplyTiming);}
+\DoxyCodeLine{01242         \}}
+\DoxyCodeLine{01243 }
+\DoxyCodeLine{01244 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01245 }
+\DoxyCodeLine{01246 \textcolor{preprocessor}{        \#region Passthru Handling}}
+\DoxyCodeLine{01247 }
+\DoxyCodeLine{01251         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ExecutePassThruQueue(Frame frame)}
+\DoxyCodeLine{01252         \{}
+\DoxyCodeLine{01253             var passThrus = frame.passThrus;}
+\DoxyCodeLine{01254             \textcolor{keywordflow}{while} (passThrus.Count > 0)}
+\DoxyCodeLine{01255             \{}
+\DoxyCodeLine{01256                 var pt = passThrus.Dequeue();}
+\DoxyCodeLine{01257                 ExecutePassThru(pt);}
+\DoxyCodeLine{01258             \}}
+\DoxyCodeLine{01259         \}}
+\DoxyCodeLine{01260 }
+\DoxyCodeLine{01261         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ExecutePassThru(AnimPassThru pt)}
+\DoxyCodeLine{01262         \{}
+\DoxyCodeLine{01263             \textcolor{keywordtype}{int} hash = pt.hash;}
+\DoxyCodeLine{01264             \textcolor{keywordflow}{switch} (pt.passThruType)}
+\DoxyCodeLine{01265             \{}
+\DoxyCodeLine{01266                 \textcolor{keywordflow}{case} PassThruType.SetTrigger:}
+\DoxyCodeLine{01267                     animator.SetTrigger(pt.hash);}
+\DoxyCodeLine{01268                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01269                 \textcolor{keywordflow}{case} PassThruType.ResetTrigger:}
+\DoxyCodeLine{01270                     animator.ResetTrigger(pt.hash);}
+\DoxyCodeLine{01271                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01272                 \textcolor{keywordflow}{case} PassThruType.Play:}
+\DoxyCodeLine{01273                     animator.Play(hash, pt.layer, pt.normlTime);}
+\DoxyCodeLine{01274                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01275                 \textcolor{keywordflow}{case} PassThruType.PlayFixed:}
+\DoxyCodeLine{01276                     animator.PlayInFixedTime(hash, pt.layer, pt.fixedTime);}
+\DoxyCodeLine{01277                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01278                 \textcolor{keywordflow}{case} PassThruType.CrossFade:}
+\DoxyCodeLine{01279                     animator.CrossFade(hash, pt.duration, pt.layer, pt.normlTime);}
+\DoxyCodeLine{01280                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01281                 \textcolor{keywordflow}{case} PassThruType.CrossFadeFixed:}
+\DoxyCodeLine{01282                     animator.CrossFadeInFixedTime(hash, pt.duration, pt.layer, pt.fixedTime);}
+\DoxyCodeLine{01283                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01284             \}}
+\DoxyCodeLine{01285         \}}
+\DoxyCodeLine{01286 }
+\DoxyCodeLine{01287         \textcolor{keyword}{private} SerializationFlags WritePassThrus(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01288         \{}
+\DoxyCodeLine{01289             var passThrus = frame.passThrus;}
+\DoxyCodeLine{01290             SerializationFlags flags = (passThrus.Count == 0) ? SerializationFlags.None : SerializationFlags.HasContent;}
+\DoxyCodeLine{01291 }
+\DoxyCodeLine{01292             while (passThrus.Count > 0)}
+\DoxyCodeLine{01293             \{}
+\DoxyCodeLine{01294                 var pt = passThrus.Dequeue();}
+\DoxyCodeLine{01295                 var triggerType = pt.passThruType;}
+\DoxyCodeLine{01296                 \textcolor{keywordtype}{int} hash = pt.hash;}
+\DoxyCodeLine{01297 }
+\DoxyCodeLine{01298                 \textcolor{keywordtype}{bool} isTrigger = triggerType == PassThruType.SetTrigger || triggerType == PassThruType.ResetTrigger;}
+\DoxyCodeLine{01299 }
+\DoxyCodeLine{01300                 \textcolor{keywordflow}{if} (pt.localApplyTiming == LocalApplyTiming.OnSend)}
+\DoxyCodeLine{01301                     ExecutePassThru(pt);}
+\DoxyCodeLine{01302 }
+\DoxyCodeLine{01304                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01305 }
+\DoxyCodeLine{01307                 buffer.Write((uint)triggerType, ref bitposition, 3);}
+\DoxyCodeLine{01308 }
+\DoxyCodeLine{01309                 \textcolor{keywordtype}{int} index;}
+\DoxyCodeLine{01310                 \textcolor{keywordtype}{bool} isIndexed;}
+\DoxyCodeLine{01311 }
+\DoxyCodeLine{01312                 isIndexed =}
+\DoxyCodeLine{01313                 (isTrigger) ? sharedTriggHashes.TryGetValue(hash, out index) :}
+\DoxyCodeLine{01314                 sharedStateHashes.TryGetValue(pt.hash, out index);}
+\DoxyCodeLine{01315 }
+\DoxyCodeLine{01316 }
+\DoxyCodeLine{01317 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{01318                 \textcolor{keywordflow}{if} (!isIndexed)}
+\DoxyCodeLine{01319                     Debug.LogWarning(GetType().Name +}
+\DoxyCodeLine{01320                         \textcolor{stringliteral}{"{} is networking a state/trigger that has not been indexed, resulting in greatly increased size. Be sure to click 'Rebuild Indexes' whenever states/triggers are added or removed."{}});}
+\DoxyCodeLine{01321 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01323                 buffer.WriteBool(isIndexed, ref bitposition);}
+\DoxyCodeLine{01324 }
+\DoxyCodeLine{01326                 \textcolor{keywordflow}{if} (isIndexed)}
+\DoxyCodeLine{01327                     buffer.Write((uint)index, ref bitposition, isTrigger ? bitsForTriggerIndex : bitsForStateIndex);}
+\DoxyCodeLine{01328                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01329                     buffer.WriteSigned(pt.hash, ref bitposition, 32);}
+\DoxyCodeLine{01330 }
+\DoxyCodeLine{01332                 \textcolor{keywordflow}{if} (isTrigger)}
+\DoxyCodeLine{01333                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01334 }
+\DoxyCodeLine{01336                 \textcolor{keywordtype}{bool} useLayer = layerCount > 1;}
+\DoxyCodeLine{01337                 \textcolor{keywordflow}{if} (useLayer)}
+\DoxyCodeLine{01338                     buffer.Write((uint)pt.layer + 1, ref bitposition, bitsForLayerIndex);}
+\DoxyCodeLine{01339 }
+\DoxyCodeLine{01340                 \textcolor{keywordtype}{bool} useNormalizedTime = (triggerType == PassThruType.Play || triggerType == PassThruType.CrossFade);}
+\DoxyCodeLine{01341 }
+\DoxyCodeLine{01343                 \textcolor{keywordflow}{if} (useNormalizedTime)}
+\DoxyCodeLine{01344                 \{}
+\DoxyCodeLine{01345                     \textcolor{keywordtype}{float} ntime = pt.normlTime;}
+\DoxyCodeLine{01346 }
+\DoxyCodeLine{01347                     \textcolor{keywordflow}{if} (ntime == 0)}
+\DoxyCodeLine{01348                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01349                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01350                     \{}
+\DoxyCodeLine{01351                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01352                         buffer.WriteNorm(ntime, ref bitposition, (\textcolor{keywordtype}{int})passthruNormTimeCompress);}
+\DoxyCodeLine{01353                     \}}
+\DoxyCodeLine{01354                 \}}
+\DoxyCodeLine{01355 }
+\DoxyCodeLine{01357                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01358                 \{}
+\DoxyCodeLine{01359                     \textcolor{keywordtype}{float} ftime = pt.fixedTime;}
+\DoxyCodeLine{01360 }
+\DoxyCodeLine{01361                     \textcolor{keywordflow}{if} (ftime == 0)}
+\DoxyCodeLine{01362                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01363                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01364                     \{}
+\DoxyCodeLine{01365                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01366                         buffer.WriteHalf(ftime, ref bitposition);}
+\DoxyCodeLine{01367                     \}}
+\DoxyCodeLine{01368                 \}}
+\DoxyCodeLine{01369 }
+\DoxyCodeLine{01370                 \textcolor{keywordtype}{bool} isCrossFade = triggerType == PassThruType.CrossFade || triggerType == PassThruType.CrossFadeFixed;}
+\DoxyCodeLine{01371 }
+\DoxyCodeLine{01373                 \textcolor{keywordflow}{if} (isCrossFade)}
+\DoxyCodeLine{01374                     buffer.WriteHalf(pt.duration, ref bitposition);}
+\DoxyCodeLine{01375             \}}
+\DoxyCodeLine{01376 }
+\DoxyCodeLine{01378             buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01379 }
+\DoxyCodeLine{01380             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{01381         \}}
+\DoxyCodeLine{01382 }
+\DoxyCodeLine{01383         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CapturePassThrus(Frame frame)}
+\DoxyCodeLine{01384         \{}
+\DoxyCodeLine{01385             \textcolor{keywordflow}{if} (syncPassThrus)}
+\DoxyCodeLine{01386                 \textcolor{keywordflow}{while} (passThruQueue.Count > 0)}
+\DoxyCodeLine{01387                     frame.passThrus.Enqueue(passThruQueue.Dequeue());}
+\DoxyCodeLine{01388         \}}
+\DoxyCodeLine{01389 }
+\DoxyCodeLine{01390         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ReadPassThrus(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01391         \{}
+\DoxyCodeLine{01392 }
+\DoxyCodeLine{01393             \textcolor{keywordflow}{while} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{01394             \{}
+\DoxyCodeLine{01396                 PassThruType triggerType = (PassThruType)buffer.Read(ref bitposition, 3);}
+\DoxyCodeLine{01397                 \textcolor{keywordtype}{bool} isTrigger = triggerType == PassThruType.SetTrigger || triggerType == PassThruType.ResetTrigger;}
+\DoxyCodeLine{01398 }
+\DoxyCodeLine{01400                 \textcolor{keywordtype}{bool} isIndexed = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01401 }
+\DoxyCodeLine{01403                 \textcolor{keywordtype}{int} hash;}
+\DoxyCodeLine{01404                 \textcolor{keywordflow}{if} (isIndexed)}
+\DoxyCodeLine{01405                 \{}
+\DoxyCodeLine{01406                     \textcolor{keywordflow}{if} (isTrigger)}
+\DoxyCodeLine{01407                     \{}
+\DoxyCodeLine{01408                         hash = (int)buffer.Read(ref bitposition, bitsForTriggerIndex);}
+\DoxyCodeLine{01409                         hash = sharedTriggIndexes[hash];}
+\DoxyCodeLine{01410                     \}}
+\DoxyCodeLine{01411                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01412                     \{}
+\DoxyCodeLine{01413                         hash = (int)buffer.Read(ref bitposition, bitsForStateIndex);}
+\DoxyCodeLine{01414                         hash = sharedStateIndexes[hash];}
+\DoxyCodeLine{01415                     \}}
+\DoxyCodeLine{01416                 \}}
+\DoxyCodeLine{01417                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01418                 \{}
+\DoxyCodeLine{01419                     hash = buffer.ReadSigned(ref bitposition, 32);}
+\DoxyCodeLine{01420 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{01421                     Debug.LogWarning(GetType().Name +}
+\DoxyCodeLine{01422                         \textcolor{stringliteral}{"{} is networking a state/trigger that has not been indexed, resulting in greatly increased size. Be sure to click 'Rebuild Indexes' whenever states/triggers are added or removed. "{}} + hash);}
+\DoxyCodeLine{01423 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01424                 \}}
+\DoxyCodeLine{01426                 \textcolor{keywordflow}{if} (isTrigger)}
+\DoxyCodeLine{01427                 \{}
+\DoxyCodeLine{01428                     frame.passThrus.Enqueue(\textcolor{keyword}{new} AnimPassThru(triggerType, hash, -\/1, -\/1, -\/1, -\/1));}
+\DoxyCodeLine{01429                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01430                 \}}
+\DoxyCodeLine{01431 }
+\DoxyCodeLine{01433                 \textcolor{keywordtype}{int} layer;}
+\DoxyCodeLine{01434                 \textcolor{keywordtype}{bool} useLayer = layerCount > 1;}
+\DoxyCodeLine{01435                 layer = useLayer ? ((int)buffer.Read(ref bitposition, bitsForLayerIndex) -\/ 1) : -\/1;}
+\DoxyCodeLine{01436 }
+\DoxyCodeLine{01437 }
+\DoxyCodeLine{01438                 \textcolor{keywordtype}{float} normTime;}
+\DoxyCodeLine{01439                 \textcolor{keywordtype}{float} fixedTime;}
+\DoxyCodeLine{01440 }
+\DoxyCodeLine{01441                 \textcolor{keywordtype}{bool} useNormalizedTime = triggerType == PassThruType.Play || triggerType == PassThruType.CrossFade;}
+\DoxyCodeLine{01442 }
+\DoxyCodeLine{01444                 \textcolor{keywordflow}{if} (useNormalizedTime)}
+\DoxyCodeLine{01445                 \{}
+\DoxyCodeLine{01446                     \textcolor{keywordtype}{bool} nonZeroTime = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01447                     normTime = (nonZeroTime) ? buffer.ReadNorm(ref bitposition, (\textcolor{keywordtype}{int})passthruNormTimeCompress) : 0;}
+\DoxyCodeLine{01448                     fixedTime = -\/1;}
+\DoxyCodeLine{01449                 \}}
+\DoxyCodeLine{01451                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01452                 \{}
+\DoxyCodeLine{01453                     \textcolor{keywordtype}{bool} nonZeroTime = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01454                     fixedTime = (nonZeroTime) ? buffer.ReadHalf(ref bitposition) : 0;}
+\DoxyCodeLine{01455                     normTime = -\/1;}
+\DoxyCodeLine{01456                 \}}
+\DoxyCodeLine{01457 }
+\DoxyCodeLine{01459                 \textcolor{keywordtype}{bool} isCrossFade = triggerType == PassThruType.CrossFade || triggerType == PassThruType.CrossFadeFixed;}
+\DoxyCodeLine{01460                 \textcolor{keywordtype}{float} duration = isCrossFade ? buffer.ReadHalf(ref bitposition) : -\/1;}
+\DoxyCodeLine{01461 }
+\DoxyCodeLine{01462                 frame.passThrus.Enqueue(\textcolor{keyword}{new} AnimPassThru(triggerType, hash, layer, normTime, fixedTime, duration));}
+\DoxyCodeLine{01463             \}}
+\DoxyCodeLine{01464         \}}
+\DoxyCodeLine{01465 }
+\DoxyCodeLine{01466 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01467 }
+\DoxyCodeLine{01468 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{01469 }
+\DoxyCodeLine{01470 \textcolor{preprocessor}{        \#region IK Handling}}
+\DoxyCodeLine{01471 }
+\DoxyCodeLine{01472 \textcolor{preprocessor}{        \#region IK Inspector}}
+\DoxyCodeLine{01474         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncIKHands = \textcolor{keyword}{false};}
+\DoxyCodeLine{01475         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} syncIKFeet = \textcolor{keyword}{false};}
+\DoxyCodeLine{01476 }
+\DoxyCodeLine{01477         [HideInInspector]}
+\DoxyCodeLine{01478         \textcolor{keyword}{public} ElementCrusher ikFeetPosCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Position, \textcolor{keyword}{false})}
+\DoxyCodeLine{01479         \{}
+\DoxyCodeLine{01480             local = \textcolor{keyword}{true},}
+\DoxyCodeLine{01481             XCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.X, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \},}
+\DoxyCodeLine{01482             YCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Y, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \},}
+\DoxyCodeLine{01483             ZCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Z, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \}}
+\DoxyCodeLine{01484         \};}
+\DoxyCodeLine{01485 }
+\DoxyCodeLine{01486         [HideInInspector]}
+\DoxyCodeLine{01487         \textcolor{keyword}{public} ElementCrusher ikHandPosCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Position, \textcolor{keyword}{false})}
+\DoxyCodeLine{01488         \{}
+\DoxyCodeLine{01489             local = \textcolor{keyword}{true},}
+\DoxyCodeLine{01490             XCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.X, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \},}
+\DoxyCodeLine{01491             YCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Y, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \},}
+\DoxyCodeLine{01492             ZCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Z, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat \}}
+\DoxyCodeLine{01493         \};}
+\DoxyCodeLine{01494 }
+\DoxyCodeLine{01495         [HideInInspector]}
+\DoxyCodeLine{01496         \textcolor{keyword}{public} ElementCrusher ikFeetRotCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Quaternion, \textcolor{keyword}{false})}
+\DoxyCodeLine{01497         \{}
+\DoxyCodeLine{01498             local = \textcolor{keyword}{true},}
+\DoxyCodeLine{01499             QCrusher = \textcolor{keyword}{new} QuatCrusher(CompressLevel.uint32Med, \textcolor{keyword}{true}, \textcolor{keyword}{false})}
+\DoxyCodeLine{01500         \};}
+\DoxyCodeLine{01501         [HideInInspector]}
+\DoxyCodeLine{01502         \textcolor{keyword}{public} ElementCrusher ikHandRotCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Quaternion, \textcolor{keyword}{false})}
+\DoxyCodeLine{01503         \{}
+\DoxyCodeLine{01504             local = \textcolor{keyword}{true},}
+\DoxyCodeLine{01505             QCrusher = \textcolor{keyword}{new} QuatCrusher(CompressLevel.uint32Med, \textcolor{keyword}{true}, \textcolor{keyword}{false})}
+\DoxyCodeLine{01506         \};}
+\DoxyCodeLine{01507 }
+\DoxyCodeLine{01508 \textcolor{preprocessor}{        \#endregion IK Inspector}}
+\DoxyCodeLine{01509 }
+\DoxyCodeLine{01510         \textcolor{comment}{//Vector3 heldLHandIKPos, heldLFeetIKPos, heldRHandIKPos, heldRFeetIKPos;}}
+\DoxyCodeLine{01511         \textcolor{comment}{//Quaternion heldLHandIKRot, heldLFeetIKRot, heldRHandIKRot, heldRFeetIKRot;}}
+\DoxyCodeLine{01512         \textcolor{keyword}{private} IKState[] heldIK = \textcolor{keyword}{new} IKState[4];}
+\DoxyCodeLine{01513         \textcolor{keyword}{private} \textcolor{keywordtype}{int} startIKEnum, endIKEnum;}
+\DoxyCodeLine{01514 }
+\DoxyCodeLine{01515         \textcolor{keyword}{private} \textcolor{keywordtype}{void} InitIK()}
+\DoxyCodeLine{01516         \{}
+\DoxyCodeLine{01517             startIKEnum = syncIKFeet ? 0 : syncIKHands ? 2 : 0;}
+\DoxyCodeLine{01518             endIKEnum = syncIKHands ? 4 : syncIKFeet ? 2 : 0;}
+\DoxyCodeLine{01519 }
+\DoxyCodeLine{01520             \textcolor{keywordflow}{if} (syncIKFeet || syncIKHands)}
+\DoxyCodeLine{01521                 heldIK = \textcolor{keyword}{new} IKState[4]}
+\DoxyCodeLine{01522                 \{}
+\DoxyCodeLine{01523                     syncIKFeet ? \textcolor{keyword}{new} IKState() : null,}
+\DoxyCodeLine{01524                     syncIKFeet ? new IKState() : null,}
+\DoxyCodeLine{01525                     syncIKHands ? new IKState() : null,}
+\DoxyCodeLine{01526                     syncIKHands ? new IKState() : null,}
+\DoxyCodeLine{01527                 \};}
+\DoxyCodeLine{01528         \}}
+\DoxyCodeLine{01529 }
+\DoxyCodeLine{01530         \textcolor{keyword}{public} \textcolor{keyword}{class }IKState}
+\DoxyCodeLine{01531         \{}
+\DoxyCodeLine{01532             \textcolor{keyword}{public} Vector3 pos;}
+\DoxyCodeLine{01533             \textcolor{keyword}{public} Quaternion rot;}
+\DoxyCodeLine{01534         \}}
+\DoxyCodeLine{01535 }
+\DoxyCodeLine{01536         \textcolor{keyword}{private} SerializationFlags WriteIK(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01537         \{}
+\DoxyCodeLine{01538             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{01539 }
+\DoxyCodeLine{01540             \textcolor{keywordtype}{int} end = endIKEnum;}
+\DoxyCodeLine{01541             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = startIKEnum; i < end; ++i)}
+\DoxyCodeLine{01542             \{}
+\DoxyCodeLine{01543                 var ikstate = frame.ikStates[i];}
+\DoxyCodeLine{01544                 ikFeetPosCrusher.CompressAndWrite(ikstate.pos, buffer, ref bitposition);}
+\DoxyCodeLine{01545                 ikFeetRotCrusher.CompressAndWrite(ikstate.rot, buffer, ref bitposition);}
+\DoxyCodeLine{01546 }
+\DoxyCodeLine{01547                 flags = SerializationFlags.HasChanged;}
+\DoxyCodeLine{01548             \}}
+\DoxyCodeLine{01549 }
+\DoxyCodeLine{01550             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{01551         \}}
+\DoxyCodeLine{01552 }
+\DoxyCodeLine{01553         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ReadIK(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01554         \{}
+\DoxyCodeLine{01555             \textcolor{keywordtype}{int} end = endIKEnum;}
+\DoxyCodeLine{01556             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = startIKEnum; i < end; ++i)}
+\DoxyCodeLine{01557             \{}
+\DoxyCodeLine{01558                 var ikstate = frame.ikStates[i];}
+\DoxyCodeLine{01559                 ikstate.pos  = (Vector3)ikFeetPosCrusher.ReadAndDecompress(buffer, ref bitposition);}
+\DoxyCodeLine{01560                 ikstate.rot  = (Quaternion)ikFeetRotCrusher.ReadAndDecompress(buffer, ref bitposition);}
+\DoxyCodeLine{01561             \}}
+\DoxyCodeLine{01562         \}}
+\DoxyCodeLine{01563 }
+\DoxyCodeLine{01564         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CaptureIK(Frame frame)}
+\DoxyCodeLine{01565         \{}
+\DoxyCodeLine{01566             \textcolor{keywordtype}{int} end = endIKEnum;}
+\DoxyCodeLine{01567             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = startIKEnum; i < end; ++i)}
+\DoxyCodeLine{01568             \{}
+\DoxyCodeLine{01569                 var ikstate = frame.ikStates[i];}
+\DoxyCodeLine{01570                 var ikheld = heldIK[i];}
+\DoxyCodeLine{01571                 ikstate.pos = ikheld.pos;}
+\DoxyCodeLine{01572                 ikstate.rot = ikheld.rot;}
+\DoxyCodeLine{01573             \}}
+\DoxyCodeLine{01574         \}}
+\DoxyCodeLine{01575 }
+\DoxyCodeLine{01576         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyIK(Frame frame)}
+\DoxyCodeLine{01577         \{}
+\DoxyCodeLine{01578             currentFrame = frame;}
+\DoxyCodeLine{01579         \}}
+\DoxyCodeLine{01580 }
+\DoxyCodeLine{01581         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnAnimatorIK(\textcolor{keywordtype}{int} layerIndex)}
+\DoxyCodeLine{01582         \{}
+\DoxyCodeLine{01583             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{01584             \{}
+\DoxyCodeLine{01585                 \textcolor{keywordtype}{int} end = endIKEnum;}
+\DoxyCodeLine{01586 }
+\DoxyCodeLine{01587                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = startIKEnum; i < end; ++i)}
+\DoxyCodeLine{01588                 \{}
+\DoxyCodeLine{01589                     var ikstate = heldIK[i];}
+\DoxyCodeLine{01590                     ikstate.pos = animator.GetIKPosition((AvatarIKGoal)i);}
+\DoxyCodeLine{01591                     ikstate.rot = animator.GetIKRotation((AvatarIKGoal)i);}
+\DoxyCodeLine{01592                 \}}
+\DoxyCodeLine{01593             \}}
+\DoxyCodeLine{01594 }
+\DoxyCodeLine{01595             \textcolor{comment}{// Unowned objects apply the current frame values}}
+\DoxyCodeLine{01596             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01597             \{}
+\DoxyCodeLine{01598                 \textcolor{keywordflow}{if} (endIKEnum > 0 \&\& !ReferenceEquals(currentFrame, \textcolor{keyword}{null}))}
+\DoxyCodeLine{01599                 \{}
+\DoxyCodeLine{01600                     Frame currframe = this.currentFrame;}
+\DoxyCodeLine{01601                     \textcolor{keywordtype}{int} end = endIKEnum;}
+\DoxyCodeLine{01602                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = startIKEnum; i < end; ++i)}
+\DoxyCodeLine{01603                     \{}
+\DoxyCodeLine{01604                         var ikstate = currframe.ikStates[i];}
+\DoxyCodeLine{01605                         animator.SetIKPosition((AvatarIKGoal)i, ikstate.pos);}
+\DoxyCodeLine{01606                         animator.SetIKRotation((AvatarIKGoal)i, ikstate.rot);}
+\DoxyCodeLine{01607                     \}}
+\DoxyCodeLine{01608                 \}}
+\DoxyCodeLine{01609             \}}
+\DoxyCodeLine{01610         \}}
+\DoxyCodeLine{01611 }
+\DoxyCodeLine{01612 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01613 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01614 }
+\DoxyCodeLine{01615 \textcolor{preprocessor}{        \#region State Handling}}
+\DoxyCodeLine{01616 }
+\DoxyCodeLine{01617         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CaptureStates(Frame frame)}
+\DoxyCodeLine{01618         \{}
+\DoxyCodeLine{01619             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01620             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01621             \{}
+\DoxyCodeLine{01622                 frame.layerWeights[layer] = animator.GetLayerWeight(layer);}
+\DoxyCodeLine{01623 }
+\DoxyCodeLine{01624                 \textcolor{keywordflow}{if} (animator.IsInTransition(layer))}
+\DoxyCodeLine{01625                 \{}
+\DoxyCodeLine{01626                     frame.layerIsInTransition[layer] = \textcolor{keyword}{true};}
+\DoxyCodeLine{01627 }
+\DoxyCodeLine{01628                     \textcolor{comment}{//if (syncTransitions)}}
+\DoxyCodeLine{01629                     \textcolor{comment}{//\{}}
+\DoxyCodeLine{01630                     \textcolor{comment}{//  AnimatorTransitionInfo transInfo = animator.GetAnimatorTransitionInfo(layer);}}
+\DoxyCodeLine{01631                     \textcolor{comment}{//  frame.stateHashes[layer] = transInfo.fullPathHash;}}
+\DoxyCodeLine{01632                     \textcolor{comment}{//  frame.normalizedTime[layer] = transInfo.normalizedTime;}}
+\DoxyCodeLine{01633                     \textcolor{comment}{//\}}}
+\DoxyCodeLine{01634                 \}}
+\DoxyCodeLine{01635                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01636                 \{}
+\DoxyCodeLine{01637                     AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layer);}
+\DoxyCodeLine{01638                     frame.layerIsInTransition[layer] = \textcolor{keyword}{false};}
+\DoxyCodeLine{01639                     frame.stateHashes[layer] = stateInfo.fullPathHash;}
+\DoxyCodeLine{01640 }
+\DoxyCodeLine{01641                     \textcolor{keywordtype}{float} ntime = stateInfo.normalizedTime;}
+\DoxyCodeLine{01642 }
+\DoxyCodeLine{01645                     \textcolor{keywordflow}{if} (normalizedTimeCompress == NormalizedFloatCompression.Full32 || normalizedTimeCompress == NormalizedFloatCompression.Half16)}
+\DoxyCodeLine{01646                     \{}
+\DoxyCodeLine{01648                         frame.normalizedTime[layer] = ntime;}
+\DoxyCodeLine{01649                     \}}
+\DoxyCodeLine{01650                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01651                     \{}
+\DoxyCodeLine{01653                         \textcolor{keywordflow}{if} (stateInfo.loop)}
+\DoxyCodeLine{01654                         \{}
+\DoxyCodeLine{01656                             frame.normalizedTime[layer] = (ntime > 1) ? ntime \% 1 : ntime;}
+\DoxyCodeLine{01657                         \}}
+\DoxyCodeLine{01658                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01659                         \{}
+\DoxyCodeLine{01661                             frame.normalizedTime[layer] = ntime > 1 ? 1 : ntime < 0 ? 0 : ntime;}
+\DoxyCodeLine{01662                         \}}
+\DoxyCodeLine{01663                     \}}
+\DoxyCodeLine{01664                 \}}
+\DoxyCodeLine{01665             \}}
+\DoxyCodeLine{01666         \}}
+\DoxyCodeLine{01667 }
+\DoxyCodeLine{01668         \textcolor{keyword}{private} SerializationFlags WriteStates(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01669         \{}
+\DoxyCodeLine{01670             var statehashes = frame.stateHashes;}
+\DoxyCodeLine{01671             var normaltimes = frame.normalizedTime;}
+\DoxyCodeLine{01672             var lyerweights = frame.layerWeights;}
+\DoxyCodeLine{01673             var lyerInTrans = frame.layerIsInTransition;}
+\DoxyCodeLine{01674 }
+\DoxyCodeLine{01675             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{01676 }
+\DoxyCodeLine{01677             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01678             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01679             \{}
+\DoxyCodeLine{01680 }
+\DoxyCodeLine{01681                 \textcolor{keywordtype}{int}? layerStateHash = statehashes[layer];}
+\DoxyCodeLine{01682 }
+\DoxyCodeLine{01684                 \textcolor{keywordtype}{bool} stateHasChange = !layerStateHash.HasValue || lastAnimationHash[layer] != layerStateHash.Value;}
+\DoxyCodeLine{01685 }
+\DoxyCodeLine{01687                 \textcolor{keywordflow}{if} (isKeyframe || stateHasChange)}
+\DoxyCodeLine{01688                 \{}
+\DoxyCodeLine{01690                     buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01691                     \textcolor{keywordtype}{bool} isInTransition = lyerInTrans[layer];}
+\DoxyCodeLine{01692                     buffer.WriteBool(isInTransition, ref bitposition);}
+\DoxyCodeLine{01693 }
+\DoxyCodeLine{01694                     \textcolor{keywordflow}{if} (isInTransition)}
+\DoxyCodeLine{01695                     \{}
+\DoxyCodeLine{01696                         \textcolor{comment}{//                      if (syncTransitions)}}
+\DoxyCodeLine{01697                         \textcolor{comment}{//                      \{}}
+\DoxyCodeLine{01698                         \textcolor{comment}{//                          TransitionInfo ti;}}
+\DoxyCodeLine{01699 }
+\DoxyCodeLine{01700                         \textcolor{comment}{//                          bool isIndexed = sharedTransHashes.TryGetValue(layerStateHash.Value, out ti);}}
+\DoxyCodeLine{01701                         \textcolor{comment}{//                          int index = (isIndexed) ? ti.index : -\/1;}}
+\DoxyCodeLine{01702 }
+\DoxyCodeLine{01703                         \textcolor{comment}{//                          buffer.WriteBool(isIndexed, ref bitposition);}}
+\DoxyCodeLine{01704 }
+\DoxyCodeLine{01705                         \textcolor{comment}{//                          if (isIndexed)}}
+\DoxyCodeLine{01706                         \textcolor{comment}{//                          \{}}
+\DoxyCodeLine{01707                         \textcolor{comment}{//                              buffer.Write((uint)index, ref bitposition, bitsForTransIndex);}}
+\DoxyCodeLine{01708                         \textcolor{comment}{//                          \}}}
+\DoxyCodeLine{01709                         \textcolor{comment}{//                          else}}
+\DoxyCodeLine{01710                         \textcolor{comment}{//                          \{}}
+\DoxyCodeLine{01711                         \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{01712                         \textcolor{comment}{//                              Debug.LogWarning(GetType().Name +}}
+\DoxyCodeLine{01713                         \textcolor{comment}{//                                  "{} is networking a transition that has not been indexed, resulting in greatly increased size. Be sure to click 'Rebuild Indexes' whenever transitions are added or removed."{});}}
+\DoxyCodeLine{01714                         \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{01715                         \textcolor{comment}{//                              Debug.LogError("{}Unknwn Trans "{} + layerStateHash.Value);}}
+\DoxyCodeLine{01716                         \textcolor{comment}{//                              buffer.WriteSigned(layerStateHash.Value, ref bitposition, 32);}}
+\DoxyCodeLine{01717                         \textcolor{comment}{//                          \}}}
+\DoxyCodeLine{01718 }
+\DoxyCodeLine{01719                         \textcolor{comment}{//                          /// Write ntime for transition}}
+\DoxyCodeLine{01720                         \textcolor{comment}{//                          /// We don't bother with time for index 0 -\/ indicates an unusable transition}}
+\DoxyCodeLine{01721                         \textcolor{comment}{//                          if (index != 0)}}
+\DoxyCodeLine{01722                         \textcolor{comment}{//                          \{}}
+\DoxyCodeLine{01723                         \textcolor{comment}{//                              WriteNorm(normaltimes[layer], buffer, ref bitposition, normalizedTimeCompress);}}
+\DoxyCodeLine{01724                         \textcolor{comment}{//                          \}}}
+\DoxyCodeLine{01725                         \textcolor{comment}{//                      \}}}
+\DoxyCodeLine{01726                     \}}
+\DoxyCodeLine{01727                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01728                     \{}
+\DoxyCodeLine{01729 }
+\DoxyCodeLine{01730                         \textcolor{keywordtype}{int} index = sharedStateIndexes.IndexOf(layerStateHash.Value);}
+\DoxyCodeLine{01731                         \textcolor{keywordtype}{bool} useIndex = index != -\/1;}
+\DoxyCodeLine{01732 }
+\DoxyCodeLine{01733                         buffer.WriteBool(useIndex, ref bitposition);}
+\DoxyCodeLine{01734 }
+\DoxyCodeLine{01735                         \textcolor{keywordflow}{if} (useIndex)}
+\DoxyCodeLine{01736                             buffer.Write((uint)sharedStateIndexes.IndexOf(layerStateHash.Value), ref bitposition, bitsForStateIndex);}
+\DoxyCodeLine{01737                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01738                         \{}
+\DoxyCodeLine{01739 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{01740                             Debug.LogWarning(GetType().Name + \textcolor{stringliteral}{"{} on GameObject '"{}} + name +}
+\DoxyCodeLine{01741                                 \textcolor{stringliteral}{"{}' is networking a state that has not been indexed, resulting in greatly increased size. Be sure to click 'Rebuild Indexes' whenever states are added or removed."{}});}
+\DoxyCodeLine{01742 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01743                             buffer.WriteSigned(layerStateHash.Value, ref bitposition, 32);}
+\DoxyCodeLine{01744                         \}}
+\DoxyCodeLine{01745 }
+\DoxyCodeLine{01747                         \textcolor{keywordtype}{float} posnorm = (normaltimes[layer] + 1) * .5f;}
+\DoxyCodeLine{01748                         buffer.WriteNorm(posnorm, ref bitposition, (\textcolor{keywordtype}{int})normalizedTimeCompress);}
+\DoxyCodeLine{01749                     \}}
+\DoxyCodeLine{01750 }
+\DoxyCodeLine{01751                     lastAnimationHash[layer] = layerStateHash.HasValue ? layerStateHash.Value : 0;}
+\DoxyCodeLine{01752 }
+\DoxyCodeLine{01753                     flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01754                 \}}
+\DoxyCodeLine{01755                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01756                     buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01757 }
+\DoxyCodeLine{01760                 \textcolor{keywordflow}{if} (syncLayerWeights \&\& layer != 0)}
+\DoxyCodeLine{01761                 \{}
+\DoxyCodeLine{01762                     \textcolor{keywordtype}{float}? weight = lyerweights[layer];}
+\DoxyCodeLine{01763 }
+\DoxyCodeLine{01765                     \textcolor{keywordflow}{if} (weight == 1)}
+\DoxyCodeLine{01766                     \{}
+\DoxyCodeLine{01768                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01769                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01770                     \}}
+\DoxyCodeLine{01771                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01772                     \{}
+\DoxyCodeLine{01774                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01775 }
+\DoxyCodeLine{01777                         \textcolor{keywordflow}{if} (weight == 0)}
+\DoxyCodeLine{01778                         \{}
+\DoxyCodeLine{01780                             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01781                             flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01782                         \}}
+\DoxyCodeLine{01783                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01784                         \{}
+\DoxyCodeLine{01786                             buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01787 }
+\DoxyCodeLine{01789                             \textcolor{keywordtype}{int} layerWeightBits = (int)layerWeightCompress;}
+\DoxyCodeLine{01790                             var cLayerWeight = weight.Value.CompressNorm(layerWeightBits);}
+\DoxyCodeLine{01791 }
+\DoxyCodeLine{01792                             \textcolor{keywordflow}{if} (isKeyframe || (lastLayerWeight[layer] != cLayerWeight))}
+\DoxyCodeLine{01793                             \{}
+\DoxyCodeLine{01795                                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01796                                 buffer.Write(cLayerWeight, ref bitposition, layerWeightBits);}
+\DoxyCodeLine{01797                                 lastLayerWeight[layer] = cLayerWeight;}
+\DoxyCodeLine{01798                                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01799                             \}}
+\DoxyCodeLine{01800                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01801                             \{}
+\DoxyCodeLine{01803                                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01804                             \}}
+\DoxyCodeLine{01805                         \}}
+\DoxyCodeLine{01806                     \}}
+\DoxyCodeLine{01807                 \}}
+\DoxyCodeLine{01808             \}}
+\DoxyCodeLine{01809             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{01810         \}}
+\DoxyCodeLine{01811 }
+\DoxyCodeLine{01812         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ReadStates(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01813         \{}
+\DoxyCodeLine{01814 }
+\DoxyCodeLine{01815             var statehashes = frame.stateHashes;}
+\DoxyCodeLine{01816             var normaltimes = frame.normalizedTime;}
+\DoxyCodeLine{01817             var lyerweights = frame.layerWeights;}
+\DoxyCodeLine{01818             var lyerInTrans = frame.layerIsInTransition;}
+\DoxyCodeLine{01819 }
+\DoxyCodeLine{01820             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01821             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01822             \{}
+\DoxyCodeLine{01823                 \textcolor{keywordtype}{bool} stateHasChange = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01824 }
+\DoxyCodeLine{01825                 \textcolor{keywordflow}{if} (stateHasChange)}
+\DoxyCodeLine{01826                 \{}
+\DoxyCodeLine{01827                     \textcolor{keywordtype}{bool} layerIsInTransition = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01828                     lyerInTrans[layer] = layerIsInTransition;}
+\DoxyCodeLine{01829 }
+\DoxyCodeLine{01830                     \textcolor{keywordflow}{if} (layerIsInTransition)}
+\DoxyCodeLine{01831                     \{}
+\DoxyCodeLine{01832                         \textcolor{comment}{//if (syncTransitions)}}
+\DoxyCodeLine{01833                         \textcolor{comment}{//\{}}
+\DoxyCodeLine{01834                         \textcolor{comment}{//  /// Complex mess that determines if the hash was sent as an index or full hash}}
+\DoxyCodeLine{01835                         \textcolor{comment}{//  bool isIndexed = buffer.ReadBool(ref bitposition);}}
+\DoxyCodeLine{01836 }
+\DoxyCodeLine{01837                         \textcolor{comment}{//  int hash = (isIndexed) ? (int)buffer.Read(ref bitposition, bitsForTransIndex) : buffer.ReadSigned(ref bitposition, 32);}}
+\DoxyCodeLine{01838                         \textcolor{comment}{//  if (isIndexed)}}
+\DoxyCodeLine{01839                         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{01840                         \textcolor{comment}{//      hash = sharedTransIndexes[hash].hash;}}
+\DoxyCodeLine{01841                         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{01842 }
+\DoxyCodeLine{01843                         \textcolor{comment}{//  statehashes[layer] = hash;}}
+\DoxyCodeLine{01844                         \textcolor{comment}{//  normaltimes[layer] = (hash != 0) ? ReadNorm(buffer, ref bitposition, normalizedTimeCompress) : 0;}}
+\DoxyCodeLine{01845                         \textcolor{comment}{//\}}}
+\DoxyCodeLine{01846                     \}}
+\DoxyCodeLine{01847                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01848                     \{}
+\DoxyCodeLine{01849                         \textcolor{keywordtype}{bool} isIndexed = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01850 }
+\DoxyCodeLine{01851                         \textcolor{keywordtype}{int} hash = (isIndexed) ? (\textcolor{keywordtype}{int})buffer.Read(ref bitposition, bitsForStateIndex) : buffer.ReadSigned(ref bitposition, 32);}
+\DoxyCodeLine{01852                         \textcolor{keywordflow}{if} (isIndexed)}
+\DoxyCodeLine{01853                         \{}
+\DoxyCodeLine{01854                             hash = sharedStateIndexes[hash];}
+\DoxyCodeLine{01855                         \}}
+\DoxyCodeLine{01856 }
+\DoxyCodeLine{01857                         statehashes[layer] = hash;}
+\DoxyCodeLine{01858                         var norm = buffer.ReadNorm(ref bitposition, (\textcolor{keywordtype}{int})normalizedTimeCompress) * 2 -\/ 1;}
+\DoxyCodeLine{01859                         normaltimes[layer] = norm;}
+\DoxyCodeLine{01860                     \}}
+\DoxyCodeLine{01861                 \}}
+\DoxyCodeLine{01862 }
+\DoxyCodeLine{01863                 \textcolor{keywordflow}{if} (syncLayerWeights \&\& layer != 0)}
+\DoxyCodeLine{01864                 \{}
+\DoxyCodeLine{01865                     \textcolor{keywordtype}{bool} isOne = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01866                     \textcolor{keywordflow}{if} (isOne)}
+\DoxyCodeLine{01867                         lyerweights[layer] = 1;}
+\DoxyCodeLine{01868                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01869                     \{}
+\DoxyCodeLine{01870                         \textcolor{keywordtype}{bool} isZero = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01871                         \textcolor{keywordflow}{if} (isZero)}
+\DoxyCodeLine{01872                             lyerweights[layer] = 0;}
+\DoxyCodeLine{01873                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01874                         \{}
+\DoxyCodeLine{01875                             \textcolor{keywordtype}{bool} weightHasChange = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{01876                             \textcolor{keywordflow}{if} (weightHasChange)}
+\DoxyCodeLine{01877                             \{}
+\DoxyCodeLine{01878                                 lyerweights[layer] = buffer.ReadNorm(ref bitposition, (\textcolor{keywordtype}{int})layerWeightCompress);}
+\DoxyCodeLine{01879                             \}}
+\DoxyCodeLine{01880                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01881                             \{}
+\DoxyCodeLine{01882                                 lyerweights[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{01883                             \}}
+\DoxyCodeLine{01884                         \}}
+\DoxyCodeLine{01885                     \}}
+\DoxyCodeLine{01886                 \}}
+\DoxyCodeLine{01887             \}}
+\DoxyCodeLine{01888         \}}
+\DoxyCodeLine{01889 }
+\DoxyCodeLine{01890         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyState(Frame applyFrame\textcolor{comment}{/*, Frame invalidateFrame*/})}
+\DoxyCodeLine{01891         \{}
+\DoxyCodeLine{01892 }
+\DoxyCodeLine{01893             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01894             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01895             \{}
+\DoxyCodeLine{01898                 \textcolor{comment}{//invalidateFrame.stateHashes[layer] = null;}}
+\DoxyCodeLine{01899                 \textcolor{comment}{//invalidateFrame.normalizedTime[layer] = 0;}}
+\DoxyCodeLine{01900                 \textcolor{comment}{//invalidateFrame.layerWeights[layer] = null;}}
+\DoxyCodeLine{01901 }
+\DoxyCodeLine{01902                 \textcolor{keywordtype}{int}? statehash = applyFrame.stateHashes[layer];}
+\DoxyCodeLine{01903                 \textcolor{keywordtype}{bool} isTransition = applyFrame.layerIsInTransition[layer];}
+\DoxyCodeLine{01904 }
+\DoxyCodeLine{01905                 \textcolor{keywordflow}{if} (statehash.HasValue)}
+\DoxyCodeLine{01906                 \{}
+\DoxyCodeLine{01907                     \textcolor{keywordflow}{if} (isTransition)}
+\DoxyCodeLine{01908                     \{}
+\DoxyCodeLine{01909                         \textcolor{comment}{//if (syncTransitions)}}
+\DoxyCodeLine{01910                         \textcolor{comment}{//\{}}
+\DoxyCodeLine{01911                         \textcolor{comment}{//  TransitionInfo ti;}}
+\DoxyCodeLine{01912                         \textcolor{comment}{//  bool foundhash = sharedTransHashes.TryGetValue(statehash.Value, out ti);}}
+\DoxyCodeLine{01913                         \textcolor{comment}{//  if (!foundhash)}}
+\DoxyCodeLine{01914                         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{01915                         \textcolor{comment}{//      Debug.LogWarning("{}Unknown Transition "{} + statehash.Value + "{}, please report this to Davin Carten (emotitron)"{});}}
+\DoxyCodeLine{01916                         \textcolor{comment}{//      continue;}}
+\DoxyCodeLine{01917                         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{01918 }
+\DoxyCodeLine{01919                         \textcolor{comment}{//  if (ti.durationIsFixed)}}
+\DoxyCodeLine{01920                         \textcolor{comment}{//      animator.CrossFadeInFixedTime(ti.destination, ti.duration, layer, applyFrame.normalizedTime[layer] * ti.duration);}}
+\DoxyCodeLine{01921                         \textcolor{comment}{//  //animator.Play(ti.destination, layer, applyFrame.normalizedTime[layer] * ti.duration);}}
+\DoxyCodeLine{01922                         \textcolor{comment}{//  else}}
+\DoxyCodeLine{01923                         \textcolor{comment}{//      animator.CrossFade(ti.destination, ti.duration, layer, applyFrame.normalizedTime[layer]);}}
+\DoxyCodeLine{01924                         \textcolor{comment}{//\}}}
+\DoxyCodeLine{01925                     \}}
+\DoxyCodeLine{01926 }
+\DoxyCodeLine{01928                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (statehash.Value != 0)}
+\DoxyCodeLine{01929                     \{}
+\DoxyCodeLine{01930                         animator.Play(statehash.Value, layer, applyFrame.normalizedTime[layer]);}
+\DoxyCodeLine{01931                     \}}
+\DoxyCodeLine{01932 }
+\DoxyCodeLine{01933                     \textcolor{keywordflow}{if} (syncLayerWeights)}
+\DoxyCodeLine{01934                     \{}
+\DoxyCodeLine{01935                         \textcolor{keywordtype}{float}? layerWeight = applyFrame.layerWeights[layer];}
+\DoxyCodeLine{01936 }
+\DoxyCodeLine{01937                         \textcolor{keywordflow}{if} (layerWeight.HasValue)}
+\DoxyCodeLine{01938                             animator.SetLayerWeight(layer, layerWeight.Value);}
+\DoxyCodeLine{01939                     \}}
+\DoxyCodeLine{01940                 \}}
+\DoxyCodeLine{01941             \}}
+\DoxyCodeLine{01942         \}}
+\DoxyCodeLine{01943 }
+\DoxyCodeLine{01944 \textcolor{preprocessor}{        \#endregion  }\textcolor{comment}{// end state handling}}
+\DoxyCodeLine{01945 }
+\DoxyCodeLine{01946 \textcolor{preprocessor}{        \#region LayerWeight Handling}}
+\DoxyCodeLine{01947 }
+\DoxyCodeLine{01948         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CaptureLayerWeights(Frame frame)}
+\DoxyCodeLine{01949         \{}
+\DoxyCodeLine{01950             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01951             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01952             \{}
+\DoxyCodeLine{01953                 frame.layerWeights[layer] = animator.GetLayerWeight(layer);}
+\DoxyCodeLine{01954             \}}
+\DoxyCodeLine{01955         \}}
+\DoxyCodeLine{01956 }
+\DoxyCodeLine{01957         \textcolor{keyword}{private} SerializationFlags WriteLayerWeights(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{01958         \{}
+\DoxyCodeLine{01959             var lyerweights = frame.layerWeights;}
+\DoxyCodeLine{01960 }
+\DoxyCodeLine{01961             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{01962 }
+\DoxyCodeLine{01963             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{01964             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{01965             \{}
+\DoxyCodeLine{01966 }
+\DoxyCodeLine{01968                 \textcolor{keywordflow}{if} (syncLayerWeights \&\& layer != 0)}
+\DoxyCodeLine{01969                 \{}
+\DoxyCodeLine{01970                     \textcolor{keywordtype}{float}? weight = lyerweights[layer];}
+\DoxyCodeLine{01971 }
+\DoxyCodeLine{01973                     \textcolor{keywordflow}{if} (weight == 1)}
+\DoxyCodeLine{01974                     \{}
+\DoxyCodeLine{01976                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01977                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01978                     \}}
+\DoxyCodeLine{01979                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01980                     \{}
+\DoxyCodeLine{01982                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01983 }
+\DoxyCodeLine{01985                         \textcolor{keywordflow}{if} (weight == 0)}
+\DoxyCodeLine{01986                         \{}
+\DoxyCodeLine{01988                             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{01989                             flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{01990                         \}}
+\DoxyCodeLine{01991                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01992                         \{}
+\DoxyCodeLine{01994                             buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{01995 }
+\DoxyCodeLine{01997                             \textcolor{keywordtype}{int} layerWeightBits = (int)layerWeightCompress;}
+\DoxyCodeLine{01998                             var cLayerWeight = weight.Value.CompressNorm(layerWeightBits);}
+\DoxyCodeLine{01999 }
+\DoxyCodeLine{02000                             \textcolor{keywordflow}{if} (isKeyframe || (lastLayerWeight[layer] != cLayerWeight))}
+\DoxyCodeLine{02001                             \{}
+\DoxyCodeLine{02003                                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{02004                                 buffer.Write(cLayerWeight, ref bitposition, layerWeightBits);}
+\DoxyCodeLine{02005                                 lastLayerWeight[layer] = cLayerWeight;}
+\DoxyCodeLine{02006                                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{02007                             \}}
+\DoxyCodeLine{02008                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02009                             \{}
+\DoxyCodeLine{02011                                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{02012                             \}}
+\DoxyCodeLine{02013                         \}}
+\DoxyCodeLine{02014                     \}}
+\DoxyCodeLine{02015                 \}}
+\DoxyCodeLine{02016             \}}
+\DoxyCodeLine{02017             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{02018         \}}
+\DoxyCodeLine{02019 }
+\DoxyCodeLine{02020 }
+\DoxyCodeLine{02021         \textcolor{keyword}{private} SerializationFlags ReadLayerWeights(Frame frame, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} isKeyframe)}
+\DoxyCodeLine{02022         \{}
+\DoxyCodeLine{02023             var lyerweights = frame.layerWeights;}
+\DoxyCodeLine{02024 }
+\DoxyCodeLine{02025             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{02026 }
+\DoxyCodeLine{02027             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{02028             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{02029             \{}
+\DoxyCodeLine{02030                 \textcolor{keywordflow}{if} (syncLayerWeights \&\& layer != 0)}
+\DoxyCodeLine{02031                 \{}
+\DoxyCodeLine{02032                     \textcolor{keywordtype}{bool} isOne = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{02033                     \textcolor{keywordflow}{if} (isOne)}
+\DoxyCodeLine{02034                     \{}
+\DoxyCodeLine{02035                         lyerweights[layer] = 1;}
+\DoxyCodeLine{02036                         flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{02037                     \}}
+\DoxyCodeLine{02038                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02039                     \{}
+\DoxyCodeLine{02040                         \textcolor{keywordtype}{bool} isZero = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{02041                         \textcolor{keywordflow}{if} (isZero)}
+\DoxyCodeLine{02042                         \{}
+\DoxyCodeLine{02043                             lyerweights[layer] = 0;}
+\DoxyCodeLine{02044                             flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{02045                         \}}
+\DoxyCodeLine{02046                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02047                         \{}
+\DoxyCodeLine{02048                             \textcolor{keywordtype}{bool} weightHasChange = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{02049                             \textcolor{keywordflow}{if} (weightHasChange)}
+\DoxyCodeLine{02050                             \{}
+\DoxyCodeLine{02051                                 lyerweights[layer] = buffer.ReadNorm(ref bitposition, (\textcolor{keywordtype}{int})layerWeightCompress);}
+\DoxyCodeLine{02052                                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{02053                             \}}
+\DoxyCodeLine{02054                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02055                             \{}
+\DoxyCodeLine{02056                                 lyerweights[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{02057                             \}}
+\DoxyCodeLine{02058                         \}}
+\DoxyCodeLine{02059                     \}}
+\DoxyCodeLine{02060                 \}}
+\DoxyCodeLine{02061             \}}
+\DoxyCodeLine{02062 }
+\DoxyCodeLine{02063             \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{02064         \}}
+\DoxyCodeLine{02065 }
+\DoxyCodeLine{02066 }
+\DoxyCodeLine{02067         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyLayerWeights(Frame applyFrame\textcolor{comment}{/*, Frame invalidateFrame*/})}
+\DoxyCodeLine{02068         \{}
+\DoxyCodeLine{02069             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{02070             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{02071             \{}
+\DoxyCodeLine{02075                 \textcolor{comment}{//invalidateFrame.layerWeights[layer] = null;}}
+\DoxyCodeLine{02076 }
+\DoxyCodeLine{02077                 \textcolor{keywordflow}{if} (syncLayerWeights)}
+\DoxyCodeLine{02078                 \{}
+\DoxyCodeLine{02079                     \textcolor{keywordtype}{float}? layerWeight = applyFrame.layerWeights[layer];}
+\DoxyCodeLine{02080 }
+\DoxyCodeLine{02081                     \textcolor{keywordflow}{if} (layerWeight.HasValue)}
+\DoxyCodeLine{02082                         animator.SetLayerWeight(layer, layerWeight.Value);}
+\DoxyCodeLine{02083                 \}}
+\DoxyCodeLine{02084             \}}
+\DoxyCodeLine{02085         \}}
+\DoxyCodeLine{02086 }
+\DoxyCodeLine{02087 }
+\DoxyCodeLine{02088 }
+\DoxyCodeLine{02089 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{02090 }
+\DoxyCodeLine{02091 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{02092 }
+\DoxyCodeLine{02093 \textcolor{preprocessor}{        \#region Snapshot / Interpolate / Extrapolate}}
+\DoxyCodeLine{02094 }
+\DoxyCodeLine{02095         \textcolor{comment}{//private bool hasInitialSnapshot;}}
+\DoxyCodeLine{02096 }
+\DoxyCodeLine{02100         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} OnSnapshot(\textcolor{keywordtype}{int} prevFrameId, \textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{bool} prevIsValid, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{02101         \{}
+\DoxyCodeLine{02102 }
+\DoxyCodeLine{02105             \textcolor{keywordtype}{bool} wasValid = !ReferenceEquals(snapFrame, \textcolor{keyword}{null}) \&\& snapFrame.content != 0; \textcolor{comment}{// netObj.validFrames.Get(targF.frameId);}}
+\DoxyCodeLine{02106 }
+\DoxyCodeLine{02107             \textcolor{keywordflow}{if} (wasValid)}
+\DoxyCodeLine{02108                 ApplyFrame(snapFrame);}
+\DoxyCodeLine{02109 }
+\DoxyCodeLine{02110             \textcolor{keywordtype}{bool} ready = base.OnSnapshot(prevFrameId, snapFrameId, targFrameId, prevIsValid, snapIsValid, targIsValid);}
+\DoxyCodeLine{02111 }
+\DoxyCodeLine{02112             \textcolor{keywordflow}{if} (!ready)}
+\DoxyCodeLine{02113                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02114 }
+\DoxyCodeLine{02118 }
+\DoxyCodeLine{02120 }
+\DoxyCodeLine{02121             CompleteTargetParameters();}
+\DoxyCodeLine{02122 }
+\DoxyCodeLine{02123             \textcolor{comment}{//if (snapFrame.content == FrameContents.Empty)}}
+\DoxyCodeLine{02124             \textcolor{comment}{//    Debug.LogError("{}Empty Animation Frame trying to Apply"{});}}
+\DoxyCodeLine{02125 }
+\DoxyCodeLine{02127             \textcolor{comment}{//if (snapFrame.content != 0)}}
+\DoxyCodeLine{02128             \textcolor{comment}{//    InterpolateParams(0);}}
+\DoxyCodeLine{02129 }
+\DoxyCodeLine{02130             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02131         \}}
+\DoxyCodeLine{02132 }
+\DoxyCodeLine{02133         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyFrame(Frame frame)}
+\DoxyCodeLine{02134         \{}
+\DoxyCodeLine{02135             \textcolor{keywordflow}{if} (syncStates)}
+\DoxyCodeLine{02136                 ApplyState(frame\textcolor{comment}{/*, pre2Frame*/});}
+\DoxyCodeLine{02137 }
+\DoxyCodeLine{02138             \textcolor{keywordflow}{if} (syncLayerWeights)}
+\DoxyCodeLine{02139                 ApplyLayerWeights(frame\textcolor{comment}{/*, pre2Frame*/});}
+\DoxyCodeLine{02140 }
+\DoxyCodeLine{02142             ExecutePassThruQueue(frame);}
+\DoxyCodeLine{02143 }
+\DoxyCodeLine{02144             InterpolateParams(0);}
+\DoxyCodeLine{02145 }
+\DoxyCodeLine{02146 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{02148             \textcolor{keywordflow}{if} (endIKEnum > 0)}
+\DoxyCodeLine{02149                 ApplyIK(frame);}
+\DoxyCodeLine{02150 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02151         \}}
+\DoxyCodeLine{02152 }
+\DoxyCodeLine{02153 }
+\DoxyCodeLine{02154         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} OnInterpolate(\textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{02155         \{}
+\DoxyCodeLine{02156             \textcolor{keywordtype}{bool} ready = base.OnInterpolate(snapFrameId, targFrameId, t);}
+\DoxyCodeLine{02157 }
+\DoxyCodeLine{02158             \textcolor{keywordflow}{if} (!ready)}
+\DoxyCodeLine{02159                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02160 }
+\DoxyCodeLine{02161             \textcolor{comment}{//if (amActingAuthority)}}
+\DoxyCodeLine{02162             \textcolor{comment}{//  return false;}}
+\DoxyCodeLine{02163 }
+\DoxyCodeLine{02164             \textcolor{keywordflow}{if} (ReferenceEquals(targFrame, \textcolor{keyword}{null}))}
+\DoxyCodeLine{02165                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02166 }
+\DoxyCodeLine{02167             \textcolor{keywordflow}{if} (targFrame.content == 0)}
+\DoxyCodeLine{02168                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02169 }
+\DoxyCodeLine{02170             \textcolor{keywordflow}{if} (syncParams)}
+\DoxyCodeLine{02171             \{}
+\DoxyCodeLine{02172                 InterpolateParams(t);}
+\DoxyCodeLine{02173             \}}
+\DoxyCodeLine{02174             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02175         \}}
+\DoxyCodeLine{02176 }
+\DoxyCodeLine{02178         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} InterpolateFrame(Frame targframe, Frame startframe, Frame endframe, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{02179         \{}
+\DoxyCodeLine{02181             targframe.CopyFrom(endframe);}
+\DoxyCodeLine{02182 }
+\DoxyCodeLine{02183             InterpolateState(targframe, startframe, endframe, t);}
+\DoxyCodeLine{02184             \textcolor{comment}{//return FrameContents.Partial;}}
+\DoxyCodeLine{02185         \}}
+\DoxyCodeLine{02186 }
+\DoxyCodeLine{02187         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ExtrapolateFrame(Frame prevframe, Frame snapframe, Frame targframe)}
+\DoxyCodeLine{02188         \{}
+\DoxyCodeLine{02190             targframe.content = FrameContents.Partial;}
+\DoxyCodeLine{02191             ExtrapolateParams(prevframe, snapframe, targframe);}
+\DoxyCodeLine{02192             \textcolor{comment}{// TODO: Make this rewindable by passing the frames rather than assuming current}}
+\DoxyCodeLine{02193             ExtrapolateState();}
+\DoxyCodeLine{02194         \}}
+\DoxyCodeLine{02195 }
+\DoxyCodeLine{02196         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ExtrapolateState()}
+\DoxyCodeLine{02197         \{}
+\DoxyCodeLine{02199             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{02200             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{02201             \{}
+\DoxyCodeLine{02203                 targFrame.stateHashes[layer] = \textcolor{keyword}{null};}
+\DoxyCodeLine{02204 }
+\DoxyCodeLine{02206                 \textcolor{comment}{//var pre1hash = pre1Frame.stateHashes[layer];}}
+\DoxyCodeLine{02207                 \textcolor{comment}{//var snaphash = snapFrame.stateHashes[layer];}}
+\DoxyCodeLine{02208 }
+\DoxyCodeLine{02209                 \textcolor{comment}{//targFrame.stateHashes[layer] = snaphash;}}
+\DoxyCodeLine{02210 }
+\DoxyCodeLine{02211                 \textcolor{comment}{//float snapTime = snapFrame.normalizedTime[layer];}}
+\DoxyCodeLine{02212 }
+\DoxyCodeLine{02213                 \textcolor{comment}{//if (pre1hash != snaphash \&\& snapTime != 0)}}
+\DoxyCodeLine{02214                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{02215                 \textcolor{comment}{//  float delta = snapTime -\/ pre1Frame.normalizedTime[layer];}}
+\DoxyCodeLine{02216                 \textcolor{comment}{//  targFrame.normalizedTime[layer] = snapFrame.normalizedTime[layer] + delta;}}
+\DoxyCodeLine{02217                 \textcolor{comment}{//  //Debug.LogError("{}<color=green>Good State Extrap</color> "{} + snapF.normalizedTime[layer]+ "{} "{} + targF.normalizedTime[layer]);}}
+\DoxyCodeLine{02218                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{02219                 \textcolor{comment}{//else}}
+\DoxyCodeLine{02220                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{02221                 \textcolor{comment}{//  targFrame.normalizedTime[layer] = snapTime;}}
+\DoxyCodeLine{02222                 \textcolor{comment}{//  //Debug.LogError("{}<color=red>Bad State Extrap</color> "{} + snapTime);}}
+\DoxyCodeLine{02223                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{02224             \}}
+\DoxyCodeLine{02225         \}}
+\DoxyCodeLine{02226 }
+\DoxyCodeLine{02230         \textcolor{keyword}{private} \textcolor{keywordtype}{void} InterpolateState(Frame targFrame, Frame strFrame, Frame endFrame, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{02231         \{}
+\DoxyCodeLine{02232             \textcolor{keywordtype}{int} count = (syncLayers) ? layerCount : 1;}
+\DoxyCodeLine{02233             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} layer = 0; layer < count; ++layer)}
+\DoxyCodeLine{02234             \{}
+\DoxyCodeLine{02235                 var strhash = strFrame.stateHashes[layer];}
+\DoxyCodeLine{02236                 var endhash = endFrame.stateHashes[layer];}
+\DoxyCodeLine{02237 }
+\DoxyCodeLine{02238                 targFrame.stateHashes[layer] = endhash;}
+\DoxyCodeLine{02239 }
+\DoxyCodeLine{02240                 \textcolor{keywordtype}{float} strTime = strFrame.normalizedTime[layer];}
+\DoxyCodeLine{02241                 \textcolor{keywordtype}{float} endTime = endFrame.normalizedTime[layer];}
+\DoxyCodeLine{02242 }
+\DoxyCodeLine{02243                 \textcolor{keywordflow}{if} (strhash != endhash \&\& strTime != 0)}
+\DoxyCodeLine{02244                 \{}
+\DoxyCodeLine{02245                     targFrame.normalizedTime[layer] = Mathf.LerpUnclamped(strTime, endTime, t);}
+\DoxyCodeLine{02246                 \}}
+\DoxyCodeLine{02247                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02248                 \{}
+\DoxyCodeLine{02249                     targFrame.normalizedTime[layer] = strTime;}
+\DoxyCodeLine{02250                 \}}
+\DoxyCodeLine{02251             \}}
+\DoxyCodeLine{02252         \}}
+\DoxyCodeLine{02253 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{02254 }
+\DoxyCodeLine{02255     \}}
+\DoxyCodeLine{02256 \}}
+\DoxyCodeLine{02257 }
+\DoxyCodeLine{02258 }
+
+\end{DoxyCode}

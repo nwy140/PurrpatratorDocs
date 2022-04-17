@@ -1,0 +1,62 @@
+\doxysection{Send\+Game\+Command.\+cs}
+\label{_send_game_command_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/WeiYuen/Scripts/\_Bin/Kit/Interactive/Runtime/SendGameCommand.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/WeiYuen/Scripts/\_Bin/Kit/Interactive/Runtime/SendGameCommand.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }SInt.QuickTask.Gamekit3D.KitHelpers.GameCommands}
+\DoxyCodeLine{00007 \{}
+\DoxyCodeLine{00008     \textcolor{comment}{//Base class to send command on different events (see in SendOnTrigger, SendOnBecameVisible etc. for example of subclasses)}}
+\DoxyCodeLine{00009     [SelectionBase]}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} \textcolor{keyword}{class }SendGameCommand : MonoBehaviour}
+\DoxyCodeLine{00011     \{}
+\DoxyCodeLine{00012         \textcolor{comment}{//The type of Command to send. This is not link to any UnityEvent and just act as a way to differentiate this command from other in GameCommandHandlers}}
+\DoxyCodeLine{00013         [Tooltip(\textcolor{stringliteral}{"{}The type of command to send."{}})]}
+\DoxyCodeLine{00014         \textcolor{keyword}{public} GameCommandType interactionType;}
+\DoxyCodeLine{00015         [Tooltip(\textcolor{stringliteral}{"{}This object will receive the command."{}})]}
+\DoxyCodeLine{00016         \textcolor{keyword}{public} GameCommandReceiver interactiveObject;}
+\DoxyCodeLine{00017         [Tooltip(\textcolor{stringliteral}{"{}If set to true, this command will only be sent once."{}})]}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} oneShot = \textcolor{keyword}{false};}
+\DoxyCodeLine{00019         [Tooltip(\textcolor{stringliteral}{"{}How many seconds must pass before the command is sent again."{}})]}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keywordtype}{float} coolDown = 1;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [HideInInspector]}
+\DoxyCodeLine{00023         [Tooltip(\textcolor{stringliteral}{"{}If not null, this audio source will be played when the command is sent."{}})]}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} AudioSource onSendAudio;}
+\DoxyCodeLine{00025         [Tooltip(\textcolor{stringliteral}{"{}If onSendAudio is not null, it will play after this time has passed."{}})]}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{float} audioDelay;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keywordtype}{float} lastSendTime;}
+\DoxyCodeLine{00029         \textcolor{keywordtype}{bool} isTriggered = \textcolor{keyword}{false};}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{float} Temperature}
+\DoxyCodeLine{00032         \{}
+\DoxyCodeLine{00033             \textcolor{keyword}{get}}
+\DoxyCodeLine{00034             \{}
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{return} 1f -\/ Mathf.Clamp01(Time.time -\/ lastSendTime);}
+\DoxyCodeLine{00036             \}}
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [ContextMenu(\textcolor{stringliteral}{"{}Send Interaction"{}})]}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Send()}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             \textcolor{keywordflow}{if} (oneShot \&\& isTriggered) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (Time.time -\/ lastSendTime < coolDown) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00044             isTriggered = \textcolor{keyword}{true};}
+\DoxyCodeLine{00045             lastSendTime = Time.time;}
+\DoxyCodeLine{00046             interactiveObject.Receive(interactionType);}
+\DoxyCodeLine{00047             \textcolor{keywordflow}{if} (onSendAudio) onSendAudio.PlayDelayed(audioDelay);}
+\DoxyCodeLine{00048         \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             interactiveObject = GetComponent<GameCommandReceiver>();}
+\DoxyCodeLine{00053         \}}
+\DoxyCodeLine{00054     \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \}}
+
+\end{DoxyCode}

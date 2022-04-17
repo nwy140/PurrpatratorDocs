@@ -1,0 +1,2355 @@
+\doxysection{Photon\+Network\+Part.\+cs}
+\label{_photon_network_part_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonNetworkPart.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonNetworkPart.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonNetworkPart.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// PhotonNetwork is the central class of the PUN package.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00022     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00025     \textcolor{keyword}{using} SupportClassPun = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{partial class }PhotonNetwork}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<byte> allowedReceivingGroups = \textcolor{keyword}{new} HashSet<byte>();}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<byte> blockedSendingGroups = \textcolor{keyword}{new} HashSet<byte>();}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<PhotonView> reusablePVHashset = \textcolor{keyword}{new} HashSet<PhotonView>();}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetPlayerCustomProperties(System.Collections.Hashtable hash)}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{throw} \textcolor{keyword}{new} NotImplementedException();}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keyword}{static} NonAllocDictionary<int, PhotonView> photonViewList = \textcolor{keyword}{new} NonAllocDictionary<int, PhotonView>();}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00053         [System.Obsolete(\textcolor{stringliteral}{"{}Use PhotonViewCollection instead for an iterable collection of current photonViews."{}})]}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonView[] PhotonViews}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             \textcolor{keyword}{get}}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 var views = \textcolor{keyword}{new} PhotonView[photonViewList.Count];}
+\DoxyCodeLine{00059                 \textcolor{keywordtype}{int} idx = 0;}
+\DoxyCodeLine{00060                 \textcolor{keywordflow}{foreach} (var v \textcolor{keywordflow}{in} photonViewList.Values)}
+\DoxyCodeLine{00061                 \{}
+\DoxyCodeLine{00062                     views[idx] = v;}
+\DoxyCodeLine{00063                     idx++;}
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{return} views;}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keyword}{static} NonAllocDictionary<int, PhotonView>.ValueIterator PhotonViewCollection}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{keyword}{get}}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{return} photonViewList.Values;}
+\DoxyCodeLine{00081             \}}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ViewCount}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} photonViewList.Count; \}}
+\DoxyCodeLine{00087         \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00090         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{event} Action<PhotonView, Player> OnOwnershipRequestEv;}
+\DoxyCodeLine{00092         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{event} Action<PhotonView, Player> OnOwnershipTransferedEv;}
+\DoxyCodeLine{00094         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{event} Action<PhotonView, Player> OnOwnershipTransferFailedEv;}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddCallbackTarget(\textcolor{keywordtype}{object} target)}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (target is PhotonView)}
+\DoxyCodeLine{00109             \{}
+\DoxyCodeLine{00110                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             IPunOwnershipCallbacks punOwnershipCallback = target as IPunOwnershipCallbacks;}
+\DoxyCodeLine{00114             \textcolor{keywordflow}{if} (punOwnershipCallback != \textcolor{keyword}{null})}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 OnOwnershipRequestEv += punOwnershipCallback.OnOwnershipRequest;}
+\DoxyCodeLine{00117                 OnOwnershipTransferedEv += punOwnershipCallback.OnOwnershipTransfered;}
+\DoxyCodeLine{00118                 OnOwnershipTransferFailedEv += punOwnershipCallback.OnOwnershipTransferFailed;}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             NetworkingClient.AddCallbackTarget(target);}
+\DoxyCodeLine{00122         \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00135         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveCallbackTarget(\textcolor{keywordtype}{object} target)}
+\DoxyCodeLine{00136         \{}
+\DoxyCodeLine{00137             \textcolor{keywordflow}{if} (target is PhotonView || NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00138             \{}
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             IPunOwnershipCallbacks punOwnershipCallback = target as IPunOwnershipCallbacks;}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (punOwnershipCallback != \textcolor{keyword}{null})}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 OnOwnershipRequestEv -\/= punOwnershipCallback.OnOwnershipRequest;}
+\DoxyCodeLine{00146                 OnOwnershipTransferedEv -\/= punOwnershipCallback.OnOwnershipTransfered;}
+\DoxyCodeLine{00147                 OnOwnershipTransferFailedEv -\/= punOwnershipCallback.OnOwnershipTransferFailed;}
+\DoxyCodeLine{00148             \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             NetworkingClient.RemoveCallbackTarget(target);}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{string} CallbacksToString()}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             var x = NetworkingClient.ConnectionCallbackTargets.Select(m => m.ToString()).ToArray();}
+\DoxyCodeLine{00156             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Join(\textcolor{stringliteral}{"{}, "{}}, x);}
+\DoxyCodeLine{00157         \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{byte} currentLevelPrefix = 0;}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00162         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} loadingLevelAndPausedNetwork = \textcolor{keyword}{false};}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00165         \textcolor{keyword}{internal} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CurrentSceneProperty = \textcolor{stringliteral}{"{}curScn"{}};}
+\DoxyCodeLine{00166         \textcolor{keyword}{internal} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CurrentScenePropertyLoadAsync = \textcolor{stringliteral}{"{}curScnLa"{}};}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keyword}{static} IPunPrefabPool PrefabPool}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keyword}{get}}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{return} prefabPool;}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183             \textcolor{keyword}{set}}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{if} (value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00186                 \{}
+\DoxyCodeLine{00187                     Debug.LogWarning(\textcolor{stringliteral}{"{}PhotonNetwork.PrefabPool cannot be set to null. It will default back to using the 'DefaultPool' Pool"{}});}
+\DoxyCodeLine{00188                     prefabPool = \textcolor{keyword}{new} DefaultPool();}
+\DoxyCodeLine{00189                 \}}
+\DoxyCodeLine{00190                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00191                 \{}
+\DoxyCodeLine{00192                     prefabPool = value;}
+\DoxyCodeLine{00193                 \}}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         \textcolor{keyword}{private} \textcolor{keyword}{static} IPunPrefabPool prefabPool;}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00209         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} UseRpcMonoBehaviourCache;}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Dictionary<Type, List<MethodInfo>> monoRPCMethodsCache = \textcolor{keyword}{new} Dictionary<Type, List<MethodInfo>>();}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<string, int> rpcShortcuts;  \textcolor{comment}{// lookup "{}table"{} for the index (shortcut) of an RPC name}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00222         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} RunRpcCoroutines = \textcolor{keyword}{true};}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225         \textcolor{comment}{// for asynchronous network synched loading.}}
+\DoxyCodeLine{00226         \textcolor{keyword}{private} \textcolor{keyword}{static} AsyncOperation \_AsyncLevelLoadingOperation;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{float} \_levelLoadingProgress = 0f;}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00239         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} LevelLoadingProgress}
+\DoxyCodeLine{00240         \{}
+\DoxyCodeLine{00241             \textcolor{keyword}{get}}
+\DoxyCodeLine{00242             \{}
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{if} (\_AsyncLevelLoadingOperation != \textcolor{keyword}{null})}
+\DoxyCodeLine{00244                 \{}
+\DoxyCodeLine{00245                     \_levelLoadingProgress = \_AsyncLevelLoadingOperation.progress;}
+\DoxyCodeLine{00246                 \}}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\_levelLoadingProgress > 0f)}
+\DoxyCodeLine{00248                 \{}
+\DoxyCodeLine{00249                     \_levelLoadingProgress = 1f;}
+\DoxyCodeLine{00250                 \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{return} \_levelLoadingProgress;}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254         \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00262         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LeftRoomCleanup()}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             \textcolor{comment}{// Clean up if we were loading asynchronously.}}
+\DoxyCodeLine{00265             \textcolor{keywordflow}{if} (\_AsyncLevelLoadingOperation != \textcolor{keyword}{null})}
+\DoxyCodeLine{00266             \{}
+\DoxyCodeLine{00267                 \_AsyncLevelLoadingOperation.allowSceneActivation = \textcolor{keyword}{false};}
+\DoxyCodeLine{00268                 \_AsyncLevelLoadingOperation = \textcolor{keyword}{null};}
+\DoxyCodeLine{00269             \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             \textcolor{keywordtype}{bool} wasInRoom = NetworkingClient.CurrentRoom != \textcolor{keyword}{null};}
+\DoxyCodeLine{00273             \textcolor{comment}{// when leaving a room, we clean up depending on that room's settings.}}
+\DoxyCodeLine{00274             \textcolor{keywordtype}{bool} autoCleanupSettingOfRoom = wasInRoom \&\& CurrentRoom.AutoCleanUp;}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276             allowedReceivingGroups = \textcolor{keyword}{new} HashSet<byte>();}
+\DoxyCodeLine{00277             blockedSendingGroups = \textcolor{keyword}{new} HashSet<byte>();}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279             \textcolor{comment}{// Cleanup all network objects (all spawned PhotonViews, local and remote)}}
+\DoxyCodeLine{00280             \textcolor{keywordflow}{if} (autoCleanupSettingOfRoom || offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{00281             \{}
+\DoxyCodeLine{00282                 LocalCleanupAnythingInstantiated(\textcolor{keyword}{true});}
+\DoxyCodeLine{00283             \}}
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00290         \textcolor{comment}{// TODO: This method name no longer matches is function. It also resets room object's views.}}
+\DoxyCodeLine{00291         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LocalCleanupAnythingInstantiated(\textcolor{keywordtype}{bool} destroyInstantiatedGameObjects)}
+\DoxyCodeLine{00292         \{}
+\DoxyCodeLine{00293             \textcolor{comment}{//if (tempInstantiationData.Count > 0)}}
+\DoxyCodeLine{00294             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00295             \textcolor{comment}{//    Debug.LogWarning("{}It seems some instantiation is not completed, as instantiation data is used. You should make sure instantiations are paused when calling this method. Cleaning now, despite "{});}}
+\DoxyCodeLine{00296             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             \textcolor{comment}{// Destroy GO's (if we should)}}
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (destroyInstantiatedGameObjects)}
+\DoxyCodeLine{00300             \{}
+\DoxyCodeLine{00301                 \textcolor{comment}{// Fill list with Instantiated objects}}
+\DoxyCodeLine{00302                 HashSet<GameObject> instantiatedGos = \textcolor{keyword}{new} HashSet<GameObject>();}
+\DoxyCodeLine{00303                 \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewList.Values)}
+\DoxyCodeLine{00304                 \{}
+\DoxyCodeLine{00305                     \textcolor{keywordflow}{if} (view.isRuntimeInstantiated)}
+\DoxyCodeLine{00306                     \{}
+\DoxyCodeLine{00307                         instantiatedGos.Add(view.gameObject); \textcolor{comment}{// HashSet keeps each object only once}}
+\DoxyCodeLine{00308                     \}}
+\DoxyCodeLine{00309                     \textcolor{comment}{// For non-\/instantiated objects (scene objects) -\/ reset the view}}
+\DoxyCodeLine{00310                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00311                     \{}
+\DoxyCodeLine{00312                         view.ResetPhotonView(\textcolor{keyword}{true});}
+\DoxyCodeLine{00313                     \}}
+\DoxyCodeLine{00314                 \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316                 \textcolor{keywordflow}{foreach} (GameObject go \textcolor{keywordflow}{in} instantiatedGos)}
+\DoxyCodeLine{00317                 \{}
+\DoxyCodeLine{00318                     RemoveInstantiatedGO(go, \textcolor{keyword}{true});}
+\DoxyCodeLine{00319                 \}}
+\DoxyCodeLine{00320             \}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             \textcolor{comment}{// photonViewList is cleared of anything instantiated (so scene items are left inside)}}
+\DoxyCodeLine{00323             \textcolor{comment}{// any other lists can be}}
+\DoxyCodeLine{00324             PhotonNetwork.lastUsedViewSubId = 0;}
+\DoxyCodeLine{00325             PhotonNetwork.lastUsedViewSubIdStatic = 0;}
+\DoxyCodeLine{00326         \}}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00333         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ResetPhotonViewsOnSerialize()}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             \textcolor{keywordflow}{foreach} (PhotonView photonView \textcolor{keywordflow}{in} photonViewList.Values)}
+\DoxyCodeLine{00336             \{}
+\DoxyCodeLine{00337                 photonView.lastOnSerializeDataSent = \textcolor{keyword}{null};}
+\DoxyCodeLine{00338             \}}
+\DoxyCodeLine{00339         \}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341         \textcolor{comment}{// PHOTONVIEW/RPC related}}
+\DoxyCodeLine{00342 \textcolor{preprocessor}{\#pragma warning disable 0414}}
+\DoxyCodeLine{00343         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Type typePunRPC = typeof(PunRPC);}
+\DoxyCodeLine{00344         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Type typePhotonMessageInfo = typeof(PhotonMessageInfo);}
+\DoxyCodeLine{00345         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteZero = (byte)0;}
+\DoxyCodeLine{00346         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteOne = (byte)1;}
+\DoxyCodeLine{00347         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteTwo = (byte)2;}
+\DoxyCodeLine{00348         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteThree = (byte)3;}
+\DoxyCodeLine{00349         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteFour = (byte)4;}
+\DoxyCodeLine{00350         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteFive = (byte)5;}
+\DoxyCodeLine{00351         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteSix = (byte)6;}
+\DoxyCodeLine{00352         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteSeven = (byte)7;}
+\DoxyCodeLine{00353         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object} keyByteEight = (byte)8;}
+\DoxyCodeLine{00354         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{object}[] emptyObjectArray = \textcolor{keyword}{new} \textcolor{keywordtype}{object}[0];}
+\DoxyCodeLine{00355         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Type[] emptyTypeArray = \textcolor{keyword}{new} Type[0];}
+\DoxyCodeLine{00356 \textcolor{preprocessor}{\#pragma warning restore 0414}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00361         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExecuteRpc(Hashtable rpcData, Player sender)}
+\DoxyCodeLine{00362         \{}
+\DoxyCodeLine{00363             \textcolor{keywordflow}{if} (rpcData == \textcolor{keyword}{null} || !rpcData.ContainsKey(keyByteZero))}
+\DoxyCodeLine{00364             \{}
+\DoxyCodeLine{00365                 Debug.LogError(\textcolor{stringliteral}{"{}Malformed RPC; this should never occur. Content: "{}} + SupportClassPun.DictionaryToString(rpcData));}
+\DoxyCodeLine{00366                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00367             \}}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00369             \textcolor{comment}{// ts: updated with "{}flat"{} event data}}
+\DoxyCodeLine{00370             \textcolor{keywordtype}{int} netViewID = (int)rpcData[keyByteZero]; \textcolor{comment}{// LIMITS PHOTONVIEWS\&PLAYERS}}
+\DoxyCodeLine{00371             \textcolor{keywordtype}{int} otherSidePrefix = 0;    \textcolor{comment}{// by default, the prefix is 0 (and this is not being sent)}}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{if} (rpcData.ContainsKey(keyByteOne))}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374                 otherSidePrefix = (short)rpcData[keyByteOne];}
+\DoxyCodeLine{00375             \}}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378             \textcolor{keywordtype}{string} inMethodName;}
+\DoxyCodeLine{00379             \textcolor{keywordflow}{if} (rpcData.ContainsKey(keyByteFive))}
+\DoxyCodeLine{00380             \{}
+\DoxyCodeLine{00381                 \textcolor{keywordtype}{int} rpcIndex = (byte)rpcData[keyByteFive];  \textcolor{comment}{// LIMITS RPC COUNT}}
+\DoxyCodeLine{00382                 \textcolor{keywordflow}{if} (rpcIndex > PhotonNetwork.PhotonServerSettings.RpcList.Count -\/ 1)}
+\DoxyCodeLine{00383                 \{}
+\DoxyCodeLine{00384                     Debug.LogError(\textcolor{stringliteral}{"{}Could not find RPC with index: "{}} + rpcIndex + \textcolor{stringliteral}{"{}. Going to ignore! Check PhotonServerSettings.RpcList"{}});}
+\DoxyCodeLine{00385                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00386                 \}}
+\DoxyCodeLine{00387                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00388                 \{}
+\DoxyCodeLine{00389                     inMethodName = PhotonNetwork.PhotonServerSettings.RpcList[rpcIndex];}
+\DoxyCodeLine{00390                 \}}
+\DoxyCodeLine{00391             \}}
+\DoxyCodeLine{00392             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00393             \{}
+\DoxyCodeLine{00394                 inMethodName = (string)rpcData[keyByteThree];}
+\DoxyCodeLine{00395             \}}
+\DoxyCodeLine{00396 }
+\DoxyCodeLine{00397             \textcolor{keywordtype}{object}[] arguments = \textcolor{keyword}{null};}
+\DoxyCodeLine{00398             \textcolor{keywordflow}{if} (rpcData.ContainsKey(keyByteFour))}
+\DoxyCodeLine{00399             \{}
+\DoxyCodeLine{00400                 arguments = (\textcolor{keywordtype}{object}[])rpcData[keyByteFour];}
+\DoxyCodeLine{00401             \}}
+\DoxyCodeLine{00402 }
+\DoxyCodeLine{00403             PhotonView photonNetview = GetPhotonView(netViewID);}
+\DoxyCodeLine{00404             \textcolor{keywordflow}{if} (photonNetview == \textcolor{keyword}{null})}
+\DoxyCodeLine{00405             \{}
+\DoxyCodeLine{00406                 \textcolor{keywordtype}{int} viewOwnerId = netViewID / PhotonNetwork.MAX\_VIEW\_IDS;}
+\DoxyCodeLine{00407                 \textcolor{keywordtype}{bool} owningPv = (viewOwnerId == NetworkingClient.LocalPlayer.ActorNumber);}
+\DoxyCodeLine{00408                 \textcolor{keywordtype}{bool} ownerSent = sender != \textcolor{keyword}{null} \&\& viewOwnerId == sender.ActorNumber;}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410                 \textcolor{keywordflow}{if} (owningPv)}
+\DoxyCodeLine{00411                 \{}
+\DoxyCodeLine{00412                     Debug.LogWarning(\textcolor{stringliteral}{"{}Received RPC \(\backslash\)"{}"{}} + inMethodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} for viewID "{}} + netViewID + \textcolor{stringliteral}{"{} but this PhotonView does not exist! View was/is ours."{}} + (ownerSent ? \textcolor{stringliteral}{"{} Owner called."{}} : \textcolor{stringliteral}{"{} Remote called."{}}) + \textcolor{stringliteral}{"{} By: "{}} + sender);}
+\DoxyCodeLine{00413                 \}}
+\DoxyCodeLine{00414                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00415                 \{}
+\DoxyCodeLine{00416                     Debug.LogWarning(\textcolor{stringliteral}{"{}Received RPC \(\backslash\)"{}"{}} + inMethodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} for viewID "{}} + netViewID + \textcolor{stringliteral}{"{} but this PhotonView does not exist! Was remote PV."{}} + (ownerSent ? \textcolor{stringliteral}{"{} Owner called."{}} : \textcolor{stringliteral}{"{} Remote called."{}}) + \textcolor{stringliteral}{"{} By: "{}} + sender + \textcolor{stringliteral}{"{} Maybe GO was destroyed but RPC not cleaned up."{}});}
+\DoxyCodeLine{00417                 \}}
+\DoxyCodeLine{00418                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00419             \}}
+\DoxyCodeLine{00420 }
+\DoxyCodeLine{00421             \textcolor{keywordflow}{if} (photonNetview.Prefix != otherSidePrefix)}
+\DoxyCodeLine{00422             \{}
+\DoxyCodeLine{00423                 Debug.LogError(\textcolor{stringliteral}{"{}Received RPC \(\backslash\)"{}"{}} + inMethodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} on viewID "{}} + netViewID + \textcolor{stringliteral}{"{} with a prefix of "{}} + otherSidePrefix + \textcolor{stringliteral}{"{}, our prefix is "{}} + photonNetview.Prefix + \textcolor{stringliteral}{"{}. The RPC has been ignored."{}});}
+\DoxyCodeLine{00424                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00425             \}}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00427             \textcolor{comment}{// Get method name}}
+\DoxyCodeLine{00428             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(inMethodName))}
+\DoxyCodeLine{00429             \{}
+\DoxyCodeLine{00430                 Debug.LogError(\textcolor{stringliteral}{"{}Malformed RPC; this should never occur. Content: "{}} + SupportClassPun.DictionaryToString(rpcData));}
+\DoxyCodeLine{00431                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00432             \}}
+\DoxyCodeLine{00433 }
+\DoxyCodeLine{00434             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Full)}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 Debug.Log(\textcolor{stringliteral}{"{}Received RPC: "{}} + inMethodName);}
+\DoxyCodeLine{00437             \}}
+\DoxyCodeLine{00438 }
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440             \textcolor{comment}{// SetReceiving filtering}}
+\DoxyCodeLine{00441             \textcolor{keywordflow}{if} (photonNetview.Group != 0 \&\& !allowedReceivingGroups.Contains(photonNetview.Group))}
+\DoxyCodeLine{00442             \{}
+\DoxyCodeLine{00443                 \textcolor{keywordflow}{return}; \textcolor{comment}{// Ignore group}}
+\DoxyCodeLine{00444             \}}
+\DoxyCodeLine{00445 }
+\DoxyCodeLine{00446             Type[] argumentsTypes = \textcolor{keyword}{null};}
+\DoxyCodeLine{00447             \textcolor{keywordflow}{if} (arguments != \textcolor{keyword}{null} \&\& arguments.Length > 0)}
+\DoxyCodeLine{00448             \{}
+\DoxyCodeLine{00449                 argumentsTypes = \textcolor{keyword}{new} Type[arguments.Length];}
+\DoxyCodeLine{00450                 \textcolor{keywordtype}{int} i = 0;}
+\DoxyCodeLine{00451                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < arguments.Length; index++)}
+\DoxyCodeLine{00452                 \{}
+\DoxyCodeLine{00453                     \textcolor{keywordtype}{object} objX = arguments[index];}
+\DoxyCodeLine{00454                     \textcolor{keywordflow}{if} (objX == \textcolor{keyword}{null})}
+\DoxyCodeLine{00455                     \{}
+\DoxyCodeLine{00456                         argumentsTypes[i] = \textcolor{keyword}{null};}
+\DoxyCodeLine{00457                     \}}
+\DoxyCodeLine{00458                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00459                     \{}
+\DoxyCodeLine{00460                         argumentsTypes[i] = objX.GetType();}
+\DoxyCodeLine{00461                     \}}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463                     i++;}
+\DoxyCodeLine{00464                 \}}
+\DoxyCodeLine{00465             \}}
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468             \textcolor{keywordtype}{int} receivers = 0;}
+\DoxyCodeLine{00469             \textcolor{keywordtype}{int} foundMethods = 0;}
+\DoxyCodeLine{00470             \textcolor{keywordflow}{if} (!PhotonNetwork.UseRpcMonoBehaviourCache || photonNetview.RpcMonoBehaviours == \textcolor{keyword}{null} || photonNetview.RpcMonoBehaviours.Length == 0)}
+\DoxyCodeLine{00471             \{}
+\DoxyCodeLine{00472                 photonNetview.RefreshRpcMonoBehaviourCache();}
+\DoxyCodeLine{00473             \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} componentsIndex = 0; componentsIndex < photonNetview.RpcMonoBehaviours.Length; componentsIndex++)}
+\DoxyCodeLine{00476             \{}
+\DoxyCodeLine{00477                 MonoBehaviour monob = photonNetview.RpcMonoBehaviours[componentsIndex];}
+\DoxyCodeLine{00478                 \textcolor{keywordflow}{if} (monob == \textcolor{keyword}{null})}
+\DoxyCodeLine{00479                 \{}
+\DoxyCodeLine{00480                     Debug.LogError(\textcolor{stringliteral}{"{}ERROR You have missing MonoBehaviours on your gameobjects!"{}});}
+\DoxyCodeLine{00481                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00482                 \}}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484                 Type type = monob.GetType();}
+\DoxyCodeLine{00485 }
+\DoxyCodeLine{00486                 \textcolor{comment}{// Get [PunRPC] methods from cache}}
+\DoxyCodeLine{00487                 List<MethodInfo> cachedRPCMethods = \textcolor{keyword}{null};}
+\DoxyCodeLine{00488                 \textcolor{keywordtype}{bool} methodsOfTypeInCache = monoRPCMethodsCache.TryGetValue(type, out cachedRPCMethods);}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490                 \textcolor{keywordflow}{if} (!methodsOfTypeInCache)}
+\DoxyCodeLine{00491                 \{}
+\DoxyCodeLine{00492                     List<MethodInfo> entries = SupportClassPun.GetMethods(type, typePunRPC);}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494                     monoRPCMethodsCache[type] = entries;}
+\DoxyCodeLine{00495                     cachedRPCMethods = entries;}
+\DoxyCodeLine{00496                 \}}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498                 \textcolor{keywordflow}{if} (cachedRPCMethods == \textcolor{keyword}{null})}
+\DoxyCodeLine{00499                 \{}
+\DoxyCodeLine{00500                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00501                 \}}
+\DoxyCodeLine{00502 }
+\DoxyCodeLine{00503                 \textcolor{comment}{// Check cache for valid methodname+arguments}}
+\DoxyCodeLine{00504                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < cachedRPCMethods.Count; index++)}
+\DoxyCodeLine{00505                 \{}
+\DoxyCodeLine{00506                     MethodInfo mInfo = cachedRPCMethods[index];}
+\DoxyCodeLine{00507                     \textcolor{keywordflow}{if} (!mInfo.Name.Equals(inMethodName))}
+\DoxyCodeLine{00508                     \{}
+\DoxyCodeLine{00509                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00510                     \}}
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512                     ParameterInfo[] parameters = mInfo.GetCachedParemeters();}
+\DoxyCodeLine{00513                     foundMethods++;}
+\DoxyCodeLine{00514 }
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00516                     \textcolor{comment}{// if we got no arguments:}}
+\DoxyCodeLine{00517                     \textcolor{keywordflow}{if} (arguments == \textcolor{keyword}{null})}
+\DoxyCodeLine{00518                     \{}
+\DoxyCodeLine{00519                         \textcolor{keywordflow}{if} (parameters.Length == 0)}
+\DoxyCodeLine{00520                         \{}
+\DoxyCodeLine{00521                             receivers++;}
+\DoxyCodeLine{00522                             \textcolor{keywordtype}{object} o = mInfo.Invoke((\textcolor{keywordtype}{object})monob, \textcolor{keyword}{null});}
+\DoxyCodeLine{00523                             \textcolor{keywordflow}{if} (PhotonNetwork.RunRpcCoroutines)}
+\DoxyCodeLine{00524                             \{}
+\DoxyCodeLine{00525                                 IEnumerator ie = \textcolor{keyword}{null};\textcolor{comment}{//o as IEnumerator;}}
+\DoxyCodeLine{00526                                 \textcolor{keywordflow}{if} ((ie = o as IEnumerator) != \textcolor{keyword}{null})}
+\DoxyCodeLine{00527                                 \{}
+\DoxyCodeLine{00528                                     PhotonHandler.Instance.StartCoroutine(ie);}
+\DoxyCodeLine{00529                                 \}}
+\DoxyCodeLine{00530                             \}}
+\DoxyCodeLine{00531                         \}}
+\DoxyCodeLine{00532                         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (parameters.Length == 1 \&\& parameters[0].ParameterType == typeof(PhotonMessageInfo))}
+\DoxyCodeLine{00533                         \{}
+\DoxyCodeLine{00534                             \textcolor{keywordtype}{int} sendTime = (int)rpcData[keyByteTwo];}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536                             receivers++;}
+\DoxyCodeLine{00537                             \textcolor{keywordtype}{object} o = mInfo.Invoke((\textcolor{keywordtype}{object})monob, \textcolor{keyword}{new} \textcolor{keywordtype}{object}[] \{ \textcolor{keyword}{new} PhotonMessageInfo(sender, sendTime, photonNetview) \});}
+\DoxyCodeLine{00538                             \textcolor{keywordflow}{if} (PhotonNetwork.RunRpcCoroutines)}
+\DoxyCodeLine{00539                             \{}
+\DoxyCodeLine{00540                                 IEnumerator ie = \textcolor{keyword}{null};\textcolor{comment}{//o as IEnumerator;}}
+\DoxyCodeLine{00541                                 \textcolor{keywordflow}{if} ((ie = o as IEnumerator) != \textcolor{keyword}{null})}
+\DoxyCodeLine{00542                                 \{}
+\DoxyCodeLine{00543                                     PhotonHandler.Instance.StartCoroutine(ie);}
+\DoxyCodeLine{00544                                 \}}
+\DoxyCodeLine{00545                             \}}
+\DoxyCodeLine{00546                         \}}
+\DoxyCodeLine{00547                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00548                     \}}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551                     \textcolor{comment}{// if there are any arguments (in the incoming call check if the method is compatible}}
+\DoxyCodeLine{00552                     \textcolor{keywordflow}{if} (parameters.Length == arguments.Length)}
+\DoxyCodeLine{00553                     \{}
+\DoxyCodeLine{00554                         \textcolor{comment}{// Normal, PhotonNetworkMessage left out}}
+\DoxyCodeLine{00555                         \textcolor{keywordflow}{if} (CheckTypeMatch(parameters, argumentsTypes))}
+\DoxyCodeLine{00556                         \{}
+\DoxyCodeLine{00557                             receivers++;}
+\DoxyCodeLine{00558                             \textcolor{keywordtype}{object} o = mInfo.Invoke((\textcolor{keywordtype}{object})monob, arguments);}
+\DoxyCodeLine{00559                             \textcolor{keywordflow}{if} (PhotonNetwork.RunRpcCoroutines)}
+\DoxyCodeLine{00560                             \{}
+\DoxyCodeLine{00561                                 IEnumerator ie = \textcolor{keyword}{null};\textcolor{comment}{//o as IEnumerator;}}
+\DoxyCodeLine{00562                                 \textcolor{keywordflow}{if} ((ie = o as IEnumerator) != \textcolor{keyword}{null})}
+\DoxyCodeLine{00563                                 \{}
+\DoxyCodeLine{00564                                     PhotonHandler.Instance.StartCoroutine(ie);}
+\DoxyCodeLine{00565                                 \}}
+\DoxyCodeLine{00566                             \}}
+\DoxyCodeLine{00567                         \}}
+\DoxyCodeLine{00568                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00569                     \}}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00571                     \textcolor{keywordflow}{if} (parameters.Length == arguments.Length + 1)}
+\DoxyCodeLine{00572                     \{}
+\DoxyCodeLine{00573                         \textcolor{comment}{// Check for PhotonNetworkMessage being the last}}
+\DoxyCodeLine{00574                         \textcolor{keywordflow}{if} (parameters[parameters.Length -\/ 1].ParameterType == typeof(PhotonMessageInfo) \&\& CheckTypeMatch(parameters, argumentsTypes))}
+\DoxyCodeLine{00575                         \{}
+\DoxyCodeLine{00576                             \textcolor{keywordtype}{int} sendTime = (int)rpcData[keyByteTwo];}
+\DoxyCodeLine{00577                             \textcolor{keywordtype}{object}[] argumentsWithInfo = \textcolor{keyword}{new} \textcolor{keywordtype}{object}[arguments.Length + 1];}
+\DoxyCodeLine{00578                             arguments.CopyTo(argumentsWithInfo, 0);}
+\DoxyCodeLine{00579                             argumentsWithInfo[argumentsWithInfo.Length -\/ 1] = \textcolor{keyword}{new} PhotonMessageInfo(sender, sendTime, photonNetview);}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581                             receivers++;}
+\DoxyCodeLine{00582                             \textcolor{keywordtype}{object} o = mInfo.Invoke((\textcolor{keywordtype}{object})monob, argumentsWithInfo);}
+\DoxyCodeLine{00583                             \textcolor{keywordflow}{if} (PhotonNetwork.RunRpcCoroutines)}
+\DoxyCodeLine{00584                             \{}
+\DoxyCodeLine{00585                                 IEnumerator ie = \textcolor{keyword}{null};\textcolor{comment}{//o as IEnumerator;}}
+\DoxyCodeLine{00586                                 \textcolor{keywordflow}{if} ((ie = o as IEnumerator) != \textcolor{keyword}{null})}
+\DoxyCodeLine{00587                                 \{}
+\DoxyCodeLine{00588                                     PhotonHandler.Instance.StartCoroutine(ie);}
+\DoxyCodeLine{00589                                 \}}
+\DoxyCodeLine{00590                             \}}
+\DoxyCodeLine{00591                         \}}
+\DoxyCodeLine{00592                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00593                     \}}
+\DoxyCodeLine{00594 }
+\DoxyCodeLine{00595                     \textcolor{keywordflow}{if} (parameters.Length == 1 \&\& parameters[0].ParameterType.IsArray)}
+\DoxyCodeLine{00596                     \{}
+\DoxyCodeLine{00597                         receivers++;}
+\DoxyCodeLine{00598                         \textcolor{keywordtype}{object} o = mInfo.Invoke((\textcolor{keywordtype}{object})monob, \textcolor{keyword}{new} \textcolor{keywordtype}{object}[] \{ arguments \});}
+\DoxyCodeLine{00599                         \textcolor{keywordflow}{if} (PhotonNetwork.RunRpcCoroutines)}
+\DoxyCodeLine{00600                         \{}
+\DoxyCodeLine{00601                             IEnumerator ie = \textcolor{keyword}{null};\textcolor{comment}{//o as IEnumerator;}}
+\DoxyCodeLine{00602                             \textcolor{keywordflow}{if} ((ie = o as IEnumerator) != \textcolor{keyword}{null})}
+\DoxyCodeLine{00603                             \{}
+\DoxyCodeLine{00604                                 PhotonHandler.Instance.StartCoroutine(ie);}
+\DoxyCodeLine{00605                             \}}
+\DoxyCodeLine{00606                         \}}
+\DoxyCodeLine{00607                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00608                     \}}
+\DoxyCodeLine{00609                 \}}
+\DoxyCodeLine{00610             \}}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612             \textcolor{comment}{// Error handling}}
+\DoxyCodeLine{00613             \textcolor{keywordflow}{if} (receivers != 1)}
+\DoxyCodeLine{00614             \{}
+\DoxyCodeLine{00615                 \textcolor{keywordtype}{string} argsString = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00616                 \textcolor{keywordtype}{int} argsLength = 0;}
+\DoxyCodeLine{00617                 \textcolor{keywordflow}{if} (argumentsTypes != \textcolor{keyword}{null})}
+\DoxyCodeLine{00618                 \{}
+\DoxyCodeLine{00619                     argsLength = argumentsTypes.Length;}
+\DoxyCodeLine{00620                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < argumentsTypes.Length; index++)}
+\DoxyCodeLine{00621                     \{}
+\DoxyCodeLine{00622                         Type ty = argumentsTypes[index];}
+\DoxyCodeLine{00623                         \textcolor{keywordflow}{if} (argsString != \textcolor{keywordtype}{string}.Empty)}
+\DoxyCodeLine{00624                         \{}
+\DoxyCodeLine{00625                             argsString += \textcolor{stringliteral}{"{}, "{}};}
+\DoxyCodeLine{00626                         \}}
+\DoxyCodeLine{00627 }
+\DoxyCodeLine{00628                         \textcolor{keywordflow}{if} (ty == \textcolor{keyword}{null})}
+\DoxyCodeLine{00629                         \{}
+\DoxyCodeLine{00630                             argsString += \textcolor{stringliteral}{"{}null"{}};}
+\DoxyCodeLine{00631                         \}}
+\DoxyCodeLine{00632                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00633                         \{}
+\DoxyCodeLine{00634                             argsString += ty.Name;}
+\DoxyCodeLine{00635                         \}}
+\DoxyCodeLine{00636                     \}}
+\DoxyCodeLine{00637                 \}}
+\DoxyCodeLine{00638 }
+\DoxyCodeLine{00639                 GameObject context = photonNetview != \textcolor{keyword}{null} ? photonNetview.gameObject : \textcolor{keyword}{null};}
+\DoxyCodeLine{00640                 \textcolor{keywordflow}{if} (receivers == 0)}
+\DoxyCodeLine{00641                 \{}
+\DoxyCodeLine{00642                     \textcolor{keywordflow}{if} (foundMethods == 0)}
+\DoxyCodeLine{00643                     \{}
+\DoxyCodeLine{00644                         \textcolor{comment}{// found no method that matches}}
+\DoxyCodeLine{00645                         Debug.LogErrorFormat(context, \textcolor{stringliteral}{"{}RPC method '\{0\}(\{2\})' not found on object with PhotonView \{1\}. Implement as non-\/static. Apply [PunRPC]. Components on children are not found. "{}} +}
+\DoxyCodeLine{00646                             \textcolor{stringliteral}{"{}Return type must be void or IEnumerator (if you enable RunRpcCoroutines). RPCs are a one-\/way message."{}}, inMethodName, netViewID, argsString);}
+\DoxyCodeLine{00647                     \}}
+\DoxyCodeLine{00648                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00649                     \{}
+\DoxyCodeLine{00650                         \textcolor{comment}{// found a method but not the right arguments}}
+\DoxyCodeLine{00651                         Debug.LogErrorFormat(context, \textcolor{stringliteral}{"{}RPC method '\{0\}' found on object with PhotonView \{1\} but has wrong parameters. Implement as '\{0\}(\{2\})'. PhotonMessageInfo is optional as final parameter."{}} +}
+\DoxyCodeLine{00652                             \textcolor{stringliteral}{"{}Return type must be void or IEnumerator (if you enable RunRpcCoroutines)."{}}, inMethodName, netViewID, argsString);}
+\DoxyCodeLine{00653                     \}}
+\DoxyCodeLine{00654                 \}}
+\DoxyCodeLine{00655                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00656                 \{}
+\DoxyCodeLine{00657                     \textcolor{comment}{// multiple components have the same method}}
+\DoxyCodeLine{00658                     Debug.LogErrorFormat(context, \textcolor{stringliteral}{"{}RPC method '\{0\}(\{2\})' found \{3\}x on object with PhotonView \{1\}. Only one component should implement it."{}} +}
+\DoxyCodeLine{00659                             \textcolor{stringliteral}{"{}Return type must be void or IEnumerator (if you enable RunRpcCoroutines)."{}}, inMethodName, netViewID, argsString, foundMethods);}
+\DoxyCodeLine{00660                 \}}
+\DoxyCodeLine{00661             \}}
+\DoxyCodeLine{00662         \}}
+\DoxyCodeLine{00663 }
+\DoxyCodeLine{00670         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CheckTypeMatch(ParameterInfo[] methodParameters, Type[] callParameterTypes)}
+\DoxyCodeLine{00671         \{}
+\DoxyCodeLine{00672             \textcolor{keywordflow}{if} (methodParameters.Length < callParameterTypes.Length)}
+\DoxyCodeLine{00673             \{}
+\DoxyCodeLine{00674                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00675             \}}
+\DoxyCodeLine{00676 }
+\DoxyCodeLine{00677             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < callParameterTypes.Length; index++)}
+\DoxyCodeLine{00678             \{}
+\DoxyCodeLine{00679 \textcolor{preprocessor}{\#if NETFX\_CORE}}
+\DoxyCodeLine{00680                 TypeInfo methodParamTI = methodParameters[index].ParameterType.GetTypeInfo();}
+\DoxyCodeLine{00681                 TypeInfo callParamTI = callParameterTypes[index].GetTypeInfo();}
+\DoxyCodeLine{00682 }
+\DoxyCodeLine{00683                 \textcolor{keywordflow}{if} (callParameterTypes[index] != \textcolor{keyword}{null} \&\& !methodParamTI.IsAssignableFrom(callParamTI) \&\& !(callParamTI.IsEnum \&\& System.Enum.GetUnderlyingType(methodParamTI.AsType()).GetTypeInfo().IsAssignableFrom(callParamTI)))}
+\DoxyCodeLine{00684                 \{}
+\DoxyCodeLine{00685                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00686                 \}}
+\DoxyCodeLine{00687 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00688                 Type type = methodParameters[index].ParameterType;}
+\DoxyCodeLine{00689                 \textcolor{keywordflow}{if} (callParameterTypes[index] != \textcolor{keyword}{null} \&\& !type.IsAssignableFrom(callParameterTypes[index]) \&\& !(type.IsEnum \&\& System.Enum.GetUnderlyingType(type).IsAssignableFrom(callParameterTypes[index])))}
+\DoxyCodeLine{00690                 \{}
+\DoxyCodeLine{00691                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00692                 \}}
+\DoxyCodeLine{00693 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00694             \}}
+\DoxyCodeLine{00695 }
+\DoxyCodeLine{00696             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00697         \}}
+\DoxyCodeLine{00698 }
+\DoxyCodeLine{00699 }
+\DoxyCodeLine{00703         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyPlayerObjects(\textcolor{keywordtype}{int} playerId, \textcolor{keywordtype}{bool} localOnly)}
+\DoxyCodeLine{00704         \{}
+\DoxyCodeLine{00705             \textcolor{keywordflow}{if} (playerId <= 0)}
+\DoxyCodeLine{00706             \{}
+\DoxyCodeLine{00707                 Debug.LogError(\textcolor{stringliteral}{"{}Failed to Destroy objects of playerId: "{}} + playerId);}
+\DoxyCodeLine{00708                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00709             \}}
+\DoxyCodeLine{00710 }
+\DoxyCodeLine{00711             \textcolor{keywordflow}{if} (!localOnly)}
+\DoxyCodeLine{00712             \{}
+\DoxyCodeLine{00713                 \textcolor{comment}{// clean server's Instantiate and RPC buffers}}
+\DoxyCodeLine{00714                 OpRemoveFromServerInstantiationsOfPlayer(playerId);}
+\DoxyCodeLine{00715                 OpCleanActorRpcBuffer(playerId);}
+\DoxyCodeLine{00716 }
+\DoxyCodeLine{00717                 \textcolor{comment}{// send Destroy(player) to anyone else}}
+\DoxyCodeLine{00718                 SendDestroyOfPlayer(playerId);}
+\DoxyCodeLine{00719             \}}
+\DoxyCodeLine{00720 }
+\DoxyCodeLine{00721             \textcolor{comment}{// locally cleaning up that player's objects}}
+\DoxyCodeLine{00722             HashSet<GameObject> playersGameObjects = \textcolor{keyword}{new} HashSet<GameObject>();}
+\DoxyCodeLine{00723 }
+\DoxyCodeLine{00724             \textcolor{comment}{// with ownership transfer, some objects might lose their owner.}}
+\DoxyCodeLine{00725             \textcolor{comment}{// in that case, the creator becomes the owner again. every client can apply  done below.}}
+\DoxyCodeLine{00726             \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewList.Values)}
+\DoxyCodeLine{00727             \{}
+\DoxyCodeLine{00728                 \textcolor{keywordflow}{if} (view == \textcolor{keyword}{null})}
+\DoxyCodeLine{00729                 \{}
+\DoxyCodeLine{00730                     Debug.LogError(\textcolor{stringliteral}{"{}Null view"{}});}
+\DoxyCodeLine{00731                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00732                 \}}
+\DoxyCodeLine{00733 }
+\DoxyCodeLine{00734                 \textcolor{comment}{// Mark player created objects for destruction}}
+\DoxyCodeLine{00735                 \textcolor{keywordflow}{if} (view.CreatorActorNr == playerId)}
+\DoxyCodeLine{00736                 \{}
+\DoxyCodeLine{00737                     playersGameObjects.Add(view.gameObject);}
+\DoxyCodeLine{00738                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00739                 \}}
+\DoxyCodeLine{00740 }
+\DoxyCodeLine{00741                 \textcolor{keywordflow}{if} (view.OwnerActorNr == playerId)}
+\DoxyCodeLine{00742                 \{}
+\DoxyCodeLine{00743                     var previousOwner = view.Owner;}
+\DoxyCodeLine{00744                     view.OwnerActorNr = view.CreatorActorNr;}
+\DoxyCodeLine{00745                     view.ControllerActorNr = view.CreatorActorNr;}
+\DoxyCodeLine{00746 }
+\DoxyCodeLine{00747                     \textcolor{comment}{// This callback was not originally here. Added with the IsMine caching changes.}}
+\DoxyCodeLine{00748                     \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipTransferedEv != \textcolor{keyword}{null})}
+\DoxyCodeLine{00749                     \{}
+\DoxyCodeLine{00750                         PhotonNetwork.OnOwnershipTransferedEv(view, previousOwner);}
+\DoxyCodeLine{00751                     \}}
+\DoxyCodeLine{00752                 \}}
+\DoxyCodeLine{00753             \}}
+\DoxyCodeLine{00754 }
+\DoxyCodeLine{00755             \textcolor{comment}{// any non-\/local work is already done, so with the list of that player's objects, we can clean up (locally only)}}
+\DoxyCodeLine{00756             \textcolor{keywordflow}{foreach} (GameObject gameObject \textcolor{keywordflow}{in} playersGameObjects)}
+\DoxyCodeLine{00757             \{}
+\DoxyCodeLine{00758                 RemoveInstantiatedGO(gameObject, \textcolor{keyword}{true});}
+\DoxyCodeLine{00759             \}}
+\DoxyCodeLine{00760         \}}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyAll(\textcolor{keywordtype}{bool} localOnly)}
+\DoxyCodeLine{00763         \{}
+\DoxyCodeLine{00764             \textcolor{keywordflow}{if} (!localOnly)}
+\DoxyCodeLine{00765             \{}
+\DoxyCodeLine{00766                 OpRemoveCompleteCache();}
+\DoxyCodeLine{00767                 SendDestroyOfAll();}
+\DoxyCodeLine{00768             \}}
+\DoxyCodeLine{00769 }
+\DoxyCodeLine{00770             LocalCleanupAnythingInstantiated(\textcolor{keyword}{true});}
+\DoxyCodeLine{00771         \}}
+\DoxyCodeLine{00772 }
+\DoxyCodeLine{00773         \textcolor{keyword}{internal} \textcolor{keyword}{static} List<PhotonView> foundPVs = \textcolor{keyword}{new} List<PhotonView>();}
+\DoxyCodeLine{00774 }
+\DoxyCodeLine{00781         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveInstantiatedGO(GameObject go, \textcolor{keywordtype}{bool} localOnly)}
+\DoxyCodeLine{00782         \{}
+\DoxyCodeLine{00783             \textcolor{comment}{// Avoid cleanup if we are quitting.}}
+\DoxyCodeLine{00784             \textcolor{keywordflow}{if} (ConnectionHandler.AppQuits)}
+\DoxyCodeLine{00785                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00786 }
+\DoxyCodeLine{00787             \textcolor{keywordflow}{if} (go == \textcolor{keyword}{null})}
+\DoxyCodeLine{00788             \{}
+\DoxyCodeLine{00789                 Debug.LogError(\textcolor{stringliteral}{"{}Failed to 'network-\/remove' GameObject because it's null."{}});}
+\DoxyCodeLine{00790                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00791             \}}
+\DoxyCodeLine{00792 }
+\DoxyCodeLine{00793             \textcolor{comment}{// Don't remove the GO if it doesn't have any PhotonView}}
+\DoxyCodeLine{00794             go.GetComponentsInChildren<PhotonView>(\textcolor{keyword}{true}, foundPVs);}
+\DoxyCodeLine{00795             \textcolor{keywordflow}{if} (foundPVs.Count <= 0)}
+\DoxyCodeLine{00796             \{}
+\DoxyCodeLine{00797                 Debug.LogError(\textcolor{stringliteral}{"{}Failed to 'network-\/remove' GameObject because has no PhotonView components: "{}} + go);}
+\DoxyCodeLine{00798                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00799             \}}
+\DoxyCodeLine{00800 }
+\DoxyCodeLine{00801             PhotonView viewZero = foundPVs[0];}
+\DoxyCodeLine{00802 }
+\DoxyCodeLine{00803             \textcolor{comment}{// Don't remove GOs that are owned by others (unless this is the master and the remote player left)}}
+\DoxyCodeLine{00804             \textcolor{keywordflow}{if} (!localOnly)}
+\DoxyCodeLine{00805             \{}
+\DoxyCodeLine{00806                 \textcolor{comment}{//Debug.LogWarning("{}Destroy "{} + instantiationId + "{} creator "{} + creatorId, go);}}
+\DoxyCodeLine{00807                 \textcolor{keywordflow}{if} (!viewZero.IsMine)}
+\DoxyCodeLine{00808                 \{}
+\DoxyCodeLine{00809                     Debug.LogError(\textcolor{stringliteral}{"{}Failed to 'network-\/remove' GameObject. Client is neither owner nor MasterClient taking over for owner who left: "{}} + viewZero);}
+\DoxyCodeLine{00810                     foundPVs.Clear();   \textcolor{comment}{// as foundPVs is re-\/used, clean it to avoid lingering references}}
+\DoxyCodeLine{00811                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00812                 \}}
+\DoxyCodeLine{00813             \}}
+\DoxyCodeLine{00814 }
+\DoxyCodeLine{00815             \textcolor{comment}{// cleanup instantiation (event and local list)}}
+\DoxyCodeLine{00816             \textcolor{keywordflow}{if} (!localOnly)}
+\DoxyCodeLine{00817             \{}
+\DoxyCodeLine{00818                 ServerCleanInstantiateAndDestroy(viewZero); \textcolor{comment}{// server cleaning}}
+\DoxyCodeLine{00819             \}}
+\DoxyCodeLine{00820 }
+\DoxyCodeLine{00821             \textcolor{keywordtype}{int} creatorActorNr = viewZero.CreatorActorNr;}
+\DoxyCodeLine{00822 }
+\DoxyCodeLine{00823             \textcolor{comment}{// cleanup PhotonViews and their RPCs events (if not localOnly)}}
+\DoxyCodeLine{00824             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j = foundPVs.Count -\/ 1; j >= 0; j-\/-\/)}
+\DoxyCodeLine{00825             \{}
+\DoxyCodeLine{00826                 PhotonView view = foundPVs[j];}
+\DoxyCodeLine{00827                 \textcolor{keywordflow}{if} (view == \textcolor{keyword}{null})}
+\DoxyCodeLine{00828                 \{}
+\DoxyCodeLine{00829                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00830                 \}}
+\DoxyCodeLine{00831 }
+\DoxyCodeLine{00832                 \textcolor{comment}{// TODO: Probably should have a enum that defines when auto-\/detachment should occur.}}
+\DoxyCodeLine{00833                 \textcolor{comment}{// Check nested PVs for different creator. Detach if different, to avoid destroying reparanted objects.}}
+\DoxyCodeLine{00834                 \textcolor{keywordflow}{if} (j != 0)}
+\DoxyCodeLine{00835                 \{}
+\DoxyCodeLine{00836                     \textcolor{comment}{// view does not belong to the same object as the root PV -\/ unparent this nested PV to avoid destruction.}}
+\DoxyCodeLine{00837                     \textcolor{keywordflow}{if} (view.CreatorActorNr != creatorActorNr)}
+\DoxyCodeLine{00838                     \{}
+\DoxyCodeLine{00839                         view.transform.SetParent(\textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00840                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00841                     \}}
+\DoxyCodeLine{00842                 \}}
+\DoxyCodeLine{00843 }
+\DoxyCodeLine{00844                 \textcolor{comment}{// Notify all children PVs of impending destruction. Send the root PV (the actual object getting destroyed) to the callbacks.}}
+\DoxyCodeLine{00845                 view.OnPreNetDestroy(viewZero);}
+\DoxyCodeLine{00846 }
+\DoxyCodeLine{00847                 \textcolor{comment}{// we only destroy/clean PhotonViews that were created by PhotonNetwork.Instantiate (and those have an instantiationId!)}}
+\DoxyCodeLine{00848                 \textcolor{keywordflow}{if} (view.InstantiationId >= 1)}
+\DoxyCodeLine{00849                 \{}
+\DoxyCodeLine{00850                     LocalCleanPhotonView(view);}
+\DoxyCodeLine{00851                 \}}
+\DoxyCodeLine{00852                 \textcolor{keywordflow}{if} (!localOnly)}
+\DoxyCodeLine{00853                 \{}
+\DoxyCodeLine{00854                     OpCleanRpcBuffer(view);}
+\DoxyCodeLine{00855                 \}}
+\DoxyCodeLine{00856             \}}
+\DoxyCodeLine{00857 }
+\DoxyCodeLine{00858             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Full)}
+\DoxyCodeLine{00859             \{}
+\DoxyCodeLine{00860                 Debug.Log(\textcolor{stringliteral}{"{}Network destroy Instantiated GO: "{}} + go.name);}
+\DoxyCodeLine{00861             \}}
+\DoxyCodeLine{00862             }
+\DoxyCodeLine{00863             foundPVs.Clear();           \textcolor{comment}{// as foundPVs is re-\/used, clean it to avoid lingering references}}
+\DoxyCodeLine{00864 }
+\DoxyCodeLine{00865             go.SetActive(\textcolor{keyword}{false});        \textcolor{comment}{// PUN 2 disables objects before the return to the pool}}
+\DoxyCodeLine{00866             prefabPool.Destroy(go);     \textcolor{comment}{// PUN 2 always uses a PrefabPool (even for the default implementation)}}
+\DoxyCodeLine{00867         \}}
+\DoxyCodeLine{00868 }
+\DoxyCodeLine{00869 }
+\DoxyCodeLine{00870         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly ExitGames.Client.Photon.Hashtable removeFilter = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00871         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly ExitGames.Client.Photon.Hashtable ServerCleanDestroyEvent = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00872         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly RaiseEventOptions ServerCleanOptions = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache \};}
+\DoxyCodeLine{00873 }
+\DoxyCodeLine{00874         \textcolor{keyword}{internal} \textcolor{keyword}{static} RaiseEventOptions SendToAllOptions = \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.All \};}
+\DoxyCodeLine{00875         \textcolor{keyword}{internal} \textcolor{keyword}{static} RaiseEventOptions SendToOthersOptions = \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.Others \};}
+\DoxyCodeLine{00876         \textcolor{keyword}{internal} \textcolor{keyword}{static} RaiseEventOptions SendToSingleOptions = \textcolor{keyword}{new} RaiseEventOptions() \{ TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[1] \};}
+\DoxyCodeLine{00877 }
+\DoxyCodeLine{00881         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ServerCleanInstantiateAndDestroy(PhotonView photonView)}
+\DoxyCodeLine{00882         \{}
+\DoxyCodeLine{00883             \textcolor{keywordtype}{int} filterId;}
+\DoxyCodeLine{00884             \textcolor{keywordflow}{if} (photonView.isRuntimeInstantiated)}
+\DoxyCodeLine{00885             \{}
+\DoxyCodeLine{00886                 filterId = photonView.InstantiationId; \textcolor{comment}{// actual, live InstantiationIds start with 1 and go up}}
+\DoxyCodeLine{00887                 \textcolor{comment}{// remove the Instantiate-\/event from the server cache:}}
+\DoxyCodeLine{00888                 removeFilter[keyByteSeven] = filterId;}
+\DoxyCodeLine{00889                 ServerCleanOptions.CachingOption = EventCaching.RemoveFromRoomCache;}
+\DoxyCodeLine{00890                 PhotonNetwork.RaiseEventInternal(PunEvent.Instantiation, removeFilter, ServerCleanOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{00891             \}}
+\DoxyCodeLine{00892             \textcolor{comment}{// Don't remove the Instantiation from the server, if it doesn't have a proper ID}}
+\DoxyCodeLine{00893             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00894             \{}
+\DoxyCodeLine{00895                 filterId = photonView.ViewID;}
+\DoxyCodeLine{00896             \}}
+\DoxyCodeLine{00897 }
+\DoxyCodeLine{00898             \textcolor{comment}{// send a Destroy-\/event to everyone (removing an event from the cache, doesn't send this to anyone else):}}
+\DoxyCodeLine{00899             ServerCleanDestroyEvent[keyByteZero] = filterId;}
+\DoxyCodeLine{00900             ServerCleanOptions.CachingOption = photonView.isRuntimeInstantiated ? EventCaching.DoNotCache : EventCaching.AddToRoomCacheGlobal;   \textcolor{comment}{// if the view got loaded with the scene, cache EvDestroy for anyone (re)joining later}}
+\DoxyCodeLine{00901 }
+\DoxyCodeLine{00902             PhotonNetwork.RaiseEventInternal(PunEvent.Destroy, ServerCleanDestroyEvent, ServerCleanOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{00903         \}}
+\DoxyCodeLine{00904 }
+\DoxyCodeLine{00905         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SendDestroyOfPlayer(\textcolor{keywordtype}{int} actorNr)}
+\DoxyCodeLine{00906         \{}
+\DoxyCodeLine{00907             ExitGames.Client.Photon.Hashtable evData = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00908             evData[keyByteZero] = actorNr;}
+\DoxyCodeLine{00909 }
+\DoxyCodeLine{00910             PhotonNetwork.RaiseEventInternal(PunEvent.DestroyPlayer, evData, \textcolor{keyword}{null}, SendOptions.SendReliable);}
+\DoxyCodeLine{00911         \}}
+\DoxyCodeLine{00912 }
+\DoxyCodeLine{00913         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SendDestroyOfAll()}
+\DoxyCodeLine{00914         \{}
+\DoxyCodeLine{00915             ExitGames.Client.Photon.Hashtable evData = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00916             evData[keyByteZero] = -\/1;}
+\DoxyCodeLine{00917 }
+\DoxyCodeLine{00918             PhotonNetwork.RaiseEventInternal(PunEvent.DestroyPlayer, evData, \textcolor{keyword}{null}, SendOptions.SendReliable);}
+\DoxyCodeLine{00919         \}}
+\DoxyCodeLine{00920 }
+\DoxyCodeLine{00921         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpRemoveFromServerInstantiationsOfPlayer(\textcolor{keywordtype}{int} actorNr)}
+\DoxyCodeLine{00922         \{}
+\DoxyCodeLine{00923             \textcolor{comment}{// removes all "{}Instantiation"{} events of player actorNr. this is not an event for anyone else}}
+\DoxyCodeLine{00924             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache, TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ actorNr \} \};}
+\DoxyCodeLine{00925             PhotonNetwork.RaiseEventInternal(PunEvent.Instantiation, \textcolor{keyword}{null}, options, SendOptions.SendReliable);}
+\DoxyCodeLine{00926         \}}
+\DoxyCodeLine{00927 }
+\DoxyCodeLine{00928         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RequestOwnership(\textcolor{keywordtype}{int} viewID, \textcolor{keywordtype}{int} fromOwner)}
+\DoxyCodeLine{00929         \{}
+\DoxyCodeLine{00930             \textcolor{comment}{//Debug.Log("{}RequestOwnership(): "{} + viewID + "{} from: "{} + fromOwner + "{} Time: "{} + Environment.TickCount \% 1000);}}
+\DoxyCodeLine{00931             PhotonNetwork.RaiseEventInternal(PunEvent.OwnershipRequest, \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ viewID, fromOwner \}, SendToAllOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{00932         \}}
+\DoxyCodeLine{00933 }
+\DoxyCodeLine{00934         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} TransferOwnership(\textcolor{keywordtype}{int} viewID, \textcolor{keywordtype}{int} playerID)}
+\DoxyCodeLine{00935         \{}
+\DoxyCodeLine{00936             \textcolor{comment}{//Debug.Log("{}TransferOwnership() view "{} + viewID + "{} to: "{} + playerID + "{} Time: "{} + Environment.TickCount \% 1000);}}
+\DoxyCodeLine{00937             PhotonNetwork.RaiseEventInternal(PunEvent.OwnershipTransfer, \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ viewID, playerID \}, SendToAllOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{00938         \}}
+\DoxyCodeLine{00939 }
+\DoxyCodeLine{00943         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OwnershipUpdate(\textcolor{keywordtype}{int}[] viewOwnerPairs, \textcolor{keywordtype}{int} targetActor = -\/1)}
+\DoxyCodeLine{00944         \{}
+\DoxyCodeLine{00945             RaiseEventOptions opts;}
+\DoxyCodeLine{00946             \textcolor{keywordflow}{if} (targetActor == -\/1)}
+\DoxyCodeLine{00947             \{}
+\DoxyCodeLine{00948                 opts = SendToOthersOptions;}
+\DoxyCodeLine{00949             \}}
+\DoxyCodeLine{00950             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00951             \{}
+\DoxyCodeLine{00952                 SendToSingleOptions.TargetActors[0] = targetActor;}
+\DoxyCodeLine{00953                 opts = SendToSingleOptions;}
+\DoxyCodeLine{00954             \}}
+\DoxyCodeLine{00955             PhotonNetwork.RaiseEventInternal(PunEvent.OwnershipUpdate, viewOwnerPairs, opts, SendOptions.SendReliable);}
+\DoxyCodeLine{00956         \}}
+\DoxyCodeLine{00957 }
+\DoxyCodeLine{00958         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} LocalCleanPhotonView(PhotonView view)}
+\DoxyCodeLine{00959         \{}
+\DoxyCodeLine{00960             view.removedFromLocalViewList = \textcolor{keyword}{true};}
+\DoxyCodeLine{00961             \textcolor{keywordflow}{return} photonViewList.Remove(view.ViewID);}
+\DoxyCodeLine{00962         \}}
+\DoxyCodeLine{00963 }
+\DoxyCodeLine{00964         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonView GetPhotonView(\textcolor{keywordtype}{int} viewID)}
+\DoxyCodeLine{00965         \{}
+\DoxyCodeLine{00966             PhotonView result = \textcolor{keyword}{null};}
+\DoxyCodeLine{00967             photonViewList.TryGetValue(viewID, out result);}
+\DoxyCodeLine{00968 }
+\DoxyCodeLine{00970             \textcolor{comment}{//if (result == null)}}
+\DoxyCodeLine{00971             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00972             \textcolor{comment}{//    PhotonView[] views = GameObject.FindObjectsOfType(typeof(PhotonView)) as PhotonView[];}}
+\DoxyCodeLine{00973 }
+\DoxyCodeLine{00974             \textcolor{comment}{//    for (int i = 0; i < views.Length; i++)}}
+\DoxyCodeLine{00975             \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00976             \textcolor{comment}{//        PhotonView view = views[i];}}
+\DoxyCodeLine{00977             \textcolor{comment}{//        if (view.ViewID == viewID)}}
+\DoxyCodeLine{00978             \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00979             \textcolor{comment}{//            if (view.didAwake)}}
+\DoxyCodeLine{00980             \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00981             \textcolor{comment}{//                Debug.LogWarning("{}Had to lookup view that wasn't in photonViewList: "{} + view);}}
+\DoxyCodeLine{00982             \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00983             \textcolor{comment}{//            return view;}}
+\DoxyCodeLine{00984             \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00985             \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00986             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00987 }
+\DoxyCodeLine{00988             \textcolor{keywordflow}{return} result;}
+\DoxyCodeLine{00989         \}}
+\DoxyCodeLine{00990 }
+\DoxyCodeLine{00991         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterPhotonView(PhotonView netView)}
+\DoxyCodeLine{00992         \{}
+\DoxyCodeLine{00993             \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00994             \{}
+\DoxyCodeLine{00995                 photonViewList = \textcolor{keyword}{new} NonAllocDictionary<int, PhotonView>();}
+\DoxyCodeLine{00996                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00997             \}}
+\DoxyCodeLine{00998 }
+\DoxyCodeLine{00999             \textcolor{keywordflow}{if} (netView.ViewID == 0)}
+\DoxyCodeLine{01000             \{}
+\DoxyCodeLine{01001                 \textcolor{comment}{// don't register views with ID 0 (not initialized). they register when a ID is assigned later on}}
+\DoxyCodeLine{01002                 Debug.Log(\textcolor{stringliteral}{"{}PhotonView register is ignored, because viewID is 0. No id assigned yet to: "{}} + netView);}
+\DoxyCodeLine{01003                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01004             \}}
+\DoxyCodeLine{01005 }
+\DoxyCodeLine{01006             PhotonView listedView = \textcolor{keyword}{null};}
+\DoxyCodeLine{01007             \textcolor{keywordtype}{bool} isViewListed = photonViewList.TryGetValue(netView.ViewID, out listedView);}
+\DoxyCodeLine{01008             \textcolor{keywordflow}{if} (isViewListed)}
+\DoxyCodeLine{01009             \{}
+\DoxyCodeLine{01010                 \textcolor{comment}{// if some other view is in the list already, we got a problem. it might be indestructible. print out error}}
+\DoxyCodeLine{01011                 \textcolor{keywordflow}{if} (netView != listedView)}
+\DoxyCodeLine{01012                 \{}
+\DoxyCodeLine{01013                     Debug.LogError(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}PhotonView ID duplicate found: \{0\}. New: \{1\} old: \{2\}. Maybe one wasn't destroyed on scene load?! Check for 'DontDestroyOnLoad'. Destroying old entry, adding new."{}}, netView.ViewID, netView, listedView));}
+\DoxyCodeLine{01014                 \}}
+\DoxyCodeLine{01015                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01016                 \{}
+\DoxyCodeLine{01017                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01018                 \}}
+\DoxyCodeLine{01019 }
+\DoxyCodeLine{01020                 RemoveInstantiatedGO(listedView.gameObject, \textcolor{keyword}{true});}
+\DoxyCodeLine{01021             \}}
+\DoxyCodeLine{01022 }
+\DoxyCodeLine{01023             \textcolor{comment}{// Debug.Log("{}adding view to known list: "{} + netView);}}
+\DoxyCodeLine{01024             photonViewList.Add(netView.ViewID, netView);}
+\DoxyCodeLine{01025             netView.removedFromLocalViewList = \textcolor{keyword}{false};}
+\DoxyCodeLine{01026 }
+\DoxyCodeLine{01027             \textcolor{comment}{//Debug.LogError("{}view being added. "{} + netView);   // Exit Games internal log}}
+\DoxyCodeLine{01028 }
+\DoxyCodeLine{01029             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Full)}
+\DoxyCodeLine{01030             \{}
+\DoxyCodeLine{01031                 Debug.Log(\textcolor{stringliteral}{"{}Registered PhotonView: "{}} + netView.ViewID);}
+\DoxyCodeLine{01032             \}}
+\DoxyCodeLine{01033         \}}
+\DoxyCodeLine{01034 }
+\DoxyCodeLine{01035 }
+\DoxyCodeLine{01041         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpCleanActorRpcBuffer(\textcolor{keywordtype}{int} actorNumber)}
+\DoxyCodeLine{01042         \{}
+\DoxyCodeLine{01043             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache, TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ actorNumber \} \};}
+\DoxyCodeLine{01044             PhotonNetwork.RaiseEventInternal(PunEvent.RPC, \textcolor{keyword}{null}, options, SendOptions.SendReliable);}
+\DoxyCodeLine{01045         \}}
+\DoxyCodeLine{01046 }
+\DoxyCodeLine{01051         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpRemoveCompleteCacheOfPlayer(\textcolor{keywordtype}{int} actorNumber)}
+\DoxyCodeLine{01052         \{}
+\DoxyCodeLine{01053             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache, TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ actorNumber \} \};}
+\DoxyCodeLine{01054             PhotonNetwork.RaiseEventInternal(0, \textcolor{keyword}{null}, options, SendOptions.SendReliable);}
+\DoxyCodeLine{01055         \}}
+\DoxyCodeLine{01056 }
+\DoxyCodeLine{01057 }
+\DoxyCodeLine{01058         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpRemoveCompleteCache()}
+\DoxyCodeLine{01059         \{}
+\DoxyCodeLine{01060             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache, Receivers = ReceiverGroup.MasterClient \};}
+\DoxyCodeLine{01061             PhotonNetwork.RaiseEventInternal(0, \textcolor{keyword}{null}, options, SendOptions.SendReliable);}
+\DoxyCodeLine{01062         \}}
+\DoxyCodeLine{01063 }
+\DoxyCodeLine{01065         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveCacheOfLeftPlayers()}
+\DoxyCodeLine{01066         \{}
+\DoxyCodeLine{01067             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{01068             opParameters[ParameterCode.Code] = (byte)0;        \textcolor{comment}{// any event}}
+\DoxyCodeLine{01069             opParameters[ParameterCode.Cache] = (byte)EventCaching.RemoveFromRoomCacheForActorsLeft;    \textcolor{comment}{// option to clear the room cache of all events of players who left}}
+\DoxyCodeLine{01070 }
+\DoxyCodeLine{01071             NetworkingClient.LoadBalancingPeer.SendOperation((\textcolor{keywordtype}{byte})OperationCode.RaiseEvent, opParameters, SendOptions.SendReliable);   \textcolor{comment}{// TODO: Check if this is the best implementation possible}}
+\DoxyCodeLine{01072         \}}
+\DoxyCodeLine{01073 }
+\DoxyCodeLine{01074         \textcolor{comment}{// Remove RPCs of view (if they are local player's RPCs)}}
+\DoxyCodeLine{01075         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CleanRpcBufferIfMine(PhotonView view)}
+\DoxyCodeLine{01076         \{}
+\DoxyCodeLine{01077             \textcolor{keywordflow}{if} (view.OwnerActorNr != NetworkingClient.LocalPlayer.ActorNumber \&\& !NetworkingClient.LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{01078             \{}
+\DoxyCodeLine{01079                 Debug.LogError(\textcolor{stringliteral}{"{}Cannot remove cached RPCs on a PhotonView thats not ours! "{}} + view.Owner + \textcolor{stringliteral}{"{} scene: "{}} + view.IsRoomView);}
+\DoxyCodeLine{01080                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01081             \}}
+\DoxyCodeLine{01082 }
+\DoxyCodeLine{01083             OpCleanRpcBuffer(view);}
+\DoxyCodeLine{01084         \}}
+\DoxyCodeLine{01085 }
+\DoxyCodeLine{01086 }
+\DoxyCodeLine{01087         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Hashtable rpcFilterByViewId = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{01088         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly RaiseEventOptions OpCleanRpcBufferOptions = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.RemoveFromRoomCache \};}
+\DoxyCodeLine{01089 }
+\DoxyCodeLine{01091         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpCleanRpcBuffer(PhotonView view)}
+\DoxyCodeLine{01092         \{}
+\DoxyCodeLine{01093             rpcFilterByViewId[keyByteZero] = view.ViewID;}
+\DoxyCodeLine{01094             PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcFilterByViewId, OpCleanRpcBufferOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{01095         \}}
+\DoxyCodeLine{01096 }
+\DoxyCodeLine{01106         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveRPCsInGroup(\textcolor{keywordtype}{int} group)}
+\DoxyCodeLine{01107         \{}
+\DoxyCodeLine{01108             \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewList.Values)}
+\DoxyCodeLine{01109             \{}
+\DoxyCodeLine{01110                 \textcolor{keywordflow}{if} (view.Group == group)}
+\DoxyCodeLine{01111                 \{}
+\DoxyCodeLine{01112                     CleanRpcBufferIfMine(view);}
+\DoxyCodeLine{01113                 \}}
+\DoxyCodeLine{01114             \}}
+\DoxyCodeLine{01115         \}}
+\DoxyCodeLine{01116 }
+\DoxyCodeLine{01124         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} RemoveBufferedRPCs(\textcolor{keywordtype}{int} viewId = 0, \textcolor{keywordtype}{string} methodName = \textcolor{keyword}{null}, \textcolor{keywordtype}{int}[] callersActorNumbers = \textcolor{keyword}{null}\textcolor{comment}{/*, params object[] parameters*/})}
+\DoxyCodeLine{01125         \{}
+\DoxyCodeLine{01126             Hashtable filter = \textcolor{keyword}{new} Hashtable(2);}
+\DoxyCodeLine{01127             \textcolor{keywordflow}{if} (viewId != 0)}
+\DoxyCodeLine{01128             \{}
+\DoxyCodeLine{01129                 filter[keyByteZero] = viewId;}
+\DoxyCodeLine{01130             \}}
+\DoxyCodeLine{01131             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(methodName))}
+\DoxyCodeLine{01132             \{}
+\DoxyCodeLine{01133                 \textcolor{comment}{// send name or shortcut (if available)}}
+\DoxyCodeLine{01134                 \textcolor{keywordtype}{int} shortcut;}
+\DoxyCodeLine{01135                 \textcolor{keywordflow}{if} (rpcShortcuts.TryGetValue(methodName, out shortcut))}
+\DoxyCodeLine{01136                 \{}
+\DoxyCodeLine{01137                     filter[keyByteFive] = (byte)shortcut; \textcolor{comment}{// LIMITS RPC COUNT}}
+\DoxyCodeLine{01138                 \}}
+\DoxyCodeLine{01139                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01140                 \{}
+\DoxyCodeLine{01141                     filter[keyByteThree] = methodName;}
+\DoxyCodeLine{01142                 \}}
+\DoxyCodeLine{01143             \}}
+\DoxyCodeLine{01144             \textcolor{comment}{//if (parameters != null \&\& parameters.Length > 0)}}
+\DoxyCodeLine{01145             \textcolor{comment}{//\{}}
+\DoxyCodeLine{01146             \textcolor{comment}{//    filter[keyByteFour] = parameters;}}
+\DoxyCodeLine{01147             \textcolor{comment}{//\}}}
+\DoxyCodeLine{01148             RaiseEventOptions raiseEventOptions = \textcolor{keyword}{new} RaiseEventOptions();}
+\DoxyCodeLine{01149             raiseEventOptions.CachingOption = EventCaching.RemoveFromRoomCache;}
+\DoxyCodeLine{01150             \textcolor{keywordflow}{if} (callersActorNumbers != \textcolor{keyword}{null})}
+\DoxyCodeLine{01151             \{}
+\DoxyCodeLine{01152                 raiseEventOptions.TargetActors = callersActorNumbers;}
+\DoxyCodeLine{01153             \}}
+\DoxyCodeLine{01154             \textcolor{keywordflow}{return} RaiseEventInternal(PunEvent.RPC, filter, raiseEventOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{01155         \}}
+\DoxyCodeLine{01156 }
+\DoxyCodeLine{01172         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetLevelPrefix(\textcolor{keywordtype}{byte} prefix)}
+\DoxyCodeLine{01173         \{}
+\DoxyCodeLine{01174             \textcolor{comment}{// TODO: check can use network}}
+\DoxyCodeLine{01175 }
+\DoxyCodeLine{01176             currentLevelPrefix = prefix;}
+\DoxyCodeLine{01177             \textcolor{comment}{// TODO: should we really change the prefix for existing PVs?! better keep it!}}
+\DoxyCodeLine{01178             \textcolor{comment}{//foreach (PhotonView view in photonViewList.Values)}}
+\DoxyCodeLine{01179             \textcolor{comment}{//\{}}
+\DoxyCodeLine{01180             \textcolor{comment}{//    view.prefix = prefix;}}
+\DoxyCodeLine{01181             \textcolor{comment}{//\}}}
+\DoxyCodeLine{01182         \}}
+\DoxyCodeLine{01183 }
+\DoxyCodeLine{01184 }
+\DoxyCodeLine{01194 }
+\DoxyCodeLine{01195         \textcolor{keyword}{static} ExitGames.Client.Photon.Hashtable rpcEvent = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{01196         \textcolor{keyword}{static} RaiseEventOptions RpcOptionsToAll = \textcolor{keyword}{new} RaiseEventOptions();}
+\DoxyCodeLine{01197 }
+\DoxyCodeLine{01198 }
+\DoxyCodeLine{01199         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RPC(PhotonView view, \textcolor{keywordtype}{string} methodName, RpcTarget target, Player player, \textcolor{keywordtype}{bool} encrypt, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{01200         \{}
+\DoxyCodeLine{01201             \textcolor{keywordflow}{if} (blockedSendingGroups.Contains(view.Group))}
+\DoxyCodeLine{01202             \{}
+\DoxyCodeLine{01203                 \textcolor{keywordflow}{return}; \textcolor{comment}{// Block sending on this group}}
+\DoxyCodeLine{01204             \}}
+\DoxyCodeLine{01205 }
+\DoxyCodeLine{01206             \textcolor{keywordflow}{if} (view.ViewID < 1)}
+\DoxyCodeLine{01207             \{}
+\DoxyCodeLine{01208                 Debug.LogError(\textcolor{stringliteral}{"{}Illegal view ID:"{}} + view.ViewID + \textcolor{stringliteral}{"{} method: "{}} + methodName + \textcolor{stringliteral}{"{} GO:"{}} + view.gameObject.name);}
+\DoxyCodeLine{01209             \}}
+\DoxyCodeLine{01210 }
+\DoxyCodeLine{01211             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Full)}
+\DoxyCodeLine{01212             \{}
+\DoxyCodeLine{01213                 Debug.Log(\textcolor{stringliteral}{"{}Sending RPC \(\backslash\)"{}"{}} + methodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} to target: "{}} + target + \textcolor{stringliteral}{"{} or player:"{}} + player + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{01214             \}}
+\DoxyCodeLine{01215 }
+\DoxyCodeLine{01216 }
+\DoxyCodeLine{01217             \textcolor{comment}{//ts: changed RPCs to a one-\/level hashtable as described in internal.txt}}
+\DoxyCodeLine{01218             rpcEvent.Clear();}
+\DoxyCodeLine{01219 }
+\DoxyCodeLine{01220             rpcEvent[keyByteZero] = (int)view.ViewID; \textcolor{comment}{// LIMITS NETWORKVIEWS\&PLAYERS}}
+\DoxyCodeLine{01221             if (view.Prefix > 0)}
+\DoxyCodeLine{01222             \{}
+\DoxyCodeLine{01223                 rpcEvent[keyByteOne] = (short)view.Prefix;}
+\DoxyCodeLine{01224             \}}
+\DoxyCodeLine{01225             rpcEvent[keyByteTwo] = PhotonNetwork.ServerTimestamp;}
+\DoxyCodeLine{01226 }
+\DoxyCodeLine{01227 }
+\DoxyCodeLine{01228             \textcolor{comment}{// send name or shortcut (if available)}}
+\DoxyCodeLine{01229             \textcolor{keywordtype}{int} shortcut = 0;}
+\DoxyCodeLine{01230             \textcolor{keywordflow}{if} (rpcShortcuts.TryGetValue(methodName, out shortcut))}
+\DoxyCodeLine{01231             \{}
+\DoxyCodeLine{01232                 rpcEvent[keyByteFive] = (byte)shortcut; \textcolor{comment}{// LIMITS RPC COUNT}}
+\DoxyCodeLine{01233             \}}
+\DoxyCodeLine{01234             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01235             \{}
+\DoxyCodeLine{01236                 rpcEvent[keyByteThree] = methodName;}
+\DoxyCodeLine{01237             \}}
+\DoxyCodeLine{01238 }
+\DoxyCodeLine{01239             \textcolor{keywordflow}{if} (parameters != \textcolor{keyword}{null} \&\& parameters.Length > 0)}
+\DoxyCodeLine{01240             \{}
+\DoxyCodeLine{01241                 rpcEvent[keyByteFour] = (\textcolor{keywordtype}{object}[])parameters;}
+\DoxyCodeLine{01242             \}}
+\DoxyCodeLine{01243 }
+\DoxyCodeLine{01244             SendOptions sendOptions = \textcolor{keyword}{new} SendOptions() \{ Reliability = \textcolor{keyword}{true}, Encrypt = encrypt \};}
+\DoxyCodeLine{01245 }
+\DoxyCodeLine{01246             \textcolor{comment}{// if sent to target player, this overrides the target}}
+\DoxyCodeLine{01247             \textcolor{keywordflow}{if} (player != \textcolor{keyword}{null})}
+\DoxyCodeLine{01248             \{}
+\DoxyCodeLine{01249                 \textcolor{keywordflow}{if} (NetworkingClient.LocalPlayer.ActorNumber == player.ActorNumber)}
+\DoxyCodeLine{01250                 \{}
+\DoxyCodeLine{01251                     ExecuteRpc(rpcEvent, player);}
+\DoxyCodeLine{01252                 \}}
+\DoxyCodeLine{01253                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01254                 \{}
+\DoxyCodeLine{01255                     RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ player.ActorNumber \} \};}
+\DoxyCodeLine{01256                     PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01257                     \textcolor{comment}{// NetworkingClient.OpRaiseEvent(PunEvent.RPC, rpcEvent, options, new SendOptions() \{ Reliability = true, Encrypt = encrypt \});}}
+\DoxyCodeLine{01258                 \}}
+\DoxyCodeLine{01259 }
+\DoxyCodeLine{01260                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01261             \}}
+\DoxyCodeLine{01262 }
+\DoxyCodeLine{01263             \textcolor{keywordflow}{switch} (target)}
+\DoxyCodeLine{01264             \{}
+\DoxyCodeLine{01265                 \textcolor{comment}{// send to a specific set of players}}
+\DoxyCodeLine{01266                 \textcolor{keywordflow}{case} RpcTarget.All:}
+\DoxyCodeLine{01267                     RpcOptionsToAll.InterestGroup = (byte)view.Group;   \textcolor{comment}{// NOTE: Test-\/wise, this is static and re-\/used to avoid memory garbage}}
+\DoxyCodeLine{01268                     PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, RpcOptionsToAll, sendOptions);}
+\DoxyCodeLine{01269 }
+\DoxyCodeLine{01270                     \textcolor{comment}{// Execute local}}
+\DoxyCodeLine{01271                     ExecuteRpc(rpcEvent, NetworkingClient.LocalPlayer);}
+\DoxyCodeLine{01272                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01273                 \textcolor{keywordflow}{case} RpcTarget.Others:}
+\DoxyCodeLine{01274                     \{}
+\DoxyCodeLine{01275                         RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ InterestGroup = (byte)view.Group \};}
+\DoxyCodeLine{01276                         PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01277                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01278                     \}}
+\DoxyCodeLine{01279                 \textcolor{keywordflow}{case} RpcTarget.AllBuffered:}
+\DoxyCodeLine{01280                     \{}
+\DoxyCodeLine{01281                         RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.AddToRoomCache \};}
+\DoxyCodeLine{01282                         PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01283 }
+\DoxyCodeLine{01284                         \textcolor{comment}{// Execute local}}
+\DoxyCodeLine{01285                         ExecuteRpc(rpcEvent, NetworkingClient.LocalPlayer);}
+\DoxyCodeLine{01286                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01287                     \}}
+\DoxyCodeLine{01288                 \textcolor{keywordflow}{case} RpcTarget.OthersBuffered:}
+\DoxyCodeLine{01289                     \{}
+\DoxyCodeLine{01290                         RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ CachingOption = EventCaching.AddToRoomCache \};}
+\DoxyCodeLine{01291                         PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01292                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01293                     \}}
+\DoxyCodeLine{01294                 \textcolor{keywordflow}{case} RpcTarget.MasterClient:}
+\DoxyCodeLine{01295                     \{}
+\DoxyCodeLine{01296                         \textcolor{keywordflow}{if} (NetworkingClient.LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{01297                         \{}
+\DoxyCodeLine{01298                             ExecuteRpc(rpcEvent, NetworkingClient.LocalPlayer);}
+\DoxyCodeLine{01299                         \}}
+\DoxyCodeLine{01300                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01301                         \{}
+\DoxyCodeLine{01302                             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.MasterClient \};}
+\DoxyCodeLine{01303                             PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01304                         \}}
+\DoxyCodeLine{01305 }
+\DoxyCodeLine{01306                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01307                     \}}
+\DoxyCodeLine{01308                 \textcolor{keywordflow}{case} RpcTarget.AllViaServer:}
+\DoxyCodeLine{01309                     \{}
+\DoxyCodeLine{01310                         RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ InterestGroup = (byte)view.Group, Receivers = ReceiverGroup.All \};}
+\DoxyCodeLine{01311                         PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01312                         \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode)}
+\DoxyCodeLine{01313                         \{}
+\DoxyCodeLine{01314                             ExecuteRpc(rpcEvent, NetworkingClient.LocalPlayer);}
+\DoxyCodeLine{01315                         \}}
+\DoxyCodeLine{01316 }
+\DoxyCodeLine{01317                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01318                     \}}
+\DoxyCodeLine{01319                 \textcolor{keywordflow}{case} RpcTarget.AllBufferedViaServer:}
+\DoxyCodeLine{01320                     \{}
+\DoxyCodeLine{01321                         RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ InterestGroup = (byte)view.Group, Receivers = ReceiverGroup.All, CachingOption = EventCaching.AddToRoomCache \};}
+\DoxyCodeLine{01322                         PhotonNetwork.RaiseEventInternal(PunEvent.RPC, rpcEvent, options, sendOptions);}
+\DoxyCodeLine{01323                         \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode)}
+\DoxyCodeLine{01324                         \{}
+\DoxyCodeLine{01325                             ExecuteRpc(rpcEvent, NetworkingClient.LocalPlayer);}
+\DoxyCodeLine{01326                         \}}
+\DoxyCodeLine{01327 }
+\DoxyCodeLine{01328                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01329                     \}}
+\DoxyCodeLine{01330                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{01331                     Debug.LogError(\textcolor{stringliteral}{"{}Unsupported target enum: "{}} + target);}
+\DoxyCodeLine{01332                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01333             \}}
+\DoxyCodeLine{01334         \}}
+\DoxyCodeLine{01335 }
+\DoxyCodeLine{01336 }
+\DoxyCodeLine{01348         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetInterestGroups(\textcolor{keywordtype}{byte}[] disableGroups, \textcolor{keywordtype}{byte}[] enableGroups)}
+\DoxyCodeLine{01349         \{}
+\DoxyCodeLine{01350             \textcolor{comment}{// TODO: check can use network}}
+\DoxyCodeLine{01351 }
+\DoxyCodeLine{01352             \textcolor{keywordflow}{if} (disableGroups != \textcolor{keyword}{null})}
+\DoxyCodeLine{01353             \{}
+\DoxyCodeLine{01354                 \textcolor{keywordflow}{if} (disableGroups.Length == 0)}
+\DoxyCodeLine{01355                 \{}
+\DoxyCodeLine{01356                     \textcolor{comment}{// a byte[0] should disable ALL groups in one step and before any groups are enabled. we do this locally, too.}}
+\DoxyCodeLine{01357                     allowedReceivingGroups.Clear();}
+\DoxyCodeLine{01358                 \}}
+\DoxyCodeLine{01359                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01360                 \{}
+\DoxyCodeLine{01361                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < disableGroups.Length; index++)}
+\DoxyCodeLine{01362                     \{}
+\DoxyCodeLine{01363                         \textcolor{keywordtype}{byte} g = disableGroups[index];}
+\DoxyCodeLine{01364                         \textcolor{keywordflow}{if} (g <= 0)}
+\DoxyCodeLine{01365                         \{}
+\DoxyCodeLine{01366                             Debug.LogError(\textcolor{stringliteral}{"{}Error: PhotonNetwork.SetInterestGroups was called with an illegal group number: "{}} + g + \textcolor{stringliteral}{"{}. The Group number should be at least 1."{}});}
+\DoxyCodeLine{01367                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01368                         \}}
+\DoxyCodeLine{01369 }
+\DoxyCodeLine{01370                         \textcolor{keywordflow}{if} (allowedReceivingGroups.Contains(g))}
+\DoxyCodeLine{01371                         \{}
+\DoxyCodeLine{01372                             allowedReceivingGroups.Remove(g);}
+\DoxyCodeLine{01373                         \}}
+\DoxyCodeLine{01374                     \}}
+\DoxyCodeLine{01375                 \}}
+\DoxyCodeLine{01376             \}}
+\DoxyCodeLine{01377 }
+\DoxyCodeLine{01378             \textcolor{keywordflow}{if} (enableGroups != \textcolor{keyword}{null})}
+\DoxyCodeLine{01379             \{}
+\DoxyCodeLine{01380                 \textcolor{keywordflow}{if} (enableGroups.Length == 0)}
+\DoxyCodeLine{01381                 \{}
+\DoxyCodeLine{01382                     \textcolor{comment}{// a byte[0] should enable ALL groups in one step. we do this locally, too.}}
+\DoxyCodeLine{01383                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{byte} index = 0; index < \textcolor{keywordtype}{byte}.MaxValue; index++)}
+\DoxyCodeLine{01384                     \{}
+\DoxyCodeLine{01385                         allowedReceivingGroups.Add(index);}
+\DoxyCodeLine{01386                     \}}
+\DoxyCodeLine{01387 }
+\DoxyCodeLine{01388                     allowedReceivingGroups.Add(\textcolor{keywordtype}{byte}.MaxValue);}
+\DoxyCodeLine{01389                 \}}
+\DoxyCodeLine{01390                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01391                 \{}
+\DoxyCodeLine{01392                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < enableGroups.Length; index++)}
+\DoxyCodeLine{01393                     \{}
+\DoxyCodeLine{01394                         \textcolor{keywordtype}{byte} g = enableGroups[index];}
+\DoxyCodeLine{01395                         \textcolor{keywordflow}{if} (g <= 0)}
+\DoxyCodeLine{01396                         \{}
+\DoxyCodeLine{01397                             Debug.LogError(\textcolor{stringliteral}{"{}Error: PhotonNetwork.SetInterestGroups was called with an illegal group number: "{}} + g + \textcolor{stringliteral}{"{}. The Group number should be at least 1."{}});}
+\DoxyCodeLine{01398                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01399                         \}}
+\DoxyCodeLine{01400 }
+\DoxyCodeLine{01401                         allowedReceivingGroups.Add(g);}
+\DoxyCodeLine{01402                     \}}
+\DoxyCodeLine{01403                 \}}
+\DoxyCodeLine{01404             \}}
+\DoxyCodeLine{01405 }
+\DoxyCodeLine{01406             \textcolor{keywordflow}{if} (!PhotonNetwork.offlineMode)}
+\DoxyCodeLine{01407             \{}
+\DoxyCodeLine{01408                 NetworkingClient.OpChangeGroups(disableGroups, enableGroups);}
+\DoxyCodeLine{01409             \}}
+\DoxyCodeLine{01410         \}}
+\DoxyCodeLine{01411 }
+\DoxyCodeLine{01412 }
+\DoxyCodeLine{01423         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetSendingEnabled(\textcolor{keywordtype}{byte} group, \textcolor{keywordtype}{bool} enabled)}
+\DoxyCodeLine{01424         \{}
+\DoxyCodeLine{01425             \textcolor{comment}{// TODO: check can use network}}
+\DoxyCodeLine{01426 }
+\DoxyCodeLine{01427             \textcolor{keywordflow}{if} (!enabled)}
+\DoxyCodeLine{01428             \{}
+\DoxyCodeLine{01429                 blockedSendingGroups.Add(group); \textcolor{comment}{// can be added to HashSet no matter if already in it}}
+\DoxyCodeLine{01430             \}}
+\DoxyCodeLine{01431             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01432             \{}
+\DoxyCodeLine{01433                 blockedSendingGroups.Remove(group);}
+\DoxyCodeLine{01434             \}}
+\DoxyCodeLine{01435         \}}
+\DoxyCodeLine{01436 }
+\DoxyCodeLine{01437 }
+\DoxyCodeLine{01438 }
+\DoxyCodeLine{01448         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetSendingEnabled(\textcolor{keywordtype}{byte}[] disableGroups, \textcolor{keywordtype}{byte}[] enableGroups)}
+\DoxyCodeLine{01449         \{}
+\DoxyCodeLine{01450             \textcolor{comment}{// TODO: check can use network}}
+\DoxyCodeLine{01451 }
+\DoxyCodeLine{01452             \textcolor{keywordflow}{if} (disableGroups != \textcolor{keyword}{null})}
+\DoxyCodeLine{01453             \{}
+\DoxyCodeLine{01454                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < disableGroups.Length; index++)}
+\DoxyCodeLine{01455                 \{}
+\DoxyCodeLine{01456                     \textcolor{keywordtype}{byte} g = disableGroups[index];}
+\DoxyCodeLine{01457                     blockedSendingGroups.Add(g);}
+\DoxyCodeLine{01458                 \}}
+\DoxyCodeLine{01459             \}}
+\DoxyCodeLine{01460 }
+\DoxyCodeLine{01461             \textcolor{keywordflow}{if} (enableGroups != \textcolor{keyword}{null})}
+\DoxyCodeLine{01462             \{}
+\DoxyCodeLine{01463                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < enableGroups.Length; index++)}
+\DoxyCodeLine{01464                 \{}
+\DoxyCodeLine{01465                     \textcolor{keywordtype}{byte} g = enableGroups[index];}
+\DoxyCodeLine{01466                     blockedSendingGroups.Remove(g);}
+\DoxyCodeLine{01467                 \}}
+\DoxyCodeLine{01468             \}}
+\DoxyCodeLine{01469         \}}
+\DoxyCodeLine{01470 }
+\DoxyCodeLine{01471 }
+\DoxyCodeLine{01472         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} NewSceneLoaded()}
+\DoxyCodeLine{01473         \{}
+\DoxyCodeLine{01474             \textcolor{keywordflow}{if} (loadingLevelAndPausedNetwork)}
+\DoxyCodeLine{01475             \{}
+\DoxyCodeLine{01476                 \_AsyncLevelLoadingOperation = \textcolor{keyword}{null};}
+\DoxyCodeLine{01477                 loadingLevelAndPausedNetwork = \textcolor{keyword}{false};}
+\DoxyCodeLine{01478                 PhotonNetwork.IsMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{01479             \}}
+\DoxyCodeLine{01480             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01481             \{}
+\DoxyCodeLine{01482                 PhotonNetwork.SetLevelInPropsIfSynced(SceneManagerHelper.ActiveSceneName);}
+\DoxyCodeLine{01483             \}}
+\DoxyCodeLine{01484 }
+\DoxyCodeLine{01485             \textcolor{comment}{// Debug.Log("{}OnLevelWasLoaded photonViewList.Count: "{} + photonViewList.Count); // Exit Games internal log}}
+\DoxyCodeLine{01486 }
+\DoxyCodeLine{01487             List<int> removeKeys = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{01488             \textcolor{keywordflow}{foreach} (KeyValuePair<int, PhotonView> kvp \textcolor{keywordflow}{in} photonViewList)}
+\DoxyCodeLine{01489             \{}
+\DoxyCodeLine{01490                 PhotonView view = kvp.Value;}
+\DoxyCodeLine{01491                 \textcolor{keywordflow}{if} (view == \textcolor{keyword}{null})}
+\DoxyCodeLine{01492                 \{}
+\DoxyCodeLine{01493                     removeKeys.Add(kvp.Key);}
+\DoxyCodeLine{01494                 \}}
+\DoxyCodeLine{01495             \}}
+\DoxyCodeLine{01496 }
+\DoxyCodeLine{01497             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < removeKeys.Count; index++)}
+\DoxyCodeLine{01498             \{}
+\DoxyCodeLine{01499 }
+\DoxyCodeLine{01500                 \textcolor{keywordtype}{int} key = removeKeys[index];}
+\DoxyCodeLine{01501                 photonViewList.Remove(key);}
+\DoxyCodeLine{01502             \}}
+\DoxyCodeLine{01503 }
+\DoxyCodeLine{01504             \textcolor{keywordflow}{if} (removeKeys.Count > 0)}
+\DoxyCodeLine{01505             \{}
+\DoxyCodeLine{01506                 \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{01507                     Debug.Log(\textcolor{stringliteral}{"{}New level loaded. Removed "{}} + removeKeys.Count + \textcolor{stringliteral}{"{} scene view IDs from last level."{}});}
+\DoxyCodeLine{01508             \}}
+\DoxyCodeLine{01509         \}}
+\DoxyCodeLine{01510 }
+\DoxyCodeLine{01511 }
+\DoxyCodeLine{01518         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ObjectsInOneUpdate = 20;}
+\DoxyCodeLine{01519 }
+\DoxyCodeLine{01520 }
+\DoxyCodeLine{01521         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly PhotonStream serializeStreamOut = \textcolor{keyword}{new} PhotonStream(\textcolor{keyword}{true}, \textcolor{keyword}{null});}
+\DoxyCodeLine{01522         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly PhotonStream serializeStreamIn = \textcolor{keyword}{new} PhotonStream(\textcolor{keyword}{false}, \textcolor{keyword}{null});}
+\DoxyCodeLine{01523 }
+\DoxyCodeLine{01524 }
+\DoxyCodeLine{01526         \textcolor{keyword}{private} \textcolor{keyword}{static} RaiseEventOptions serializeRaiseEvOptions = \textcolor{keyword}{new} RaiseEventOptions();}
+\DoxyCodeLine{01527 }
+\DoxyCodeLine{01528         \textcolor{keyword}{private} \textcolor{keyword}{struct }RaiseEventBatch : IEquatable<RaiseEventBatch>}
+\DoxyCodeLine{01529         \{}
+\DoxyCodeLine{01530             \textcolor{keyword}{public} \textcolor{keywordtype}{byte} Group;}
+\DoxyCodeLine{01531             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Reliable;}
+\DoxyCodeLine{01532 }
+\DoxyCodeLine{01533             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{01534             \{}
+\DoxyCodeLine{01535                 \textcolor{keywordflow}{return} (this.Group << 1) + (this.Reliable ? 1 : 0);}
+\DoxyCodeLine{01536             \}}
+\DoxyCodeLine{01537 }
+\DoxyCodeLine{01538             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(RaiseEventBatch other)}
+\DoxyCodeLine{01539             \{}
+\DoxyCodeLine{01540                 \textcolor{keywordflow}{return} this.Reliable == other.Reliable \&\& this.Group == other.Group;}
+\DoxyCodeLine{01541             \}}
+\DoxyCodeLine{01542         \}}
+\DoxyCodeLine{01543 }
+\DoxyCodeLine{01544 }
+\DoxyCodeLine{01545         \textcolor{keyword}{private} \textcolor{keyword}{class }SerializeViewBatch : IEquatable<SerializeViewBatch>, IEquatable<RaiseEventBatch>}
+\DoxyCodeLine{01546         \{}
+\DoxyCodeLine{01547             \textcolor{keyword}{public} readonly RaiseEventBatch Batch;}
+\DoxyCodeLine{01548             \textcolor{keyword}{public} List<object> ObjectUpdates;}
+\DoxyCodeLine{01549             \textcolor{keyword}{private} \textcolor{keywordtype}{int} defaultSize = PhotonNetwork.ObjectsInOneUpdate;}
+\DoxyCodeLine{01550             \textcolor{keyword}{private} \textcolor{keywordtype}{int} offset;}
+\DoxyCodeLine{01551 }
+\DoxyCodeLine{01552 }
+\DoxyCodeLine{01553             \textcolor{comment}{// the offset enables us to skip the first X entries in the ObjectUpdate(s), leaving room for (e.g.) timestamp of sending and level prefix}}
+\DoxyCodeLine{01554             \textcolor{keyword}{public} SerializeViewBatch(RaiseEventBatch batch, \textcolor{keywordtype}{int} offset)}
+\DoxyCodeLine{01555             \{}
+\DoxyCodeLine{01556                 this.Batch = batch;}
+\DoxyCodeLine{01557                 this.ObjectUpdates = \textcolor{keyword}{new} List<object>(this.defaultSize);}
+\DoxyCodeLine{01558                 this.offset = offset;}
+\DoxyCodeLine{01559                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < offset; i++) this.ObjectUpdates.Add(\textcolor{keyword}{null});}
+\DoxyCodeLine{01560             \}}
+\DoxyCodeLine{01561 }
+\DoxyCodeLine{01562             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{01563             \{}
+\DoxyCodeLine{01564                 \textcolor{keywordflow}{return} (this.Batch.Group << 1) + (this.Batch.Reliable ? 1 : 0);}
+\DoxyCodeLine{01565             \}}
+\DoxyCodeLine{01566 }
+\DoxyCodeLine{01567             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(SerializeViewBatch other)}
+\DoxyCodeLine{01568             \{}
+\DoxyCodeLine{01569                 \textcolor{keywordflow}{return} this.Equals(other.Batch);}
+\DoxyCodeLine{01570             \}}
+\DoxyCodeLine{01571 }
+\DoxyCodeLine{01572             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(RaiseEventBatch other)}
+\DoxyCodeLine{01573             \{}
+\DoxyCodeLine{01574                 \textcolor{keywordflow}{return} this.Batch.Reliable == other.Reliable \&\& this.Batch.Group == other.Group;}
+\DoxyCodeLine{01575             \}}
+\DoxyCodeLine{01576 }
+\DoxyCodeLine{01577             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{01578             \{}
+\DoxyCodeLine{01579                 SerializeViewBatch other = obj as SerializeViewBatch;}
+\DoxyCodeLine{01580                 \textcolor{keywordflow}{return} other != \textcolor{keyword}{null} \&\& this.Batch.Equals(other.Batch);}
+\DoxyCodeLine{01581             \}}
+\DoxyCodeLine{01582 }
+\DoxyCodeLine{01583             \textcolor{keyword}{public} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{01584             \{}
+\DoxyCodeLine{01585                 this.ObjectUpdates.Clear();}
+\DoxyCodeLine{01586                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < offset; i++) this.ObjectUpdates.Add(\textcolor{keyword}{null});}
+\DoxyCodeLine{01587             \}}
+\DoxyCodeLine{01588 }
+\DoxyCodeLine{01589             \textcolor{keyword}{public} \textcolor{keywordtype}{void} Add(List<object> viewData)}
+\DoxyCodeLine{01590             \{}
+\DoxyCodeLine{01591                 \textcolor{keywordflow}{if} (this.ObjectUpdates.Count >= \textcolor{keyword}{this}.ObjectUpdates.Capacity)}
+\DoxyCodeLine{01592                 \{}
+\DoxyCodeLine{01593                     \textcolor{comment}{// NOTE: we could also trim to new size}}
+\DoxyCodeLine{01594                     \textcolor{keywordflow}{throw} \textcolor{keyword}{new} Exception(\textcolor{stringliteral}{"{}Can't add. Size exceeded."{}});}
+\DoxyCodeLine{01595                 \}}
+\DoxyCodeLine{01596 }
+\DoxyCodeLine{01597                 this.ObjectUpdates.Add(viewData);}
+\DoxyCodeLine{01598             \}}
+\DoxyCodeLine{01599         \}}
+\DoxyCodeLine{01600 }
+\DoxyCodeLine{01601 }
+\DoxyCodeLine{01602         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Dictionary<RaiseEventBatch, SerializeViewBatch> serializeViewBatches = \textcolor{keyword}{new} Dictionary<RaiseEventBatch, SerializeViewBatch>();}
+\DoxyCodeLine{01603 }
+\DoxyCodeLine{01604 }
+\DoxyCodeLine{01606         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RunViewUpdate()}
+\DoxyCodeLine{01607         \{}
+\DoxyCodeLine{01608             \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode || CurrentRoom == \textcolor{keyword}{null} || CurrentRoom.Players == \textcolor{keyword}{null})}
+\DoxyCodeLine{01609             \{}
+\DoxyCodeLine{01610                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01611             \}}
+\DoxyCodeLine{01612 }
+\DoxyCodeLine{01613 }
+\DoxyCodeLine{01614             \textcolor{comment}{// no need to send OnSerialize messages while being alone (these are not buffered anyway)}}
+\DoxyCodeLine{01615 \textcolor{preprocessor}{\#if !PHOTON\_DEVELOP}}
+\DoxyCodeLine{01616             \textcolor{keywordflow}{if} (CurrentRoom.Players.Count <= 1)}
+\DoxyCodeLine{01617             \{}
+\DoxyCodeLine{01618                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01619             \}}
+\DoxyCodeLine{01620 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01621             serializeRaiseEvOptions.Receivers = (CurrentRoom.Players.Count == 1) ? ReceiverGroup.All : ReceiverGroup.Others;}
+\DoxyCodeLine{01622 \#endif}
+\DoxyCodeLine{01623 }
+\DoxyCodeLine{01624 }
+\DoxyCodeLine{01625 }
+\DoxyCodeLine{01626             \textcolor{comment}{/* Format of the event's data object[]:}}
+\DoxyCodeLine{01627 \textcolor{comment}{             *  [0] = PhotonNetwork.ServerTimestamp;}}
+\DoxyCodeLine{01628 \textcolor{comment}{             *  [1] = currentLevelPrefix;  OPTIONAL!}}
+\DoxyCodeLine{01629 \textcolor{comment}{             *  [2] = object[] of PhotonView x}}
+\DoxyCodeLine{01630 \textcolor{comment}{             *  [3] = object[] of PhotonView y or NULL}}
+\DoxyCodeLine{01631 \textcolor{comment}{             *  [...]}}
+\DoxyCodeLine{01632 \textcolor{comment}{             *}}
+\DoxyCodeLine{01633 \textcolor{comment}{             *  We only combine updates for XY objects into one RaiseEvent to avoid fragmentation.}}
+\DoxyCodeLine{01634 \textcolor{comment}{             *  The Reliability and Interest Group are only used for RaiseEvent and not contained in the event/data that reaches the other clients.}}
+\DoxyCodeLine{01635 \textcolor{comment}{             *  This is read in OnEvent().}}
+\DoxyCodeLine{01636 \textcolor{comment}{             */}}
+\DoxyCodeLine{01637 }
+\DoxyCodeLine{01638 }
+\DoxyCodeLine{01639             var enumerator = photonViewList.GetEnumerator();   \textcolor{comment}{// replacing foreach (PhotonView view in this.photonViewList.Values) for memory allocation improvement}}
+\DoxyCodeLine{01640             \textcolor{keywordflow}{while} (enumerator.MoveNext())}
+\DoxyCodeLine{01641             \{}
+\DoxyCodeLine{01642                 PhotonView view = enumerator.Current.Value;}
+\DoxyCodeLine{01643 }
+\DoxyCodeLine{01644                 \textcolor{comment}{// a client only sends updates for active, synchronized PhotonViews that are under it's control (isMine)}}
+\DoxyCodeLine{01645                 \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.Off || view.IsMine == \textcolor{keyword}{false} || view.isActiveAndEnabled == \textcolor{keyword}{false})}
+\DoxyCodeLine{01646                 \{}
+\DoxyCodeLine{01647                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01648                 \}}
+\DoxyCodeLine{01649 }
+\DoxyCodeLine{01650                 \textcolor{keywordflow}{if} (blockedSendingGroups.Contains(view.Group))}
+\DoxyCodeLine{01651                 \{}
+\DoxyCodeLine{01652                     \textcolor{keywordflow}{continue}; \textcolor{comment}{// Block sending on this group}}
+\DoxyCodeLine{01653                 \}}
+\DoxyCodeLine{01654 }
+\DoxyCodeLine{01655 }
+\DoxyCodeLine{01656                 \textcolor{comment}{// call the PhotonView's serialize method(s)}}
+\DoxyCodeLine{01657                 List<object> evData = OnSerializeWrite(view);}
+\DoxyCodeLine{01658                 \textcolor{keywordflow}{if} (evData == \textcolor{keyword}{null})}
+\DoxyCodeLine{01659                 \{}
+\DoxyCodeLine{01660                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01661                 \}}
+\DoxyCodeLine{01662 }
+\DoxyCodeLine{01663                 RaiseEventBatch eventBatch = \textcolor{keyword}{new} RaiseEventBatch();}
+\DoxyCodeLine{01664                 eventBatch.Reliable = view.Synchronization == ViewSynchronization.ReliableDeltaCompressed || view.mixedModeIsReliable;}
+\DoxyCodeLine{01665                 eventBatch.Group = view.Group;}
+\DoxyCodeLine{01666 }
+\DoxyCodeLine{01667                 SerializeViewBatch svBatch = \textcolor{keyword}{null};}
+\DoxyCodeLine{01668                 \textcolor{keywordtype}{bool} found = serializeViewBatches.TryGetValue(eventBatch, out svBatch);}
+\DoxyCodeLine{01669                 \textcolor{keywordflow}{if} (!found)}
+\DoxyCodeLine{01670                 \{}
+\DoxyCodeLine{01671                     svBatch = \textcolor{keyword}{new} SerializeViewBatch(eventBatch, 2);    \textcolor{comment}{// NOTE: the 2 first entries are kept empty for timestamp and level prefix}}
+\DoxyCodeLine{01672                     serializeViewBatches.Add(eventBatch, svBatch);}
+\DoxyCodeLine{01673                 \}}
+\DoxyCodeLine{01674 }
+\DoxyCodeLine{01675                 svBatch.Add(evData);}
+\DoxyCodeLine{01676                 \textcolor{keywordflow}{if} (svBatch.ObjectUpdates.Count == svBatch.ObjectUpdates.Capacity)}
+\DoxyCodeLine{01677                 \{}
+\DoxyCodeLine{01678                     SendSerializeViewBatch(svBatch);}
+\DoxyCodeLine{01679                 \}}
+\DoxyCodeLine{01680             \}}
+\DoxyCodeLine{01681 }
+\DoxyCodeLine{01682             var enumeratorB = serializeViewBatches.GetEnumerator();}
+\DoxyCodeLine{01683             \textcolor{keywordflow}{while} (enumeratorB.MoveNext())}
+\DoxyCodeLine{01684             \{}
+\DoxyCodeLine{01685                 SendSerializeViewBatch(enumeratorB.Current.Value);}
+\DoxyCodeLine{01686             \}}
+\DoxyCodeLine{01687         \}}
+\DoxyCodeLine{01688 }
+\DoxyCodeLine{01689 }
+\DoxyCodeLine{01690         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SendSerializeViewBatch(SerializeViewBatch batch)}
+\DoxyCodeLine{01691         \{}
+\DoxyCodeLine{01692             \textcolor{keywordflow}{if} (batch == \textcolor{keyword}{null} || batch.ObjectUpdates.Count <= 2)}
+\DoxyCodeLine{01693             \{}
+\DoxyCodeLine{01694                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01695             \}}
+\DoxyCodeLine{01696 }
+\DoxyCodeLine{01697             serializeRaiseEvOptions.InterestGroup = batch.Batch.Group;}
+\DoxyCodeLine{01698             batch.ObjectUpdates[0] = PhotonNetwork.ServerTimestamp;}
+\DoxyCodeLine{01699             batch.ObjectUpdates[1] = (currentLevelPrefix != 0) ? (\textcolor{keywordtype}{object})currentLevelPrefix : \textcolor{keyword}{null};}
+\DoxyCodeLine{01700             \textcolor{keywordtype}{byte} code = batch.Batch.Reliable ? PunEvent.SendSerializeReliable : PunEvent.SendSerialize;}
+\DoxyCodeLine{01701 }
+\DoxyCodeLine{01702             PhotonNetwork.RaiseEventInternal(code, batch.ObjectUpdates, serializeRaiseEvOptions, batch.Batch.Reliable ? SendOptions.SendReliable : SendOptions.SendUnreliable);}
+\DoxyCodeLine{01703             batch.Clear();}
+\DoxyCodeLine{01704         \}}
+\DoxyCodeLine{01705 }
+\DoxyCodeLine{01706 }
+\DoxyCodeLine{01707         \textcolor{comment}{// calls OnPhotonSerializeView (through ExecuteOnSerialize)}}
+\DoxyCodeLine{01708         \textcolor{comment}{// the content created here is consumed by receivers in: ReadOnSerialize}}
+\DoxyCodeLine{01709         \textcolor{keyword}{private} \textcolor{keyword}{static} List<object> OnSerializeWrite(PhotonView view)}
+\DoxyCodeLine{01710         \{}
+\DoxyCodeLine{01711             \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.Off)}
+\DoxyCodeLine{01712             \{}
+\DoxyCodeLine{01713                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01714             \}}
+\DoxyCodeLine{01715 }
+\DoxyCodeLine{01716 }
+\DoxyCodeLine{01717             \textcolor{comment}{// each view creates a list of values that should be sent}}
+\DoxyCodeLine{01718             PhotonMessageInfo info = \textcolor{keyword}{new} PhotonMessageInfo(NetworkingClient.LocalPlayer, PhotonNetwork.ServerTimestamp, view);}
+\DoxyCodeLine{01719 }
+\DoxyCodeLine{01720             \textcolor{keywordflow}{if} (view.syncValues == \textcolor{keyword}{null}) view.syncValues = \textcolor{keyword}{new} List<object>();}
+\DoxyCodeLine{01721             view.syncValues.Clear();}
+\DoxyCodeLine{01722             serializeStreamOut.SetWriteStream(view.syncValues);}
+\DoxyCodeLine{01723             serializeStreamOut.SendNext(\textcolor{keyword}{null});  \textcolor{comment}{//to become: viewID,}}
+\DoxyCodeLine{01724             serializeStreamOut.SendNext(\textcolor{keyword}{null});  \textcolor{comment}{//to become: is compressed}}
+\DoxyCodeLine{01725             serializeStreamOut.SendNext(\textcolor{keyword}{null});  \textcolor{comment}{//to become: null-\/values (for compression) followed by: values for this object's update}}
+\DoxyCodeLine{01726 }
+\DoxyCodeLine{01727 }
+\DoxyCodeLine{01728             view.SerializeView(serializeStreamOut, info);}
+\DoxyCodeLine{01729 }
+\DoxyCodeLine{01730             \textcolor{comment}{// check if there are actual values to be sent (after the "{}header"{} of viewId, (bool)compressed and (int[])nullValues)}}
+\DoxyCodeLine{01731             \textcolor{keywordflow}{if} (serializeStreamOut.Count <= SyncFirstValue)}
+\DoxyCodeLine{01732             \{}
+\DoxyCodeLine{01733                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01734             \}}
+\DoxyCodeLine{01735 }
+\DoxyCodeLine{01736 }
+\DoxyCodeLine{01737             List<object> currentValues = serializeStreamOut.GetWriteStream();}
+\DoxyCodeLine{01738             currentValues[SyncViewId] = view.ViewID;}
+\DoxyCodeLine{01739             currentValues[SyncCompressed] = \textcolor{keyword}{false};      \textcolor{comment}{// (bool) compression was used.}}
+\DoxyCodeLine{01740             currentValues[SyncNullValues] = \textcolor{keyword}{null};       \textcolor{comment}{// if reliable compressed, this is non-\/null.}}
+\DoxyCodeLine{01741                                                         \textcolor{comment}{// next: sequence of values in this object's update.}}
+\DoxyCodeLine{01742 }
+\DoxyCodeLine{01743             \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.Unreliable)}
+\DoxyCodeLine{01744             \{}
+\DoxyCodeLine{01745                 \textcolor{keywordflow}{return} currentValues;}
+\DoxyCodeLine{01746             \}}
+\DoxyCodeLine{01747 }
+\DoxyCodeLine{01748 }
+\DoxyCodeLine{01749             \textcolor{comment}{// ViewSynchronization: Off, Unreliable, UnreliableOnChange, ReliableDeltaCompressed}}
+\DoxyCodeLine{01750             \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.UnreliableOnChange)}
+\DoxyCodeLine{01751             \{}
+\DoxyCodeLine{01752                 \textcolor{keywordflow}{if} (AlmostEquals(currentValues, view.lastOnSerializeDataSent))}
+\DoxyCodeLine{01753                 \{}
+\DoxyCodeLine{01754                     \textcolor{keywordflow}{if} (view.mixedModeIsReliable)}
+\DoxyCodeLine{01755                     \{}
+\DoxyCodeLine{01756                         \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01757                     \}}
+\DoxyCodeLine{01758 }
+\DoxyCodeLine{01759                     view.mixedModeIsReliable = \textcolor{keyword}{true};}
+\DoxyCodeLine{01760                     List<object> temp = view.lastOnSerializeDataSent;   \textcolor{comment}{// TODO: extract "{}exchange"{} into method in PV}}
+\DoxyCodeLine{01761                     view.lastOnSerializeDataSent = currentValues;}
+\DoxyCodeLine{01762                     view.syncValues = temp;}
+\DoxyCodeLine{01763                 \}}
+\DoxyCodeLine{01764                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01765                 \{}
+\DoxyCodeLine{01766                     view.mixedModeIsReliable = \textcolor{keyword}{false};}
+\DoxyCodeLine{01767                     List<object> temp = view.lastOnSerializeDataSent;   \textcolor{comment}{// TODO: extract "{}exchange"{} into method in PV}}
+\DoxyCodeLine{01768                     view.lastOnSerializeDataSent = currentValues;}
+\DoxyCodeLine{01769                     view.syncValues = temp;}
+\DoxyCodeLine{01770                 \}}
+\DoxyCodeLine{01771 }
+\DoxyCodeLine{01772 }
+\DoxyCodeLine{01773                 \textcolor{keywordflow}{return} currentValues;}
+\DoxyCodeLine{01774             \}}
+\DoxyCodeLine{01775 }
+\DoxyCodeLine{01776             \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.ReliableDeltaCompressed)}
+\DoxyCodeLine{01777             \{}
+\DoxyCodeLine{01778                 \textcolor{comment}{// TODO: fix delta compression / comparison}}
+\DoxyCodeLine{01779 }
+\DoxyCodeLine{01780                 \textcolor{comment}{// compress content of data set (by comparing to view.lastOnSerializeDataSent)}}
+\DoxyCodeLine{01781                 \textcolor{comment}{// the "{}original"{} dataArray is NOT modified by DeltaCompressionWrite}}
+\DoxyCodeLine{01782                 List<object> dataToSend = DeltaCompressionWrite(view.lastOnSerializeDataSent, currentValues);}
+\DoxyCodeLine{01783 }
+\DoxyCodeLine{01784                 \textcolor{comment}{// cache the values that were written this time (not the compressed values)}}
+\DoxyCodeLine{01785                 List<object> temp = view.lastOnSerializeDataSent;   \textcolor{comment}{// TODO: extract "{}exchange"{} into method in PV}}
+\DoxyCodeLine{01786                 view.lastOnSerializeDataSent = currentValues;}
+\DoxyCodeLine{01787                 view.syncValues = temp;}
+\DoxyCodeLine{01788 }
+\DoxyCodeLine{01789                 \textcolor{keywordflow}{return} dataToSend;}
+\DoxyCodeLine{01790             \}}
+\DoxyCodeLine{01791 }
+\DoxyCodeLine{01792             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01793         \}}
+\DoxyCodeLine{01794 }
+\DoxyCodeLine{01798         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnSerializeRead(\textcolor{keywordtype}{object}[] data, Player sender, \textcolor{keywordtype}{int} networkTime, \textcolor{keywordtype}{short} correctPrefix)}
+\DoxyCodeLine{01799         \{}
+\DoxyCodeLine{01800             \textcolor{comment}{// read view ID from key (byte)0: a int-\/array (PUN 1.17++)}}
+\DoxyCodeLine{01801             \textcolor{keywordtype}{int} viewID = (int)data[SyncViewId];}
+\DoxyCodeLine{01802 }
+\DoxyCodeLine{01803 }
+\DoxyCodeLine{01804             \textcolor{comment}{// debug:}}
+\DoxyCodeLine{01805             \textcolor{comment}{//LogObjectArray(data);}}
+\DoxyCodeLine{01806 }
+\DoxyCodeLine{01807             PhotonView view = GetPhotonView(viewID);}
+\DoxyCodeLine{01808             \textcolor{keywordflow}{if} (view == \textcolor{keyword}{null})}
+\DoxyCodeLine{01809             \{}
+\DoxyCodeLine{01810                 Debug.LogWarning(\textcolor{stringliteral}{"{}Received OnSerialization for view ID "{}} + viewID + \textcolor{stringliteral}{"{}. We have no such PhotonView! Ignore this if you're joining or leaving a room. State: "{}} + NetworkingClient.State);}
+\DoxyCodeLine{01811                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01812             \}}
+\DoxyCodeLine{01813 }
+\DoxyCodeLine{01814             \textcolor{keywordflow}{if} (view.Prefix > 0 \&\& correctPrefix != view.Prefix)}
+\DoxyCodeLine{01815             \{}
+\DoxyCodeLine{01816                 Debug.LogError(\textcolor{stringliteral}{"{}Received OnSerialization for view ID "{}} + viewID + \textcolor{stringliteral}{"{} with prefix "{}} + correctPrefix + \textcolor{stringliteral}{"{}. Our prefix is "{}} + view.Prefix);}
+\DoxyCodeLine{01817                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01818             \}}
+\DoxyCodeLine{01819 }
+\DoxyCodeLine{01820             \textcolor{comment}{// SetReceiving filtering}}
+\DoxyCodeLine{01821             \textcolor{keywordflow}{if} (view.Group != 0 \&\& !allowedReceivingGroups.Contains(view.Group))}
+\DoxyCodeLine{01822             \{}
+\DoxyCodeLine{01823                 \textcolor{keywordflow}{return}; \textcolor{comment}{// Ignore group}}
+\DoxyCodeLine{01824             \}}
+\DoxyCodeLine{01825 }
+\DoxyCodeLine{01826 }
+\DoxyCodeLine{01827 }
+\DoxyCodeLine{01828 }
+\DoxyCodeLine{01829             \textcolor{keywordflow}{if} (view.Synchronization == ViewSynchronization.ReliableDeltaCompressed)}
+\DoxyCodeLine{01830             \{}
+\DoxyCodeLine{01831                 \textcolor{keywordtype}{object}[] uncompressed = DeltaCompressionRead(view.lastOnSerializeDataReceived, data);}
+\DoxyCodeLine{01832                 \textcolor{comment}{//LogObjectArray(uncompressed,"{}uncompressed "{});}}
+\DoxyCodeLine{01833                 \textcolor{keywordflow}{if} (uncompressed == \textcolor{keyword}{null})}
+\DoxyCodeLine{01834                 \{}
+\DoxyCodeLine{01835                     \textcolor{comment}{// Skip this packet as we haven't got received complete-\/copy of this view yet.}}
+\DoxyCodeLine{01836                     \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{01837                     \{}
+\DoxyCodeLine{01838                         Debug.Log(\textcolor{stringliteral}{"{}Skipping packet for "{}} + view.name + \textcolor{stringliteral}{"{} ["{}} + view.ViewID +}
+\DoxyCodeLine{01839                                   \textcolor{stringliteral}{"{}] as we haven't received a full packet for delta compression yet. This is OK if it happens for the first few frames after joining a game."{}});}
+\DoxyCodeLine{01840                     \}}
+\DoxyCodeLine{01841                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01842                 \}}
+\DoxyCodeLine{01843 }
+\DoxyCodeLine{01844                 \textcolor{comment}{// store last received values (uncompressed) for delta-\/compression usage}}
+\DoxyCodeLine{01845                 view.lastOnSerializeDataReceived = uncompressed;}
+\DoxyCodeLine{01846                 data = uncompressed;}
+\DoxyCodeLine{01847             \}}
+\DoxyCodeLine{01848 }
+\DoxyCodeLine{01849             \textcolor{comment}{// TODO: re-\/check if ownership needs to be adjusted based on updates.}}
+\DoxyCodeLine{01850             \textcolor{comment}{// most likely, only the PhotonView.Controller should be affected, if anything at all.}}
+\DoxyCodeLine{01851             \textcolor{comment}{// TODO: find a way to sync the owner of a PV for late joiners.}}
+\DoxyCodeLine{01852 }
+\DoxyCodeLine{01857             \textcolor{comment}{//if (sender.ID != view.OwnerActorNr \&\& (!view.OwnershipWasTransfered || view.OwnerActorNr == 0) \&\& view.currentMasterID == -\/1)}}
+\DoxyCodeLine{01858             \textcolor{comment}{//\{}}
+\DoxyCodeLine{01859             \textcolor{comment}{//    // obviously the owner changed and we didn't yet notice.}}
+\DoxyCodeLine{01860             \textcolor{comment}{//    //Debug.Log("{}Adjusting owner to sender of updates. From: "{} + view.OwnerActorNr + "{} to: "{} + sender.ID);}}
+\DoxyCodeLine{01861             \textcolor{comment}{//    view.OwnerActorNr = sender.ID;}}
+\DoxyCodeLine{01862             \textcolor{comment}{//\}}}
+\DoxyCodeLine{01863 }
+\DoxyCodeLine{01864             serializeStreamIn.SetReadStream(data, 3);}
+\DoxyCodeLine{01865             PhotonMessageInfo info = \textcolor{keyword}{new} PhotonMessageInfo(sender, networkTime, view);}
+\DoxyCodeLine{01866 }
+\DoxyCodeLine{01867             view.DeserializeView(serializeStreamIn, info);}
+\DoxyCodeLine{01868         \}}
+\DoxyCodeLine{01869 }
+\DoxyCodeLine{01870 }
+\DoxyCodeLine{01871         \textcolor{comment}{// compresses currentContent by using NULL as value if currentContent equals previousContent}}
+\DoxyCodeLine{01872         \textcolor{comment}{// skips initial indexes, as defined by SyncFirstValue}}
+\DoxyCodeLine{01873         \textcolor{comment}{// to conserve memory, the previousContent is re-\/used as buffer for the result! duplicate the values before using this, if needed}}
+\DoxyCodeLine{01874         \textcolor{comment}{// returns null, if nothing must be sent (current content might be null, which also returns null)}}
+\DoxyCodeLine{01875         \textcolor{comment}{// SyncFirstValue should be the index of the first actual data-\/value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)}}
+\DoxyCodeLine{01876         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SyncViewId = 0;}
+\DoxyCodeLine{01877         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SyncCompressed = 1;}
+\DoxyCodeLine{01878         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SyncNullValues = 2;}
+\DoxyCodeLine{01879         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SyncFirstValue = 3;}
+\DoxyCodeLine{01880 }
+\DoxyCodeLine{01881         \textcolor{keyword}{private} \textcolor{keyword}{static} List<object> DeltaCompressionWrite(List<object> previousContent, List<object> currentContent)}
+\DoxyCodeLine{01882         \{}
+\DoxyCodeLine{01883             \textcolor{keywordflow}{if} (currentContent == \textcolor{keyword}{null} || previousContent == \textcolor{keyword}{null} || previousContent.Count != currentContent.Count)}
+\DoxyCodeLine{01884             \{}
+\DoxyCodeLine{01885                 \textcolor{keywordflow}{return} currentContent; \textcolor{comment}{// the current data needs to be sent (which might be null)}}
+\DoxyCodeLine{01886             \}}
+\DoxyCodeLine{01887 }
+\DoxyCodeLine{01888             \textcolor{keywordflow}{if} (currentContent.Count <= SyncFirstValue)}
+\DoxyCodeLine{01889             \{}
+\DoxyCodeLine{01890                 \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \textcolor{comment}{// this send doesn't contain values (except the "{}headers"{}), so it's not being sent}}
+\DoxyCodeLine{01891             \}}
+\DoxyCodeLine{01892 }
+\DoxyCodeLine{01893             List<object> compressedContent = previousContent; \textcolor{comment}{// the previous content is no longer needed, once we compared the values!}}
+\DoxyCodeLine{01894             compressedContent[SyncCompressed] = \textcolor{keyword}{false};}
+\DoxyCodeLine{01895             \textcolor{keywordtype}{int} compressedValues = 0;}
+\DoxyCodeLine{01896 }
+\DoxyCodeLine{01897             Queue<int> valuesThatAreChangedToNull = \textcolor{keyword}{null};}
+\DoxyCodeLine{01898             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = SyncFirstValue; index < currentContent.Count; index++)}
+\DoxyCodeLine{01899             \{}
+\DoxyCodeLine{01900                 \textcolor{keywordtype}{object} newObj = currentContent[index];}
+\DoxyCodeLine{01901                 \textcolor{keywordtype}{object} oldObj = previousContent[index];}
+\DoxyCodeLine{01902                 \textcolor{keywordflow}{if} (AlmostEquals(newObj, oldObj))}
+\DoxyCodeLine{01903                 \{}
+\DoxyCodeLine{01904                     \textcolor{comment}{// compress (by using null, instead of value, which is same as before)}}
+\DoxyCodeLine{01905                     compressedValues++;}
+\DoxyCodeLine{01906                     compressedContent[index] = \textcolor{keyword}{null};}
+\DoxyCodeLine{01907                 \}}
+\DoxyCodeLine{01908                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01909                 \{}
+\DoxyCodeLine{01910                     compressedContent[index] = newObj;}
+\DoxyCodeLine{01911 }
+\DoxyCodeLine{01912                     \textcolor{comment}{// value changed, we don't replace it with null}}
+\DoxyCodeLine{01913                     \textcolor{comment}{// new value is null (like a compressed value): we have to mark it so it STAYS null instead of being replaced with previous value}}
+\DoxyCodeLine{01914                     \textcolor{keywordflow}{if} (newObj == \textcolor{keyword}{null})}
+\DoxyCodeLine{01915                     \{}
+\DoxyCodeLine{01916                         \textcolor{keywordflow}{if} (valuesThatAreChangedToNull == \textcolor{keyword}{null})}
+\DoxyCodeLine{01917                         \{}
+\DoxyCodeLine{01918                             valuesThatAreChangedToNull = \textcolor{keyword}{new} Queue<int>(currentContent.Count);}
+\DoxyCodeLine{01919                         \}}
+\DoxyCodeLine{01920                         valuesThatAreChangedToNull.Enqueue(index);}
+\DoxyCodeLine{01921                     \}}
+\DoxyCodeLine{01922                 \}}
+\DoxyCodeLine{01923             \}}
+\DoxyCodeLine{01924 }
+\DoxyCodeLine{01925             \textcolor{comment}{// Only send the list of compressed fields if we actually compressed 1 or more fields.}}
+\DoxyCodeLine{01926             \textcolor{keywordflow}{if} (compressedValues > 0)}
+\DoxyCodeLine{01927             \{}
+\DoxyCodeLine{01928                 \textcolor{keywordflow}{if} (compressedValues == currentContent.Count -\/ SyncFirstValue)}
+\DoxyCodeLine{01929                 \{}
+\DoxyCodeLine{01930                     \textcolor{comment}{// all values are compressed to null, we have nothing to send}}
+\DoxyCodeLine{01931                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01932                 \}}
+\DoxyCodeLine{01933 }
+\DoxyCodeLine{01934                 compressedContent[SyncCompressed] = \textcolor{keyword}{true};}
+\DoxyCodeLine{01935                 \textcolor{keywordflow}{if} (valuesThatAreChangedToNull != \textcolor{keyword}{null})}
+\DoxyCodeLine{01936                 \{}
+\DoxyCodeLine{01937                     compressedContent[SyncNullValues] = valuesThatAreChangedToNull.ToArray(); \textcolor{comment}{// data that is actually null (not just cause we didn't want to send it)}}
+\DoxyCodeLine{01938                 \}}
+\DoxyCodeLine{01939             \}}
+\DoxyCodeLine{01940 }
+\DoxyCodeLine{01941             compressedContent[SyncViewId] = currentContent[SyncViewId];}
+\DoxyCodeLine{01942             \textcolor{keywordflow}{return} compressedContent; \textcolor{comment}{// some data was compressed but we need to send something}}
+\DoxyCodeLine{01943         \}}
+\DoxyCodeLine{01944 }
+\DoxyCodeLine{01945 }
+\DoxyCodeLine{01946         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object}[] DeltaCompressionRead(\textcolor{keywordtype}{object}[] lastOnSerializeDataReceived, \textcolor{keywordtype}{object}[] incomingData)}
+\DoxyCodeLine{01947         \{}
+\DoxyCodeLine{01948             \textcolor{keywordflow}{if} ((\textcolor{keywordtype}{bool})incomingData[SyncCompressed] == \textcolor{keyword}{false})}
+\DoxyCodeLine{01949             \{}
+\DoxyCodeLine{01950                 \textcolor{comment}{// index 1 marks "{}compressed"{} as being true.}}
+\DoxyCodeLine{01951                 \textcolor{keywordflow}{return} incomingData;}
+\DoxyCodeLine{01952             \}}
+\DoxyCodeLine{01953 }
+\DoxyCodeLine{01954             \textcolor{comment}{// Compression was applied (as data[1] == true)}}
+\DoxyCodeLine{01955             \textcolor{comment}{// we need a previous "{}full"{} list of values to restore values that are null in this msg. else, ignore this}}
+\DoxyCodeLine{01956             \textcolor{keywordflow}{if} (lastOnSerializeDataReceived == \textcolor{keyword}{null})}
+\DoxyCodeLine{01957             \{}
+\DoxyCodeLine{01958                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01959             \}}
+\DoxyCodeLine{01960 }
+\DoxyCodeLine{01961 }
+\DoxyCodeLine{01962             \textcolor{keywordtype}{int}[] indexesThatAreChangedToNull = incomingData[2] as \textcolor{keywordtype}{int}[];}
+\DoxyCodeLine{01963             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = SyncFirstValue; index < incomingData.Length; index++)}
+\DoxyCodeLine{01964             \{}
+\DoxyCodeLine{01965                 \textcolor{keywordflow}{if} (indexesThatAreChangedToNull != \textcolor{keyword}{null} \&\& indexesThatAreChangedToNull.Contains(index))}
+\DoxyCodeLine{01966                 \{}
+\DoxyCodeLine{01967                     \textcolor{keywordflow}{continue}; \textcolor{comment}{// if a value was set to null in this update, we don't need to fetch it from an earlier update}}
+\DoxyCodeLine{01968                 \}}
+\DoxyCodeLine{01969                 \textcolor{keywordflow}{if} (incomingData[index] == \textcolor{keyword}{null})}
+\DoxyCodeLine{01970                 \{}
+\DoxyCodeLine{01971                     \textcolor{comment}{// we replace null values in this received msg unless a index is in the "{}changed to null"{} list}}
+\DoxyCodeLine{01972                     \textcolor{keywordtype}{object} lastValue = lastOnSerializeDataReceived[index];}
+\DoxyCodeLine{01973                     incomingData[index] = lastValue;}
+\DoxyCodeLine{01974                 \}}
+\DoxyCodeLine{01975             \}}
+\DoxyCodeLine{01976 }
+\DoxyCodeLine{01977             \textcolor{keywordflow}{return} incomingData;}
+\DoxyCodeLine{01978         \}}
+\DoxyCodeLine{01979 }
+\DoxyCodeLine{01980 }
+\DoxyCodeLine{01981         \textcolor{comment}{// startIndex should be the index of the first actual data-\/value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)}}
+\DoxyCodeLine{01982         \textcolor{comment}{// returns the incomingData with modified content. any object being null (means: value unchanged) gets replaced with a previously sent value. incomingData is being modified}}
+\DoxyCodeLine{01983 }
+\DoxyCodeLine{01984 }
+\DoxyCodeLine{01985         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AlmostEquals(IList<object> lastData, IList<object> currentContent)}
+\DoxyCodeLine{01986         \{}
+\DoxyCodeLine{01987             \textcolor{keywordflow}{if} (lastData == \textcolor{keyword}{null} \&\& currentContent == \textcolor{keyword}{null})}
+\DoxyCodeLine{01988             \{}
+\DoxyCodeLine{01989                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01990             \}}
+\DoxyCodeLine{01991 }
+\DoxyCodeLine{01992             \textcolor{keywordflow}{if} (lastData == \textcolor{keyword}{null} || currentContent == \textcolor{keyword}{null} || (lastData.Count != currentContent.Count))}
+\DoxyCodeLine{01993             \{}
+\DoxyCodeLine{01994                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01995             \}}
+\DoxyCodeLine{01996 }
+\DoxyCodeLine{01997             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < currentContent.Count; index++)}
+\DoxyCodeLine{01998             \{}
+\DoxyCodeLine{01999                 \textcolor{keywordtype}{object} newObj = currentContent[index];}
+\DoxyCodeLine{02000                 \textcolor{keywordtype}{object} oldObj = lastData[index];}
+\DoxyCodeLine{02001                 \textcolor{keywordflow}{if} (!AlmostEquals(newObj, oldObj))}
+\DoxyCodeLine{02002                 \{}
+\DoxyCodeLine{02003                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02004                 \}}
+\DoxyCodeLine{02005             \}}
+\DoxyCodeLine{02006 }
+\DoxyCodeLine{02007             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02008         \}}
+\DoxyCodeLine{02009 }
+\DoxyCodeLine{02014         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AlmostEquals(\textcolor{keywordtype}{object} one, \textcolor{keywordtype}{object} two)}
+\DoxyCodeLine{02015         \{}
+\DoxyCodeLine{02016             \textcolor{keywordflow}{if} (one == \textcolor{keyword}{null} || two == \textcolor{keyword}{null})}
+\DoxyCodeLine{02017             \{}
+\DoxyCodeLine{02018                 \textcolor{keywordflow}{return} one == \textcolor{keyword}{null} \&\& two == \textcolor{keyword}{null};}
+\DoxyCodeLine{02019             \}}
+\DoxyCodeLine{02020 }
+\DoxyCodeLine{02021             \textcolor{keywordflow}{if} (!one.Equals(two))}
+\DoxyCodeLine{02022             \{}
+\DoxyCodeLine{02023                 \textcolor{comment}{// if A is not B, lets check if A is almost B}}
+\DoxyCodeLine{02024                 \textcolor{keywordflow}{if} (one is Vector3)}
+\DoxyCodeLine{02025                 \{}
+\DoxyCodeLine{02026                     Vector3 a = (Vector3)one;}
+\DoxyCodeLine{02027                     Vector3 b = (Vector3)two;}
+\DoxyCodeLine{02028                     \textcolor{keywordflow}{if} (a.AlmostEquals(b, PhotonNetwork.PrecisionForVectorSynchronization))}
+\DoxyCodeLine{02029                     \{}
+\DoxyCodeLine{02030                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02031                     \}}
+\DoxyCodeLine{02032                 \}}
+\DoxyCodeLine{02033                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (one is Vector2)}
+\DoxyCodeLine{02034                 \{}
+\DoxyCodeLine{02035                     Vector2 a = (Vector2)one;}
+\DoxyCodeLine{02036                     Vector2 b = (Vector2)two;}
+\DoxyCodeLine{02037                     \textcolor{keywordflow}{if} (a.AlmostEquals(b, PhotonNetwork.PrecisionForVectorSynchronization))}
+\DoxyCodeLine{02038                     \{}
+\DoxyCodeLine{02039                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02040                     \}}
+\DoxyCodeLine{02041                 \}}
+\DoxyCodeLine{02042                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (one is Quaternion)}
+\DoxyCodeLine{02043                 \{}
+\DoxyCodeLine{02044                     Quaternion a = (Quaternion)one;}
+\DoxyCodeLine{02045                     Quaternion b = (Quaternion)two;}
+\DoxyCodeLine{02046                     \textcolor{keywordflow}{if} (a.AlmostEquals(b, PhotonNetwork.PrecisionForQuaternionSynchronization))}
+\DoxyCodeLine{02047                     \{}
+\DoxyCodeLine{02048                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02049                     \}}
+\DoxyCodeLine{02050                 \}}
+\DoxyCodeLine{02051                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (one is \textcolor{keywordtype}{float})}
+\DoxyCodeLine{02052                 \{}
+\DoxyCodeLine{02053                     \textcolor{keywordtype}{float} a = (float)one;}
+\DoxyCodeLine{02054                     \textcolor{keywordtype}{float} b = (float)two;}
+\DoxyCodeLine{02055                     \textcolor{keywordflow}{if} (a.AlmostEquals(b, PhotonNetwork.PrecisionForFloatSynchronization))}
+\DoxyCodeLine{02056                     \{}
+\DoxyCodeLine{02057                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02058                     \}}
+\DoxyCodeLine{02059                 \}}
+\DoxyCodeLine{02060 }
+\DoxyCodeLine{02061                 \textcolor{comment}{// one does not equal two}}
+\DoxyCodeLine{02062                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02063             \}}
+\DoxyCodeLine{02064 }
+\DoxyCodeLine{02065             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02066         \}}
+\DoxyCodeLine{02067 }
+\DoxyCodeLine{02068         \textcolor{comment}{// NOTE: Might be used as replacement for the equivalent method in SupportClass.}}
+\DoxyCodeLine{02069         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} GetMethod(MonoBehaviour monob, \textcolor{keywordtype}{string} methodType, out MethodInfo mi)}
+\DoxyCodeLine{02070         \{}
+\DoxyCodeLine{02071             mi = \textcolor{keyword}{null};}
+\DoxyCodeLine{02072 }
+\DoxyCodeLine{02073             \textcolor{keywordflow}{if} (monob == \textcolor{keyword}{null} || \textcolor{keywordtype}{string}.IsNullOrEmpty(methodType))}
+\DoxyCodeLine{02074             \{}
+\DoxyCodeLine{02075                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02076             \}}
+\DoxyCodeLine{02077 }
+\DoxyCodeLine{02078             List<MethodInfo> methods = SupportClassPun.GetMethods(monob.GetType(), \textcolor{keyword}{null});}
+\DoxyCodeLine{02079             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < methods.Count; index++)}
+\DoxyCodeLine{02080             \{}
+\DoxyCodeLine{02081                 MethodInfo methodInfo = methods[index];}
+\DoxyCodeLine{02082                 \textcolor{keywordflow}{if} (methodInfo.Name.Equals(methodType))}
+\DoxyCodeLine{02083                 \{}
+\DoxyCodeLine{02084                     mi = methodInfo;}
+\DoxyCodeLine{02085                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02086                 \}}
+\DoxyCodeLine{02087             \}}
+\DoxyCodeLine{02088 }
+\DoxyCodeLine{02089             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02090         \}}
+\DoxyCodeLine{02091 }
+\DoxyCodeLine{02092 }
+\DoxyCodeLine{02094         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LoadLevelIfSynced()}
+\DoxyCodeLine{02095         \{}
+\DoxyCodeLine{02096             \textcolor{keywordflow}{if} (!PhotonNetwork.AutomaticallySyncScene || PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02097             \{}
+\DoxyCodeLine{02098                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02099             \}}
+\DoxyCodeLine{02100 }
+\DoxyCodeLine{02101             \textcolor{comment}{// check if "{}current level"{} is set in props}}
+\DoxyCodeLine{02102             \textcolor{keywordflow}{if} (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(CurrentSceneProperty))}
+\DoxyCodeLine{02103             \{}
+\DoxyCodeLine{02104                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02105             \}}
+\DoxyCodeLine{02106 }
+\DoxyCodeLine{02107             \textcolor{comment}{// if loaded level is not the one defined by master in props, load that level}}
+\DoxyCodeLine{02108             \textcolor{keywordtype}{object} sceneId = PhotonNetwork.CurrentRoom.CustomProperties[CurrentSceneProperty];}
+\DoxyCodeLine{02109             \textcolor{keywordflow}{if} (sceneId is \textcolor{keywordtype}{int})}
+\DoxyCodeLine{02110             \{}
+\DoxyCodeLine{02111                 \textcolor{keywordflow}{if} (SceneManagerHelper.ActiveSceneBuildIndex != (\textcolor{keywordtype}{int})sceneId)}
+\DoxyCodeLine{02112                 \{}
+\DoxyCodeLine{02113                     PhotonNetwork.LoadLevel((\textcolor{keywordtype}{int})sceneId);}
+\DoxyCodeLine{02114                 \}}
+\DoxyCodeLine{02115             \}}
+\DoxyCodeLine{02116             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (sceneId is \textcolor{keywordtype}{string})}
+\DoxyCodeLine{02117             \{}
+\DoxyCodeLine{02118                 \textcolor{keywordflow}{if} (SceneManagerHelper.ActiveSceneName != (\textcolor{keywordtype}{string})sceneId)}
+\DoxyCodeLine{02119                 \{}
+\DoxyCodeLine{02120                     PhotonNetwork.LoadLevel((\textcolor{keywordtype}{string})sceneId);}
+\DoxyCodeLine{02121                 \}}
+\DoxyCodeLine{02122             \}}
+\DoxyCodeLine{02123         \}}
+\DoxyCodeLine{02124 }
+\DoxyCodeLine{02125 }
+\DoxyCodeLine{02126         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetLevelInPropsIfSynced(\textcolor{keywordtype}{object} levelId)}
+\DoxyCodeLine{02127         \{}
+\DoxyCodeLine{02128             \textcolor{keywordflow}{if} (!PhotonNetwork.AutomaticallySyncScene || !PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02129             \{}
+\DoxyCodeLine{02130                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02131             \}}
+\DoxyCodeLine{02132             \textcolor{keywordflow}{if} (levelId == \textcolor{keyword}{null})}
+\DoxyCodeLine{02133             \{}
+\DoxyCodeLine{02134                 Debug.LogError(\textcolor{stringliteral}{"{}Parameter levelId can't be null!"{}});}
+\DoxyCodeLine{02135                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02136             \}}
+\DoxyCodeLine{02137 }
+\DoxyCodeLine{02138 }
+\DoxyCodeLine{02139             \textcolor{comment}{// check if "{}current level"{} is already set in the room properties (then we don't set it again)}}
+\DoxyCodeLine{02140             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(CurrentSceneProperty))}
+\DoxyCodeLine{02141             \{}
+\DoxyCodeLine{02142                 \textcolor{keywordtype}{object} levelIdInProps = PhotonNetwork.CurrentRoom.CustomProperties[CurrentSceneProperty];}
+\DoxyCodeLine{02143                 \textcolor{comment}{//Debug.Log("{}levelId (to set): "{}+ levelId + "{} levelIdInProps: "{} + levelIdInProps + "{} SceneManagerHelper.ActiveSceneName: "{}+ SceneManagerHelper.ActiveSceneName);}}
+\DoxyCodeLine{02144 }
+\DoxyCodeLine{02145                 \textcolor{keywordflow}{if} (levelId.Equals(levelIdInProps))}
+\DoxyCodeLine{02146                 \{}
+\DoxyCodeLine{02147                     \textcolor{comment}{//Debug.LogWarning("{}The levelId equals levelIdInProps. Don't set property again."{});}}
+\DoxyCodeLine{02148                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02149                 \}}
+\DoxyCodeLine{02150                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02151                 \{}
+\DoxyCodeLine{02152                     \textcolor{comment}{// if the new levelId does not equal the level in properties, there is a chance that build index and scene name refer to the same scene.}}
+\DoxyCodeLine{02153                     \textcolor{comment}{// as Unity does not provide all scenes with build index, we only check for the currently loaded scene (with a high chance this is the correct one).}}
+\DoxyCodeLine{02154                     \textcolor{keywordtype}{int} scnIndex = SceneManagerHelper.ActiveSceneBuildIndex;}
+\DoxyCodeLine{02155                     \textcolor{keywordtype}{string} scnName = SceneManagerHelper.ActiveSceneName;}
+\DoxyCodeLine{02156 }
+\DoxyCodeLine{02157                     \textcolor{keywordflow}{if} ((levelId.Equals(scnIndex) \&\& levelIdInProps.Equals(scnName)) || (levelId.Equals(scnName) \&\& levelIdInProps.Equals(scnIndex)))}
+\DoxyCodeLine{02158                     \{}
+\DoxyCodeLine{02159                         \textcolor{comment}{//Debug.LogWarning("{}The levelId and levelIdInProps refer to the same scene. Don't set property for it."{});}}
+\DoxyCodeLine{02160                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02161                     \}}
+\DoxyCodeLine{02162                 \}}
+\DoxyCodeLine{02163             \}}
+\DoxyCodeLine{02164 }
+\DoxyCodeLine{02165 }
+\DoxyCodeLine{02166             \textcolor{comment}{// if the new levelId does not match the current room-\/property, we can cancel existing loading (as we start a new one)}}
+\DoxyCodeLine{02167             \textcolor{keywordflow}{if} (\_AsyncLevelLoadingOperation != \textcolor{keyword}{null})}
+\DoxyCodeLine{02168             \{}
+\DoxyCodeLine{02169                 \textcolor{keywordflow}{if} (!\_AsyncLevelLoadingOperation.isDone)}
+\DoxyCodeLine{02170                 \{}
+\DoxyCodeLine{02171                     Debug.LogWarning(\textcolor{stringliteral}{"{}PUN cancels an ongoing async level load, as another scene should be loaded. Next scene to load: "{}} + levelId);}
+\DoxyCodeLine{02172                 \}}
+\DoxyCodeLine{02173 }
+\DoxyCodeLine{02174                 \_AsyncLevelLoadingOperation.allowSceneActivation = \textcolor{keyword}{false};}
+\DoxyCodeLine{02175                 \_AsyncLevelLoadingOperation = \textcolor{keyword}{null};}
+\DoxyCodeLine{02176             \}}
+\DoxyCodeLine{02177 }
+\DoxyCodeLine{02178 }
+\DoxyCodeLine{02179             \textcolor{comment}{// current level is not yet in props, or different, so this client has to set it}}
+\DoxyCodeLine{02180             Hashtable setScene = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{02181             \textcolor{keywordflow}{if} (levelId is \textcolor{keywordtype}{int}) setScene[CurrentSceneProperty] = (int)levelId;}
+\DoxyCodeLine{02182             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (levelId is \textcolor{keywordtype}{string}) setScene[CurrentSceneProperty] = (string)levelId;}
+\DoxyCodeLine{02183             \textcolor{keywordflow}{else} Debug.LogError(\textcolor{stringliteral}{"{}Parameter levelId must be int or string!"{}});}
+\DoxyCodeLine{02184 }
+\DoxyCodeLine{02185             PhotonNetwork.CurrentRoom.SetCustomProperties(setScene);}
+\DoxyCodeLine{02186             SendAllOutgoingCommands(); \textcolor{comment}{// send immediately! because: in most cases the client will begin to load and pause sending anything for a while}}
+\DoxyCodeLine{02187         \}}
+\DoxyCodeLine{02188 }
+\DoxyCodeLine{02189 }
+\DoxyCodeLine{02190         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnEvent(EventData photonEvent)}
+\DoxyCodeLine{02191         \{}
+\DoxyCodeLine{02192             \textcolor{keywordtype}{int} actorNr = photonEvent.Sender;}
+\DoxyCodeLine{02193             Player originatingPlayer = \textcolor{keyword}{null};}
+\DoxyCodeLine{02194             \textcolor{keywordflow}{if} (actorNr > 0 \&\& NetworkingClient.CurrentRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{02195             \{}
+\DoxyCodeLine{02196                 originatingPlayer = NetworkingClient.CurrentRoom.GetPlayer(actorNr);}
+\DoxyCodeLine{02197             \}}
+\DoxyCodeLine{02198 }
+\DoxyCodeLine{02199             \textcolor{keywordflow}{switch} (photonEvent.Code)}
+\DoxyCodeLine{02200             \{}
+\DoxyCodeLine{02201                 \textcolor{keywordflow}{case} EventCode.Join:}
+\DoxyCodeLine{02202                     ResetPhotonViewsOnSerialize();}
+\DoxyCodeLine{02203                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02204 }
+\DoxyCodeLine{02205                 \textcolor{keywordflow}{case} PunEvent.RPC:}
+\DoxyCodeLine{02206                     ExecuteRpc(photonEvent.CustomData as Hashtable, originatingPlayer);}
+\DoxyCodeLine{02207                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02208 }
+\DoxyCodeLine{02209                 \textcolor{keywordflow}{case} PunEvent.SendSerialize:}
+\DoxyCodeLine{02210                 \textcolor{keywordflow}{case} PunEvent.SendSerializeReliable:}
+\DoxyCodeLine{02211                     \textcolor{comment}{// Debug.Log(photonEvent.ToStringFull());}}
+\DoxyCodeLine{02212 }
+\DoxyCodeLine{02213                     \textcolor{comment}{/* This case must match definition in RunViewUpdate() and OnSerializeWrite().}}
+\DoxyCodeLine{02214 \textcolor{comment}{                     * Format of the event's data object[]:}}
+\DoxyCodeLine{02215 \textcolor{comment}{                     *  [0] = PhotonNetwork.ServerTimestamp;}}
+\DoxyCodeLine{02216 \textcolor{comment}{                     *  [1] = currentLevelPrefix;  OPTIONAL!}}
+\DoxyCodeLine{02217 \textcolor{comment}{                     *  [2] = object[] of PhotonView x}}
+\DoxyCodeLine{02218 \textcolor{comment}{                     *  [3] = object[] of PhotonView y or NULL}}
+\DoxyCodeLine{02219 \textcolor{comment}{                     *  [...]}}
+\DoxyCodeLine{02220 \textcolor{comment}{                     *}}
+\DoxyCodeLine{02221 \textcolor{comment}{                     *  We only combine updates for XY objects into one RaiseEvent to avoid fragmentation.}}
+\DoxyCodeLine{02222 \textcolor{comment}{                     *  The Reliability and Interest Group are only used for RaiseEvent and not contained in the event/data that reaches the other clients.}}
+\DoxyCodeLine{02223 \textcolor{comment}{                     *  This is read in OnEvent().}}
+\DoxyCodeLine{02224 \textcolor{comment}{                     */}}
+\DoxyCodeLine{02225 }
+\DoxyCodeLine{02226                     \textcolor{keywordtype}{object}[] pvUpdates = (\textcolor{keywordtype}{object}[])photonEvent[ParameterCode.Data];}
+\DoxyCodeLine{02227                     \textcolor{keywordtype}{int} remoteUpdateServerTimestamp = (\textcolor{keywordtype}{int})pvUpdates[0];}
+\DoxyCodeLine{02228                     \textcolor{keywordtype}{short} remoteLevelPrefix = (pvUpdates[1] != \textcolor{keyword}{null}) ? (\textcolor{keywordtype}{byte})pvUpdates[1] : (short)0;}
+\DoxyCodeLine{02229 }
+\DoxyCodeLine{02230                     \textcolor{keywordtype}{object}[] viewUpdate = \textcolor{keyword}{null};}
+\DoxyCodeLine{02231                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 2; i < pvUpdates.Length; i++)}
+\DoxyCodeLine{02232                     \{}
+\DoxyCodeLine{02233                         viewUpdate = pvUpdates[i] as \textcolor{keywordtype}{object}[];}
+\DoxyCodeLine{02234                         \textcolor{keywordflow}{if} (viewUpdate == \textcolor{keyword}{null})}
+\DoxyCodeLine{02235                         \{}
+\DoxyCodeLine{02236                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02237                         \}}
+\DoxyCodeLine{02238                         OnSerializeRead(viewUpdate, originatingPlayer, remoteUpdateServerTimestamp, remoteLevelPrefix);}
+\DoxyCodeLine{02239                     \}}
+\DoxyCodeLine{02240                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02241 }
+\DoxyCodeLine{02242                 \textcolor{keywordflow}{case} PunEvent.Instantiation:}
+\DoxyCodeLine{02243                     NetworkInstantiate((Hashtable)photonEvent.CustomData, originatingPlayer);}
+\DoxyCodeLine{02244                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02245 }
+\DoxyCodeLine{02246                 \textcolor{keywordflow}{case} PunEvent.CloseConnection:}
+\DoxyCodeLine{02247 }
+\DoxyCodeLine{02248                     \textcolor{comment}{// MasterClient "{}requests"{} a disconnection from us}}
+\DoxyCodeLine{02249                     \textcolor{keywordflow}{if} (PhotonNetwork.EnableCloseConnection == \textcolor{keyword}{false})}
+\DoxyCodeLine{02250                     \{}
+\DoxyCodeLine{02251                         Debug.LogWarning(\textcolor{stringliteral}{"{}CloseConnection received from "{}} + originatingPlayer + \textcolor{stringliteral}{"{}. PhotonNetwork.EnableCloseConnection is false. Ignoring the request (this client stays in the room)."{}});}
+\DoxyCodeLine{02252                     \}}
+\DoxyCodeLine{02253                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (originatingPlayer == \textcolor{keyword}{null} || !originatingPlayer.IsMasterClient)}
+\DoxyCodeLine{02254                     \{}
+\DoxyCodeLine{02255                         Debug.LogWarning(\textcolor{stringliteral}{"{}CloseConnection received from "{}} + originatingPlayer + \textcolor{stringliteral}{"{}. That player is not the Master Client. "{}} + PhotonNetwork.MasterClient + \textcolor{stringliteral}{"{} is."{}});}
+\DoxyCodeLine{02256                     \}}
+\DoxyCodeLine{02257                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonNetwork.EnableCloseConnection)}
+\DoxyCodeLine{02258                     \{}
+\DoxyCodeLine{02259                         PhotonNetwork.LeaveRoom(\textcolor{keyword}{false});}
+\DoxyCodeLine{02260                     \}}
+\DoxyCodeLine{02261 }
+\DoxyCodeLine{02262                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02263 }
+\DoxyCodeLine{02264                 \textcolor{keywordflow}{case} PunEvent.DestroyPlayer:}
+\DoxyCodeLine{02265                     Hashtable evData = (Hashtable)photonEvent.CustomData;}
+\DoxyCodeLine{02266                     \textcolor{keywordtype}{int} targetPlayerId = (\textcolor{keywordtype}{int})evData[keyByteZero];}
+\DoxyCodeLine{02267                     \textcolor{keywordflow}{if} (targetPlayerId >= 0)}
+\DoxyCodeLine{02268                     \{}
+\DoxyCodeLine{02269                         DestroyPlayerObjects(targetPlayerId, \textcolor{keyword}{true});}
+\DoxyCodeLine{02270                     \}}
+\DoxyCodeLine{02271                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02272                     \{}
+\DoxyCodeLine{02273                         DestroyAll(\textcolor{keyword}{true});}
+\DoxyCodeLine{02274                     \}}
+\DoxyCodeLine{02275                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02276 }
+\DoxyCodeLine{02277                 \textcolor{keywordflow}{case} EventCode.Leave:}
+\DoxyCodeLine{02278 }
+\DoxyCodeLine{02279                     \textcolor{comment}{// destroy objects \& buffered messages}}
+\DoxyCodeLine{02280                     \textcolor{keywordflow}{if} (CurrentRoom != \textcolor{keyword}{null} \&\& CurrentRoom.AutoCleanUp \&\& (originatingPlayer == \textcolor{keyword}{null} || !originatingPlayer.IsInactive))}
+\DoxyCodeLine{02281                     \{}
+\DoxyCodeLine{02282                         DestroyPlayerObjects(actorNr, \textcolor{keyword}{true});}
+\DoxyCodeLine{02283                     \}}
+\DoxyCodeLine{02284                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02285 }
+\DoxyCodeLine{02286                 \textcolor{keywordflow}{case} PunEvent.Destroy:}
+\DoxyCodeLine{02287                     evData = (Hashtable)photonEvent.CustomData;}
+\DoxyCodeLine{02288                     \textcolor{keywordtype}{int} instantiationId = (\textcolor{keywordtype}{int})evData[keyByteZero];}
+\DoxyCodeLine{02289                     \textcolor{comment}{// Debug.Log("{}Ev Destroy for viewId: "{} + instantiationId + "{} sent by owner: "{} + (instantiationId / PhotonNetwork.MAX\_VIEW\_IDS == actorNr) + "{} this client is owner: "{} + (instantiationId / PhotonNetwork.MAX\_VIEW\_IDS == this.LocalPlayer.ID));}}
+\DoxyCodeLine{02290 }
+\DoxyCodeLine{02291 }
+\DoxyCodeLine{02292                     PhotonView pvToDestroy = \textcolor{keyword}{null};}
+\DoxyCodeLine{02293                     \textcolor{keywordflow}{if} (photonViewList.TryGetValue(instantiationId, out pvToDestroy))}
+\DoxyCodeLine{02294                     \{}
+\DoxyCodeLine{02295                         RemoveInstantiatedGO(pvToDestroy.gameObject, \textcolor{keyword}{true});}
+\DoxyCodeLine{02296                     \}}
+\DoxyCodeLine{02297                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02298                     \{}
+\DoxyCodeLine{02299                         Debug.LogError(\textcolor{stringliteral}{"{}Ev Destroy Failed. Could not find PhotonView with instantiationId "{}} + instantiationId + \textcolor{stringliteral}{"{}. Sent by actorNr: "{}} + actorNr);}
+\DoxyCodeLine{02300                     \}}
+\DoxyCodeLine{02301 }
+\DoxyCodeLine{02302                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02303 }
+\DoxyCodeLine{02304                 \textcolor{keywordflow}{case} PunEvent.OwnershipRequest:}
+\DoxyCodeLine{02305                     \{}
+\DoxyCodeLine{02306                         \textcolor{keywordtype}{int}[] requestValues = (\textcolor{keywordtype}{int}[])photonEvent.CustomData;}
+\DoxyCodeLine{02307                         \textcolor{keywordtype}{int} requestedViewId = requestValues[0];}
+\DoxyCodeLine{02308                         \textcolor{keywordtype}{int} requestedFromOwnerId = requestValues[1];}
+\DoxyCodeLine{02309 }
+\DoxyCodeLine{02310 }
+\DoxyCodeLine{02311                         PhotonView requestedView = GetPhotonView(requestedViewId);}
+\DoxyCodeLine{02312                         \textcolor{keywordflow}{if} (requestedView == \textcolor{keyword}{null})}
+\DoxyCodeLine{02313                         \{}
+\DoxyCodeLine{02314                             Debug.LogWarning(\textcolor{stringliteral}{"{}Can't find PhotonView of incoming OwnershipRequest. ViewId not found: "{}} + requestedViewId);}
+\DoxyCodeLine{02315                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02316                         \}}
+\DoxyCodeLine{02317 }
+\DoxyCodeLine{02318                         \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel == PunLogLevel.Informational)}
+\DoxyCodeLine{02319                         \{}
+\DoxyCodeLine{02320                             Debug.Log(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}OwnershipRequest. actorNr \{0\} requests view \{1\} from \{2\}. current pv owner: \{3\} is \{4\}. isMine: \{6\} master client: \{5\}"{}}, actorNr, requestedViewId, requestedFromOwnerId, requestedView.OwnerActorNr, requestedView.IsOwnerActive ? \textcolor{stringliteral}{"{}active"{}} : \textcolor{stringliteral}{"{}inactive"{}}, MasterClient.ActorNumber, requestedView.IsMine));}
+\DoxyCodeLine{02321                         \}}
+\DoxyCodeLine{02322 }
+\DoxyCodeLine{02323                         \textcolor{keywordflow}{switch} (requestedView.OwnershipTransfer)}
+\DoxyCodeLine{02324                         \{}
+\DoxyCodeLine{02325                             \textcolor{keywordflow}{case} OwnershipOption.Takeover:}
+\DoxyCodeLine{02326                                 \textcolor{keywordtype}{int} currentPvOwnerId = requestedView.OwnerActorNr;}
+\DoxyCodeLine{02327                                 \textcolor{keywordflow}{if} (requestedFromOwnerId == currentPvOwnerId || (requestedFromOwnerId == 0 \&\& currentPvOwnerId == MasterClient.ActorNumber) || currentPvOwnerId == 0)}
+\DoxyCodeLine{02328                                 \{}
+\DoxyCodeLine{02329                                     \textcolor{comment}{// a takeover is successful automatically, if taken from current owner}}
+\DoxyCodeLine{02330                                     Player prevOwner = requestedView.Owner;}
+\DoxyCodeLine{02331 }
+\DoxyCodeLine{02332                                     requestedView.OwnerActorNr = actorNr;}
+\DoxyCodeLine{02333                                     requestedView.ControllerActorNr = actorNr;}
+\DoxyCodeLine{02334 }
+\DoxyCodeLine{02335                                     \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipTransferedEv != \textcolor{keyword}{null})}
+\DoxyCodeLine{02336                                     \{}
+\DoxyCodeLine{02337                                         PhotonNetwork.OnOwnershipTransferedEv(requestedView, prevOwner);}
+\DoxyCodeLine{02338                                     \}}
+\DoxyCodeLine{02339                                 \}}
+\DoxyCodeLine{02340                                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02341                                 \{}
+\DoxyCodeLine{02342 }
+\DoxyCodeLine{02343                                     \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipTransferFailedEv != \textcolor{keyword}{null})}
+\DoxyCodeLine{02344                                     \{}
+\DoxyCodeLine{02345                                         PhotonNetwork.OnOwnershipTransferFailedEv(requestedView, originatingPlayer);}
+\DoxyCodeLine{02346                                     \}}
+\DoxyCodeLine{02347                                     \textcolor{comment}{//Debug.LogWarning("{}requestedView.OwnershipTransfer was ignored! "{});}}
+\DoxyCodeLine{02348                                 \}}
+\DoxyCodeLine{02349                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02350 }
+\DoxyCodeLine{02351                             \textcolor{keywordflow}{case} OwnershipOption.Request:}
+\DoxyCodeLine{02352                                 \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipRequestEv != \textcolor{keyword}{null})}
+\DoxyCodeLine{02353                                 \{}
+\DoxyCodeLine{02354                                     PhotonNetwork.OnOwnershipRequestEv(requestedView, originatingPlayer);}
+\DoxyCodeLine{02355                                 \}}
+\DoxyCodeLine{02356                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02357 }
+\DoxyCodeLine{02358                             \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{02359                                 Debug.LogWarning(\textcolor{stringliteral}{"{}Ownership mode == "{}} + (requestedView.OwnershipTransfer) + \textcolor{stringliteral}{"{}. Ignoring request."{}});}
+\DoxyCodeLine{02360                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02361                         \}}
+\DoxyCodeLine{02362                     \}}
+\DoxyCodeLine{02363                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02364 }
+\DoxyCodeLine{02365                 \textcolor{keywordflow}{case} PunEvent.OwnershipTransfer:}
+\DoxyCodeLine{02366                     \{}
+\DoxyCodeLine{02367                         \textcolor{keywordtype}{int}[] transferViewToUserID = (\textcolor{keywordtype}{int}[])photonEvent.CustomData;}
+\DoxyCodeLine{02368                         \textcolor{keywordtype}{int} requestedViewId = transferViewToUserID[0];}
+\DoxyCodeLine{02369                         \textcolor{keywordtype}{int} newOwnerId = transferViewToUserID[1];}
+\DoxyCodeLine{02370 }
+\DoxyCodeLine{02371                         if (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{02372                         \{}
+\DoxyCodeLine{02373                             Debug.Log(\textcolor{stringliteral}{"{}Ev OwnershipTransfer. ViewID "{}} + requestedViewId + \textcolor{stringliteral}{"{} to: "{}} + newOwnerId + \textcolor{stringliteral}{"{} Time: "{}} + Environment.TickCount \% 1000);}
+\DoxyCodeLine{02374                         \}}
+\DoxyCodeLine{02375 }
+\DoxyCodeLine{02376                         PhotonView requestedView = GetPhotonView(requestedViewId);}
+\DoxyCodeLine{02377                         \textcolor{keywordflow}{if} (requestedView != \textcolor{keyword}{null})}
+\DoxyCodeLine{02378                         \{}
+\DoxyCodeLine{02379                             \textcolor{comment}{// Only apply this if pv allows Takeover, or allows Request and this message originates from the controller or owner.}}
+\DoxyCodeLine{02380                             \textcolor{keywordflow}{if} (requestedView.OwnershipTransfer == OwnershipOption.Takeover ||}
+\DoxyCodeLine{02381                                 (requestedView.OwnershipTransfer == OwnershipOption.Request \&\& (originatingPlayer == requestedView.Controller || originatingPlayer == requestedView.Owner)))}
+\DoxyCodeLine{02382                             \{}
+\DoxyCodeLine{02383                                 Player prevOwner = requestedView.Owner;}
+\DoxyCodeLine{02384 }
+\DoxyCodeLine{02385                                 requestedView.OwnerActorNr= newOwnerId;}
+\DoxyCodeLine{02386                                 requestedView.ControllerActorNr = newOwnerId;}
+\DoxyCodeLine{02387 }
+\DoxyCodeLine{02388                                 \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipTransferedEv != \textcolor{keyword}{null})}
+\DoxyCodeLine{02389                                 \{}
+\DoxyCodeLine{02390                                     PhotonNetwork.OnOwnershipTransferedEv(requestedView, prevOwner);}
+\DoxyCodeLine{02391                                 \}}
+\DoxyCodeLine{02392                             \}}
+\DoxyCodeLine{02393                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{02394                             \{}
+\DoxyCodeLine{02395                                 \textcolor{keywordflow}{if} (requestedView.OwnershipTransfer == OwnershipOption.Request)}
+\DoxyCodeLine{02396                                     Debug.Log(\textcolor{stringliteral}{"{}Failed incoming OwnershipTransfer attempt for '"{}} + requestedView.name + \textcolor{stringliteral}{"{}; "{}} + requestedViewId +}
+\DoxyCodeLine{02397                                               \textcolor{stringliteral}{"{} -\/ photonView has OwnershipTransfer set to OwnershipOption.Request, but Player attempting to change owner is not the current owner/controller."{}});}
+\DoxyCodeLine{02398                                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02399                                     Debug.Log(\textcolor{stringliteral}{"{}Failed incoming OwnershipTransfer attempt for '"{}} + requestedView.name + \textcolor{stringliteral}{"{}; "{}} + requestedViewId +}
+\DoxyCodeLine{02400                                               \textcolor{stringliteral}{"{} -\/ photonView has OwnershipTransfer set to OwnershipOption.Fixed."{}});}
+\DoxyCodeLine{02401                             \}}
+\DoxyCodeLine{02402                         \}}
+\DoxyCodeLine{02403                         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.ErrorsOnly)}
+\DoxyCodeLine{02404                         \{}
+\DoxyCodeLine{02405                             Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Failed to find a PhotonView with ID=\{0\} for incoming OwnershipTransfer event (newOwnerActorNumber=\{1\}), sender=\{2\}"{}},}
+\DoxyCodeLine{02406                                                  requestedViewId, newOwnerId, actorNr);}
+\DoxyCodeLine{02407                         \}}
+\DoxyCodeLine{02408 }
+\DoxyCodeLine{02409                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02410                     \}}
+\DoxyCodeLine{02411 }
+\DoxyCodeLine{02412                 \textcolor{keywordflow}{case} PunEvent.OwnershipUpdate:}
+\DoxyCodeLine{02413                     \{}
+\DoxyCodeLine{02414                         reusablePVHashset.Clear();}
+\DoxyCodeLine{02415 }
+\DoxyCodeLine{02416                         \textcolor{comment}{// Deserialize the list of exceptions, these are views on the master who's Owner and Creator didn't match.}}
+\DoxyCodeLine{02417                         \textcolor{keywordtype}{int}[] viewOwnerPair = (\textcolor{keywordtype}{int}[])photonEvent.CustomData;}
+\DoxyCodeLine{02418 }
+\DoxyCodeLine{02419                         for (\textcolor{keywordtype}{int} i = 0, cnt = viewOwnerPair.Length; i < cnt; i++)}
+\DoxyCodeLine{02420                         \{}
+\DoxyCodeLine{02421                             \textcolor{keywordtype}{int} viewId = viewOwnerPair[i];}
+\DoxyCodeLine{02422                             i++;}
+\DoxyCodeLine{02423                             \textcolor{keywordtype}{int} newOwnerId = viewOwnerPair[i];}
+\DoxyCodeLine{02424 }
+\DoxyCodeLine{02425                             PhotonView view = GetPhotonView(viewId);}
+\DoxyCodeLine{02426                             \textcolor{keywordflow}{if} (view == \textcolor{keyword}{null})}
+\DoxyCodeLine{02427                             \{}
+\DoxyCodeLine{02428                                 \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.ErrorsOnly)}
+\DoxyCodeLine{02429                                 \{}
+\DoxyCodeLine{02430                                     Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Failed to find a PhotonView with ID=\{0\} for incoming OwnershipUpdate event (newOwnerActorNumber=\{1\}), sender=\{2\}. If you load scenes, make sure to pause the message queue."{}}, viewId, newOwnerId, actorNr);}
+\DoxyCodeLine{02431                                 \}}
+\DoxyCodeLine{02432 }
+\DoxyCodeLine{02433                                 \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{02434                             \}}
+\DoxyCodeLine{02435 }
+\DoxyCodeLine{02436                             Player prevOwner = view.Owner;}
+\DoxyCodeLine{02437                             Player newOwner = CurrentRoom.GetPlayer(newOwnerId, \textcolor{keyword}{true});}
+\DoxyCodeLine{02438 }
+\DoxyCodeLine{02439                             view.OwnerActorNr= newOwnerId;}
+\DoxyCodeLine{02440                             view.ControllerActorNr = newOwnerId;}
+\DoxyCodeLine{02441 }
+\DoxyCodeLine{02442                             reusablePVHashset.Add(view);}
+\DoxyCodeLine{02443                             \textcolor{comment}{// If this produces an owner change locally, fire the OnOwnershipTransfered callbacks}}
+\DoxyCodeLine{02444                             \textcolor{keywordflow}{if} (PhotonNetwork.OnOwnershipTransferedEv != \textcolor{keyword}{null} \&\& newOwner != prevOwner)}
+\DoxyCodeLine{02445                             \{}
+\DoxyCodeLine{02446                                 PhotonNetwork.OnOwnershipTransferedEv(view, prevOwner);}
+\DoxyCodeLine{02447                             \}}
+\DoxyCodeLine{02448                         \}}
+\DoxyCodeLine{02449 }
+\DoxyCodeLine{02450                         \textcolor{comment}{// Initialize all views. Typically this is just fired on a new client after it joins a room and gets the first OwnershipUpdate from the Master.}}
+\DoxyCodeLine{02451                         \textcolor{comment}{// This was moved from PhotonHandler OnJoinedRoom to here, to allow objects to retain controller = -\/1 until an controller is actually known.}}
+\DoxyCodeLine{02452                         \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} PhotonViewCollection)}
+\DoxyCodeLine{02453                         \{}
+\DoxyCodeLine{02454                             \textcolor{keywordflow}{if} (!reusablePVHashset.Contains(view))}
+\DoxyCodeLine{02455                                 view.RebuildControllerCache();}
+\DoxyCodeLine{02456                         \}}
+\DoxyCodeLine{02457 }
+\DoxyCodeLine{02458                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02459                     \}}
+\DoxyCodeLine{02460 }
+\DoxyCodeLine{02461 }
+\DoxyCodeLine{02462             \}}
+\DoxyCodeLine{02463         \}}
+\DoxyCodeLine{02464 }
+\DoxyCodeLine{02465         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnOperation(OperationResponse opResponse)}
+\DoxyCodeLine{02466         \{}
+\DoxyCodeLine{02467             \textcolor{keywordflow}{switch} (opResponse.OperationCode)}
+\DoxyCodeLine{02468             \{}
+\DoxyCodeLine{02469                 \textcolor{keywordflow}{case} OperationCode.GetRegions:}
+\DoxyCodeLine{02470                     \textcolor{keywordflow}{if} (opResponse.ReturnCode != 0)}
+\DoxyCodeLine{02471                     \{}
+\DoxyCodeLine{02472                         \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Full)}
+\DoxyCodeLine{02473                         \{}
+\DoxyCodeLine{02474                             Debug.Log(\textcolor{stringliteral}{"{}OpGetRegions failed. Will not ping any. ReturnCode: "{}} + opResponse.ReturnCode);}
+\DoxyCodeLine{02475                         \}}
+\DoxyCodeLine{02476                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02477                     \}}
+\DoxyCodeLine{02478                     \textcolor{keywordflow}{if} (ConnectMethod == ConnectMethod.ConnectToBest)}
+\DoxyCodeLine{02479                     \{}
+\DoxyCodeLine{02480                         \textcolor{keywordtype}{string} previousBestRegionSummary = PhotonNetwork.BestRegionSummaryInPreferences;}
+\DoxyCodeLine{02481 }
+\DoxyCodeLine{02482                         \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{02483                         \{}
+\DoxyCodeLine{02484                             Debug.Log(\textcolor{stringliteral}{"{}PUN got region list. Going to ping minimum regions, based on this previous result summary: "{}} + previousBestRegionSummary);}
+\DoxyCodeLine{02485                         \}}
+\DoxyCodeLine{02486                         NetworkingClient.RegionHandler.PingMinimumOfRegions(OnRegionsPinged, previousBestRegionSummary);}
+\DoxyCodeLine{02487                     \}}
+\DoxyCodeLine{02488                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02489                 \textcolor{keywordflow}{case} OperationCode.JoinGame:}
+\DoxyCodeLine{02490                     \textcolor{keywordflow}{if} (Server == ServerConnection.GameServer)}
+\DoxyCodeLine{02491                     \{}
+\DoxyCodeLine{02492                         PhotonNetwork.LoadLevelIfSynced();}
+\DoxyCodeLine{02493                     \}}
+\DoxyCodeLine{02494                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{02495             \}}
+\DoxyCodeLine{02496         \}}
+\DoxyCodeLine{02497 }
+\DoxyCodeLine{02498         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnClientStateChanged(ClientState previousState, ClientState state)}
+\DoxyCodeLine{02499         \{}
+\DoxyCodeLine{02500             \textcolor{keywordflow}{if} (}
+\DoxyCodeLine{02501                 (previousState == ClientState.Joined \&\& state == ClientState.Disconnected) ||}
+\DoxyCodeLine{02502                 (Server == ServerConnection.GameServer \&\& (state == ClientState.Disconnecting || state == ClientState.DisconnectingFromGameServer))}
+\DoxyCodeLine{02503             )}
+\DoxyCodeLine{02504             \{}
+\DoxyCodeLine{02505                 LeftRoomCleanup();}
+\DoxyCodeLine{02506             \}}
+\DoxyCodeLine{02507 }
+\DoxyCodeLine{02508             \textcolor{keywordflow}{if} (state == ClientState.ConnectedToMasterServer \&\& \_cachedRegionHandler != \textcolor{keyword}{null})}
+\DoxyCodeLine{02509             \{}
+\DoxyCodeLine{02510                 BestRegionSummaryInPreferences = \_cachedRegionHandler.SummaryToCache;}
+\DoxyCodeLine{02511                 \_cachedRegionHandler = \textcolor{keyword}{null};}
+\DoxyCodeLine{02512             \}}
+\DoxyCodeLine{02513         \}}
+\DoxyCodeLine{02514 }
+\DoxyCodeLine{02515         \textcolor{comment}{// to be used in the main thread. as OnRegionsPinged is called in a separate thread and so we can't use some of the Unity methods (like saving playerPrefs)}}
+\DoxyCodeLine{02516         \textcolor{keyword}{private} \textcolor{keyword}{static} RegionHandler \_cachedRegionHandler;}
+\DoxyCodeLine{02517 }
+\DoxyCodeLine{02518         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnRegionsPinged(RegionHandler regionHandler)}
+\DoxyCodeLine{02519         \{}
+\DoxyCodeLine{02520             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{02521             \{}
+\DoxyCodeLine{02522                 Debug.Log(regionHandler.GetResults());}
+\DoxyCodeLine{02523             \}}
+\DoxyCodeLine{02524 }
+\DoxyCodeLine{02525             \_cachedRegionHandler = regionHandler;}
+\DoxyCodeLine{02526             \textcolor{comment}{//PhotonNetwork.BestRegionSummaryInPreferences = regionHandler.SummaryToCache; // can not be called here, as it's not in the main thread}}
+\DoxyCodeLine{02527 }
+\DoxyCodeLine{02528 }
+\DoxyCodeLine{02529             \textcolor{comment}{// the dev region overrides the best region selection in "{}development"{} builds (unless it was set but is empty).}}
+\DoxyCodeLine{02530 }
+\DoxyCodeLine{02531 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{02532             \textcolor{keywordflow}{if} (!PhotonServerSettings.DevRegionSetOnce)}
+\DoxyCodeLine{02533             \{}
+\DoxyCodeLine{02534                 \textcolor{comment}{// if no dev region was defined before or if the dev region is unavailable, set a new dev region}}
+\DoxyCodeLine{02535                 PhotonServerSettings.DevRegionSetOnce = \textcolor{keyword}{true};}
+\DoxyCodeLine{02536                 PhotonServerSettings.DevRegion = \_cachedRegionHandler.BestRegion.Code;}
+\DoxyCodeLine{02537             \}}
+\DoxyCodeLine{02538 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02539 }
+\DoxyCodeLine{02540 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{02541             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(PhotonServerSettings.DevRegion) \&\& ConnectMethod == ConnectMethod.ConnectToBest)}
+\DoxyCodeLine{02542             \{}
+\DoxyCodeLine{02543                 Debug.LogWarning(\textcolor{stringliteral}{"{}PUN is in development mode (development build). As the 'dev region' is not empty ("{}} + PhotonServerSettings.DevRegion + \textcolor{stringliteral}{"{}) it overrides the found best region. See PhotonServerSettings."{}});}
+\DoxyCodeLine{02544 }
+\DoxyCodeLine{02545                 \textcolor{keywordtype}{string} \_finalDevRegion = PhotonServerSettings.DevRegion;}
+\DoxyCodeLine{02546                 \textcolor{keywordflow}{if} (!\_cachedRegionHandler.EnabledRegions.Any(p => p.Code == PhotonServerSettings.DevRegion))}
+\DoxyCodeLine{02547                 \{}
+\DoxyCodeLine{02548                     \_finalDevRegion = \_cachedRegionHandler.EnabledRegions[0].Code;}
+\DoxyCodeLine{02549 }
+\DoxyCodeLine{02550                     Debug.LogWarning(\textcolor{stringliteral}{"{}The 'dev region' ("{}} + PhotonServerSettings.DevRegion + \textcolor{stringliteral}{"{}) was not found in the enabled regions, the first enabled region is picked ("{}} + \_finalDevRegion + \textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{02551                 \}}
+\DoxyCodeLine{02552 }
+\DoxyCodeLine{02553                 PhotonNetwork.NetworkingClient.ConnectToRegionMaster(\_finalDevRegion);}
+\DoxyCodeLine{02554                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02555             \}}
+\DoxyCodeLine{02556 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02557 }
+\DoxyCodeLine{02558             \textcolor{keywordflow}{if} (NetworkClientState == ClientState.ConnectedToNameServer)}
+\DoxyCodeLine{02559             \{}
+\DoxyCodeLine{02560                 PhotonNetwork.NetworkingClient.ConnectToRegionMaster(regionHandler.BestRegion.Code);}
+\DoxyCodeLine{02561             \}}
+\DoxyCodeLine{02562         \}}
+\DoxyCodeLine{02563     \}}
+\DoxyCodeLine{02564 \}}
+
+\end{DoxyCode}

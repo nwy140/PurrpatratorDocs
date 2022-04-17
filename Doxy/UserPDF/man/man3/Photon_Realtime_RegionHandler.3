@@ -1,0 +1,121 @@
+.TH "Photon.Realtime.RegionHandler" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Realtime.RegionHandler \- Provides methods to work with \fBPhoton\fP's regions (\fBPhoton\fP Cloud) and can be use to find the one with best ping\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "string \fBGetResults\fP ()"
+.br
+.ti -1c
+.RI "void \fBSetRegions\fP (OperationResponse opGetRegions)"
+.br
+.ti -1c
+.RI "\fBRegionHandler\fP (ushort masterServerPortOverride=0)"
+.br
+.ti -1c
+.RI "bool \fBPingMinimumOfRegions\fP (Action< \fBRegionHandler\fP > onCompleteCallback, string previousSummary)"
+.br
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "static Type \fBPingImplementation\fP"
+.br
+.RI "The implementation of \fBPhotonPing\fP to use for region pinging (Best \fBRegion\fP detection)\&. "
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "List< \fBRegion\fP > \fBEnabledRegions\fP\fC [getset]\fP"
+.br
+.RI "A list of region names for the \fBPhoton\fP Cloud\&. "
+.ti -1c
+.RI "\fBRegion\fP \fBBestRegion\fP\fC [get]\fP"
+.br
+.RI "When PingMinimumOfRegions was called and completed, the BestRegion is identified by best ping\&. "
+.ti -1c
+.RI "string \fBSummaryToCache\fP\fC [get]\fP"
+.br
+.RI "This value summarizes the results of pinging currently available regions (after PingMinimumOfRegions finished)\&. "
+.ti -1c
+.RI "bool \fBIsPinging\fP\fC [get]\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Provides methods to work with \fBPhoton\fP's regions (\fBPhoton\fP Cloud) and can be use to find the one with best ping\&. 
+
+When a client uses a Name Server to fetch the list of available regions, the \fBLoadBalancingClient\fP will create a \fBRegionHandler\fP and provide it via the OnRegionListReceived callback\&.
+.PP
+Your logic can decide to either connect to one of those regional servers, or it may use PingMinimumOfRegions to test which region provides the best ping\&.
+.PP
+It makes sense to make clients 'sticky' to a region when one gets selected\&. This can be achieved by storing the SummaryToCache value, once pinging was done\&. When the client connects again, the previous SummaryToCache helps limiting the number of regions to ping\&. In best case, only the previously selected region gets re-pinged and if the current ping is not much worse, this one region is used again\&. 
+.PP
+Definition at line \fB56\fP of file \fBRegionHandler\&.cs\fP\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Photon\&.Realtime\&.RegionHandler\&.RegionHandler (ushort masterServerPortOverride = \fC0\fP)"
+
+.PP
+Definition at line \fB182\fP of file \fBRegionHandler\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "string Photon\&.Realtime\&.RegionHandler\&.GetResults ()"
+
+.PP
+Definition at line \fB115\fP of file \fBRegionHandler\&.cs\fP\&.
+.SS "bool Photon\&.Realtime\&.RegionHandler\&.PingMinimumOfRegions (Action< \fBRegionHandler\fP > onCompleteCallback, string previousSummary)"
+
+.PP
+Definition at line \fB188\fP of file \fBRegionHandler\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.RegionHandler\&.SetRegions (OperationResponse opGetRegions)"
+
+.PP
+Definition at line \fB129\fP of file \fBRegionHandler\&.cs\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "Type Photon\&.Realtime\&.RegionHandler\&.PingImplementation\fC [static]\fP"
+
+.PP
+The implementation of \fBPhotonPing\fP to use for region pinging (Best \fBRegion\fP detection)\&. Defaults to null, which means the Type is set automatically\&.
+.PP
+Definition at line \fB60\fP of file \fBRegionHandler\&.cs\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "\fBRegion\fP Photon\&.Realtime\&.RegionHandler\&.BestRegion\fC [get]\fP"
+
+.PP
+When PingMinimumOfRegions was called and completed, the BestRegion is identified by best ping\&. 
+.PP
+Definition at line \fB76\fP of file \fBRegionHandler\&.cs\fP\&.
+.SS "List<\fBRegion\fP> Photon\&.Realtime\&.RegionHandler\&.EnabledRegions\fC [get]\fP, \fC [set]\fP"
+
+.PP
+A list of region names for the \fBPhoton\fP Cloud\&. Set by the result of OpGetRegions()\&.
+.PP
+Implement ILoadBalancingCallbacks and register for the callbacks to get OnRegionListReceived(RegionHandler regionHandler)\&. You can also put a 'case OperationCode\&.GetRegions:' into your OnOperationResponse method to notice when the result is available\&. 
+.PP
+Definition at line \fB67\fP of file \fBRegionHandler\&.cs\fP\&.
+.SS "bool Photon\&.Realtime\&.RegionHandler\&.IsPinging\fC [get]\fP"
+
+.PP
+Definition at line \fB176\fP of file \fBRegionHandler\&.cs\fP\&.
+.SS "string Photon\&.Realtime\&.RegionHandler\&.SummaryToCache\fC [get]\fP"
+
+.PP
+This value summarizes the results of pinging currently available regions (after PingMinimumOfRegions finished)\&. This value should be stored in the client by the game logic\&. When connecting again, use it as previous summary to speed up pinging regions and to make the best region sticky for the client\&. 
+.PP
+Definition at line \fB103\fP of file \fBRegionHandler\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

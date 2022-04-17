@@ -1,0 +1,246 @@
+\doxysection{Photon\+Teams\+Manager\+Inspector.\+cs}
+\label{_photon_teams_manager_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/Editor/PhotonTeamsManagerInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/Editor/PhotonTeamsManagerInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonTeamsManagerEditor.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities, }}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Custom inspector for PhotonTeamsManager}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     [CustomEditor(typeof(PhotonTeamsManager))]}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTeamsManagerEditor : Editor}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} Dictionary<byte, bool> foldouts = \textcolor{keyword}{new} Dictionary<byte, bool>();}
+\DoxyCodeLine{00023         \textcolor{keyword}{private} PhotonTeamsManager photonTeams;}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} SerializedProperty teamsListSp;}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} SerializedProperty listFoldIsOpenSp;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} proSkinString =}
+\DoxyCodeLine{00028             \textcolor{stringliteral}{"{}iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAYAAACzzX7wAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAACJJREFUeNpi/P//PwM+wHL06FG8KpgYCABGZWVlvCYABBgA7/sHvGw+cz8AAAAASUVORK5CYII="{}};}
+\DoxyCodeLine{00029         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} lightSkinString = \textcolor{stringliteral}{"{}iVBORw0KGgoAAAANSUhEUgAAAAgAAAACCAIAAADq9gq6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABVJREFUeNpiVFZWZsAGmBhwAIAAAwAURgBt4C03ZwAAAABJRU5ErkJggg=="{}};}
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} removeTextureName = \textcolor{stringliteral}{"{}removeButton\_generated"{}};}
+\DoxyCodeLine{00031         \textcolor{keyword}{private} Texture removeTexture;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isOpen;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} RequiresConstantRepaint()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             photonTeams = target as PhotonTeamsManager;}
+\DoxyCodeLine{00043             teamsListSp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}teamsList"{}});}
+\DoxyCodeLine{00044             listFoldIsOpenSp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}listFoldIsOpen"{}});}
+\DoxyCodeLine{00045             isOpen = listFoldIsOpenSp.boolValue;}
+\DoxyCodeLine{00046             removeTexture = LoadTexture(removeTextureName, proSkinString, lightSkinString);}
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00055         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetImageSize( \textcolor{keywordtype}{byte}[] imageData, out \textcolor{keywordtype}{int} width, out \textcolor{keywordtype}{int} height )}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             width = ReadInt( imageData, 3 + 15 );}
+\DoxyCodeLine{00058             height = ReadInt( imageData, 3 + 15 + 2 + 2 );}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadInt( \textcolor{keywordtype}{byte}[] imageData, \textcolor{keywordtype}{int} offset )}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{return} ( imageData[ offset ] << 8 ) | imageData[ offset + 1 ];}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{private} Texture LoadTexture(\textcolor{keywordtype}{string} textureName, \textcolor{keywordtype}{string} proSkin, \textcolor{keywordtype}{string} lightSkin)}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             \textcolor{keywordtype}{string} skin = EditorGUIUtility.isProSkin ? proSkin : lightSkin;}
+\DoxyCodeLine{00069             \textcolor{comment}{// Get image data (PNG) from base64 encoded strings.}}
+\DoxyCodeLine{00070             \textcolor{keywordtype}{byte}[] imageData = Convert.FromBase64String( skin );}
+\DoxyCodeLine{00071             \textcolor{comment}{// Gather image size from image data.}}
+\DoxyCodeLine{00072             \textcolor{keywordtype}{int} texWidth, texHeight;}
+\DoxyCodeLine{00073             GetImageSize( imageData, out texWidth, out texHeight );}
+\DoxyCodeLine{00074             \textcolor{comment}{// Generate texture asset.}}
+\DoxyCodeLine{00075             var tex = \textcolor{keyword}{new} Texture2D( texWidth, texHeight, TextureFormat.ARGB32, \textcolor{keyword}{false}, \textcolor{keyword}{true} );}
+\DoxyCodeLine{00076             tex.hideFlags = HideFlags.HideAndDontSave;}
+\DoxyCodeLine{00077             tex.name = textureName;}
+\DoxyCodeLine{00078             tex.filterMode = FilterMode.Point;}
+\DoxyCodeLine{00079             tex.LoadImage( imageData );}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{return} tex;}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00086             \{}
+\DoxyCodeLine{00087                 DrawTeamsList();}
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090             PhotonTeam[] availableTeams = photonTeams.GetAvailableTeams();}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (availableTeams != \textcolor{keyword}{null})}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 EditorGUI.indentLevel++;}
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{foreach} (var availableTeam \textcolor{keywordflow}{in} availableTeams)}
+\DoxyCodeLine{00095                 \{}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{if} (!foldouts.ContainsKey(availableTeam.Code))}
+\DoxyCodeLine{00097                     \{}
+\DoxyCodeLine{00098                         foldouts[availableTeam.Code] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00099                     \}}
+\DoxyCodeLine{00100                     Player[] teamMembers;}
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{if} (photonTeams.TryGetTeamMembers(availableTeam, out teamMembers) \&\& teamMembers != \textcolor{keyword}{null})}
+\DoxyCodeLine{00102                     \{}
+\DoxyCodeLine{00103                         foldouts[availableTeam.Code] = EditorGUILayout.Foldout(foldouts[availableTeam.Code],}
+\DoxyCodeLine{00104                             \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} (\{1\})"{}}, availableTeam.Name, teamMembers.Length));}
+\DoxyCodeLine{00105                     \}}
+\DoxyCodeLine{00106                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00107                     \{}
+\DoxyCodeLine{00108                         foldouts[availableTeam.Code] = EditorGUILayout.Foldout(foldouts[availableTeam.Code],}
+\DoxyCodeLine{00109                             \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} (0)"{}}, availableTeam.Name));}
+\DoxyCodeLine{00110                     \}}
+\DoxyCodeLine{00111                     \textcolor{keywordflow}{if} (foldouts[availableTeam.Code] \&\& teamMembers != \textcolor{keyword}{null})}
+\DoxyCodeLine{00112                     \{}
+\DoxyCodeLine{00113                         EditorGUI.indentLevel++;}
+\DoxyCodeLine{00114                         \textcolor{keywordflow}{foreach} (var player \textcolor{keywordflow}{in} teamMembers)}
+\DoxyCodeLine{00115                         \{}
+\DoxyCodeLine{00116                             EditorGUILayout.LabelField(\textcolor{keywordtype}{string}.Empty, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} \{1\}"{}}, player, player.IsLocal ? \textcolor{stringliteral}{"{} -\/ You -\/"{}} : \textcolor{keywordtype}{string}.Empty));}
+\DoxyCodeLine{00117                         \}}
+\DoxyCodeLine{00118                         EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00119                     \}}
+\DoxyCodeLine{00120                 \}}
+\DoxyCodeLine{00121                 EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawTeamsList()}
+\DoxyCodeLine{00126         \{}
+\DoxyCodeLine{00127             GUILayout.Space(5);}
+\DoxyCodeLine{00128             HashSet<byte> codes = \textcolor{keyword}{new} HashSet<byte>();}
+\DoxyCodeLine{00129             HashSet<string> names = \textcolor{keyword}{new} HashSet<string>();}
+\DoxyCodeLine{00130             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < teamsListSp.arraySize; i++)}
+\DoxyCodeLine{00131             \{}
+\DoxyCodeLine{00132                 SerializedProperty e = teamsListSp.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00133                 \textcolor{keywordtype}{string} name = e.FindPropertyRelative(\textcolor{stringliteral}{"{}Name"{}}).stringValue;}
+\DoxyCodeLine{00134                 \textcolor{keywordtype}{byte} code = (byte)e.FindPropertyRelative(\textcolor{stringliteral}{"{}Code"{}}).intValue;}
+\DoxyCodeLine{00135                 codes.Add(code);}
+\DoxyCodeLine{00136                 names.Add(name);}
+\DoxyCodeLine{00137             \}}
+\DoxyCodeLine{00138             this.serializedObject.Update();}
+\DoxyCodeLine{00139             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00140             isOpen = PhotonGUI.ContainerHeaderFoldout(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Teams List (\{0\})"{}}, teamsListSp.arraySize), isOpen);}
+\DoxyCodeLine{00141             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 listFoldIsOpenSp.boolValue = isOpen;}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (isOpen)}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} containerElementHeight = 22;}
+\DoxyCodeLine{00148                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} propertyHeight = 16;}
+\DoxyCodeLine{00149                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} paddingRight = 29;}
+\DoxyCodeLine{00150                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} paddingLeft = 5;}
+\DoxyCodeLine{00151                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} spacingY = 3;}
+\DoxyCodeLine{00152                 \textcolor{keywordtype}{float} containerHeight = (teamsListSp.arraySize + 1) * containerElementHeight;}
+\DoxyCodeLine{00153                 Rect containerRect = PhotonGUI.ContainerBody(containerHeight);}
+\DoxyCodeLine{00154                 \textcolor{keywordtype}{float} propertyWidth = containerRect.width -\/ paddingRight;}
+\DoxyCodeLine{00155                 \textcolor{keywordtype}{float} codePropertyWidth = propertyWidth / 5;}
+\DoxyCodeLine{00156                 \textcolor{keywordtype}{float} namePropertyWidth = 4 * propertyWidth / 5;}
+\DoxyCodeLine{00157                 Rect elementRect = \textcolor{keyword}{new} Rect(containerRect.xMin, containerRect.yMin,}
+\DoxyCodeLine{00158                     containerRect.width, containerElementHeight);}
+\DoxyCodeLine{00159                 Rect propertyPosition = \textcolor{keyword}{new} Rect(elementRect.xMin + paddingLeft, elementRect.yMin + spacingY,}
+\DoxyCodeLine{00160                     codePropertyWidth, propertyHeight);}
+\DoxyCodeLine{00161                 EditorGUI.LabelField(propertyPosition, \textcolor{stringliteral}{"{}Code"{}});}
+\DoxyCodeLine{00162                 Rect secondPropertyPosition = \textcolor{keyword}{new} Rect(elementRect.xMin + paddingLeft + codePropertyWidth, elementRect.yMin + spacingY, }
+\DoxyCodeLine{00163                     namePropertyWidth, propertyHeight);}
+\DoxyCodeLine{00164                 EditorGUI.LabelField(secondPropertyPosition, \textcolor{stringliteral}{"{}Name"{}});}
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < teamsListSp.arraySize; ++i)}
+\DoxyCodeLine{00166                 \{}
+\DoxyCodeLine{00167                     elementRect = \textcolor{keyword}{new} Rect(containerRect.xMin, containerRect.yMin + containerElementHeight * (i + 1),}
+\DoxyCodeLine{00168                         containerRect.width, containerElementHeight);}
+\DoxyCodeLine{00169                     propertyPosition = \textcolor{keyword}{new} Rect(elementRect.xMin + paddingLeft, elementRect.yMin + spacingY,}
+\DoxyCodeLine{00170                         codePropertyWidth, propertyHeight);}
+\DoxyCodeLine{00171                     SerializedProperty teamElementSp = teamsListSp.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00172                     SerializedProperty teamNameSp = teamElementSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Name"{}});}
+\DoxyCodeLine{00173                     SerializedProperty teamCodeSp = teamElementSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Code"{}});}
+\DoxyCodeLine{00174                     \textcolor{keywordtype}{string} oldName = teamNameSp.stringValue;}
+\DoxyCodeLine{00175                     \textcolor{keywordtype}{byte} oldCode = (byte)teamCodeSp.intValue;}
+\DoxyCodeLine{00176                     EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00177                     EditorGUI.PropertyField(propertyPosition, teamCodeSp, GUIContent.none);}
+\DoxyCodeLine{00178                     \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00179                     \{}
+\DoxyCodeLine{00180                         \textcolor{keywordtype}{byte} newCode = (byte)teamCodeSp.intValue;}
+\DoxyCodeLine{00181                         if (codes.Contains(newCode))}
+\DoxyCodeLine{00182                         \{}
+\DoxyCodeLine{00183                             Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Team with the same code \{0\} already exists"{}}, newCode);}
+\DoxyCodeLine{00184                             teamCodeSp.intValue = oldCode;}
+\DoxyCodeLine{00185                         \}}
+\DoxyCodeLine{00186                     \}}
+\DoxyCodeLine{00187                     secondPropertyPosition = \textcolor{keyword}{new} Rect(elementRect.xMin + paddingLeft + codePropertyWidth, elementRect.yMin + spacingY, }
+\DoxyCodeLine{00188                         namePropertyWidth, propertyHeight);}
+\DoxyCodeLine{00189                     EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00190                     EditorGUI.PropertyField(secondPropertyPosition, teamNameSp, GUIContent.none);}
+\DoxyCodeLine{00191                     \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00192                     \{}
+\DoxyCodeLine{00193                         \textcolor{keywordtype}{string} newName = teamNameSp.stringValue;}
+\DoxyCodeLine{00194                         \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(newName))}
+\DoxyCodeLine{00195                         \{}
+\DoxyCodeLine{00196                             Debug.LogWarning(\textcolor{stringliteral}{"{}Team name cannot be null or empty"{}});}
+\DoxyCodeLine{00197                             teamNameSp.stringValue = oldName;}
+\DoxyCodeLine{00198                         \} }
+\DoxyCodeLine{00199                         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (names.Contains(newName))}
+\DoxyCodeLine{00200                         \{}
+\DoxyCodeLine{00201                             Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Team with the same name \(\backslash\)"{}\{0\}\(\backslash\)"{} already exists"{}}, newName);}
+\DoxyCodeLine{00202                             teamNameSp.stringValue = oldName;}
+\DoxyCodeLine{00203                         \}}
+\DoxyCodeLine{00204                     \}}
+\DoxyCodeLine{00205                     Rect removeButtonRect = \textcolor{keyword}{new} Rect(}
+\DoxyCodeLine{00206                         elementRect.xMax -\/ PhotonGUI.DefaultRemoveButtonStyle.fixedWidth,}
+\DoxyCodeLine{00207                         elementRect.yMin + 2,}
+\DoxyCodeLine{00208                         PhotonGUI.DefaultRemoveButtonStyle.fixedWidth,}
+\DoxyCodeLine{00209                         PhotonGUI.DefaultRemoveButtonStyle.fixedHeight);}
+\DoxyCodeLine{00210                     \textcolor{keywordflow}{if} (GUI.Button(removeButtonRect, \textcolor{keyword}{new} GUIContent(removeTexture), PhotonGUI.DefaultRemoveButtonStyle))}
+\DoxyCodeLine{00211                     \{}
+\DoxyCodeLine{00212                         teamsListSp.DeleteArrayElementAtIndex(i);}
+\DoxyCodeLine{00213                     \}}
+\DoxyCodeLine{00214                     \textcolor{keywordflow}{if} (i < teamsListSp.arraySize -\/ 1)}
+\DoxyCodeLine{00215                     \{}
+\DoxyCodeLine{00216                         Rect texturePosition = \textcolor{keyword}{new} Rect(elementRect.xMin + 2, elementRect.yMax, elementRect.width -\/ 4,}
+\DoxyCodeLine{00217                             1);}
+\DoxyCodeLine{00218                         PhotonGUI.DrawSplitter(texturePosition);}
+\DoxyCodeLine{00219                     \}}
+\DoxyCodeLine{00220                 \}}
+\DoxyCodeLine{00221             \}}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (PhotonGUI.AddButton())}
+\DoxyCodeLine{00223             \{}
+\DoxyCodeLine{00224                 \textcolor{keywordtype}{byte} c = 0;}
+\DoxyCodeLine{00225                 \textcolor{keywordflow}{while} (codes.Contains(c) \&\& c < \textcolor{keywordtype}{byte}.MaxValue)}
+\DoxyCodeLine{00226                 \{}
+\DoxyCodeLine{00227                     c++;}
+\DoxyCodeLine{00228                 \}}
+\DoxyCodeLine{00229                 this.teamsListSp.arraySize++;}
+\DoxyCodeLine{00230                 SerializedProperty teamElementSp = this.teamsListSp.GetArrayElementAtIndex(teamsListSp.arraySize -\/ 1);}
+\DoxyCodeLine{00231                 SerializedProperty teamNameSp = teamElementSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Name"{}});}
+\DoxyCodeLine{00232                 SerializedProperty teamCodeSp = teamElementSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Code"{}});}
+\DoxyCodeLine{00233                 teamCodeSp.intValue = c;}
+\DoxyCodeLine{00234                 \textcolor{keywordtype}{string} n = \textcolor{stringliteral}{"{}New Team"{}};}
+\DoxyCodeLine{00235                 \textcolor{keywordtype}{int} o = 1;}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{while} (names.Contains(n))}
+\DoxyCodeLine{00237                 \{}
+\DoxyCodeLine{00238                     n = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}New Team \{0\}"{}}, o);}
+\DoxyCodeLine{00239                     o++;}
+\DoxyCodeLine{00240                 \}}
+\DoxyCodeLine{00241                 teamNameSp.stringValue = n;}
+\DoxyCodeLine{00242             \}}
+\DoxyCodeLine{00243             this.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00244         \}}
+\DoxyCodeLine{00245     \}}
+\DoxyCodeLine{00246 \}}
+
+\end{DoxyCode}

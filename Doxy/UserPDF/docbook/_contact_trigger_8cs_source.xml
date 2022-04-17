@@ -1,0 +1,734 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__contact_trigger_8cs_source" xml:lang="en-US">
+<title>ContactTrigger.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/ContactTrigger.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__contact_trigger_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&gt;PhotonNetwork&#32;Framework&#32;for&#32;Unity&#32;-&#32;Copyright&#32;(C)&#32;2020&#32;Exit&#32;Games&#32;GmbH&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00005"/>00005 
+<anchor xml:id="__contact_trigger_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__contact_trigger_8cs_source_1l00007"/>00007 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__contact_trigger_8cs_source_1l00008"/>00008 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>.<link linkend="_namespace_photon_1_1_pun_1_1_simple">Simple</link>.<link linkend="_namespace_photon_1_1_pun_1_1_simple_1_1_contact_groups">ContactGroups</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00009"/>00009 <emphasis role="keyword">using</emphasis>&#32;System.Reflection;
+<anchor xml:id="__contact_trigger_8cs_source_1l00010"/>00010 <emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__contact_trigger_8cs_source_1l00011"/>00011 
+<anchor xml:id="__contact_trigger_8cs_source_1l00012"/>00012 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00013"/>00013 <emphasis role="keyword">using</emphasis>&#32;UnityEditor;
+<anchor xml:id="__contact_trigger_8cs_source_1l00014"/>00014 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>.<link linkend="_namespace_photon_1_1_pun_1_1_simple">Simple</link>.Assists;
+<anchor xml:id="__contact_trigger_8cs_source_1l00015"/>00015 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>.<link linkend="_namespace_photon_1_1_pun_1_1_simple">Simple</link>.<link linkend="_namespace_photon_1_1_pun_1_1_simple_1_1_internal">Internal</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00016"/>00016 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00017"/>00017 
+<anchor xml:id="__contact_trigger_8cs_source_1l00018"/>00018 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_simple">Photon.Pun.Simple</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00019"/>00019 {
+<anchor xml:id="__contact_trigger_8cs_source_1l00020"/>00020 
+<anchor xml:id="__contact_trigger_8cs_source_1l00021"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger">00021</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger">ContactTrigger</link>&#32;:&#32;MonoBehaviour
+<anchor xml:id="__contact_trigger_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contactable">IContactable</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_pre_simulate">IOnPreSimulate</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_state_change">IOnStateChange</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00026"/>00026 
+<anchor xml:id="__contact_trigger_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Static&#32;Constructor</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">static</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger">ContactTrigger</link>()
+<anchor xml:id="__contact_trigger_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;FindDerivedTypesFromAssembly();
+<anchor xml:id="__contact_trigger_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00033"/>00033 
+<anchor xml:id="__contact_trigger_8cs_source_1l00034"/>00034 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Presets</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00035"/>00035 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00036"/>00036 
+<anchor xml:id="__contact_trigger_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger">ContactTrigger</link>&#32;UsePreset(Preset&#32;preset)
+<anchor xml:id="__contact_trigger_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">switch</emphasis>&#32;(preset)
+<anchor xml:id="__contact_trigger_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.ContactScan:
+<anchor xml:id="__contact_trigger_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00045"/>00045 
+<anchor xml:id="__contact_trigger_8cs_source_1l00046"/>00046 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.VitalsScan:
+<anchor xml:id="__contact_trigger_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.InventorysScan:
+<anchor xml:id="__contact_trigger_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_inventory_system">IInventorySystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00056"/>00056 
+<anchor xml:id="__contact_trigger_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.HealthPickup:
+<anchor xml:id="__contact_trigger_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00062"/>00062 
+<anchor xml:id="__contact_trigger_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.RechargeZone:
+<anchor xml:id="__contact_trigger_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.DamageZone:
+<anchor xml:id="__contact_trigger_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00073"/>00073 
+<anchor xml:id="__contact_trigger_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.WeaponMelee:
+<anchor xml:id="__contact_trigger_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00079"/>00079 
+<anchor xml:id="__contact_trigger_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.WeaponCannon:
+<anchor xml:id="__contact_trigger_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00085"/>00085 
+<anchor xml:id="__contact_trigger_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;Preset.WeaponScan:
+<anchor xml:id="__contact_trigger_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SetAllowedType(typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_vitals_system">IVitalsSystem</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">this</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00094"/>00094 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00095"/>00095 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00096"/>00096 
+<anchor xml:id="__contact_trigger_8cs_source_1l00097"/>00097 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Inspector</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00098"/>00098 
+<anchor xml:id="__contact_trigger_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[Tooltip(<emphasis role="stringliteral">&quot;If&#32;ITriggeringComponent&#32;has&#32;multiple&#32;colliders,&#32;they&#32;will&#32;all&#32;be&#32;capable&#32;of&#32;triggering&#32;Enter/Stay/Exit&#32;events.&#32;Enabling&#32;this&#32;prevents&#32;that,&#32;and&#32;will&#32;suppress&#32;multiple&#32;calls&#32;on&#32;the&#32;same&#32;object.&quot;</emphasis>)]
+<anchor xml:id="__contact_trigger_8cs_source_1l00100"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">00100</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00101"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6ad746aa781f5a2dbcd319fca4aa26aa">00101</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6ad746aa781f5a2dbcd319fca4aa26aa">PreventRepeats</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>;&#32;}&#32;<emphasis role="keyword">set</emphasis>&#32;{&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>&#32;=&#32;value;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00102"/>00102 
+<anchor xml:id="__contact_trigger_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]
+<anchor xml:id="__contact_trigger_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[HideInInspector]
+<anchor xml:id="__contact_trigger_8cs_source_1l00105"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a5554abab3c847ffa2dee6cffe5745b4e">00105</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>[]&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a5554abab3c847ffa2dee6cffe5745b4e">_ignoredSystems</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00106"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">00106</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;List&lt;Type&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">ignoredSystems</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;Type&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00107"/>00107 
+<anchor xml:id="__contact_trigger_8cs_source_1l00108"/>00108 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00109"/>00109 
+<anchor xml:id="__contact_trigger_8cs_source_1l00110"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a25f5f9c93894dd37f029cac822794780">00110</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;IOnContactEvent&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a25f5f9c93894dd37f029cac822794780">OnContactEventCallbacks</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;IOnContactEvent&gt;(1);
+<anchor xml:id="__contact_trigger_8cs_source_1l00111"/>00111 
+<anchor xml:id="__contact_trigger_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;List&lt;IContactSystem&gt;&#32;_contactSystems&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;IContactSystem&gt;(0);
+<anchor xml:id="__contact_trigger_8cs_source_1l00113"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac3656c89d88e87a127a8729765695545">00113</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;IContactSystem&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac3656c89d88e87a127a8729765695545">ContactSystems</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;_contactSystems;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00114"/>00114 
+<anchor xml:id="__contact_trigger_8cs_source_1l00115"/>00115 
+<anchor xml:id="__contact_trigger_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[Tooltip(<emphasis role="stringliteral">&quot;This&#32;ContactTrigger&#32;can&#32;act&#32;as&#32;a&#32;proxy&#32;of&#32;another.&#32;&quot;</emphasis>&#32;+
+<anchor xml:id="__contact_trigger_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="stringliteral">&quot;For&#32;example&#32;projectiles&#32;set&#32;the&#32;proxy&#32;as&#32;the&#32;shooters&#32;ContactTrigger,&#32;so&#32;projectile&#32;hits&#32;can&#32;be&#32;treated&#32;as&#32;hits&#32;by&#32;the&#32;players&#32;weapon.&#32;&quot;</emphasis>&#32;+
+<anchor xml:id="__contact_trigger_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="stringliteral">&quot;Default&#32;setting&#32;is&#32;&apos;this&apos;,&#32;indicating&#32;this&#32;isn&apos;t&#32;a&#32;proxy.&quot;</emphasis>)]
+<anchor xml:id="__contact_trigger_8cs_source_1l00119"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6f85c8cdf77f783622a21c2ee00155e7">00119</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6f85c8cdf77f783622a21c2ee00155e7">_proxy</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00120"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a0e018e2b3ad00156bd390b59253fd586">00120</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a0e018e2b3ad00156bd390b59253fd586">Proxy</link>
+<anchor xml:id="__contact_trigger_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6f85c8cdf77f783622a21c2ee00155e7">_proxy</link>;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">set</emphasis>&#32;{&#32;this._proxy&#32;=&#32;value;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00125"/>00125 
+<anchor xml:id="__contact_trigger_8cs_source_1l00126"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1adfa4b700b7a15f22c115ec25c3666b8e">00126</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">byte</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1adfa4b700b7a15f22c115ec25c3666b8e">Index</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__contact_trigger_8cs_source_1l00128"/>00128 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;cache</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00129"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80aed3eae9a9694071e35bbaa88cd725">00129</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80aed3eae9a9694071e35bbaa88cd725">netObj</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00130"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a7cd29ca0b6e46528cfab720c934320aa">00130</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a7cd29ca0b6e46528cfab720c934320aa">NetObj</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80aed3eae9a9694071e35bbaa88cd725">netObj</link>;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00131"/>00131 
+<anchor xml:id="__contact_trigger_8cs_source_1l00132"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a2d53810ac46e02445855425ff0cf77c8">00132</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_sync_contact">ISyncContact</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a2d53810ac46e02445855425ff0cf77c8">syncContact</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00133"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aedf21df15962eb49c9c86dbecc5594c1">00133</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_sync_contact">ISyncContact</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_sync_contact">SyncContact</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a2d53810ac46e02445855425ff0cf77c8">syncContact</link>;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00134"/>00134 
+<anchor xml:id="__contact_trigger_8cs_source_1l00135"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">00135</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_groups_assign">IContactGroupsAssign</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">contactGroupsAssign</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00136"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a0918a4479a073feaf7e90eba8e977bfb">00136</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_groups_assign">IContactGroupsAssign</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a0918a4479a073feaf7e90eba8e977bfb">ContactGroupsAssign</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">contactGroupsAssign</link>;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00137"/>00137 
+<anchor xml:id="__contact_trigger_8cs_source_1l00138"/>00138 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">internal</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>&#32;usedContactTypes;
+<anchor xml:id="__contact_trigger_8cs_source_1l00139"/>00139 
+<anchor xml:id="__contact_trigger_8cs_source_1l00142"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">00142</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;HashSet&lt;IContactSystem&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">triggeringHitscans</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;HashSet&lt;IContactSystem&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00143"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">00143</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;HashSet&lt;IContactSystem&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;HashSet&lt;IContactSystem&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00144"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">00144</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;HashSet&lt;IContactSystem&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">triggeringStays</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;HashSet&lt;IContactSystem&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00145"/>00145 
+<anchor xml:id="__contact_trigger_8cs_source_1l00146"/>00146 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00147"/>00147 
+<anchor xml:id="__contact_trigger_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Reset()
+<anchor xml:id="__contact_trigger_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this._proxy&#32;=&#32;<emphasis role="keyword">this</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6da5fbd6b8b1abce938b05f9c749f82d">PollInterfaces</link>();
+<anchor xml:id="__contact_trigger_8cs_source_1l00152"/>00152 
+<anchor xml:id="__contact_trigger_8cs_source_1l00153"/>00153 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;FindDerivedTypesFromAssembly();
+<anchor xml:id="__contact_trigger_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GetAllowedTypesFromHashes();
+<anchor xml:id="__contact_trigger_8cs_source_1l00155"/>00155 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00156"/>00156 
+<anchor xml:id="__contact_trigger_8cs_source_1l00157"/>00157 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00158"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">00158</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;List&lt;IContactSystem&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">tempFindSystems</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;IContactSystem&gt;(2);
+<anchor xml:id="__contact_trigger_8cs_source_1l00159"/>00159 
+<anchor xml:id="__contact_trigger_8cs_source_1l00160"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6da5fbd6b8b1abce938b05f9c749f82d">00160</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6da5fbd6b8b1abce938b05f9c749f82d">PollInterfaces</link>()
+<anchor xml:id="__contact_trigger_8cs_source_1l00161"/>00161 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_contactSystems.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.GetNestedComponentsInParents&lt;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_system">IContactSystem</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">tempFindSystems</link>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00164"/>00164 
+<anchor xml:id="__contact_trigger_8cs_source_1l00165"/>00165 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Selectively&#32;add&#32;ContactSystems&#32;selected&#32;as&#32;valid&#32;interactions</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00166"/>00166 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0,&#32;cnt&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">tempFindSystems</link>.Count;&#32;i&#32;&lt;&#32;cnt;&#32;&#32;++i)
+<anchor xml:id="__contact_trigger_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;found&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">tempFindSystems</link>[i];
+<anchor xml:id="__contact_trigger_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;foundType&#32;=&#32;found.GetType();
+<anchor xml:id="__contact_trigger_8cs_source_1l00170"/>00170 
+<anchor xml:id="__contact_trigger_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;ignoreSystem&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>(var&#32;ignored&#32;<emphasis role="keywordflow">in</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">ignoredSystems</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(foundType.CheckIsAssignableFrom(ignored))
+<anchor xml:id="__contact_trigger_8cs_source_1l00175"/>00175 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00176"/>00176 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ignoreSystem&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00180"/>00180 
+<anchor xml:id="__contact_trigger_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!ignoreSystem)
+<anchor xml:id="__contact_trigger_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_contactSystems.Add(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8facc127ba58f36a4eff0409ad127ec5">tempFindSystems</link>[i]);
+<anchor xml:id="__contact_trigger_8cs_source_1l00183"/>00183 
+<anchor xml:id="__contact_trigger_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Find&#32;callback&#32;interfaces,&#32;but&#32;don&apos;t&#32;recurse&#32;past&#32;the&#32;end&#32;of&#32;this&#32;NetObject,&#32;or&#32;past&#32;any&#32;children&#32;ContactTriggers</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.GetNestedComponentsInChildren(this.OnContactEventCallbacks,&#32;<emphasis role="keyword">true</emphasis>,&#32;typeof(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>),&#32;typeof(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>));
+<anchor xml:id="__contact_trigger_8cs_source_1l00187"/>00187 
+<anchor xml:id="__contact_trigger_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00189"/>00189 
+<anchor xml:id="__contact_trigger_8cs_source_1l00190"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a64da69d34defc6065fa36c0411b627ac">00190</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a64da69d34defc6065fa36c0411b627ac">Awake</link>()
+<anchor xml:id="__contact_trigger_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6f85c8cdf77f783622a21c2ee00155e7">_proxy</link>&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00193"/>00193 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6f85c8cdf77f783622a21c2ee00155e7">_proxy</link>&#32;=&#32;<emphasis role="keyword">this</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00194"/>00194 
+<anchor xml:id="__contact_trigger_8cs_source_1l00195"/>00195 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GetAllowedTypesFromHashes();
+<anchor xml:id="__contact_trigger_8cs_source_1l00196"/>00196 
+<anchor xml:id="__contact_trigger_8cs_source_1l00197"/>00197 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6da5fbd6b8b1abce938b05f9c749f82d">PollInterfaces</link>();
+<anchor xml:id="__contact_trigger_8cs_source_1l00198"/>00198 
+<anchor xml:id="__contact_trigger_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80aed3eae9a9694071e35bbaa88cd725">netObj</link>&#32;=&#32;transform.GetParentComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a2d53810ac46e02445855425ff0cf77c8">syncContact</link>&#32;=&#32;GetComponent&lt;ISyncContact&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00201"/>00201 
+<anchor xml:id="__contact_trigger_8cs_source_1l00203"/>00203 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">contactGroupsAssign</link>&#32;=&#32;GetComponent&lt;ContactGroupAssign&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;If&#32;no&#32;group&#32;assign&#32;on&#32;this&#32;node,&#32;find&#32;parent&#32;and&#32;use&#32;that&#32;if&#32;set&#32;to&#32;apply&#32;to&#32;children</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">contactGroupsAssign</link>,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00207"/>00207 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;found&#32;=&#32;transform.GetNestedComponentInParent&lt;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_groups_assign">IContactGroupsAssign</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(found&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;found.ApplyToChildren)
+<anchor xml:id="__contact_trigger_8cs_source_1l00209"/>00209 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a1139951c1b44c1844bd15425a895705e">contactGroupsAssign</link>&#32;=&#32;found;
+<anchor xml:id="__contact_trigger_8cs_source_1l00210"/>00210 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00211"/>00211 
+<anchor xml:id="__contact_trigger_8cs_source_1l00212"/>00212 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;cache&#32;the&#32;mask&#32;of&#32;ContactTypes&#32;that&#32;will&#32;be&#32;responded&#32;to</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_contact_event">IOnContactEvent</link>&#32;cb&#32;<emphasis role="keywordflow">in</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a25f5f9c93894dd37f029cac822794780">OnContactEventCallbacks</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;usedContactTypes&#32;|=&#32;cb.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_contact_event_1acf0eaafd63bcb41d208885c22fb7269d">TriggerOn</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00216"/>00216 
+<anchor xml:id="__contact_trigger_8cs_source_1l00217"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8e3bff52084f6f83c431ecd270bf5026">00217</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a8e3bff52084f6f83c431ecd270bf5026">OnEnable</link>()
+<anchor xml:id="__contact_trigger_8cs_source_1l00218"/>00218 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00219"/>00219 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00220"/>00220 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00221"/>00221 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_master_callbacks">NetMasterCallbacks</link>.<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_master_callbacks_1a0fd2abe1a8a88121c1f2bd6ca7a8a9de">RegisterCallbackInterfaces</link>(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00222"/>00222 
+<anchor xml:id="__contact_trigger_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">triggeringHitscans</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">triggeringStays</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00228"/>00228 
+<anchor xml:id="__contact_trigger_8cs_source_1l00229"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4e2589bb38a6479422652b6c324d6be1">00229</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4e2589bb38a6479422652b6c324d6be1">OnDisable</link>()
+<anchor xml:id="__contact_trigger_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00232"/>00232 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_master_callbacks">NetMasterCallbacks</link>.<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_master_callbacks_1a0fd2abe1a8a88121c1f2bd6ca7a8a9de">RegisterCallbackInterfaces</link>(<emphasis role="keyword">this</emphasis>,&#32;<emphasis role="keyword">false</emphasis>,&#32;<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00233"/>00233 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00234"/>00234 
+<anchor xml:id="__contact_trigger_8cs_source_1l00235"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af1f9023ede33e33c8554dbd16850490e">00235</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af1f9023ede33e33c8554dbd16850490e">OnStateChange</link>(<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aaea6b78ed8489e0aef0d0440da7979a6">ObjState</link>&#32;newState,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aaea6b78ed8489e0aef0d0440da7979a6">ObjState</link>&#32;previousState,&#32;Transform&#32;attachmentTransform,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mount">Mount</link>&#32;attachTo&#32;=&#32;<emphasis role="keyword">null</emphasis>,&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isReady&#32;=&#32;<emphasis role="keyword">true</emphasis>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00236"/>00236 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;TODO:&#32;this&#32;is&#32;test&#32;code.&#32;Might&#32;need&#32;to&#32;be&#32;more&#32;selective&#32;about&#32;clearing&#32;this&#32;on&#32;state&#32;changes.</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.triggeringEnters.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00241"/>00241 
+<anchor xml:id="__contact_trigger_8cs_source_1l00242"/>00242 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Triggers</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00243"/>00243 
+<anchor xml:id="__contact_trigger_8cs_source_1l00244"/>00244 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Enter</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00245"/>00245 
+<anchor xml:id="__contact_trigger_8cs_source_1l00246"/>00246 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerEnter2D(Collider2D&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00247"/>00247 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter);
+<anchor xml:id="__contact_trigger_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerEnter(Collider&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00252"/>00252 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter);
+<anchor xml:id="__contact_trigger_8cs_source_1l00253"/>00253 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00254"/>00254 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionEnter2D(Collision2D&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00255"/>00255 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00256"/>00256 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter);
+<anchor xml:id="__contact_trigger_8cs_source_1l00257"/>00257 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00258"/>00258 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionEnter(Collision&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00259"/>00259 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00260"/>00260 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter);
+<anchor xml:id="__contact_trigger_8cs_source_1l00261"/>00261 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00262"/>00262 
+<anchor xml:id="__contact_trigger_8cs_source_1l00263"/>00263 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion&#32;Enter</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00264"/>00264 
+<anchor xml:id="__contact_trigger_8cs_source_1l00265"/>00265 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Stay</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00266"/>00266 
+<anchor xml:id="__contact_trigger_8cs_source_1l00267"/>00267 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerStay2D(Collider2D&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00268"/>00268 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00269"/>00269 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Stay);
+<anchor xml:id="__contact_trigger_8cs_source_1l00270"/>00270 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00271"/>00271 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerStay(Collider&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00272"/>00272 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00273"/>00273 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Stay);
+<anchor xml:id="__contact_trigger_8cs_source_1l00274"/>00274 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00275"/>00275 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionStay2D(Collision2D&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00276"/>00276 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00277"/>00277 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Stay);
+<anchor xml:id="__contact_trigger_8cs_source_1l00278"/>00278 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00279"/>00279 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionStay(Collision&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00280"/>00280 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00281"/>00281 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Stay);
+<anchor xml:id="__contact_trigger_8cs_source_1l00282"/>00282 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00283"/>00283 
+<anchor xml:id="__contact_trigger_8cs_source_1l00284"/>00284 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion&#32;Stay</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00285"/>00285 
+<anchor xml:id="__contact_trigger_8cs_source_1l00286"/>00286 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Exit</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00287"/>00287 
+<anchor xml:id="__contact_trigger_8cs_source_1l00288"/>00288 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerExit2D(Collider2D&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00289"/>00289 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00290"/>00290 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Exit);
+<anchor xml:id="__contact_trigger_8cs_source_1l00291"/>00291 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00292"/>00292 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnTriggerExit(Collider&#32;other)
+<anchor xml:id="__contact_trigger_8cs_source_1l00293"/>00293 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00294"/>00294 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(other,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Exit);
+<anchor xml:id="__contact_trigger_8cs_source_1l00295"/>00295 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00296"/>00296 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionExit2D(Collision2D&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00297"/>00297 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00298"/>00298 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Exit);
+<anchor xml:id="__contact_trigger_8cs_source_1l00299"/>00299 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00300"/>00300 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnCollisionExit(Collision&#32;collision)
+<anchor xml:id="__contact_trigger_8cs_source_1l00301"/>00301 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00302"/>00302 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(collision.collider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Exit);
+<anchor xml:id="__contact_trigger_8cs_source_1l00303"/>00303 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00304"/>00304 
+<anchor xml:id="__contact_trigger_8cs_source_1l00305"/>00305 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion&#32;Exit</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00306"/>00306 
+<anchor xml:id="__contact_trigger_8cs_source_1l00307"/>00307 
+<anchor xml:id="__contact_trigger_8cs_source_1l00308"/>00308 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion&#32;Triggers</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00309"/>00309 
+<anchor xml:id="__contact_trigger_8cs_source_1l00310"/>00310 
+<anchor xml:id="__contact_trigger_8cs_source_1l00314"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">00314</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1af36822e161539cb39db95ca61fa801d5">Contact</link>(Component&#32;otherCollider,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>&#32;contactType)
+<anchor xml:id="__contact_trigger_8cs_source_1l00315"/>00315 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00316"/>00316 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//if&#32;(GetComponent&lt;ContactProjectile&gt;()&#32;&amp;&amp;&#32;contactType&#32;==&#32;ContactType.Enter)</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00317"/>00317 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;Debug.Log(name&#32;+&#32;&quot;&#32;&lt;b&gt;Prj&#32;Contact&lt;/b&gt;&#32;&quot;&#32;+&#32;otherCollider.name);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00318"/>00318 
+<anchor xml:id="__contact_trigger_8cs_source_1l00319"/>00319 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;otherCT&#32;=&#32;otherCollider.transform.GetNestedComponentInParents&lt;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00320"/>00320 
+<anchor xml:id="__contact_trigger_8cs_source_1l00321"/>00321 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(otherCT,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00322"/>00322 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00323"/>00323 
+<anchor xml:id="__contact_trigger_8cs_source_1l00324"/>00324 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ace0c8e9b588fb717afa51e6a01452f4c">CheckIsNested</link>(<emphasis role="keyword">this</emphasis>,&#32;otherCT.Proxy))
+<anchor xml:id="__contact_trigger_8cs_source_1l00325"/>00325 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00326"/>00326 
+<anchor xml:id="__contact_trigger_8cs_source_1l00327"/>00327 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(this._proxy.NetObj.name&#32;+&#32;&quot;&#32;:&#32;&quot;&#32;+&#32;(otherCT&#32;as&#32;Component).name);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00329"/>00329 <emphasis role="comment"></emphasis>&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(this._proxy.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a409d4432a55405d8ed39f630d5b9acf0">NetObj</link>,&#32;otherCT.Proxy.NetObj))
+<anchor xml:id="__contact_trigger_8cs_source_1l00330"/>00330 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00331"/>00331 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(&quot;Early&#32;self-collide&#32;detect&#32;&quot;&#32;+&#32;this._proxy.NetObj.name&#32;+&#32;&quot;&#32;&quot;&#32;+&#32;otherCT.Proxy.NetObj.name);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00332"/>00332 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00333"/>00333 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00334"/>00334 
+<anchor xml:id="__contact_trigger_8cs_source_1l00335"/>00335 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;otherCT.Proxy.OnContact(<emphasis role="keyword">this</emphasis>,&#32;contactType);
+<anchor xml:id="__contact_trigger_8cs_source_1l00336"/>00336 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this._proxy.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a1a0909639cad442eeeed9347431766aa">OnContact</link>(otherCT,&#32;contactType);
+<anchor xml:id="__contact_trigger_8cs_source_1l00337"/>00337 
+<anchor xml:id="__contact_trigger_8cs_source_1l00338"/>00338 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00339"/>00339 
+<anchor xml:id="__contact_trigger_8cs_source_1l00340"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ace0c8e9b588fb717afa51e6a01452f4c">00340</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ace0c8e9b588fb717afa51e6a01452f4c">CheckIsNested</link>(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>&#32;first,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>&#32;second)
+<anchor xml:id="__contact_trigger_8cs_source_1l00341"/>00341 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00342"/>00342 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;firstNO&#32;=&#32;first.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a409d4432a55405d8ed39f630d5b9acf0">NetObj</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00343"/>00343 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;secondNO&#32;=&#32;second.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a409d4432a55405d8ed39f630d5b9acf0">NetObj</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00344"/>00344 
+<anchor xml:id="__contact_trigger_8cs_source_1l00345"/>00345 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;testNO&#32;=&#32;firstNO;
+<anchor xml:id="__contact_trigger_8cs_source_1l00346"/>00346 
+<anchor xml:id="__contact_trigger_8cs_source_1l00347"/>00347 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">while</emphasis>&#32;(!ReferenceEquals(testNO,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00348"/>00348 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00349"/>00349 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(testNO,&#32;secondNO))
+<anchor xml:id="__contact_trigger_8cs_source_1l00350"/>00350 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00351"/>00351 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00352"/>00352 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00353"/>00353 
+<anchor xml:id="__contact_trigger_8cs_source_1l00354"/>00354 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;par&#32;=&#32;testNO.transform.parent;
+<anchor xml:id="__contact_trigger_8cs_source_1l00355"/>00355 
+<anchor xml:id="__contact_trigger_8cs_source_1l00356"/>00356 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(par,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00357"/>00357 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00358"/>00358 
+<anchor xml:id="__contact_trigger_8cs_source_1l00359"/>00359 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;testNO&#32;=&#32;par.GetParentComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00360"/>00360 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00361"/>00361 
+<anchor xml:id="__contact_trigger_8cs_source_1l00362"/>00362 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;testNO&#32;=&#32;secondNO;
+<anchor xml:id="__contact_trigger_8cs_source_1l00363"/>00363 
+<anchor xml:id="__contact_trigger_8cs_source_1l00364"/>00364 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">while</emphasis>&#32;(!ReferenceEquals(testNO,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00365"/>00365 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00366"/>00366 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(testNO,&#32;firstNO))
+<anchor xml:id="__contact_trigger_8cs_source_1l00367"/>00367 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00368"/>00368 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00369"/>00369 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00370"/>00370 
+<anchor xml:id="__contact_trigger_8cs_source_1l00371"/>00371 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;par&#32;=&#32;testNO.transform.parent;
+<anchor xml:id="__contact_trigger_8cs_source_1l00372"/>00372 
+<anchor xml:id="__contact_trigger_8cs_source_1l00373"/>00373 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(par,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00374"/>00374 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00375"/>00375 
+<anchor xml:id="__contact_trigger_8cs_source_1l00376"/>00376 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;testNO&#32;=&#32;par.GetParentComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00377"/>00377 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00378"/>00378 
+<anchor xml:id="__contact_trigger_8cs_source_1l00379"/>00379 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00380"/>00380 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00381"/>00381 
+<anchor xml:id="__contact_trigger_8cs_source_1l00382"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80f1ee0593f4c291efcec60bbe6eb03f">00382</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80f1ee0593f4c291efcec60bbe6eb03f">OnContact</link>(<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger">IContactTrigger</link>&#32;otherCT,&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>&#32;contactType)
+<anchor xml:id="__contact_trigger_8cs_source_1l00383"/>00383 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00384"/>00384 
+<anchor xml:id="__contact_trigger_8cs_source_1l00385"/>00385 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(GetComponent&lt;ContactProjectile&gt;()&#32;&amp;&amp;&#32;contactType&#32;==&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter)
+<anchor xml:id="__contact_trigger_8cs_source_1l00386"/>00386 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_pun_1ac6a6ed4f0d7a7522026d8cd2beec9671">Debug</link>.Log(<emphasis role="stringliteral">&quot;Prj&#32;Contact&quot;</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00387"/>00387 
+<anchor xml:id="__contact_trigger_8cs_source_1l00388"/>00388 
+<anchor xml:id="__contact_trigger_8cs_source_1l00389"/>00389 
+<anchor xml:id="__contact_trigger_8cs_source_1l00391"/>00391 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;List&lt;IContactSystem&gt;&#32;systems&#32;=&#32;otherCT.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a69f603ecdea9782593cd0f7a0dd90ea7">Proxy</link>.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1aee5f517a2ec52abdd1576ba153f2eda2">ContactSystems</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00392"/>00392 
+<anchor xml:id="__contact_trigger_8cs_source_1l00393"/>00393 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;systemsCount&#32;=&#32;systems.Count;
+<anchor xml:id="__contact_trigger_8cs_source_1l00394"/>00394 
+<anchor xml:id="__contact_trigger_8cs_source_1l00395"/>00395 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(systemsCount&#32;==&#32;0)
+<anchor xml:id="__contact_trigger_8cs_source_1l00396"/>00396 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00397"/>00397 
+<anchor xml:id="__contact_trigger_8cs_source_1l00399"/>00399 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a80aed3eae9a9694071e35bbaa88cd725">netObj</link>&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;!this._proxy.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a409d4432a55405d8ed39f630d5b9acf0">NetObj</link>.<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object_1ab959fbfe7a7068698db58b5cec1b0db6">AllObjsAreReady</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00400"/>00400 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00401"/>00401 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.LogError(Time.time&#32;+&#32;name&#32;+&#32;&quot;&#32;&quot;&#32;+&#32;_proxy.NetObj.photonView.OwnerActorNr&#32;+&#32;&quot;&#32;Not&#32;ready&#32;so&#32;ignoring&#32;contact&quot;);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00402"/>00402 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00403"/>00403 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00404"/>00404 
+<anchor xml:id="__contact_trigger_8cs_source_1l00405"/>00405 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;otherNetObj&#32;=&#32;otherCT.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a69f603ecdea9782593cd0f7a0dd90ea7">Proxy</link>.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a409d4432a55405d8ed39f630d5b9acf0">NetObj</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00406"/>00406 
+<anchor xml:id="__contact_trigger_8cs_source_1l00407"/>00407 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(otherNetObj&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;!otherNetObj.AllObjsAreReady)
+<anchor xml:id="__contact_trigger_8cs_source_1l00408"/>00408 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00409"/>00409 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_pun_1ac6a6ed4f0d7a7522026d8cd2beec9671">Debug</link>.Log(Time.time&#32;+&#32;name&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;&quot;</emphasis>&#32;+&#32;otherNetObj.photonView.OwnerActorNr&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;Other&#32;object&#32;not&#32;ready&#32;so&#32;ignoring&#32;contact&quot;</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00410"/>00410 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00411"/>00411 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00412"/>00412 
+<anchor xml:id="__contact_trigger_8cs_source_1l00413"/>00413 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;systemsCount;&#32;i++)
+<anchor xml:id="__contact_trigger_8cs_source_1l00414"/>00414 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00415"/>00415 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;system&#32;=&#32;systems[i];
+<anchor xml:id="__contact_trigger_8cs_source_1l00416"/>00416 
+<anchor xml:id="__contact_trigger_8cs_source_1l00417"/>00417 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!IsCompatibleSystem(system,&#32;otherCT))
+<anchor xml:id="__contact_trigger_8cs_source_1l00418"/>00418 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00419"/>00419 
+<anchor xml:id="__contact_trigger_8cs_source_1l00420"/>00420 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(name&#32;+&#32;&quot;&#32;&quot;&#32;+&#32;GetType().Name&#32;+&#32;&quot;&#32;&lt;&gt;&#32;&quot;&#32;+&#32;ics.GetType().Name&#32;+&#32;&quot;&#32;&lt;b&gt;PASSED&lt;/b&gt;&quot;);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00422"/>00422 <emphasis role="comment"></emphasis>&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00423"/>00423 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00424"/>00424 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">switch</emphasis>&#32;(contactType)
+<anchor xml:id="__contact_trigger_8cs_source_1l00425"/>00425 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00426"/>00426 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Enter:
+<anchor xml:id="__contact_trigger_8cs_source_1l00427"/>00427 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00428"/>00428 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>.Contains(system))
+<anchor xml:id="__contact_trigger_8cs_source_1l00429"/>00429 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00430"/>00430 
+<anchor xml:id="__contact_trigger_8cs_source_1l00431"/>00431 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>.Add(system);
+<anchor xml:id="__contact_trigger_8cs_source_1l00432"/>00432 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00433"/>00433 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00434"/>00434 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Stay:
+<anchor xml:id="__contact_trigger_8cs_source_1l00435"/>00435 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00436"/>00436 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">triggeringStays</link>.Contains(system))
+<anchor xml:id="__contact_trigger_8cs_source_1l00437"/>00437 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00438"/>00438 
+<anchor xml:id="__contact_trigger_8cs_source_1l00439"/>00439 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">triggeringStays</link>.Add(system);
+<anchor xml:id="__contact_trigger_8cs_source_1l00440"/>00440 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00441"/>00441 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00442"/>00442 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Exit:
+<anchor xml:id="__contact_trigger_8cs_source_1l00443"/>00443 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00444"/>00444 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>.Contains(system))
+<anchor xml:id="__contact_trigger_8cs_source_1l00445"/>00445 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00446"/>00446 
+<anchor xml:id="__contact_trigger_8cs_source_1l00447"/>00447 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1aa5500d4beda02db5ecc30cbecd885b0a">triggeringEnters</link>.Remove(system);
+<anchor xml:id="__contact_trigger_8cs_source_1l00448"/>00448 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00449"/>00449 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00450"/>00450 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">case</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1aae24c1d442b39c9bb91b9a3c5922d389">ContactType</link>.Hitscan:
+<anchor xml:id="__contact_trigger_8cs_source_1l00451"/>00451 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00452"/>00452 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">triggeringHitscans</link>.Contains(system))
+<anchor xml:id="__contact_trigger_8cs_source_1l00453"/>00453 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00454"/>00454 
+<anchor xml:id="__contact_trigger_8cs_source_1l00455"/>00455 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">triggeringHitscans</link>.Add(system);
+<anchor xml:id="__contact_trigger_8cs_source_1l00456"/>00456 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00457"/>00457 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00458"/>00458 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00459"/>00459 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00460"/>00460 
+<anchor xml:id="__contact_trigger_8cs_source_1l00461"/>00461 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(&quot;Other&#32;&quot;&#32;+&#32;(otherCT&#32;as&#32;Component).name&#32;+&#32;&quot;&#32;:&#32;&quot;&#32;+&#32;(otherCT&#32;as&#32;Component).GetType().Name);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00462"/>00462 
+<anchor xml:id="__contact_trigger_8cs_source_1l00464"/>00464 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((usedContactTypes&#32;&amp;&#32;contactType)&#32;==&#32;0)
+<anchor xml:id="__contact_trigger_8cs_source_1l00465"/>00465 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00466"/>00466 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00467"/>00467 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00468"/>00468 
+<anchor xml:id="__contact_trigger_8cs_source_1l00470"/>00470 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;contactEvent&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_pun_1_1_simple_1_1_contact_event">ContactEvent</link>(system,&#32;otherCT,&#32;contactType);
+<anchor xml:id="__contact_trigger_8cs_source_1l00471"/>00471 
+<anchor xml:id="__contact_trigger_8cs_source_1l00472"/>00472 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a0e018e2b3ad00156bd390b59253fd586">Proxy</link>.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_contact_trigger_1a698ba12b3726778595b5a451ef7f09fd">SyncContact</link>,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__contact_trigger_8cs_source_1l00473"/>00473 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00474"/>00474 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a779cab522fc98451b6a375ecc3cda54b">ContactCallbacks</link>(contactEvent);
+<anchor xml:id="__contact_trigger_8cs_source_1l00475"/>00475 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00476"/>00476 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00477"/>00477 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00478"/>00478 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a2d53810ac46e02445855425ff0cf77c8">syncContact</link>.<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_sync_contact_1a5fa392eb666c798e8a07d4824d6b6710">SyncContactEvent</link>(contactEvent);
+<anchor xml:id="__contact_trigger_8cs_source_1l00479"/>00479 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00480"/>00480 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00481"/>00481 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00482"/>00482 
+<anchor xml:id="__contact_trigger_8cs_source_1l00483"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a779cab522fc98451b6a375ecc3cda54b">00483</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1ae1d0087a4fdd601594efa044b445e9e7">Consumption</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a779cab522fc98451b6a375ecc3cda54b">ContactCallbacks</link>(<link linkend="_struct_photon_1_1_pun_1_1_simple_1_1_contact_event">ContactEvent</link>&#32;contactEvent)
+<anchor xml:id="__contact_trigger_8cs_source_1l00484"/>00484 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00485"/>00485 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//if&#32;(contactEvent.contactType&#32;==&#32;ContactType.Enter)</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00486"/>00486 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;Debug.Log(&quot;ContactCallbacks&#32;&quot;&#32;+&#32;contactEvent);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00487"/>00487 
+<anchor xml:id="__contact_trigger_8cs_source_1l00488"/>00488 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1ae1d0087a4fdd601594efa044b445e9e7">Consumption</link>&#32;consumption&#32;=&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1ae1d0087a4fdd601594efa044b445e9e7">Consumption</link>.None;
+<anchor xml:id="__contact_trigger_8cs_source_1l00489"/>00489 
+<anchor xml:id="__contact_trigger_8cs_source_1l00490"/>00490 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0,&#32;cnt&#32;=&#32;this.OnContactEventCallbacks.Count;&#32;i&#32;&lt;&#32;cnt;&#32;++i)
+<anchor xml:id="__contact_trigger_8cs_source_1l00491"/>00491 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00492"/>00492 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;consumption&#32;|=&#32;this.OnContactEventCallbacks[i].OnContactEvent(contactEvent);
+<anchor xml:id="__contact_trigger_8cs_source_1l00493"/>00493 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(consumption&#32;==&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1ae1d0087a4fdd601594efa044b445e9e7">Consumption</link>.All)
+<anchor xml:id="__contact_trigger_8cs_source_1l00494"/>00494 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1ae1d0087a4fdd601594efa044b445e9e7">Consumption</link>.All;
+<anchor xml:id="__contact_trigger_8cs_source_1l00495"/>00495 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00496"/>00496 
+<anchor xml:id="__contact_trigger_8cs_source_1l00497"/>00497 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;consumption;
+<anchor xml:id="__contact_trigger_8cs_source_1l00498"/>00498 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00499"/>00499 
+<anchor xml:id="__contact_trigger_8cs_source_1l00503"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6ea741d0be50bc515abf31688bbc965f">00503</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a6ea741d0be50bc515abf31688bbc965f">OnPreSimulate</link>(<emphasis role="keywordtype">int</emphasis>&#32;frameId,&#32;<emphasis role="keywordtype">int</emphasis>&#32;subFrameId)
+<anchor xml:id="__contact_trigger_8cs_source_1l00504"/>00504 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00505"/>00505 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a4de65379f550422590a730dba07d921a">preventRepeats</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00506"/>00506 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00507"/>00507 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1ac29f360b7aa076e0fd28c045fa7f229b">triggeringHitscans</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00508"/>00508 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a667013defd3914cfd30e9b8f5bc3aec4">triggeringStays</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00509"/>00509 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00510"/>00510 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00511"/>00511 
+<anchor xml:id="__contact_trigger_8cs_source_1l00512"/>00512 
+<anchor xml:id="__contact_trigger_8cs_source_1l00513"/>00513 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Convert&#32;our&#32;serialized&#32;allowed&#32;hashes&#32;into&#32;a&#32;usable&#32;HashSet.</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00514"/>00514 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;GetAllowedTypesFromHashes()
+<anchor xml:id="__contact_trigger_8cs_source_1l00515"/>00515 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00516"/>00516 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">ignoredSystems</link>.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00517"/>00517 
+<anchor xml:id="__contact_trigger_8cs_source_1l00518"/>00518 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;No&#32;serialized&#32;system&#32;hashes&#32;to&#32;ignore.&#32;Do&#32;nothing.</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00519"/>00519 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a5554abab3c847ffa2dee6cffe5745b4e">_ignoredSystems</link>&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00520"/>00520 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00521"/>00521 
+<anchor xml:id="__contact_trigger_8cs_source_1l00522"/>00522 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;type&#32;<emphasis role="keywordflow">in</emphasis>&#32;contactSystemTypes)
+<anchor xml:id="__contact_trigger_8cs_source_1l00523"/>00523 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00524"/>00524 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;hash&#32;=&#32;type.Name.GetHashCode();
+<anchor xml:id="__contact_trigger_8cs_source_1l00525"/>00525 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__contact_trigger_8cs_source_1l00526"/>00526 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;ignore&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00527"/>00527 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;allowed&#32;<emphasis role="keywordflow">in</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a5554abab3c847ffa2dee6cffe5745b4e">_ignoredSystems</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00528"/>00528 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00529"/>00529 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(allowed&#32;==&#32;hash)
+<anchor xml:id="__contact_trigger_8cs_source_1l00530"/>00530 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ignore&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00531"/>00531 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00532"/>00532 
+<anchor xml:id="__contact_trigger_8cs_source_1l00533"/>00533 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ignore)
+<anchor xml:id="__contact_trigger_8cs_source_1l00534"/>00534 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">ignoredSystems</link>.Add(type);
+<anchor xml:id="__contact_trigger_8cs_source_1l00535"/>00535 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00536"/>00536 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00537"/>00537 
+<anchor xml:id="__contact_trigger_8cs_source_1l00538"/>00538 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00539"/>00539 
+<anchor xml:id="__contact_trigger_8cs_source_1l00540"/>00540 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;SetAllowedType(params&#32;Type[]&#32;allowed)
+<anchor xml:id="__contact_trigger_8cs_source_1l00541"/>00541 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00542"/>00542 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;List&lt;int&gt;&#32;disallowed&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;int&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00543"/>00543 
+<anchor xml:id="__contact_trigger_8cs_source_1l00544"/>00544 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;type&#32;<emphasis role="keywordflow">in</emphasis>&#32;contactSystemTypes)
+<anchor xml:id="__contact_trigger_8cs_source_1l00545"/>00545 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00546"/>00546 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;allow&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00547"/>00547 
+<anchor xml:id="__contact_trigger_8cs_source_1l00548"/>00548 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;a&#32;<emphasis role="keywordflow">in</emphasis>&#32;allowed)
+<anchor xml:id="__contact_trigger_8cs_source_1l00549"/>00549 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00550"/>00550 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(a.CheckIsAssignableFrom(type))
+<anchor xml:id="__contact_trigger_8cs_source_1l00551"/>00551 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00552"/>00552 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;allow&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00553"/>00553 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00554"/>00554 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00555"/>00555 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00556"/>00556 
+<anchor xml:id="__contact_trigger_8cs_source_1l00557"/>00557 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!allow)
+<anchor xml:id="__contact_trigger_8cs_source_1l00558"/>00558 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00559"/>00559 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;hash&#32;=&#32;type.Name.GetHashCode();
+<anchor xml:id="__contact_trigger_8cs_source_1l00560"/>00560 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;disallowed.Add(hash);
+<anchor xml:id="__contact_trigger_8cs_source_1l00561"/>00561 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00562"/>00562 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__contact_trigger_8cs_source_1l00563"/>00563 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00564"/>00564 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a5554abab3c847ffa2dee6cffe5745b4e">_ignoredSystems</link>&#32;=&#32;disallowed.ToArray();
+<anchor xml:id="__contact_trigger_8cs_source_1l00565"/>00565 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00566"/>00566 
+<anchor xml:id="__contact_trigger_8cs_source_1l00567"/>00567 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00568"/>00568 
+<anchor xml:id="__contact_trigger_8cs_source_1l00569"/>00569 
+<anchor xml:id="__contact_trigger_8cs_source_1l00570"/>00570 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;List&lt;Type&gt;&#32;contactSystemTypes&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;Type&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00571"/>00571 
+<anchor xml:id="__contact_trigger_8cs_source_1l00575"/>00575 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;FindDerivedTypesFromAssembly()
+<anchor xml:id="__contact_trigger_8cs_source_1l00576"/>00576 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00577"/>00577 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;contactSystemTypes.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00578"/>00578 
+<anchor xml:id="__contact_trigger_8cs_source_1l00579"/>00579 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;assembly&#32;<emphasis role="keywordflow">in</emphasis>&#32;AppDomain.CurrentDomain.GetAssemblies())
+<anchor xml:id="__contact_trigger_8cs_source_1l00580"/>00580 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00581"/>00581 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;types&#32;=&#32;assembly.GetTypes();
+<anchor xml:id="__contact_trigger_8cs_source_1l00582"/>00582 
+<anchor xml:id="__contact_trigger_8cs_source_1l00583"/>00583 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;type&#32;<emphasis role="keywordflow">in</emphasis>&#32;types)
+<anchor xml:id="__contact_trigger_8cs_source_1l00584"/>00584 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00585"/>00585 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(type.IsAbstract)
+<anchor xml:id="__contact_trigger_8cs_source_1l00586"/>00586 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00587"/>00587 
+<anchor xml:id="__contact_trigger_8cs_source_1l00588"/>00588 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//bool&#32;assignable&#32;=&#32;type.CheckIsAssignableFrom(typeof(IContactSystem));&#32;//.GetInterface(typeof(IContactSystem));</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00589"/>00589 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;assignable&#32;=&#32;typeof(IContactSystem).CheckIsAssignableFrom(type);&#32;<emphasis role="comment">//.GetInterface(typeof(IContactSystem));</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00590"/>00590 
+<anchor xml:id="__contact_trigger_8cs_source_1l00591"/>00591 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(assignable)
+<anchor xml:id="__contact_trigger_8cs_source_1l00592"/>00592 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00593"/>00593 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;contactSystemTypes.Add(type);
+<anchor xml:id="__contact_trigger_8cs_source_1l00594"/>00594 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00595"/>00595 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00596"/>00596 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00597"/>00597 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00598"/>00598 
+<anchor xml:id="__contact_trigger_8cs_source_1l00599"/>00599 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;IsCompatibleSystem(IContactSystem&#32;system,&#32;IContactTrigger&#32;ct)
+<anchor xml:id="__contact_trigger_8cs_source_1l00600"/>00600 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00601"/>00601 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;sysType&#32;=&#32;system.GetType();
+<anchor xml:id="__contact_trigger_8cs_source_1l00602"/>00602 
+<anchor xml:id="__contact_trigger_8cs_source_1l00603"/>00603 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;ignored&#32;<emphasis role="keywordflow">in</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_contact_trigger_1a9f98a6c01e2004db32db9bcdabbd4a67">ignoredSystems</link>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00604"/>00604 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00605"/>00605 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(sysType&#32;+&#32;&quot;&#32;&lt;b&gt;&#32;compare&#32;&lt;/b&gt;&#32;&quot;&#32;+&#32;ignored&#32;+&#32;&quot;&#32;&quot;&#32;+&#32;sysType.CheckIsAssignableFrom(ignored)&#32;+&#32;&quot;:&quot;&#32;+&#32;ignored.CheckIsAssignableFrom(sysType));</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00606"/>00606 
+<anchor xml:id="__contact_trigger_8cs_source_1l00607"/>00607 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//if&#32;(sysType.CheckIsAssignableFrom(ignored))</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00608"/>00608 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ignored.CheckIsAssignableFrom(sysType))
+<anchor xml:id="__contact_trigger_8cs_source_1l00609"/>00609 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00610"/>00610 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00611"/>00611 
+<anchor xml:id="__contact_trigger_8cs_source_1l00612"/>00612 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.Log(name&#32;+&#32;&quot;&#32;&lt;&gt;&#32;&quot;&#32;+&#32;(ct&#32;as&#32;Component).name&#32;&#32;+&#32;&quot;&#32;&lt;b&gt;match&lt;/b&gt;&#32;&quot;&#32;+&#32;sysType.Name);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00613"/>00613 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00614"/>00614 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00615"/>00615 
+<anchor xml:id="__contact_trigger_8cs_source_1l00616"/>00616 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00617"/>00617 
+<anchor xml:id="__contact_trigger_8cs_source_1l00618"/>00618 
+<anchor xml:id="__contact_trigger_8cs_source_1l00619"/>00619 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00620"/>00620 
+<anchor xml:id="__contact_trigger_8cs_source_1l00621"/>00621 &#32;&#32;&#32;&#32;[CustomEditor(typeof(ContactTrigger))]
+<anchor xml:id="__contact_trigger_8cs_source_1l00622"/>00622 &#32;&#32;&#32;&#32;[CanEditMultipleObjects]
+<anchor xml:id="__contact_trigger_8cs_source_1l00623"/>00623 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>ContactTriggerEditor&#32;:&#32;TriggerHeaderEditor
+<anchor xml:id="__contact_trigger_8cs_source_1l00624"/>00624 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00625"/>00625 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;HelpURL
+<anchor xml:id="__contact_trigger_8cs_source_1l00626"/>00626 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00627"/>00627 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;SimpleDocsURLS.SYNCCOMPS_PATH&#32;+&#32;<emphasis role="stringliteral">&quot;#contacttrigger_component&quot;</emphasis>;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00628"/>00628 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00629"/>00629 
+<anchor xml:id="__contact_trigger_8cs_source_1l00630"/>00630 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;Instructions
+<anchor xml:id="__contact_trigger_8cs_source_1l00631"/>00631 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00632"/>00632 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00633"/>00633 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00634"/>00634 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="stringliteral">&quot;Responds&#32;to&#32;Trigger/Collision/Scan&#32;events&#32;between&#32;this&#32;and&#32;other&#32;&quot;</emphasis>&#32;+&#32;typeof(IContactTrigger).Name&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;components.&#32;&quot;</emphasis>&#32;+
+<anchor xml:id="__contact_trigger_8cs_source_1l00635"/>00635 
+<anchor xml:id="__contact_trigger_8cs_source_1l00636"/>00636 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;typeof(IOnContactEvent).Name&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;callbacks&#32;are&#32;generated&#32;for&#32;each&#32;applicable&#32;&quot;</emphasis>&#32;+&#32;typeof(IContactSystem).Name&#32;+&#32;<emphasis role="stringliteral">&quot;.&quot;</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00637"/>00637 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00638"/>00638 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00639"/>00639 
+<anchor xml:id="__contact_trigger_8cs_source_1l00640"/>00640 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;TextTexturePath&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="stringliteral">&quot;Header/ContactTriggerText&quot;</emphasis>;&#32;}&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00641"/>00641 
+<anchor xml:id="__contact_trigger_8cs_source_1l00642"/>00642 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;GUIStyle&#32;ifaceBox;
+<anchor xml:id="__contact_trigger_8cs_source_1l00643"/>00643 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnEnable()
+<anchor xml:id="__contact_trigger_8cs_source_1l00644"/>00644 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00645"/>00645 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;base.OnEnable();
+<anchor xml:id="__contact_trigger_8cs_source_1l00646"/>00646 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;_target&#32;=&#32;(target&#32;as&#32;ContactTrigger);
+<anchor xml:id="__contact_trigger_8cs_source_1l00647"/>00647 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target.GetAllowedTypesFromHashes();
+<anchor xml:id="__contact_trigger_8cs_source_1l00648"/>00648 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target.PollInterfaces();
+<anchor xml:id="__contact_trigger_8cs_source_1l00649"/>00649 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00650"/>00650 
+<anchor xml:id="__contact_trigger_8cs_source_1l00651"/>00651 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;HashSet&lt;int&gt;&#32;tempOldHashes&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;HashSet&lt;int&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00652"/>00652 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;List&lt;int&gt;&#32;tempNewHashes&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;int&gt;();
+<anchor xml:id="__contact_trigger_8cs_source_1l00653"/>00653 
+<anchor xml:id="__contact_trigger_8cs_source_1l00654"/>00654 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnInspectorGUIInjectMiddle()
+<anchor xml:id="__contact_trigger_8cs_source_1l00655"/>00655 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00656"/>00656 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ifaceBox&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00657"/>00657 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ifaceBox&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(<emphasis role="stringliteral">&quot;HelpBox&quot;</emphasis>)&#32;{&#32;padding&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(10,&#32;6,&#32;6,&#32;6)&#32;};
+<anchor xml:id="__contact_trigger_8cs_source_1l00658"/>00658 
+<anchor xml:id="__contact_trigger_8cs_source_1l00659"/>00659 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;base.OnInspectorGUIInjectMiddle();
+<anchor xml:id="__contact_trigger_8cs_source_1l00660"/>00660 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;_target&#32;=&#32;(target&#32;as&#32;ContactTrigger);
+<anchor xml:id="__contact_trigger_8cs_source_1l00661"/>00661 
+<anchor xml:id="__contact_trigger_8cs_source_1l00662"/>00662 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;If&#32;this&#32;generates&#32;a&#32;&quot;hash&#32;already&#32;exists&quot;&#32;error,&#32;then&#32;this&#32;is&#32;a&#32;freak&#32;occurrence&#32;of&#32;two&#32;interfaces&#32;producing&#32;the&#32;same&#32;hash.</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00663"/>00663 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;tempOldHashes.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00664"/>00664 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;tempNewHashes.Clear();
+<anchor xml:id="__contact_trigger_8cs_source_1l00665"/>00665 
+<anchor xml:id="__contact_trigger_8cs_source_1l00666"/>00666 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(_target._ignoredSystems&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__contact_trigger_8cs_source_1l00667"/>00667 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;h&#32;<emphasis role="keywordflow">in</emphasis>&#32;_target._ignoredSystems)
+<anchor xml:id="__contact_trigger_8cs_source_1l00668"/>00668 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;tempOldHashes.Add(h);
+<anchor xml:id="__contact_trigger_8cs_source_1l00669"/>00669 
+<anchor xml:id="__contact_trigger_8cs_source_1l00670"/>00670 
+<anchor xml:id="__contact_trigger_8cs_source_1l00671"/>00671 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.BeginVertical(<emphasis role="stringliteral">&quot;HelpBox&quot;</emphasis>);&#32;<emphasis role="comment">//&#32;ifaceBox);</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00672"/>00672 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00673"/>00673 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;systemChanged&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00674"/>00674 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;type&#32;<emphasis role="keywordflow">in</emphasis>&#32;ContactTrigger.contactSystemTypes)
+<anchor xml:id="__contact_trigger_8cs_source_1l00675"/>00675 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00676"/>00676 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;hash&#32;=&#32;type.Name.GetHashCode();
+<anchor xml:id="__contact_trigger_8cs_source_1l00677"/>00677 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;prev&#32;=&#32;!tempOldHashes.Contains(hash);
+<anchor xml:id="__contact_trigger_8cs_source_1l00678"/>00678 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;allowed&#32;=&#32;EditorGUILayout.ToggleLeft(type.Name,&#32;prev);
+<anchor xml:id="__contact_trigger_8cs_source_1l00679"/>00679 
+<anchor xml:id="__contact_trigger_8cs_source_1l00680"/>00680 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(allowed&#32;!=&#32;prev)
+<anchor xml:id="__contact_trigger_8cs_source_1l00681"/>00681 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;systemChanged&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00682"/>00682 
+<anchor xml:id="__contact_trigger_8cs_source_1l00683"/>00683 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!allowed)
+<anchor xml:id="__contact_trigger_8cs_source_1l00684"/>00684 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;tempNewHashes.Add(hash);
+<anchor xml:id="__contact_trigger_8cs_source_1l00685"/>00685 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00686"/>00686 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(systemChanged)
+<anchor xml:id="__contact_trigger_8cs_source_1l00687"/>00687 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00688"/>00688 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Undo.RecordObject(target,&#32;<emphasis role="stringliteral">&quot;Selected&#32;ContactSystems&#32;changed&quot;</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00689"/>00689 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target._ignoredSystems&#32;=&#32;tempNewHashes.ToArray();
+<anchor xml:id="__contact_trigger_8cs_source_1l00690"/>00690 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target.GetAllowedTypesFromHashes();
+<anchor xml:id="__contact_trigger_8cs_source_1l00691"/>00691 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target.PollInterfaces();
+<anchor xml:id="__contact_trigger_8cs_source_1l00692"/>00692 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00693"/>00693 
+<anchor xml:id="__contact_trigger_8cs_source_1l00694"/>00694 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00695"/>00695 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.EndVertical();
+<anchor xml:id="__contact_trigger_8cs_source_1l00696"/>00696 
+<anchor xml:id="__contact_trigger_8cs_source_1l00697"/>00697 
+<anchor xml:id="__contact_trigger_8cs_source_1l00698"/>00698 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.BeginVertical(ifaceBox);
+<anchor xml:id="__contact_trigger_8cs_source_1l00699"/>00699 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00700"/>00700 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;FoundInterfaces(<emphasis role="stringliteral">&quot;Found&#32;&quot;</emphasis>&#32;+&#32;typeof(IContactSystem).Name&#32;+&#32;<emphasis role="stringliteral">&quot;s:&quot;</emphasis>,&#32;_target.ContactSystems);
+<anchor xml:id="__contact_trigger_8cs_source_1l00701"/>00701 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00702"/>00702 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.EndVertical();
+<anchor xml:id="__contact_trigger_8cs_source_1l00703"/>00703 
+<anchor xml:id="__contact_trigger_8cs_source_1l00704"/>00704 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.BeginVertical(ifaceBox);
+<anchor xml:id="__contact_trigger_8cs_source_1l00705"/>00705 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00706"/>00706 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;FoundInterfaces(<emphasis role="stringliteral">&quot;Found&#32;&quot;</emphasis>&#32;+&#32;typeof(IOnContactEvent).Name&#32;+&#32;<emphasis role="stringliteral">&quot;s:&quot;</emphasis>,&#32;_target.OnContactEventCallbacks);
+<anchor xml:id="__contact_trigger_8cs_source_1l00707"/>00707 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00708"/>00708 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.EndVertical();
+<anchor xml:id="__contact_trigger_8cs_source_1l00709"/>00709 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00710"/>00710 
+<anchor xml:id="__contact_trigger_8cs_source_1l00711"/>00711 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;FoundInterfaces&lt;T&gt;(<emphasis role="keywordtype">string</emphasis>&#32;label,&#32;List&lt;T&gt;&#32;list)
+<anchor xml:id="__contact_trigger_8cs_source_1l00712"/>00712 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00713"/>00713 
+<anchor xml:id="__contact_trigger_8cs_source_1l00714"/>00714 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.LabelField(label);
+<anchor xml:id="__contact_trigger_8cs_source_1l00715"/>00715 
+<anchor xml:id="__contact_trigger_8cs_source_1l00716"/>00716 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginDisabledGroup(<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00717"/>00717 
+<anchor xml:id="__contact_trigger_8cs_source_1l00718"/>00718 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(list.Count&#32;&gt;&#32;0)
+<anchor xml:id="__contact_trigger_8cs_source_1l00719"/>00719 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;c&#32;<emphasis role="keywordflow">in</emphasis>&#32;list)
+<anchor xml:id="__contact_trigger_8cs_source_1l00720"/>00720 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00721"/>00721 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;comp&#32;=&#32;c&#32;as&#32;<link linkend="_namespace_photon_1_1_pun_1_1_simple_1a056d4010391c5d568746195703eff547a2cb05e4bb7830be982f0922fed86b4cd">Component</link>;
+<anchor xml:id="__contact_trigger_8cs_source_1l00722"/>00722 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.ObjectField(comp,&#32;typeof(Component),&#32;<emphasis role="keyword">false</emphasis>);
+<anchor xml:id="__contact_trigger_8cs_source_1l00723"/>00723 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00724"/>00724 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00725"/>00725 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.LabelField(<emphasis role="stringliteral">&quot;none&quot;</emphasis>,&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(<emphasis role="stringliteral">&quot;Label&quot;</emphasis>)&#32;{&#32;padding&#32;&#32;=<emphasis role="keyword">new</emphasis>&#32;RectOffset(6,&#32;0,&#32;0&#32;,&#32;0),&#32;fontSize&#32;=&#32;11,&#32;fontStyle&#32;=&#32;FontStyle.Italic&#32;});
+<anchor xml:id="__contact_trigger_8cs_source_1l00726"/>00726 
+<anchor xml:id="__contact_trigger_8cs_source_1l00727"/>00727 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.EndDisabledGroup();
+<anchor xml:id="__contact_trigger_8cs_source_1l00728"/>00728 
+<anchor xml:id="__contact_trigger_8cs_source_1l00729"/>00729 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00730"/>00730 
+<anchor xml:id="__contact_trigger_8cs_source_1l00731"/>00731 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Texture2D&#32;MakeTex(<emphasis role="keywordtype">int</emphasis>&#32;width,&#32;<emphasis role="keywordtype">int</emphasis>&#32;height,&#32;Color&#32;col)
+<anchor xml:id="__contact_trigger_8cs_source_1l00732"/>00732 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__contact_trigger_8cs_source_1l00733"/>00733 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Color[]&#32;pix&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Color[width&#32;*&#32;height];
+<anchor xml:id="__contact_trigger_8cs_source_1l00734"/>00734 
+<anchor xml:id="__contact_trigger_8cs_source_1l00735"/>00735 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;pix.Length;&#32;i++)
+<anchor xml:id="__contact_trigger_8cs_source_1l00736"/>00736 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;pix[i]&#32;=&#32;col;
+<anchor xml:id="__contact_trigger_8cs_source_1l00737"/>00737 
+<anchor xml:id="__contact_trigger_8cs_source_1l00738"/>00738 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Texture2D&#32;result&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Texture2D(width,&#32;height);
+<anchor xml:id="__contact_trigger_8cs_source_1l00739"/>00739 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;result.SetPixels(pix);
+<anchor xml:id="__contact_trigger_8cs_source_1l00740"/>00740 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;result.Apply();
+<anchor xml:id="__contact_trigger_8cs_source_1l00741"/>00741 
+<anchor xml:id="__contact_trigger_8cs_source_1l00742"/>00742 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;result;
+<anchor xml:id="__contact_trigger_8cs_source_1l00743"/>00743 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00744"/>00744 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__contact_trigger_8cs_source_1l00745"/>00745 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__contact_trigger_8cs_source_1l00746"/>00746 }
+<anchor xml:id="__contact_trigger_8cs_source_1l00747"/>00747 
+</programlisting></section>

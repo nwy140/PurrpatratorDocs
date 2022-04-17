@@ -1,0 +1,242 @@
+\doxysection{Animator\+Controller\+Tools.\+cs}
+\label{_animator_controller_tools_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Animator/AnimatorControllerTools.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Animator/AnimatorControllerTools.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor.Animations;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00022     [System.Serializable]}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }TransitionInfo}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{int} index;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{int} hash;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{int} state;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keywordtype}{int} destination;}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{float} duration;}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{float} offset;}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} durationIsFixed;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} TransitionInfo(\textcolor{keywordtype}{int} index, \textcolor{keywordtype}{int} hash, \textcolor{keywordtype}{int} state, \textcolor{keywordtype}{int} destination, \textcolor{keywordtype}{float} duration, \textcolor{keywordtype}{float} offset, \textcolor{keywordtype}{bool} durationIsFixed)}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             this.index = index;}
+\DoxyCodeLine{00036             this.hash = hash;}
+\DoxyCodeLine{00037             this.state = state;}
+\DoxyCodeLine{00038             this.destination = destination;}
+\DoxyCodeLine{00039             this.duration = duration;}
+\DoxyCodeLine{00040             this.offset = offset;}
+\DoxyCodeLine{00041             this.durationIsFixed = durationIsFixed;}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043     \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }AnimatorControllerTools}
+\DoxyCodeLine{00046     \{}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{static} AnimatorController GetController(\textcolor{keyword}{this} Animator a)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             RuntimeAnimatorController rac = a.runtimeAnimatorController;}
+\DoxyCodeLine{00050             AnimatorOverrideController overrideController = rac as AnimatorOverrideController;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00053             \textcolor{keywordflow}{while} (overrideController != \textcolor{keyword}{null})}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 rac = overrideController.runtimeAnimatorController;}
+\DoxyCodeLine{00056                 overrideController = rac as AnimatorOverrideController;}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             \textcolor{keywordflow}{return} rac as AnimatorController;}
+\DoxyCodeLine{00060         \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetTriggerNames(\textcolor{keyword}{this} AnimatorController ctr, List<string> namelist)}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             namelist.Clear();}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             \textcolor{keywordflow}{foreach} (var p \textcolor{keywordflow}{in} ctr.parameters)}
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{if} (p.type == AnimatorControllerParameterType.Trigger)}
+\DoxyCodeLine{00068                 \{}
+\DoxyCodeLine{00069                     \textcolor{keywordflow}{if} (namelist.Contains(p.name))}
+\DoxyCodeLine{00070                     \{}
+\DoxyCodeLine{00071                         Debug.LogWarning(\textcolor{stringliteral}{"{}Identical Trigger Name Found.  Check animator on '"{}} + ctr.name + \textcolor{stringliteral}{"{}' for repeated trigger names."{}});}
+\DoxyCodeLine{00072                     \}}
+\DoxyCodeLine{00073                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074                         namelist.Add(p.name);}
+\DoxyCodeLine{00075                 \}}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetTriggerNames(\textcolor{keyword}{this} AnimatorController ctr, List<int> hashlist)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             hashlist.Clear();}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{keywordflow}{foreach} (var p \textcolor{keywordflow}{in} ctr.parameters)}
+\DoxyCodeLine{00083                 \textcolor{keywordflow}{if} (p.type == AnimatorControllerParameterType.Trigger)}
+\DoxyCodeLine{00084                 \{}
+\DoxyCodeLine{00085                     hashlist.Add(Animator.StringToHash(p.name));}
+\DoxyCodeLine{00086                 \}}
+\DoxyCodeLine{00087         \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetStatesNames(\textcolor{keyword}{this} AnimatorController ctr, List<string> namelist)}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             namelist.Clear();}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{foreach} (var l \textcolor{keywordflow}{in} ctr.layers)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 var states = l.stateMachine.states;}
+\DoxyCodeLine{00098                 ExtractNames(ctr, l.name, states, namelist);}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 var substates = l.stateMachine.stateMachines;}
+\DoxyCodeLine{00101                 ExtractSubNames(ctr, l.name, substates, namelist);}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExtractSubNames(AnimatorController ctr, \textcolor{keywordtype}{string} path, ChildAnimatorStateMachine[] substates, List<string> namelist)}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             \textcolor{keywordflow}{foreach} (var s \textcolor{keywordflow}{in} substates)}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 var sm = s.stateMachine;}
+\DoxyCodeLine{00110                 var subpath = path + \textcolor{stringliteral}{"{}."{}} + sm.name;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 ExtractNames(ctr, subpath, s.stateMachine.states, namelist);}
+\DoxyCodeLine{00113                 ExtractSubNames(ctr, subpath, s.stateMachine.stateMachines, namelist);}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExtractNames(AnimatorController ctr, \textcolor{keywordtype}{string} path, ChildAnimatorState[] states, List<string> namelist)}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{foreach} (var st \textcolor{keywordflow}{in} states)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 \textcolor{keywordtype}{string} name = (st.state.name);}
+\DoxyCodeLine{00122                 \textcolor{keywordtype}{string} layerName = (path + \textcolor{stringliteral}{"{}."{}} + st.state.name);}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{if} (!namelist.Contains(name))}
+\DoxyCodeLine{00124                 \{}
+\DoxyCodeLine{00125                     namelist.Add(name);}
+\DoxyCodeLine{00126                 \}}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{if} (namelist.Contains(layerName))}
+\DoxyCodeLine{00128                 \{}
+\DoxyCodeLine{00129                     Debug.LogWarning(\textcolor{stringliteral}{"{}Identical State Name <i>'"{}} + st.state.name + \textcolor{stringliteral}{"{}'</i> Found.  Check animator on '"{}} + ctr.name + \textcolor{stringliteral}{"{}' for repeated State names as they cannot be used nor networked."{}});}
+\DoxyCodeLine{00130                 \}}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00132                     namelist.Add((path + \textcolor{stringliteral}{"{}."{}} + st.state.name));}
+\DoxyCodeLine{00133             \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetStatesNames(\textcolor{keyword}{this} AnimatorController ctr, List<int> hashlist)}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             hashlist.Clear();}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{keywordflow}{foreach} (var l \textcolor{keywordflow}{in} ctr.layers)}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 var states = l.stateMachine.states;}
+\DoxyCodeLine{00144                 ExtractHashes(ctr, l.name, states, hashlist);}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146                 var substates = l.stateMachine.stateMachines;}
+\DoxyCodeLine{00147                 ExtractSubtHashes(ctr, l.name, substates, hashlist);}
+\DoxyCodeLine{00148             \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExtractSubtHashes(AnimatorController ctr, \textcolor{keywordtype}{string} path, ChildAnimatorStateMachine[] substates, List<int> hashlist)}
+\DoxyCodeLine{00153         \{}
+\DoxyCodeLine{00154             \textcolor{keywordflow}{foreach} (var s \textcolor{keywordflow}{in} substates)}
+\DoxyCodeLine{00155             \{}
+\DoxyCodeLine{00156                 var sm = s.stateMachine;}
+\DoxyCodeLine{00157                 var subpath = path + \textcolor{stringliteral}{"{}."{}} + sm.name;}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 ExtractHashes(ctr, subpath, sm.states, hashlist);}
+\DoxyCodeLine{00160                 ExtractSubtHashes(ctr, subpath, sm.stateMachines, hashlist);}
+\DoxyCodeLine{00161             \}}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExtractHashes(AnimatorController ctr, \textcolor{keywordtype}{string} path, ChildAnimatorState[] states, List<int> hashlist)}
+\DoxyCodeLine{00165         \{}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{foreach} (var st \textcolor{keywordflow}{in} states)}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 \textcolor{keywordtype}{int} hash = Animator.StringToHash(st.state.name);}
+\DoxyCodeLine{00169                 \textcolor{keywordtype}{int} layrhash = Animator.StringToHash(path + \textcolor{stringliteral}{"{}."{}} + st.state.name);}
+\DoxyCodeLine{00170                 \textcolor{keywordflow}{if} (!hashlist.Contains(hash))}
+\DoxyCodeLine{00171                 \{}
+\DoxyCodeLine{00172                     hashlist.Add(hash);}
+\DoxyCodeLine{00173                 \}}
+\DoxyCodeLine{00174                 \textcolor{keywordflow}{if} (hashlist.Contains(layrhash))}
+\DoxyCodeLine{00175                 \{}
+\DoxyCodeLine{00176                     Debug.LogWarning(\textcolor{stringliteral}{"{}Identical State Name <i>'"{}} + st.state.name + \textcolor{stringliteral}{"{}'</i> Found.  Check animator on '"{}} + ctr.name + \textcolor{stringliteral}{"{}' for repeated State names as they cannot be used nor networked."{}});}
+\DoxyCodeLine{00177                 \}}
+\DoxyCodeLine{00178                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00179                     hashlist.Add(Animator.StringToHash(path + \textcolor{stringliteral}{"{}."{}} + st.state.name));}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{comment}{//public static void GetTransitionNames(this AnimatorController ctr, List<string> transInfo)}}
+\DoxyCodeLine{00184         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00185         \textcolor{comment}{//  transInfo.Clear();}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{comment}{//  transInfo.Add("{}0"{});}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189         \textcolor{comment}{//  foreach (var l in ctr.layers)}}
+\DoxyCodeLine{00190         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00191         \textcolor{comment}{//      foreach (var st in l.stateMachine.states)}}
+\DoxyCodeLine{00192         \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00193         \textcolor{comment}{//          string sname = l.name + "{}."{} + st.state.name;}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{comment}{//          foreach (var t in st.state.transitions)}}
+\DoxyCodeLine{00196         \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00197         \textcolor{comment}{//              string dname = l.name + "{}."{} + t.destinationState.name;}}
+\DoxyCodeLine{00198         \textcolor{comment}{//              string name = (sname + "{} -\/> "{} + dname);}}
+\DoxyCodeLine{00199         \textcolor{comment}{//              transInfo.Add(name);}}
+\DoxyCodeLine{00200         \textcolor{comment}{//              //Debug.Log(sname + "{} -\/> "{} + dname + "{}   "{} + Animator.StringToHash(sname + "{} -\/> "{} + dname));}}
+\DoxyCodeLine{00201         \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00202         \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00203         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{comment}{//public static void GetTransitions(this AnimatorController ctr, List<TransitionInfo> transInfo)}}
+\DoxyCodeLine{00209         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00210         \textcolor{comment}{//  transInfo.Clear();}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{comment}{//  transInfo.Add(new TransitionInfo(0, 0, 0, 0, 0, 0, false));}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{comment}{//  int index = 1;}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216         \textcolor{comment}{//  foreach (var l in ctr.layers)}}
+\DoxyCodeLine{00217         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00218         \textcolor{comment}{//      foreach (var st in l.stateMachine.states)}}
+\DoxyCodeLine{00219         \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00220         \textcolor{comment}{//          string sname = l.name + "{}."{} + st.state.name;}}
+\DoxyCodeLine{00221         \textcolor{comment}{//          int shash = Animator.StringToHash(sname);}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \textcolor{comment}{//          foreach (var t in st.state.transitions)}}
+\DoxyCodeLine{00224         \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00225         \textcolor{comment}{//              string dname = l.name + "{}."{} + t.destinationState.name;}}
+\DoxyCodeLine{00226         \textcolor{comment}{//              int dhash = Animator.StringToHash(dname);}}
+\DoxyCodeLine{00227         \textcolor{comment}{//              int hash = Animator.StringToHash(sname + "{} -\/> "{} + dname);}}
+\DoxyCodeLine{00228         \textcolor{comment}{//              TransitionInfo ti = new TransitionInfo(index, hash, shash, dhash, t.duration, t.offset, t.hasFixedDuration);}}
+\DoxyCodeLine{00229         \textcolor{comment}{//              transInfo.Add(ti);}}
+\DoxyCodeLine{00230         \textcolor{comment}{//              //Debug.Log(index + "{} "{} + sname + "{} -\/> "{} + dname + "{}   "{} + Animator.StringToHash(sname + "{} -\/> "{} + dname));}}
+\DoxyCodeLine{00231         \textcolor{comment}{//              index++;}}
+\DoxyCodeLine{00232         \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00233         \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00234         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00235         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237     \}}
+\DoxyCodeLine{00238 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240 \}}
+\DoxyCodeLine{00241 }
+
+\end{DoxyCode}

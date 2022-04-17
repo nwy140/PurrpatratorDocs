@@ -1,0 +1,630 @@
+\doxysection{Photon\+View.\+cs}
+\label{_photon_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Contains the PhotonView class.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} UnityEngine.Serialization;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{preprocessor}{    \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00022 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00028     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon View"{}})]}
+\DoxyCodeLine{00029     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonView : MonoBehaviour}
+\DoxyCodeLine{00030     \{}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00032         [UnityEditor.InitializeOnLoadMethod]}
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetPhotonViewExecutionOrder()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             \textcolor{keywordtype}{int} photonViewExecutionOrder = -\/16000;}
+\DoxyCodeLine{00036             GameObject go = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00037             PhotonView pv = go.AddComponent<PhotonView>();}
+\DoxyCodeLine{00038             MonoScript monoScript = MonoScript.FromMonoBehaviour(pv);}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             \textcolor{keywordflow}{if} (photonViewExecutionOrder != MonoImporter.GetExecutionOrder(monoScript))}
+\DoxyCodeLine{00041             \{}
+\DoxyCodeLine{00042                 MonoImporter.SetExecutionOrder(monoScript, photonViewExecutionOrder); \textcolor{comment}{// very early but allows other scripts to run even earlier...}}
+\DoxyCodeLine{00043             \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             DestroyImmediate(go); }
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00050         [ContextMenu(\textcolor{stringliteral}{"{}Open PUN Wizard"{}})]}
+\DoxyCodeLine{00051         \textcolor{keywordtype}{void} OpenPunWizard()}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             EditorApplication.ExecuteMenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/PUN Wizard"{}});}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00058         \textcolor{comment}{// Suppressing compiler warning "{}this variable is never used"{}. Only used in the CustomEditor, only in Editor}}
+\DoxyCodeLine{00059 \textcolor{preprocessor}{        \#pragma warning disable 0414}}
+\DoxyCodeLine{00060         [SerializeField]}
+\DoxyCodeLine{00061         \textcolor{keywordtype}{bool} ObservedComponentsFoldoutOpen = \textcolor{keyword}{true};}
+\DoxyCodeLine{00062 \textcolor{preprocessor}{        \#pragma warning restore 0414}}
+\DoxyCodeLine{00063 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00064         }
+\DoxyCodeLine{00065 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00067         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00068         \{}
+\DoxyCodeLine{00069             observableSearch = ObservableSearch.AutoFindAll;}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         [FormerlySerializedAs(\textcolor{stringliteral}{"{}group"{}})]}
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} Group = 0;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{comment}{// NOTE: this is now an integer because unity won't serialize short (needed for instantiation). we SEND only a short though!}}
+\DoxyCodeLine{00079         \textcolor{comment}{// NOTE: prefabs have a prefixField of -\/1. this is replaced with any currentLevelPrefix that's used at runtime. instantiated GOs get their prefix set pre-\/instantiation (so those are not -\/1 anymore)}}
+\DoxyCodeLine{00080         \textcolor{keyword}{public} \textcolor{keywordtype}{int} Prefix}
+\DoxyCodeLine{00081         \{}
+\DoxyCodeLine{00082             \textcolor{keyword}{get}}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (this.prefixField == -\/1 \&\& PhotonNetwork.NetworkingClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{00085                 \{}
+\DoxyCodeLine{00086                     this.prefixField = PhotonNetwork.currentLevelPrefix;}
+\DoxyCodeLine{00087                 \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} this.prefixField;}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             \textcolor{keyword}{set} \{ this.prefixField = value; \}}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{comment}{// this field is serialized by unity. that means it is copied when instantiating a persistent obj into the scene}}
+\DoxyCodeLine{00095         [FormerlySerializedAs(\textcolor{stringliteral}{"{}prefixBackup"{}})]}
+\DoxyCodeLine{00096         \textcolor{keyword}{public} \textcolor{keywordtype}{int} prefixField = -\/1;}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keywordtype}{object}[] InstantiationData}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.instantiationDataField; \}}
+\DoxyCodeLine{00106             \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set} \{ this.instantiationDataField = value; \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{internal} \textcolor{keywordtype}{object}[] instantiationDataField;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00114         \textcolor{keyword}{protected} \textcolor{keyword}{internal} List<object> lastOnSerializeDataSent = \textcolor{keyword}{null};}
+\DoxyCodeLine{00115         \textcolor{keyword}{protected} \textcolor{keyword}{internal} List<object> syncValues;}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00120         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{object}[] lastOnSerializeDataReceived = \textcolor{keyword}{null};}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         [FormerlySerializedAs(\textcolor{stringliteral}{"{}synchronization"{}})]}
+\DoxyCodeLine{00123         \textcolor{keyword}{public} ViewSynchronization Synchronization = ViewSynchronization.UnreliableOnChange;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} mixedModeIsReliable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00133         [FormerlySerializedAs(\textcolor{stringliteral}{"{}ownershipTransfer"{}})]}
+\DoxyCodeLine{00134         \textcolor{keyword}{public} OwnershipOption OwnershipTransfer = OwnershipOption.Fixed;}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{public} \textcolor{keyword}{enum} ObservableSearch \{ Manual, AutoFindActive, AutoFindAll \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00140         \textcolor{keyword}{public} ObservableSearch observableSearch = ObservableSearch.Manual;}
+\DoxyCodeLine{00141         }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} List<Component> ObservedComponents;}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{internal} MonoBehaviour[] RpcMonoBehaviours;}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150         [Obsolete(\textcolor{stringliteral}{"{}Renamed. Use IsRoomView instead"{}})]}
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsSceneView}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.IsRoomView; \}}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155         }
+\DoxyCodeLine{00162         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsRoomView}
+\DoxyCodeLine{00163         \{}
+\DoxyCodeLine{00164             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.CreatorActorNr == 0; \}}
+\DoxyCodeLine{00165         \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsOwnerActive}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.Owner != \textcolor{keyword}{null} \&\& !this.Owner.IsInactive; \}}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsMine \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00181         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AmController}
+\DoxyCodeLine{00182         \{}
+\DoxyCodeLine{00183             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.IsMine; \}}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186         \textcolor{keyword}{public} Player Controller \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00187         }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CreatorActorNr \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AmOwner \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         }
+\DoxyCodeLine{00203         \textcolor{keyword}{public} Player Owner \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207         [NonSerialized]}
+\DoxyCodeLine{00208         \textcolor{keyword}{private} \textcolor{keywordtype}{int} ownerActorNr;}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \textcolor{keyword}{public} \textcolor{keywordtype}{int} OwnerActorNr}
+\DoxyCodeLine{00211         \{}
+\DoxyCodeLine{00212             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.ownerActorNr; \}}
+\DoxyCodeLine{00213             \textcolor{keyword}{set}}
+\DoxyCodeLine{00214             \{}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{if} (value != 0 \&\& this.ownerActorNr == value)}
+\DoxyCodeLine{00216                 \{}
+\DoxyCodeLine{00217                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00218                 \}}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220                 Player prevOwner = this.Owner;}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222                 this.Owner = PhotonNetwork.CurrentRoom == \textcolor{keyword}{null} ? null : PhotonNetwork.CurrentRoom.GetPlayer(value, \textcolor{keyword}{true});}
+\DoxyCodeLine{00223                 this.ownerActorNr = this.Owner != \textcolor{keyword}{null} ? this.Owner.ActorNumber : value;}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225                 this.AmOwner = PhotonNetwork.LocalPlayer != \textcolor{keyword}{null} \&\& this.ownerActorNr == PhotonNetwork.LocalPlayer.ActorNumber;}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227                 this.UpdateCallbackLists();}
+\DoxyCodeLine{00228                 \textcolor{keywordflow}{if} (!ReferenceEquals(this.OnOwnerChangeCallbacks, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00229                 \{}
+\DoxyCodeLine{00230                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = this.OnOwnerChangeCallbacks.Count; i < cnt; ++i)}
+\DoxyCodeLine{00231                     \{}
+\DoxyCodeLine{00232                         this.OnOwnerChangeCallbacks[i].OnOwnerChange(this.Owner, prevOwner);}
+\DoxyCodeLine{00233                     \}}
+\DoxyCodeLine{00234                 \}}
+\DoxyCodeLine{00235             \}}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         }
+\DoxyCodeLine{00239         [NonSerialized]}
+\DoxyCodeLine{00240         \textcolor{keyword}{private} \textcolor{keywordtype}{int} controllerActorNr;}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ControllerActorNr}
+\DoxyCodeLine{00243         \{}
+\DoxyCodeLine{00244             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.controllerActorNr; \}}
+\DoxyCodeLine{00245             \textcolor{keyword}{set}}
+\DoxyCodeLine{00246             \{}
+\DoxyCodeLine{00247                 Player prevController = this.Controller;}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249                 this.Controller = PhotonNetwork.CurrentRoom == \textcolor{keyword}{null} ? null : PhotonNetwork.CurrentRoom.GetPlayer(value, \textcolor{keyword}{true});}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{if} (this.Controller != \textcolor{keyword}{null} \&\& this.Controller.IsInactive)}
+\DoxyCodeLine{00251                 \{}
+\DoxyCodeLine{00252                     this.Controller = PhotonNetwork.MasterClient;}
+\DoxyCodeLine{00253                 \}}
+\DoxyCodeLine{00254                 this.controllerActorNr = this.Controller != \textcolor{keyword}{null} ? this.Controller.ActorNumber : value;}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256                 this.IsMine = PhotonNetwork.LocalPlayer != \textcolor{keyword}{null} \&\& this.controllerActorNr == PhotonNetwork.LocalPlayer.ActorNumber;}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                 \textcolor{keywordflow}{if} (!ReferenceEquals(this.Controller, prevController))}
+\DoxyCodeLine{00259                 \{}
+\DoxyCodeLine{00260                     this.UpdateCallbackLists();}
+\DoxyCodeLine{00261                     \textcolor{keywordflow}{if} (!ReferenceEquals(this.OnControllerChangeCallbacks, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00262                     \{}
+\DoxyCodeLine{00263                         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = this.OnControllerChangeCallbacks.Count; i < cnt; ++i)}
+\DoxyCodeLine{00264                         \{}
+\DoxyCodeLine{00265                             this.OnControllerChangeCallbacks[i].OnControllerChange(this.Controller, prevController);}
+\DoxyCodeLine{00266                         \}}
+\DoxyCodeLine{00267                     \}}
+\DoxyCodeLine{00268                 \}}
+\DoxyCodeLine{00269             \}}
+\DoxyCodeLine{00270         \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00274         [SerializeField]}
+\DoxyCodeLine{00275         [FormerlySerializedAs(\textcolor{stringliteral}{"{}viewIdField"{}})]}
+\DoxyCodeLine{00276         [HideInInspector]}
+\DoxyCodeLine{00277         \textcolor{keyword}{public} \textcolor{keywordtype}{int} sceneViewId = 0; \textcolor{comment}{// TODO: in best case, this is not public}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00281         [NonSerialized]}
+\DoxyCodeLine{00282         \textcolor{keyword}{private} \textcolor{keywordtype}{int} viewIdField = 0;}
+\DoxyCodeLine{00283         }
+\DoxyCodeLine{00288         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ViewID}
+\DoxyCodeLine{00289         \{}
+\DoxyCodeLine{00290             \textcolor{keyword}{get}}
+\DoxyCodeLine{00291             \{}
+\DoxyCodeLine{00292                 \textcolor{keywordflow}{return} this.viewIdField;}
+\DoxyCodeLine{00293             \}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295             \textcolor{keyword}{set}}
+\DoxyCodeLine{00296             \{}
+\DoxyCodeLine{00297                 \textcolor{comment}{// TODO: Check if the isPlaying check is needed when the PhotonViewHandler is updated}}
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{if} (value != 0 \&\& this.viewIdField != 0)}
+\DoxyCodeLine{00299                 \{}
+\DoxyCodeLine{00300                     Debug.LogWarning(\textcolor{stringliteral}{"{}Changing a ViewID while it's in use is not possible (except setting it to 0 (not being used). Current ViewID: "{}} + this.viewIdField);}
+\DoxyCodeLine{00301                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00302                 \}}
+\DoxyCodeLine{00303                 }
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{if} (value == 0 \&\& this.viewIdField != 0)}
+\DoxyCodeLine{00305                 \{}
+\DoxyCodeLine{00306                     PhotonNetwork.LocalCleanPhotonView(\textcolor{keyword}{this});}
+\DoxyCodeLine{00307                 \}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309                 this.viewIdField = value;}
+\DoxyCodeLine{00310                 this.CreatorActorNr = value / PhotonNetwork.MAX\_VIEW\_IDS;   \textcolor{comment}{// the creator can be derived from the viewId. this is also the initial owner and creator.}}
+\DoxyCodeLine{00311                 this.OwnerActorNr = this.CreatorActorNr;}
+\DoxyCodeLine{00312                 this.ControllerActorNr = this.CreatorActorNr;}
+\DoxyCodeLine{00313                 this.RebuildControllerCache();}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316                 \textcolor{comment}{// if the viewID is set to a new, legit value, the view should register in the list of active PVs.}}
+\DoxyCodeLine{00317                 \textcolor{keywordflow}{if} (value != 0)}
+\DoxyCodeLine{00318                 \{}
+\DoxyCodeLine{00319                     PhotonNetwork.RegisterPhotonView(\textcolor{keyword}{this});}
+\DoxyCodeLine{00320                 \}}
+\DoxyCodeLine{00321             \}}
+\DoxyCodeLine{00322         \}}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324         [FormerlySerializedAs(\textcolor{stringliteral}{"{}instantiationId"{}})]}
+\DoxyCodeLine{00325         \textcolor{keyword}{public} \textcolor{keywordtype}{int} InstantiationId; \textcolor{comment}{// if the view was instantiated with a GO, this GO has a instantiationID (first view's viewID)}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327         [SerializeField]}
+\DoxyCodeLine{00328         [HideInInspector]}
+\DoxyCodeLine{00329         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isRuntimeInstantiated;}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} removedFromLocalViewList;}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00334         }
+\DoxyCodeLine{00336         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00337         \{}
+\DoxyCodeLine{00338             \textcolor{keywordflow}{if} (this.ViewID != 0)}
+\DoxyCodeLine{00339             \{}
+\DoxyCodeLine{00340                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00341             \}}
+\DoxyCodeLine{00342             }
+\DoxyCodeLine{00343             \textcolor{keywordflow}{if} (this.sceneViewId != 0)}
+\DoxyCodeLine{00344             \{}
+\DoxyCodeLine{00345                 \textcolor{comment}{// PhotonNetwork.Instantiate will set a ViewID != 0 before the object awakes. So only objects loaded with the scene ever use the sceneViewId (even if the obj got pooled)}}
+\DoxyCodeLine{00346                 this.ViewID = this.sceneViewId;}
+\DoxyCodeLine{00347             \}}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             this.FindObservables();}
+\DoxyCodeLine{00350         \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00354         \textcolor{keyword}{internal} \textcolor{keywordtype}{void} ResetPhotonView(\textcolor{keywordtype}{bool} resetOwner)}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00358             \textcolor{comment}{//if (resetOwner)}}
+\DoxyCodeLine{00359             \textcolor{comment}{//    ResetOwnership();}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361             \textcolor{comment}{//this.ownershipCacheIsValid = OwnershipCacheState.Invalid;}}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363             \textcolor{comment}{// Reset the delta check to force a complete update of owned objects, to ensure joining connections get full updates.}}
+\DoxyCodeLine{00364             this.lastOnSerializeDataSent = \textcolor{keyword}{null};}
+\DoxyCodeLine{00365         \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367         }
+\DoxyCodeLine{00370         \textcolor{keyword}{internal} \textcolor{keywordtype}{void} RebuildControllerCache(\textcolor{keywordtype}{bool} ownerHasChanged = \textcolor{keyword}{false})}
+\DoxyCodeLine{00371         \{}
+\DoxyCodeLine{00372             \textcolor{comment}{//var prevController = this.controller;}}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374             \textcolor{comment}{// objects without controller and room objects (ownerId 0) check if controller update is needed}}
+\DoxyCodeLine{00375             \textcolor{keywordflow}{if} (this.controllerActorNr == 0 || this.OwnerActorNr == 0 || this.Owner == \textcolor{keyword}{null} || this.Owner.IsInactive)}
+\DoxyCodeLine{00376             \{}
+\DoxyCodeLine{00377                 var masterclient = PhotonNetwork.MasterClient;}
+\DoxyCodeLine{00378                 this.ControllerActorNr = masterclient == \textcolor{keyword}{null} ? -\/1 : masterclient.ActorNumber;}
+\DoxyCodeLine{00379             \}}
+\DoxyCodeLine{00380             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00381             \{}
+\DoxyCodeLine{00382                 this.ControllerActorNr = this.OwnerActorNr;}
+\DoxyCodeLine{00383             \}}
+\DoxyCodeLine{00384         \}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386 }
+\DoxyCodeLine{00387         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPreNetDestroy(PhotonView rootView)}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             UpdateCallbackLists();}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391             \textcolor{keywordflow}{if} (!ReferenceEquals(OnPreNetDestroyCallbacks, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00392                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnPreNetDestroyCallbacks.Count; i < cnt; ++i)}
+\DoxyCodeLine{00393                 \{}
+\DoxyCodeLine{00394                     OnPreNetDestroyCallbacks[i].OnPreNetDestroy(rootView);}
+\DoxyCodeLine{00395                 \}}
+\DoxyCodeLine{00396         \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00399         \{}
+\DoxyCodeLine{00400             \textcolor{keywordflow}{if} (!this.removedFromLocalViewList)}
+\DoxyCodeLine{00401             \{}
+\DoxyCodeLine{00402                 \textcolor{keywordtype}{bool} wasInList = PhotonNetwork.LocalCleanPhotonView(\textcolor{keyword}{this});}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404                 \textcolor{keywordflow}{if} (wasInList \&\& this.InstantiationId > 0 \&\& !PhotonHandler.AppQuits \&\& PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{00405                 \{}
+\DoxyCodeLine{00406                     Debug.Log(\textcolor{stringliteral}{"{}PUN-\/instantiated '"{}} + this.gameObject.name + \textcolor{stringliteral}{"{}' got destroyed by engine. This is OK when loading levels. Otherwise use: PhotonNetwork.Destroy()."{}});}
+\DoxyCodeLine{00407                 \}}
+\DoxyCodeLine{00408             \}}
+\DoxyCodeLine{00409         \}}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00421         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RequestOwnership()}
+\DoxyCodeLine{00422         \{}
+\DoxyCodeLine{00423             \textcolor{keywordflow}{if} (OwnershipTransfer != OwnershipOption.Fixed)}
+\DoxyCodeLine{00424             \{}
+\DoxyCodeLine{00425                 PhotonNetwork.RequestOwnership(this.ViewID, this.ownerActorNr);}
+\DoxyCodeLine{00426             \}}
+\DoxyCodeLine{00427             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00428             \{}
+\DoxyCodeLine{00429                 \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{00430                 \{}
+\DoxyCodeLine{00431                     Debug.LogWarning(\textcolor{stringliteral}{"{}Attempting to RequestOwnership of GameObject '"{}} + name + \textcolor{stringliteral}{"{}' viewId: "{}} + ViewID +}
+\DoxyCodeLine{00432                         \textcolor{stringliteral}{"{}, but PhotonView.OwnershipTransfer is set to Fixed."{}});}
+\DoxyCodeLine{00433                 \}}
+\DoxyCodeLine{00434             \}}
+\DoxyCodeLine{00435         \}}
+\DoxyCodeLine{00436 }
+\DoxyCodeLine{00443         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TransferOwnership(Player newOwner)}
+\DoxyCodeLine{00444         \{}
+\DoxyCodeLine{00445             \textcolor{keywordflow}{if} (newOwner != \textcolor{keyword}{null})}
+\DoxyCodeLine{00446                 TransferOwnership(newOwner.ActorNumber);}
+\DoxyCodeLine{00447             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00448             \{}
+\DoxyCodeLine{00449                 \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{00450                 \{}
+\DoxyCodeLine{00451                     Debug.LogWarning(\textcolor{stringliteral}{"{}Attempting to TransferOwnership of GameObject '"{}} + name + \textcolor{stringliteral}{"{}' viewId: "{}} + ViewID +}
+\DoxyCodeLine{00452                    \textcolor{stringliteral}{"{}, but provided Player newOwner is null."{}});}
+\DoxyCodeLine{00453                 \}}
+\DoxyCodeLine{00454             \}}
+\DoxyCodeLine{00455         \}}
+\DoxyCodeLine{00456 }
+\DoxyCodeLine{00463         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TransferOwnership(\textcolor{keywordtype}{int} newOwnerId)}
+\DoxyCodeLine{00464         \{}
+\DoxyCodeLine{00465             \textcolor{keywordflow}{if} (OwnershipTransfer == OwnershipOption.Takeover || (OwnershipTransfer == OwnershipOption.Request \&\& \textcolor{keyword}{this}.AmController))}
+\DoxyCodeLine{00466             \{}
+\DoxyCodeLine{00467                 PhotonNetwork.TransferOwnership(this.ViewID, newOwnerId);}
+\DoxyCodeLine{00468             \}}
+\DoxyCodeLine{00469             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00470             \{}
+\DoxyCodeLine{00471                 \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel >= PunLogLevel.Informational)}
+\DoxyCodeLine{00472                 \{}
+\DoxyCodeLine{00473                     \textcolor{keywordflow}{if} (OwnershipTransfer == OwnershipOption.Fixed)}
+\DoxyCodeLine{00474                         Debug.LogWarning(\textcolor{stringliteral}{"{}Attempting to TransferOwnership of GameObject '"{}} + name + \textcolor{stringliteral}{"{}' viewId: "{}} + ViewID +}
+\DoxyCodeLine{00475                             \textcolor{stringliteral}{"{} without the authority to do so. TransferOwnership is not allowed if PhotonView.OwnershipTransfer is set to Fixed."{}});}
+\DoxyCodeLine{00476                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (OwnershipTransfer == OwnershipOption.Request)}
+\DoxyCodeLine{00477                         Debug.LogWarning(\textcolor{stringliteral}{"{}Attempting to TransferOwnership of GameObject '"{}} + name + \textcolor{stringliteral}{"{}' viewId: "{}} + ViewID +}
+\DoxyCodeLine{00478                            \textcolor{stringliteral}{"{} without the authority to do so. PhotonView.OwnershipTransfer is set to Request, so only the controller of this object can TransferOwnership."{}});}
+\DoxyCodeLine{00479                 \}}
+\DoxyCodeLine{00480             \}}
+\DoxyCodeLine{00481         \}}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00493         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FindObservables(\textcolor{keywordtype}{bool} force = \textcolor{keyword}{false})}
+\DoxyCodeLine{00494         \{}
+\DoxyCodeLine{00495             \textcolor{keywordflow}{if} (!force \&\& this.observableSearch == ObservableSearch.Manual)}
+\DoxyCodeLine{00496             \{}
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00498             \}}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500             \textcolor{keywordflow}{if} (this.ObservedComponents == \textcolor{keyword}{null})}
+\DoxyCodeLine{00501             \{}
+\DoxyCodeLine{00502                 this.ObservedComponents = \textcolor{keyword}{new} List<Component>();}
+\DoxyCodeLine{00503             \}}
+\DoxyCodeLine{00504             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00505             \{}
+\DoxyCodeLine{00506                 this.ObservedComponents.Clear();}
+\DoxyCodeLine{00507             \}}
+\DoxyCodeLine{00508 }
+\DoxyCodeLine{00509             this.transform.GetNestedComponentsInChildren<Component, IPunObservable, PhotonView>(force || this.observableSearch == ObservableSearch.AutoFindAll, this.ObservedComponents);}
+\DoxyCodeLine{00510         \}}
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00514         \{}
+\DoxyCodeLine{00515             \textcolor{keywordflow}{if} (this.ObservedComponents != \textcolor{keyword}{null} \&\& this.ObservedComponents.Count > 0)}
+\DoxyCodeLine{00516             \{}
+\DoxyCodeLine{00517                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.ObservedComponents.Count; ++i)}
+\DoxyCodeLine{00518                 \{}
+\DoxyCodeLine{00519                     var component = this.ObservedComponents[i];}
+\DoxyCodeLine{00520                     \textcolor{keywordflow}{if} (component != \textcolor{keyword}{null})}
+\DoxyCodeLine{00521                         SerializeComponent(this.ObservedComponents[i], stream, info);}
+\DoxyCodeLine{00522                 \}}
+\DoxyCodeLine{00523             \}}
+\DoxyCodeLine{00524         \}}
+\DoxyCodeLine{00525 }
+\DoxyCodeLine{00526         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DeserializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00527         \{}
+\DoxyCodeLine{00528             \textcolor{keywordflow}{if} (this.ObservedComponents != \textcolor{keyword}{null} \&\& this.ObservedComponents.Count > 0)}
+\DoxyCodeLine{00529             \{}
+\DoxyCodeLine{00530                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.ObservedComponents.Count; ++i)}
+\DoxyCodeLine{00531                 \{}
+\DoxyCodeLine{00532                     var component = this.ObservedComponents[i];}
+\DoxyCodeLine{00533                     \textcolor{keywordflow}{if} (component != \textcolor{keyword}{null})}
+\DoxyCodeLine{00534                         DeserializeComponent(component, stream, info);}
+\DoxyCodeLine{00535                 \}}
+\DoxyCodeLine{00536             \}}
+\DoxyCodeLine{00537         \}}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} DeserializeComponent(Component component, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00540         \{}
+\DoxyCodeLine{00541             IPunObservable observable = component as IPunObservable;}
+\DoxyCodeLine{00542             \textcolor{keywordflow}{if} (observable != \textcolor{keyword}{null})}
+\DoxyCodeLine{00543             \{}
+\DoxyCodeLine{00544                 observable.OnPhotonSerializeView(stream, info);}
+\DoxyCodeLine{00545             \}}
+\DoxyCodeLine{00546             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00547             \{}
+\DoxyCodeLine{00548                 Debug.LogError(\textcolor{stringliteral}{"{}Observed scripts have to implement IPunObservable. "{}} + component + \textcolor{stringliteral}{"{} does not. It is Type: "{}} + component.GetType(), component.gameObject);}
+\DoxyCodeLine{00549             \}}
+\DoxyCodeLine{00550         \}}
+\DoxyCodeLine{00551 }
+\DoxyCodeLine{00552         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} SerializeComponent(Component component, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00553         \{}
+\DoxyCodeLine{00554             IPunObservable observable = component as IPunObservable;}
+\DoxyCodeLine{00555             \textcolor{keywordflow}{if} (observable != \textcolor{keyword}{null})}
+\DoxyCodeLine{00556             \{}
+\DoxyCodeLine{00557                 observable.OnPhotonSerializeView(stream, info);}
+\DoxyCodeLine{00558             \}}
+\DoxyCodeLine{00559             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00560             \{}
+\DoxyCodeLine{00561                 Debug.LogError(\textcolor{stringliteral}{"{}Observed scripts have to implement IPunObservable. "{}} + component + \textcolor{stringliteral}{"{} does not. It is Type: "{}} + component.GetType(), component.gameObject);}
+\DoxyCodeLine{00562             \}}
+\DoxyCodeLine{00563         \}}
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00576         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RefreshRpcMonoBehaviourCache()}
+\DoxyCodeLine{00577         \{}
+\DoxyCodeLine{00578             this.RpcMonoBehaviours = this.GetComponents<MonoBehaviour>();}
+\DoxyCodeLine{00579         \}}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581 }
+\DoxyCodeLine{00602         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RPC(\textcolor{keywordtype}{string} methodName, RpcTarget target, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{00603         \{}
+\DoxyCodeLine{00604             PhotonNetwork.RPC(\textcolor{keyword}{this}, methodName, target, \textcolor{keyword}{false}, parameters);}
+\DoxyCodeLine{00605         \}}
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00628         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RpcSecure(\textcolor{keywordtype}{string} methodName, RpcTarget target, \textcolor{keywordtype}{bool} encrypt, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{00629         \{}
+\DoxyCodeLine{00630             PhotonNetwork.RPC(\textcolor{keyword}{this}, methodName, target, encrypt, parameters);}
+\DoxyCodeLine{00631         \}}
+\DoxyCodeLine{00632 }
+\DoxyCodeLine{00651         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RPC(\textcolor{keywordtype}{string} methodName, Player targetPlayer, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{00652         \{}
+\DoxyCodeLine{00653             PhotonNetwork.RPC(\textcolor{keyword}{this}, methodName, targetPlayer, \textcolor{keyword}{false}, parameters);}
+\DoxyCodeLine{00654         \}}
+\DoxyCodeLine{00655 }
+\DoxyCodeLine{00675         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RpcSecure(\textcolor{keywordtype}{string} methodName, Player targetPlayer, \textcolor{keywordtype}{bool} encrypt, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{00676         \{}
+\DoxyCodeLine{00677             PhotonNetwork.RPC(\textcolor{keyword}{this}, methodName, targetPlayer, encrypt, parameters);}
+\DoxyCodeLine{00678         \}}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonView Get(Component component)}
+\DoxyCodeLine{00681         \{}
+\DoxyCodeLine{00682             \textcolor{keywordflow}{return} component.transform.GetParentComponent<PhotonView>();}
+\DoxyCodeLine{00683         \}}
+\DoxyCodeLine{00684 }
+\DoxyCodeLine{00685         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonView Get(GameObject gameObj)}
+\DoxyCodeLine{00686         \{}
+\DoxyCodeLine{00687             \textcolor{keywordflow}{return} gameObj.transform.GetParentComponent<PhotonView>();}
+\DoxyCodeLine{00688         \}}
+\DoxyCodeLine{00689 }
+\DoxyCodeLine{00695         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonView Find(\textcolor{keywordtype}{int} viewID)}
+\DoxyCodeLine{00696         \{}
+\DoxyCodeLine{00697             \textcolor{keywordflow}{return} PhotonNetwork.GetPhotonView(viewID);}
+\DoxyCodeLine{00698         \}}
+\DoxyCodeLine{00699 }
+\DoxyCodeLine{00700         }
+\DoxyCodeLine{00701 \textcolor{preprocessor}{        \#region Callback Interfaces}}
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00704         \textcolor{keyword}{private} \textcolor{keyword}{struct }CallbackTargetChange}
+\DoxyCodeLine{00705         \{}
+\DoxyCodeLine{00706             \textcolor{keyword}{public} IPhotonViewCallback obj;}
+\DoxyCodeLine{00707             \textcolor{keyword}{public} Type type;}
+\DoxyCodeLine{00708             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} add;}
+\DoxyCodeLine{00709 }
+\DoxyCodeLine{00710             \textcolor{keyword}{public} CallbackTargetChange(IPhotonViewCallback obj, Type type, \textcolor{keywordtype}{bool} add)}
+\DoxyCodeLine{00711             \{}
+\DoxyCodeLine{00712                 this.obj = obj;}
+\DoxyCodeLine{00713                 this.type = type;}
+\DoxyCodeLine{00714                 this.add = add;}
+\DoxyCodeLine{00715             \}}
+\DoxyCodeLine{00716         \}}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00718         \textcolor{keyword}{private} Queue<CallbackTargetChange> CallbackChangeQueue = \textcolor{keyword}{new} Queue<CallbackTargetChange>();}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720         \textcolor{keyword}{private} List<IOnPhotonViewPreNetDestroy> OnPreNetDestroyCallbacks;}
+\DoxyCodeLine{00721         \textcolor{keyword}{private} List<IOnPhotonViewOwnerChange> OnOwnerChangeCallbacks;}
+\DoxyCodeLine{00722         \textcolor{keyword}{private} List<IOnPhotonViewControllerChange> OnControllerChangeCallbacks;}
+\DoxyCodeLine{00723 }
+\DoxyCodeLine{00728         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddCallbackTarget(IPhotonViewCallback obj)}
+\DoxyCodeLine{00729         \{}
+\DoxyCodeLine{00730             CallbackChangeQueue.Enqueue(\textcolor{keyword}{new} CallbackTargetChange(obj, \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00731         \}}
+\DoxyCodeLine{00732 }
+\DoxyCodeLine{00737         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RemoveCallbackTarget(IPhotonViewCallback obj)}
+\DoxyCodeLine{00738         \{}
+\DoxyCodeLine{00739             CallbackChangeQueue.Enqueue(\textcolor{keyword}{new} CallbackTargetChange(obj, \textcolor{keyword}{null}, \textcolor{keyword}{false}));}
+\DoxyCodeLine{00740         \}}
+\DoxyCodeLine{00741 }
+\DoxyCodeLine{00747         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddCallback<T>(IPhotonViewCallback obj) where T : \textcolor{keyword}{class}, IPhotonViewCallback}
+\DoxyCodeLine{00748         \{}
+\DoxyCodeLine{00749             CallbackChangeQueue.Enqueue(\textcolor{keyword}{new} CallbackTargetChange(obj, typeof(T), \textcolor{keyword}{true}));}
+\DoxyCodeLine{00750         \}}
+\DoxyCodeLine{00751 }
+\DoxyCodeLine{00757         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RemoveCallback<T>(IPhotonViewCallback obj) where T : \textcolor{keyword}{class}, IPhotonViewCallback}
+\DoxyCodeLine{00758         \{}
+\DoxyCodeLine{00759             CallbackChangeQueue.Enqueue(\textcolor{keyword}{new} CallbackTargetChange(obj, typeof(T), \textcolor{keyword}{false}));}
+\DoxyCodeLine{00760         \}}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00765         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateCallbackLists()}
+\DoxyCodeLine{00766         \{}
+\DoxyCodeLine{00767             \textcolor{keywordflow}{while} (CallbackChangeQueue.Count > 0)}
+\DoxyCodeLine{00768             \{}
+\DoxyCodeLine{00769                 var item = CallbackChangeQueue.Dequeue();}
+\DoxyCodeLine{00770                 var obj = item.obj;}
+\DoxyCodeLine{00771                 var type = item.type;}
+\DoxyCodeLine{00772                 var add = item.add;}
+\DoxyCodeLine{00773 }
+\DoxyCodeLine{00774                 \textcolor{keywordflow}{if} (type == \textcolor{keyword}{null})}
+\DoxyCodeLine{00775                 \{}
+\DoxyCodeLine{00776                     TryRegisterCallback(obj, ref OnPreNetDestroyCallbacks, add);}
+\DoxyCodeLine{00777                     TryRegisterCallback(obj, ref OnOwnerChangeCallbacks, add);}
+\DoxyCodeLine{00778                     TryRegisterCallback(obj, ref OnControllerChangeCallbacks, add);}
+\DoxyCodeLine{00779                 \}}
+\DoxyCodeLine{00780                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == typeof(IOnPhotonViewPreNetDestroy))}
+\DoxyCodeLine{00781                     RegisterCallback(obj as IOnPhotonViewPreNetDestroy, ref OnPreNetDestroyCallbacks, add);}
+\DoxyCodeLine{00782 }
+\DoxyCodeLine{00783                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == typeof(IOnPhotonViewOwnerChange))}
+\DoxyCodeLine{00784                     RegisterCallback(obj as IOnPhotonViewOwnerChange, ref OnOwnerChangeCallbacks, add);}
+\DoxyCodeLine{00785 }
+\DoxyCodeLine{00786                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == typeof(IOnPhotonViewControllerChange))}
+\DoxyCodeLine{00787                     RegisterCallback(obj as IOnPhotonViewControllerChange, ref OnControllerChangeCallbacks, add);}
+\DoxyCodeLine{00788             \}}
+\DoxyCodeLine{00789         \}}
+\DoxyCodeLine{00790 }
+\DoxyCodeLine{00791         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TryRegisterCallback<T>(IPhotonViewCallback obj, ref List<T> list, \textcolor{keywordtype}{bool} add) where T : \textcolor{keyword}{class}, IPhotonViewCallback}
+\DoxyCodeLine{00792         \{}
+\DoxyCodeLine{00793             T iobj = obj as T;}
+\DoxyCodeLine{00794             \textcolor{keywordflow}{if} (iobj != \textcolor{keyword}{null})}
+\DoxyCodeLine{00795             \{}
+\DoxyCodeLine{00796                 RegisterCallback(iobj, ref list, add);}
+\DoxyCodeLine{00797             \}}
+\DoxyCodeLine{00798         \}}
+\DoxyCodeLine{00799 }
+\DoxyCodeLine{00800         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RegisterCallback<T>(T obj, ref List<T> list, \textcolor{keywordtype}{bool} add) where T : \textcolor{keyword}{class}, IPhotonViewCallback}
+\DoxyCodeLine{00801         \{}
+\DoxyCodeLine{00802             \textcolor{keywordflow}{if} (ReferenceEquals(list, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00803                 list = \textcolor{keyword}{new} List<T>();}
+\DoxyCodeLine{00804 }
+\DoxyCodeLine{00805             \textcolor{keywordflow}{if} (add)}
+\DoxyCodeLine{00806             \{}
+\DoxyCodeLine{00807                 \textcolor{keywordflow}{if} (!list.Contains(obj))}
+\DoxyCodeLine{00808                     list.Add(obj);}
+\DoxyCodeLine{00809             \}}
+\DoxyCodeLine{00810             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00811             \{}
+\DoxyCodeLine{00812                 \textcolor{keywordflow}{if} (list.Contains(obj))}
+\DoxyCodeLine{00813                     list.Remove(obj);}
+\DoxyCodeLine{00814             \}}
+\DoxyCodeLine{00815         \}}
+\DoxyCodeLine{00816 }
+\DoxyCodeLine{00817 }
+\DoxyCodeLine{00818 \textcolor{preprocessor}{        \#endregion Callback Interfaces}}
+\DoxyCodeLine{00819 }
+\DoxyCodeLine{00820 }
+\DoxyCodeLine{00821         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00822         \{}
+\DoxyCodeLine{00823             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}View \{0\}\{3\} on \{1\} \{2\}"{}}, this.ViewID, (this.gameObject != \textcolor{keyword}{null}) ? this.gameObject.name : \textcolor{stringliteral}{"{}GO==null"{}}, (\textcolor{keyword}{this}.IsRoomView) ? \textcolor{stringliteral}{"{}(scene)"{}} : \textcolor{keywordtype}{string}.Empty, \textcolor{keyword}{this}.Prefix > 0 ? \textcolor{stringliteral}{"{}lvl"{}} + \textcolor{keyword}{this}.Prefix : \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00824         \}}
+\DoxyCodeLine{00825     \}}
+\DoxyCodeLine{00826 \}}
+
+\end{DoxyCode}

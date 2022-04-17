@@ -1,0 +1,235 @@
+\doxysection{Score\+Manager.\+cs}
+\label{_score_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/ChuYao/Scripts/ScoreManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/ChuYao/Scripts/ScoreManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} TMPro;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{public} \textcolor{keyword}{class }ScoreManager : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013     \textcolor{keyword}{public} \textcolor{keyword}{static} ScoreManager instance;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} MainScore = \textcolor{stringliteral}{"{}MainScore"{}};}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} BrokenFurnitureScore = \textcolor{stringliteral}{"{}BrokenFurnitureScore"{}};}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} TotalTrapScore = \textcolor{stringliteral}{"{}TotalTrapScore"{}};}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keywordtype}{int} mainScore = 1000;}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keywordtype}{int} trapScore = 100;}
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keywordtype}{int} furniture1 = 100;}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keywordtype}{int} furniture2 = 250;}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keywordtype}{int} furniture3 = 500;}
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keywordtype}{int} totalFurnitureScore = 2400; \textcolor{comment}{//24 furnitures atm}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     ExitGames.Client.Photon.Hashtable playerProperties = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable();}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028     \textcolor{keyword}{public} TextMeshProUGUI nameP1, nameP2, mainScoreP1, mainScoreP2, extraScoreP1, extraScoreP2, totalP1, totalP2;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030    \textcolor{keyword}{private} \textcolor{keywordtype}{int} catMain = 0, humanMain = 0, catExtra = 0, humanExtra = 0, totalBrokenScore = 0, totalTrapScore = 0;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00034         instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00035     \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetMainScore(\textcolor{keywordtype}{int} score)}
+\DoxyCodeLine{00039     \{}
+\DoxyCodeLine{00040         playerProperties = PhotonNetwork.LocalPlayer.CustomProperties;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{comment}{//get score from custom prop}}
+\DoxyCodeLine{00043         \textcolor{keywordtype}{int} currScore = 0;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey(MainScore))}
+\DoxyCodeLine{00046             currScore = (int)PhotonNetwork.LocalPlayer.CustomProperties[MainScore];}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{comment}{//add score}}
+\DoxyCodeLine{00049         currScore += score;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         playerProperties[MainScore] = currScore;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         Debug.Log(\textcolor{stringliteral}{"{}Current Main Score:"{}} + currScore);}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{comment}{//set score to custom prop}}
+\DoxyCodeLine{00056         PhotonNetwork.SetPlayerCustomProperties(playerProperties);}
+\DoxyCodeLine{00057     \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060     \textcolor{comment}{// The score shared by both players}}
+\DoxyCodeLine{00061     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetBrokenFurnitureScore(\textcolor{keywordtype}{int} score)}
+\DoxyCodeLine{00062     \{}
+\DoxyCodeLine{00063         playerProperties = PhotonNetwork.MasterClient.CustomProperties;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keywordtype}{int} currScore = 0;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068         \textcolor{keywordflow}{if} (PhotonNetwork.MasterClient.CustomProperties.ContainsKey(BrokenFurnitureScore))}
+\DoxyCodeLine{00069             currScore = (int)PhotonNetwork.MasterClient.CustomProperties[BrokenFurnitureScore];}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         currScore += score;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         playerProperties[BrokenFurnitureScore] = currScore;}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         PhotonNetwork.SetPlayerCustomProperties(playerProperties);}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077     \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetFixFurnitureScore(\textcolor{keywordtype}{int} score)}
+\DoxyCodeLine{00080     \{}
+\DoxyCodeLine{00081         playerProperties = PhotonNetwork.MasterClient.CustomProperties;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keywordtype}{int} currScore = 0;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keywordflow}{if} (PhotonNetwork.MasterClient.CustomProperties.ContainsKey(BrokenFurnitureScore))}
+\DoxyCodeLine{00086             currScore = (int)PhotonNetwork.MasterClient.CustomProperties[BrokenFurnitureScore];}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         currScore -\/= score;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         playerProperties[BrokenFurnitureScore] = currScore;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         PhotonNetwork.SetPlayerCustomProperties(playerProperties);}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094     \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTrapScore()}
+\DoxyCodeLine{00097     \{}
+\DoxyCodeLine{00098         playerProperties = PhotonNetwork.LocalPlayer.CustomProperties;}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{comment}{//get score from custom prop}}
+\DoxyCodeLine{00101         \textcolor{keywordtype}{int} currScore = 0;}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey(TotalTrapScore))}
+\DoxyCodeLine{00104             currScore = (int)PhotonNetwork.LocalPlayer.CustomProperties[TotalTrapScore];}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{comment}{//add score}}
+\DoxyCodeLine{00107         currScore += trapScore;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         playerProperties[TotalTrapScore] = currScore;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         \textcolor{comment}{//set score to custom prop}}
+\DoxyCodeLine{00112         PhotonNetwork.SetPlayerCustomProperties(playerProperties);}
+\DoxyCodeLine{00113     \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115     IEnumerator ChangeScene(\textcolor{keywordtype}{string} sceneName)}
+\DoxyCodeLine{00116     \{}
+\DoxyCodeLine{00117         yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(10f);}
+\DoxyCodeLine{00118         SceneManager.LoadScene(sceneName);}
+\DoxyCodeLine{00119     \}}
+\DoxyCodeLine{00120     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)}
+\DoxyCodeLine{00121     \{}
+\DoxyCodeLine{00122         base.OnPlayerPropertiesUpdate(targetPlayer, changedProps);}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keywordflow}{foreach} (var p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00126         \{}
+\DoxyCodeLine{00127             UpdatePlayerPropertiesUI(p);}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129     \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132     \textcolor{comment}{//Showing score}}
+\DoxyCodeLine{00133     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdatePlayerPropertiesUI(Player targetPlayer)}
+\DoxyCodeLine{00134     \{}
+\DoxyCodeLine{00135         \textcolor{keywordflow}{if} (PhotonNetwork.MasterClient.CustomProperties.ContainsKey(BrokenFurnitureScore))}
+\DoxyCodeLine{00136             totalBrokenScore = (int)PhotonNetwork.MasterClient.CustomProperties[BrokenFurnitureScore];}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         if (targetPlayer.CustomProperties.ContainsValue(\textcolor{stringliteral}{"{}Cat"{}}))}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140             catMain = (int)targetPlayer.CustomProperties[MainScore];}
+\DoxyCodeLine{00141             catExtra = totalBrokenScore;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             if (nameP1 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00144                 nameP1.text = targetPlayer.NickName; ;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{keywordflow}{if} (mainScoreP1 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00147                 mainScoreP1.text = catMain.ToString();}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (extraScoreP1 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00149                 extraScoreP1.text = catExtra.ToString();}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordtype}{int} total = catMain + catExtra;}
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (totalP1 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00153                 totalP1.text = total.ToString();}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (targetPlayer.CustomProperties.ContainsValue(\textcolor{stringliteral}{"{}Human"{}}))}
+\DoxyCodeLine{00156         \{}
+\DoxyCodeLine{00157             humanMain = (int)targetPlayer.CustomProperties[MainScore];}
+\DoxyCodeLine{00158             if (targetPlayer.CustomProperties.ContainsKey(TotalTrapScore))}
+\DoxyCodeLine{00159                 totalTrapScore = (\textcolor{keywordtype}{int})targetPlayer.CustomProperties[TotalTrapScore];}
+\DoxyCodeLine{00160             humanExtra = totalFurnitureScore -\/ totalBrokenScore + totalTrapScore;}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             \textcolor{keywordflow}{if} (nameP2 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00163                 nameP2.text = targetPlayer.NickName;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             \textcolor{keywordflow}{if} (mainScoreP2 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00166                 mainScoreP2.text = humanMain.ToString();}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (mainScoreP2 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00168                 extraScoreP2.text = humanExtra.ToString();}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170             \textcolor{keywordtype}{int} total = humanMain + humanExtra;}
+\DoxyCodeLine{00171             \textcolor{keywordflow}{if} (totalP2 != \textcolor{keyword}{null})}
+\DoxyCodeLine{00172                 totalP2.text = total.ToString();}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175     \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177     \textcolor{keyword}{public} TimerScript timerScript;}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179     \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00180     \{}
+\DoxyCodeLine{00181         \textcolor{keywordflow}{foreach} (var p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00182         \{}
+\DoxyCodeLine{00183             UpdatePlayerPropertiesUI(p);}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{keywordflow}{if} (mainScoreP2 != \textcolor{keyword}{null} \&\& mainScoreP1 != \textcolor{keyword}{null} \&\& timerScript == \textcolor{keyword}{null})}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             Debug.Log(\textcolor{stringliteral}{"{}Human: "{}} + humanMain);}
+\DoxyCodeLine{00190             Debug.Log(\textcolor{stringliteral}{"{}Cat: "{}} + catMain);}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{keywordflow}{if} (catMain < 3000 \&\& humanMain < 3000)}
+\DoxyCodeLine{00193             \{}
+\DoxyCodeLine{00194                 StartCoroutine(ChangeScene(\textcolor{stringliteral}{"{}BothLose"{}}));}
+\DoxyCodeLine{00195             \}}
+\DoxyCodeLine{00196             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (catMain < 3000 \&\& humanMain >= 3000)}
+\DoxyCodeLine{00197             \{}
+\DoxyCodeLine{00198                 StartCoroutine(ChangeScene(\textcolor{stringliteral}{"{}HumanWin"{}}));}
+\DoxyCodeLine{00199             \}}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (humanMain < 3000 \&\& catMain >= 3000)}
+\DoxyCodeLine{00201             \{}
+\DoxyCodeLine{00202                 StartCoroutine(ChangeScene(\textcolor{stringliteral}{"{}CatWin"{}}));}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (humanMain == catMain)}
+\DoxyCodeLine{00205             \{}
+\DoxyCodeLine{00206                 \textcolor{keywordflow}{if} (humanExtra > catExtra)}
+\DoxyCodeLine{00207                 \{}
+\DoxyCodeLine{00208                     StartCoroutine(ChangeScene(\textcolor{stringliteral}{"{}HumanWin"{}}));}
+\DoxyCodeLine{00209                 \}}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (catExtra > humanExtra)}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     StartCoroutine(ChangeScene(\textcolor{stringliteral}{"{}CatWin"{}}));}
+\DoxyCodeLine{00213                 \}}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217     \}}
+\DoxyCodeLine{00218     \textcolor{comment}{//public override void OnEnable()}}
+\DoxyCodeLine{00219     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00220     \textcolor{comment}{//    base.OnEnable(); }}
+\DoxyCodeLine{00221     \textcolor{comment}{//    // Only the scene that have these text reference would call this if statement}}
+\DoxyCodeLine{00222     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224     \textcolor{keyword}{public} \textcolor{keywordtype}{void} BackToMenu()}
+\DoxyCodeLine{00225     \{}
+\DoxyCodeLine{00226         SceneManager.LoadScene(0);}
+\DoxyCodeLine{00227     \}}
+\DoxyCodeLine{00228 \}}
+\DoxyCodeLine{00229 }
+
+\end{DoxyCode}

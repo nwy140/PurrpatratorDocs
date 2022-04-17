@@ -1,0 +1,105 @@
+\doxysection{Flat\+Kit\+Depth\+Normals.\+cs}
+\label{_flat_kit_depth_normals_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Outline/FlatKitDepthNormals.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Outline/FlatKitDepthNormals.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine.Rendering.Universal;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{comment}{// TODO: Remove for URP 13.}}
+\DoxyCodeLine{00006 \textcolor{comment}{// https://docs.unity3d.com/Packages/com.unity.render-\/pipelines.universal@13.1/manual/upgrade-\/guide-\/2022-\/1.html}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#pragma warning disable CS0618}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{public} \textcolor{keyword}{class }FlatKitDepthNormals : ScriptableRendererFeature \{}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} overrideRenderEvent;}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} RenderPassEvent renderEvent = RenderPassEvent.AfterRenderingTransparents;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013     \textcolor{keyword}{class }DepthNormalsPass : ScriptableRenderPass \{}
+\DoxyCodeLine{00014         \textcolor{keyword}{private} RenderTargetHandle \_depthAttachmentHandle;}
+\DoxyCodeLine{00015         \textcolor{keyword}{private} RenderTextureDescriptor \_descriptor;}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} FilteringSettings \_filteringSettings;}
+\DoxyCodeLine{00017         \textcolor{keyword}{private} readonly Material \_depthNormalsMaterial;}
+\DoxyCodeLine{00018         \textcolor{keyword}{private} readonly \textcolor{keywordtype}{string} \_profilerTag = \textcolor{stringliteral}{"{}[Flat Kit] Depth Normals Pass"{}};}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} readonly ShaderTagId \_shaderTagId = \textcolor{keyword}{new} ShaderTagId(\textcolor{stringliteral}{"{}DepthOnly"{}});}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} readonly \textcolor{keywordtype}{int} \_depthBufferBits = 32;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} DepthNormalsPass(RenderQueueRange renderQueueRange, LayerMask layerMask, Material material) \{}
+\DoxyCodeLine{00023             \_filteringSettings = \textcolor{keyword}{new} FilteringSettings(renderQueueRange, layerMask);}
+\DoxyCodeLine{00024             \_depthNormalsMaterial = material;}
+\DoxyCodeLine{00025         \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Setup(RenderTextureDescriptor baseDescriptor, RenderTargetHandle depthRTHandle) \{}
+\DoxyCodeLine{00028             this.\_depthAttachmentHandle = depthRTHandle;}
+\DoxyCodeLine{00029             baseDescriptor.colorFormat = RenderTextureFormat.ARGB32;}
+\DoxyCodeLine{00030             baseDescriptor.depthBufferBits = \_depthBufferBits;}
+\DoxyCodeLine{00031             \_descriptor = baseDescriptor;}
+\DoxyCodeLine{00032         \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor) \{}
+\DoxyCodeLine{00035             cmd.GetTemporaryRT(\_depthAttachmentHandle.id, \_descriptor, FilterMode.Point);}
+\DoxyCodeLine{00036             ConfigureTarget(\_depthAttachmentHandle.Identifier());}
+\DoxyCodeLine{00037             ConfigureClear(ClearFlag.All, Color.black);}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Execute(ScriptableRenderContext context, ref RenderingData renderingData) \{}
+\DoxyCodeLine{00041             CommandBuffer cmd = CommandBufferPool.Get(\_profilerTag);}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keyword}{using} (\textcolor{keyword}{new} ProfilingScope(cmd, \textcolor{keyword}{new} ProfilingSampler(\_profilerTag))) \{}
+\DoxyCodeLine{00044                 context.ExecuteCommandBuffer(cmd);}
+\DoxyCodeLine{00045                 cmd.Clear();}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047                 var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;}
+\DoxyCodeLine{00048                 var drawSettings = CreateDrawingSettings(\_shaderTagId, ref renderingData, sortFlags);}
+\DoxyCodeLine{00049                 drawSettings.perObjectData = PerObjectData.None;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051                 ref CameraData cameraData = ref renderingData.cameraData;}
+\DoxyCodeLine{00052                 Camera camera = cameraData.camera;}
+\DoxyCodeLine{00053 \textcolor{preprocessor}{\#pragma warning disable 618}}
+\DoxyCodeLine{00054                 \textcolor{keywordflow}{if} (cameraData.isStereoEnabled)}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{\#pragma warning restore 618}}
+\DoxyCodeLine{00056                 \{}
+\DoxyCodeLine{00057                     context.StartMultiEye(camera);}
+\DoxyCodeLine{00058                 \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                 drawSettings.overrideMaterial = \_depthNormalsMaterial;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062                 context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref \_filteringSettings);}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 cmd.SetGlobalTexture(\textcolor{stringliteral}{"{}\_CameraDepthNormalsTexture"{}}, \_depthAttachmentHandle.id);}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             context.ExecuteCommandBuffer(cmd);}
+\DoxyCodeLine{00068             CommandBufferPool.Release(cmd);}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{comment}{// public override void OnCameraCleanup(CommandBuffer cmd) \{}}
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} FrameCleanup(CommandBuffer cmd) \{}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (\_depthAttachmentHandle == RenderTargetHandle.CameraTarget) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00074             cmd.ReleaseTemporaryRT(\_depthAttachmentHandle.id);}
+\DoxyCodeLine{00075             \_depthAttachmentHandle = RenderTargetHandle.CameraTarget;}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077     \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079     DepthNormalsPass \_depthNormalsPass;}
+\DoxyCodeLine{00080     RenderTargetHandle \_depthNormalsTexture;}
+\DoxyCodeLine{00081     Material \_depthNormalsMaterial;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083     \textcolor{keyword}{public} FlatKitDepthNormals(RenderTargetHandle depthNormalsTexture) \{}
+\DoxyCodeLine{00084         \_depthNormalsTexture = depthNormalsTexture;}
+\DoxyCodeLine{00085     \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Create() \{}
+\DoxyCodeLine{00088         \_depthNormalsMaterial = CoreUtils.CreateEngineMaterial(\textcolor{stringliteral}{"{}Hidden/Internal-\/DepthNormalsTexture"{}});}
+\DoxyCodeLine{00089         \_depthNormalsPass = \textcolor{keyword}{new} DepthNormalsPass(RenderQueueRange.all, -\/1, \_depthNormalsMaterial) \{}
+\DoxyCodeLine{00090             renderPassEvent = overrideRenderEvent? renderEvent : RenderPassEvent.AfterRenderingTransparents}
+\DoxyCodeLine{00091         \};}
+\DoxyCodeLine{00092         \_depthNormalsTexture.Init(\textcolor{stringliteral}{"{}\_CameraDepthNormalsTexture"{}});}
+\DoxyCodeLine{00093     \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) \{}
+\DoxyCodeLine{00096         \_depthNormalsPass.Setup(renderingData.cameraData.cameraTargetDescriptor, \_depthNormalsTexture);}
+\DoxyCodeLine{00097         renderer.EnqueuePass(\_depthNormalsPass);}
+\DoxyCodeLine{00098     \}}
+\DoxyCodeLine{00099 \}}
+
+\end{DoxyCode}

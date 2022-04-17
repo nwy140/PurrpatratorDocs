@@ -1,0 +1,343 @@
+\doxysection{Matrix.\+cs}
+\label{_matrix_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/Matrix.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/Matrix.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{class }Matrix}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} TransformCrusher crusher;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} Vector3 position;}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} Element rotation;}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} Vector3 scale;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} Matrix reusable = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} Matrix()}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029         \}}
+\DoxyCodeLine{00030         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Matrix(TransformCrusher crusher)}
+\DoxyCodeLine{00032         \{}
+\DoxyCodeLine{00033             this.crusher = crusher;}
+\DoxyCodeLine{00034         \}}
+\DoxyCodeLine{00035         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} Matrix(TransformCrusher crusher, Vector3 position, Element rotation, Vector3 scale)}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             this.crusher = crusher;}
+\DoxyCodeLine{00039             this.position = position;}
+\DoxyCodeLine{00040             this.scale = scale;}
+\DoxyCodeLine{00041             this.rotation = rotation;}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} Matrix(TransformCrusher crusher, Transform transform)}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             this.crusher = crusher;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             \textcolor{keywordtype}{bool} lclpos = (crusher == \textcolor{keyword}{null} || crusher.PosCrusher == \textcolor{keyword}{null} || crusher.PosCrusher.local);}
+\DoxyCodeLine{00050             this.position = (lclpos) ? transform.localPosition : transform.position;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052             \textcolor{comment}{// Not sure the idea option for scale... lossy or local.}}
+\DoxyCodeLine{00053             \textcolor{keywordtype}{bool} lclscl = (crusher == \textcolor{keyword}{null} || crusher.SclCrusher == \textcolor{keyword}{null} || crusher.SclCrusher.local);}
+\DoxyCodeLine{00054             this.scale = (lclscl) ? transform.localScale : transform.lossyScale;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordtype}{bool} lclrot = (crusher == \textcolor{keyword}{null} || crusher.RotCrusher == \textcolor{keyword}{null} || crusher.RotCrusher.local);}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00058                 this.rotation = (lclrot) ? transform.localRotation : transform.rotation;}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00060                 \textcolor{keyword}{this}.rotation = (lclrot) ? transform.localEulerAngles : transform.eulerAngles;}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(TransformCrusher crusher, Vector3 position, Element rotation, Vector3 scale)}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             this.crusher = crusher;}
+\DoxyCodeLine{00066             this.position = position;}
+\DoxyCodeLine{00067             this.scale = scale;}
+\DoxyCodeLine{00068             this.rotation = rotation;}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         [System.Obsolete(\textcolor{stringliteral}{"{}Use Capture() instead. Set was confusing with other usage."{}})]}
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(TransformCrusher crusher, Transform transform) \{ Capture(crusher, transform); \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(TransformCrusher crusher, Transform transform)}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             this.crusher = crusher;}
+\DoxyCodeLine{00080             this.position = transform.position;}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{comment}{// Not sure the idea option for scale... lossy or local.}}
+\DoxyCodeLine{00083             this.scale = transform.localScale;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00086                 this.rotation = transform.rotation;}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00088                 this.rotation = transform.eulerAngles;}
+\DoxyCodeLine{00089         \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         [System.Obsolete(\textcolor{stringliteral}{"{}Use Capture() instead. Set was confusing with other usage."{}})]}
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Transform transform) \{ Capture(transform); \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(Transform transform)}
+\DoxyCodeLine{00098         \{}
+\DoxyCodeLine{00099             this.position = transform.position;}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \textcolor{comment}{// Not sure the idea option for scale... lossy or local.}}
+\DoxyCodeLine{00102             this.scale = transform.localScale;}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00105                 this.rotation = transform.rotation;}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00107                 this.rotation = transform.eulerAngles;}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         [System.Obsolete(\textcolor{stringliteral}{"{}Use Capture() instead. Set was confusing with other usage."{}})]}
+\DoxyCodeLine{00112         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(TransformCrusher crusher, Rigidbody rb) \{ Capture(crusher, rb); \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00117         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(TransformCrusher crusher, Rigidbody rb)}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             this.crusher = crusher;}
+\DoxyCodeLine{00120             this.position = rb.position;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             \textcolor{comment}{// Not sure the ideal option for scale... lossy or local.}}
+\DoxyCodeLine{00123             this.scale = rb.transform.localScale;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00126                 this.rotation = rb.rotation;}
+\DoxyCodeLine{00127             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00128                 this.rotation = rb.rotation.eulerAngles;}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         [System.Obsolete(\textcolor{stringliteral}{"{}Use Capture() instead. Set was confusing with other usage."{}})]}
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb) \{ Capture(rb); \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00137         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(Rigidbody rb)}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             this.position = rb.position;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00142                 this.rotation = rb.rotation;}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00144                 this.rotation = rb.rotation.eulerAngles;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{comment}{// Not sure the ideal option for scale... lossy or local.}}
+\DoxyCodeLine{00147             this.scale = rb.transform.localScale;}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             this.crusher = \textcolor{keyword}{null};}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00160         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc)}
+\DoxyCodeLine{00161         \{}
+\DoxyCodeLine{00162             crusher.Compress(nonalloc, \textcolor{keyword}{this});}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00168         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to Apply to. Default Transform has been deprecated to allow shared TransformCrushers."{}})]}
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply()}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171             crusher.Apply(\textcolor{keyword}{this});}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform t)}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (crusher == \textcolor{keyword}{null})}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 Debug.LogError(\textcolor{stringliteral}{"{}No crusher defined for this matrix. This matrix has not yet had a value assigned to it most likely, but you are trying to apply it to a transform."{}});}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184             crusher.Apply(t, \textcolor{keyword}{this});}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         [System.Obsolete(\textcolor{stringliteral}{"{}Apply for Rigidbody has been replaced with Move and Set, to indicate usage of MovePosition/Rotation vs rb.position/rotation."{}})]}
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Rigidbody rb)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             \textcolor{keywordflow}{if} (crusher == \textcolor{keyword}{null})}
+\DoxyCodeLine{00191             \{}
+\DoxyCodeLine{00192                 Debug.LogError(\textcolor{stringliteral}{"{}No crusher defined for this matrix. This matrix has not yet had a value assigned to it most likely, but you are trying to apply it to a transform."{}});}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195             crusher.Apply(rb, \textcolor{keyword}{this});}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00206         \textcolor{keyword}{public} \textcolor{keyword}{static} Matrix Lerp(Matrix target, Matrix start, Matrix end, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             var crusher = end.crusher;}
+\DoxyCodeLine{00209             target.crusher = crusher;}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             target.position = Vector3.Lerp(start.position, end.position, t);}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00214             \{}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{if} (crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00216                     target.rotation = Quaternion.Slerp((Quaternion)start.rotation, (Quaternion)end.rotation, t);}
+\DoxyCodeLine{00217                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00218                 \{}
+\DoxyCodeLine{00219                     var srot = (Vector3)start.rotation;}
+\DoxyCodeLine{00220                     var erot = (Vector3)end.rotation;}
+\DoxyCodeLine{00221                     var ydelta = srot.y -\/ erot.y;}
+\DoxyCodeLine{00222                     var zdelta = srot.z -\/ erot.z;}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225                     Vector3 unfucked = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00226                         erot.x,}
+\DoxyCodeLine{00227                         ydelta > 180 ? erot.y + 360 : ydelta < -\/180 ? erot.y -\/ 360 : erot.y,}
+\DoxyCodeLine{00228                         zdelta > 180 ? erot.z + 360 : zdelta < -\/180 ? erot.z -\/ 360 : erot.z}
+\DoxyCodeLine{00229                         );}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231                     target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);}
+\DoxyCodeLine{00232                 \}}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00235                 target.rotation = end.rotation;}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             target.scale = Vector3.Lerp(start.scale, end.scale, t);}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239             \textcolor{keywordflow}{return} target;}
+\DoxyCodeLine{00240         \}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00250         \textcolor{keyword}{public} \textcolor{keyword}{static} Matrix LerpUnclamped(Matrix target, Matrix start, Matrix end, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00251         \{}
+\DoxyCodeLine{00252             var crusher = end.crusher;}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254             target.crusher = crusher;}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256             target.position = Vector3.LerpUnclamped(start.position, end.position, t);}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00259             \{}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{if} (crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00261                     target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);}
+\DoxyCodeLine{00262                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00263                 \{}
+\DoxyCodeLine{00264                     var srot = (Vector3)start.rotation;}
+\DoxyCodeLine{00265                     var erot = (Vector3)end.rotation;}
+\DoxyCodeLine{00266                     var ydelta = srot.y -\/ erot.y;}
+\DoxyCodeLine{00267                     var zdelta = srot.z -\/ erot.z;}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                     Vector3 unfucked = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00270                         erot.x,}
+\DoxyCodeLine{00271                         ydelta > 180 ? erot.y + 360 : ydelta < -\/180 ? erot.y -\/ 360 : erot.y,}
+\DoxyCodeLine{00272                         zdelta > 180 ? erot.z + 360 : zdelta < -\/180 ? erot.z -\/ 360 : erot.z}
+\DoxyCodeLine{00273                         );}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275                     target.rotation = Vector3.LerpUnclamped(srot, (Vector3)unfucked, t);}
+\DoxyCodeLine{00276                 \}}
+\DoxyCodeLine{00277             \}}
+\DoxyCodeLine{00278             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00279                 target.rotation = end.rotation;}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281             target.scale = Vector3.LerpUnclamped(start.scale, end.scale, t);}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283             \textcolor{keywordflow}{return} target;}
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286         \textcolor{keyword}{public} \textcolor{keyword}{static} Matrix CatmullRomLerpUnclamped(Matrix target, Matrix pre, Matrix start, Matrix end, Matrix post, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00287         \{}
+\DoxyCodeLine{00288             var crusher = end.crusher;}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             target.crusher = crusher;}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292             target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, post.position, t);}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00295             \{}
+\DoxyCodeLine{00296                 \textcolor{keywordflow}{if} (crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00297                     target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);}
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00299                 \{}
+\DoxyCodeLine{00300                     var srot = (Vector3)start.rotation;}
+\DoxyCodeLine{00301                     var erot = (Vector3)end.rotation;}
+\DoxyCodeLine{00302                     var ydelta = srot.y -\/ erot.y;}
+\DoxyCodeLine{00303                     var zdelta = srot.z -\/ erot.z;}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305                     Vector3 unfucked = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00306                         erot.x,}
+\DoxyCodeLine{00307                         ydelta > 180 ? erot.y + 360 : ydelta < -\/180 ? erot.y -\/ 360 : erot.y,}
+\DoxyCodeLine{00308                         zdelta > 180 ? erot.z + 360 : zdelta < -\/180 ? erot.z -\/ 360 : erot.z}
+\DoxyCodeLine{00309                         );}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311                     target.rotation = Vector3.LerpUnclamped(srot, (Vector3)unfucked, t);}
+\DoxyCodeLine{00312                 \}}
+\DoxyCodeLine{00313             \}}
+\DoxyCodeLine{00314             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00315                 target.rotation = end.rotation;}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318             target.scale = CatmulRom.CatmullRomLerp(pre.scale, start.scale, end.scale, post.scale, t);}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320             \textcolor{keywordflow}{return} target;}
+\DoxyCodeLine{00321         \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323         \textcolor{keyword}{public} \textcolor{keyword}{static} Matrix CatmullRomLerpUnclamped(Matrix target, Matrix pre, Matrix start, Matrix end, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00324         \{}
+\DoxyCodeLine{00325             var crusher = end.crusher;}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327             target.crusher = crusher;}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329             target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, t);}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null} \&\& crusher.RotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00332             \{}
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{if} (crusher.RotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00334                     target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);}
+\DoxyCodeLine{00335                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00336                 \{}
+\DoxyCodeLine{00337                     var srot = (Vector3)start.rotation;}
+\DoxyCodeLine{00338                     var erot = (Vector3)end.rotation;}
+\DoxyCodeLine{00339                     var ydelta = srot.y -\/ erot.y;}
+\DoxyCodeLine{00340                     var zdelta = srot.z -\/ erot.z;}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342                     Vector3 unfucked = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00343                         erot.x,}
+\DoxyCodeLine{00344                         ydelta > 180 ? erot.y + 360 : ydelta < -\/180 ? erot.y -\/ 360 : erot.y,}
+\DoxyCodeLine{00345                         zdelta > 180 ? erot.z + 360 : zdelta < -\/180 ? erot.z -\/ 360 : erot.z}
+\DoxyCodeLine{00346                         );}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348                     target.rotation = Vector3.LerpUnclamped(srot, (Vector3)unfucked, t);}
+\DoxyCodeLine{00349                 \}}
+\DoxyCodeLine{00350             \}}
+\DoxyCodeLine{00351             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00352                 target.rotation = end.rotation;}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354             target.scale = CatmulRom.CatmullRomLerp(pre.scale, start.scale, end.scale, t);}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356             \textcolor{keywordflow}{return} target;}
+\DoxyCodeLine{00357         \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00361         \{}
+\DoxyCodeLine{00362             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}MATRIX pos: "{}} + position + \textcolor{stringliteral}{"{} rot: "{}} + rotation + \textcolor{stringliteral}{"{} scale: "{}} + scale + \textcolor{stringliteral}{"{}  rottype: "{}} + rotation.vectorType;}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365     \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }MatrixExtensions}
+\DoxyCodeLine{00369     \{}
+\DoxyCodeLine{00370         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CopyFrom(\textcolor{keyword}{this} Matrix target, Matrix src)}
+\DoxyCodeLine{00371         \{}
+\DoxyCodeLine{00372             target.crusher = src.crusher;}
+\DoxyCodeLine{00373             target.position = src.position;}
+\DoxyCodeLine{00374             target.rotation = src.rotation;}
+\DoxyCodeLine{00375             target.scale = src.scale;}
+\DoxyCodeLine{00376         \}}
+\DoxyCodeLine{00377     \}}
+\DoxyCodeLine{00378 \}}
+\DoxyCodeLine{00379 }
+
+\end{DoxyCode}

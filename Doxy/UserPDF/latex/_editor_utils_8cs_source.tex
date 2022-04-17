@@ -1,0 +1,395 @@
+\doxysection{Editor\+Utils.\+cs}
+\label{_editor_utils_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GUITools/EditorUtils.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GUITools/EditorUtils.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }EditorUtils}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} \textcolor{keyword}{static} Texture2D \_docsIconTexture;}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly GUIContent reusableGC = \textcolor{keyword}{new} GUIContent();}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{static} Texture2D DocsIconTexture}
+\DoxyCodeLine{00023         \{}
+\DoxyCodeLine{00024             \textcolor{keyword}{get}}
+\DoxyCodeLine{00025             \{}
+\DoxyCodeLine{00026                 \textcolor{keywordflow}{if} (\_docsIconTexture == \textcolor{keyword}{null})}
+\DoxyCodeLine{00027                     \_docsIconTexture = (Texture2D)Resources.Load<Texture2D>(\textcolor{stringliteral}{"{}Header/DocsIcon"{}});}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029                 \textcolor{keywordflow}{return} \_docsIconTexture;}
+\DoxyCodeLine{00030             \}}
+\DoxyCodeLine{00031         \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} PropertyFieldWithDocsLink(Rect rect, SerializedProperty property, GUIContent label, \textcolor{keywordtype}{string} url)}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             var iconX = rect.xMin + EditorGUIUtility.labelWidth -\/ 16 -\/ 4;}
+\DoxyCodeLine{00036             DrawDocsIcon(iconX, rect.yMin, url);}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{return} EditorGUI.PropertyField(rect, property, label);}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} PropertyFieldWithDocsLink(SerializedProperty property, GUIContent label, \textcolor{keywordtype}{string} url)}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             var rect = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{return} PropertyFieldWithDocsLink(rect, property, label, url);}
+\DoxyCodeLine{00044         \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawDocsIcon(\textcolor{keywordtype}{float} xMin, \textcolor{keywordtype}{float} yMin, \textcolor{keywordtype}{string} url)}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             Rect r = \textcolor{keyword}{new} Rect(xMin, yMin, 16, 16);}
+\DoxyCodeLine{00049             GUI.DrawTexture(r, DocsIconTexture);}
+\DoxyCodeLine{00050             EditorGUIUtility.AddCursorRect(r, MouseCursor.Link);}
+\DoxyCodeLine{00051             reusableGC.text = \textcolor{keyword}{null};}
+\DoxyCodeLine{00052             reusableGC.tooltip = \textcolor{stringliteral}{"{}Click to open Documentation"{}};}
+\DoxyCodeLine{00053             \textcolor{keywordflow}{if} (GUI.Button(r, reusableGC, GUIStyle.none))}
+\DoxyCodeLine{00054                 Application.OpenURL(url);}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateErrorIconF(\textcolor{keywordtype}{float} xmin, \textcolor{keywordtype}{float} ymin, \textcolor{keywordtype}{string} \_tooltip)}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             GUIContent errorIcon = EditorGUIUtility.IconContent(\textcolor{stringliteral}{"{}CollabError"{}});}
+\DoxyCodeLine{00060             errorIcon.tooltip = \_tooltip;}
+\DoxyCodeLine{00061             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(xmin, ymin, 16, 16), errorIcon);}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject GetPrefabSourceOfGameObject(\textcolor{keyword}{this} GameObject go)}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070 \textcolor{preprocessor}{\#if UNITY\_2018\_2\_OR\_NEWER}}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{return} (PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject);}
+\DoxyCodeLine{00072 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{return} (PrefabUtility.GetPrefabParent(go) as GameObject);}
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00080         \textcolor{keyword}{public} \textcolor{keyword}{static} List<GameObject> FindAllPrefabInstances(GameObject prefabParent)}
+\DoxyCodeLine{00081         \{}
+\DoxyCodeLine{00082             \textcolor{comment}{//Debug.Log("{}Finding all instances of prefab '"{} + prefabParent.name +"{}' in scene"{});}}
+\DoxyCodeLine{00083             List<GameObject> result = \textcolor{keyword}{new} List<GameObject>();}
+\DoxyCodeLine{00084             GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();}
+\DoxyCodeLine{00085             \textcolor{keywordflow}{foreach} (GameObject GO \textcolor{keywordflow}{in} allObjects)}
+\DoxyCodeLine{00086             \{}
+\DoxyCodeLine{00087 \textcolor{preprocessor}{\#if UNITY\_2018\_2\_OR\_NEWER}}
+\DoxyCodeLine{00088                 var parPrefab = PrefabUtility.GetCorrespondingObjectFromSource(GO) as GameObject;}
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00090                 var parPrefab = PrefabUtility.GetPrefabParent(GO);}
+\DoxyCodeLine{00091 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{if} (parPrefab == prefabParent)}
+\DoxyCodeLine{00095                 \{}
+\DoxyCodeLine{00096                     \textcolor{comment}{//Debug.Log("{}Found prefab instance: "{} + GO.name);}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098                     UnityEngine.Object GO\_prefab = parPrefab;}
+\DoxyCodeLine{00099                     \textcolor{keywordflow}{if} (prefabParent == GO\_prefab)}
+\DoxyCodeLine{00100                         result.Add(GO);}
+\DoxyCodeLine{00101                 \}}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103             \textcolor{keywordflow}{return} result;}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00109         \textcolor{keyword}{public} \textcolor{keyword}{static} T EnsureRootComponentExists<T>(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} isExpanded = \textcolor{keyword}{true}) where T : Component}
+\DoxyCodeLine{00110         \{}
+\DoxyCodeLine{00111 \textcolor{preprocessor}{\#if UNITY\_2018\_2\_OR\_NEWER}}
+\DoxyCodeLine{00112             GameObject parPrefab = PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject;}
+\DoxyCodeLine{00113 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00114             GameObject parPrefab = PrefabUtility.GetPrefabParent(go) as GameObject;}
+\DoxyCodeLine{00115 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             T component;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (parPrefab)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 component = parPrefab.GetComponent<T>();}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123                 \textcolor{comment}{// Remove the NI from a scene object before we add it to the prefab}}
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{if} (component == \textcolor{keyword}{null})}
+\DoxyCodeLine{00125                 \{}
+\DoxyCodeLine{00126                     List<GameObject> clones = FindAllPrefabInstances(parPrefab);}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128                     \textcolor{comment}{// Delete all instances of this root component in all instances of the prefab, so when we add to the prefab source they all get it -\/ without repeats}}
+\DoxyCodeLine{00129                     \textcolor{keywordflow}{foreach} (GameObject clone \textcolor{keywordflow}{in} clones)}
+\DoxyCodeLine{00130                     \{}
+\DoxyCodeLine{00131                         T[] comp = clone.GetComponents<T>();}
+\DoxyCodeLine{00132                         \textcolor{keywordflow}{foreach} (T t \textcolor{keywordflow}{in} comp)}
+\DoxyCodeLine{00133                         \{}
+\DoxyCodeLine{00134                             Debug.Log(\textcolor{stringliteral}{"{}Destroy "{}} + t);}
+\DoxyCodeLine{00135                             GameObject.DestroyImmediate(t);}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137                         \}}
+\DoxyCodeLine{00138                     \}}
+\DoxyCodeLine{00139                     component = parPrefab.AddComponent<T>();}
+\DoxyCodeLine{00140                     UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(component, isExpanded);}
+\DoxyCodeLine{00141                 \}}
+\DoxyCodeLine{00142             \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             \textcolor{comment}{// this is has no prefab source}}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 component = go.GetComponent<T>();}
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{if} (!component)}
+\DoxyCodeLine{00149                 \{}
+\DoxyCodeLine{00150                     component = go.AddComponent<T>();}
+\DoxyCodeLine{00151                     UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(component, isExpanded);}
+\DoxyCodeLine{00152                 \}}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{return} component;}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00161         \textcolor{keyword}{public} \textcolor{keyword}{static} Component EnsureRootComponentExists(\textcolor{keyword}{this} GameObject go, Type type, \textcolor{keywordtype}{bool} isExpanded = \textcolor{keyword}{true})}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             \textcolor{keywordflow}{if} (type == \textcolor{keyword}{null})}
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{preprocessor}{\#if UNITY\_2018\_2\_OR\_NEWER}}
+\DoxyCodeLine{00167             GameObject parPrefab = PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject;}
+\DoxyCodeLine{00168 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00169             GameObject parPrefab = PrefabUtility.GetPrefabParent(go) as GameObject;}
+\DoxyCodeLine{00170 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00171             Component component;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             \textcolor{keywordflow}{if} (parPrefab)}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 component = parPrefab.GetComponent(type);}
+\DoxyCodeLine{00176                 \textcolor{comment}{// Remove the NI from a scene object before we add it to the prefab}}
+\DoxyCodeLine{00177                 \textcolor{keywordflow}{if} (component == \textcolor{keyword}{null})}
+\DoxyCodeLine{00178                 \{}
+\DoxyCodeLine{00179                     List<GameObject> clones = FindAllPrefabInstances(parPrefab);}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181                     \textcolor{comment}{// Delete all instances of this root component in all instances of the prefab, so when we add to the prefab source they all get it -\/ without repeats}}
+\DoxyCodeLine{00182                     \textcolor{keywordflow}{foreach} (GameObject clone \textcolor{keywordflow}{in} clones)}
+\DoxyCodeLine{00183                     \{}
+\DoxyCodeLine{00184                         Component[] comp = clone.GetComponents(type);}
+\DoxyCodeLine{00185                         \textcolor{keywordflow}{foreach} (Component t \textcolor{keywordflow}{in} comp)}
+\DoxyCodeLine{00186                             GameObject.DestroyImmediate(t);}
+\DoxyCodeLine{00187                     \}}
+\DoxyCodeLine{00188                     component = parPrefab.AddComponent(type);}
+\DoxyCodeLine{00189                     UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(component, isExpanded);}
+\DoxyCodeLine{00190                 \}}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             \textcolor{comment}{// this is has no prefab source}}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00195             \{}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197                 component = go.GetComponent(type);}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{if} (!component)}
+\DoxyCodeLine{00200                 \{}
+\DoxyCodeLine{00201                     component = go.AddComponent(type);}
+\DoxyCodeLine{00202                     UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(component, isExpanded);}
+\DoxyCodeLine{00203                 \}}
+\DoxyCodeLine{00204             \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             \textcolor{keywordflow}{return} component;}
+\DoxyCodeLine{00207         \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209         \textcolor{keyword}{static} List<Component> components = \textcolor{keyword}{new} List<Component>();}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00214         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DeleteComponentAtSource(\textcolor{keyword}{this} GameObject go, Type type)}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             \textcolor{keywordflow}{if} (type == \textcolor{keyword}{null})}
+\DoxyCodeLine{00217                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219 \textcolor{preprocessor}{\#if UNITY\_2018\_2\_OR\_NEWER}}
+\DoxyCodeLine{00220             GameObject parPrefab = PrefabUtility.GetCorrespondingObjectFromSource(go) as GameObject;}
+\DoxyCodeLine{00221 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00222             GameObject parPrefab = PrefabUtility.GetPrefabParent(go) as GameObject;}
+\DoxyCodeLine{00223 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (parPrefab)}
+\DoxyCodeLine{00226             \{}
+\DoxyCodeLine{00227                 List<GameObject> clones = FindAllPrefabInstances(parPrefab);}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229                 \textcolor{comment}{// Delete all instances of this root component in all instances of the prefab, so when we add to the prefab source they all get it -\/ without repeats}}
+\DoxyCodeLine{00230                 \textcolor{keywordflow}{foreach} (GameObject clone \textcolor{keywordflow}{in} clones)}
+\DoxyCodeLine{00231                 \{}
+\DoxyCodeLine{00232                     clone.GetComponents(type, components);}
+\DoxyCodeLine{00233                     \textcolor{keywordflow}{foreach} (Component t \textcolor{keywordflow}{in} components)}
+\DoxyCodeLine{00234                         GameObject.DestroyImmediate(t);}
+\DoxyCodeLine{00235                 \}}
+\DoxyCodeLine{00236             \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{comment}{// this is has no prefab source}}
+\DoxyCodeLine{00239             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00240             \{}
+\DoxyCodeLine{00241                 go.GetComponents(type, components);}
+\DoxyCodeLine{00242                 \textcolor{keywordflow}{foreach} (Component t \textcolor{keywordflow}{in} components)}
+\DoxyCodeLine{00243                     GameObject.DestroyImmediate(t);}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle listBoxStyle;}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawEditableList(SerializedProperty listSP, \textcolor{keywordtype}{bool} lockZero, \textcolor{keywordtype}{string} labelPrefix = \textcolor{keyword}{null}, \textcolor{keywordtype}{float} labelwidth = -\/1, \textcolor{keywordtype}{int} maxCount = 32, \textcolor{keywordtype}{bool} forceUnique = \textcolor{keyword}{true}, GUIStyle guiStyle = \textcolor{keyword}{null})}
+\DoxyCodeLine{00251         \{}
+\DoxyCodeLine{00252             \textcolor{keyword}{const} \textcolor{keywordtype}{int} PAD = 6;}
+\DoxyCodeLine{00253             \textcolor{keyword}{const} \textcolor{keywordtype}{float} BTTN\_WIDTH = 20;}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keywordflow}{if} (guiStyle == \textcolor{keyword}{null})}
+\DoxyCodeLine{00256             \{}
+\DoxyCodeLine{00257                 \textcolor{keywordflow}{if} (listBoxStyle == \textcolor{keyword}{null})}
+\DoxyCodeLine{00258                     listBoxStyle = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0), padding = \textcolor{keyword}{new} RectOffset(PAD, PAD, PAD, PAD) \};}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260                 guiStyle = listBoxStyle;}
+\DoxyCodeLine{00261             \}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263             \textcolor{keywordflow}{if} (labelwidth < 0)}
+\DoxyCodeLine{00264                 labelwidth = 64;}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             EditorGUILayout.BeginVertical(guiStyle);}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             \textcolor{keywordtype}{int} cnt = listSP.arraySize;}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             \textcolor{keywordtype}{int} \textcolor{keyword}{delete} = -\/1;}
+\DoxyCodeLine{00273             \textcolor{keywordtype}{int} add = -\/1;}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; i++)}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00277                 EditorGUILayout.BeginHorizontal(GUILayout.Height(18));}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279                 \textcolor{comment}{// Add [+] button}}
+\DoxyCodeLine{00280                 var addbtnrect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(BTTN\_WIDTH));}
+\DoxyCodeLine{00281                 \textcolor{keywordflow}{if} (lockZero \&\& i != 0)}
+\DoxyCodeLine{00282                 \{}
+\DoxyCodeLine{00283                     EditorGUI.BeginDisabledGroup(cnt >= maxCount);}
+\DoxyCodeLine{00284                     \textcolor{keywordflow}{if} (GUI.Button(addbtnrect, \textcolor{stringliteral}{"{}+"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00285                         add = i;}
+\DoxyCodeLine{00286                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00287                 \}}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289                 \textcolor{comment}{// Label}}
+\DoxyCodeLine{00290                 EditorGUI.BeginDisabledGroup(lockZero \&\& i == 0);}
+\DoxyCodeLine{00291                 \textcolor{keywordtype}{string} label = labelPrefix == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}["{}} + i + \textcolor{stringliteral}{"{}]"{}} : labelPrefix + \textcolor{stringliteral}{"{} "{}} + i;}
+\DoxyCodeLine{00292                 EditorGUILayout.LabelField(label, GUILayout.MaxWidth(labelwidth));}
+\DoxyCodeLine{00293                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295                 \textcolor{comment}{// Field}}
+\DoxyCodeLine{00296                 SerializedProperty item = listSP.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                 var fieldrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(64));}
+\DoxyCodeLine{00299                 \textcolor{keywordflow}{if} (lockZero \&\& i == 0)}
+\DoxyCodeLine{00300                 \{}
+\DoxyCodeLine{00301                     EditorGUI.BeginDisabledGroup(\textcolor{keyword}{true});}
+\DoxyCodeLine{00302                     EditorGUI.LabelField(fieldrect, item.stringValue);}
+\DoxyCodeLine{00303                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00304                 \}}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00306                 \{}
+\DoxyCodeLine{00307                     \textcolor{keywordflow}{if} (item.propertyType == SerializedPropertyType.String)}
+\DoxyCodeLine{00308                         item.stringValue = EditorGUI.DelayedTextField(fieldrect, GUIContent.none, item.stringValue);}
+\DoxyCodeLine{00309                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00310                         EditorGUILayout.PropertyField(item);}
+\DoxyCodeLine{00311                     }
+\DoxyCodeLine{00312                     \textcolor{comment}{// Delete [x] Button}}
+\DoxyCodeLine{00313                     var delbuttonrect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(BTTN\_WIDTH));}
+\DoxyCodeLine{00314                     \textcolor{keywordflow}{if} (GUI.Button(delbuttonrect, \textcolor{stringliteral}{"{}X"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00315                         \textcolor{keyword}{delete} = i;}
+\DoxyCodeLine{00316                 \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00319             \}}
+\DoxyCodeLine{00320             \textcolor{comment}{// space}}
+\DoxyCodeLine{00321             EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 4);}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             \textcolor{comment}{// Bottom [add] Button}}
+\DoxyCodeLine{00324             EditorGUI.BeginDisabledGroup(cnt >= maxCount);}
+\DoxyCodeLine{00325             \textcolor{keywordflow}{if} (GUI.Button(EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 20), labelPrefix != \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}Add "{}} + labelPrefix : \textcolor{stringliteral}{"{}Add"{}}))}
+\DoxyCodeLine{00326                 add = cnt;}
+\DoxyCodeLine{00327             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329             \textcolor{keywordflow}{if} (add != -\/1)}
+\DoxyCodeLine{00330             \{}
+\DoxyCodeLine{00331                 listSP.InsertArrayElementAtIndex(add);}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{if} (forceUnique \&\& !(listSP.propertyType == SerializedPropertyType.String))}
+\DoxyCodeLine{00334                     EnforceUnique(listSP, add);}
+\DoxyCodeLine{00335                 }
+\DoxyCodeLine{00336             \}}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338             \textcolor{keywordflow}{if} (\textcolor{keyword}{delete} != -\/1)}
+\DoxyCodeLine{00339                 listSP.DeleteArrayElementAtIndex(\textcolor{keyword}{delete});}
+\DoxyCodeLine{00340             }
+\DoxyCodeLine{00341             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00344             \{}
+\DoxyCodeLine{00345                 \textcolor{keywordflow}{if} (forceUnique \&\& !(listSP.propertyType == SerializedPropertyType.String))}
+\DoxyCodeLine{00346                     EnforceUnique(listSP);}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348                 listSP.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00349             \}}
+\DoxyCodeLine{00350         \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352         }
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnforceUnique(SerializedProperty listSP, \textcolor{keywordtype}{int} indexToCheck)}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00356             \textcolor{keywordtype}{int} cnt = listSP.arraySize;}
+\DoxyCodeLine{00357             var itemSP = listSP.GetArrayElementAtIndex(indexToCheck);}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359             \textcolor{keywordtype}{bool} failed;}
+\DoxyCodeLine{00360             \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00361             \{}
+\DoxyCodeLine{00362                 var itemString = itemSP.stringValue;}
+\DoxyCodeLine{00363                 failed = \textcolor{keyword}{false};}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; i++)}
+\DoxyCodeLine{00366                 \{}
+\DoxyCodeLine{00368                     \textcolor{keywordflow}{if} (i == indexToCheck)}
+\DoxyCodeLine{00369                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00372                     \textcolor{keywordflow}{if} (listSP.GetArrayElementAtIndex(i).stringValue == itemString)}
+\DoxyCodeLine{00373                     \{}
+\DoxyCodeLine{00374                         itemSP.stringValue += \textcolor{stringliteral}{"{}X"{}};}
+\DoxyCodeLine{00375                         failed = \textcolor{keyword}{true};}
+\DoxyCodeLine{00376                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00377                     \}}
+\DoxyCodeLine{00378                 \}}
+\DoxyCodeLine{00379             \} \textcolor{keywordflow}{while} (failed);}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnforceUnique(SerializedProperty listSP)}
+\DoxyCodeLine{00384         \{}
+\DoxyCodeLine{00385             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = listSP.arraySize; i < cnt; i++)}
+\DoxyCodeLine{00386             \{}
+\DoxyCodeLine{00387                 var item = listSP.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00388                 \textcolor{keywordflow}{while} (IsTagAlreadyUsed(listSP, item.stringValue, i))}
+\DoxyCodeLine{00389                     item.stringValue += \textcolor{stringliteral}{"{}X"{}};}
+\DoxyCodeLine{00390             \}}
+\DoxyCodeLine{00391         \}}
+\DoxyCodeLine{00392 }
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsTagAlreadyUsed(SerializedProperty listSP, \textcolor{keywordtype}{string} tag, \textcolor{keywordtype}{int} countUpTo)}
+\DoxyCodeLine{00395         \{}
+\DoxyCodeLine{00396             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < countUpTo; i++)}
+\DoxyCodeLine{00397                 \textcolor{keywordflow}{if} (listSP.GetArrayElementAtIndex(i).stringValue == tag)}
+\DoxyCodeLine{00398                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00401         \}}
+\DoxyCodeLine{00402     \}}
+\DoxyCodeLine{00403 \}}
+\DoxyCodeLine{00404 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00405 }
+\DoxyCodeLine{00406 }
+
+\end{DoxyCode}

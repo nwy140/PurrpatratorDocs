@@ -1,0 +1,174 @@
+.TH "Photon.Realtime.MatchMakingCallbacksContainer" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Realtime.MatchMakingCallbacksContainer \- Container type for callbacks defined by \fBIMatchmakingCallbacks\fP\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits List< IMatchmakingCallbacks >, and \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBMatchMakingCallbacksContainer\fP (\fBLoadBalancingClient\fP client)"
+.br
+.ti -1c
+.RI "void \fBOnCreatedRoom\fP ()"
+.br
+.RI "Called when this client created a room and entered it\&. "
+.ti -1c
+.RI "void \fBOnJoinedRoom\fP ()"
+.br
+.RI "Called when the \fBLoadBalancingClient\fP entered a room, no matter if this client created it or simply joined\&. "
+.ti -1c
+.RI "void \fBOnCreateRoomFailed\fP (short returnCode, string message)"
+.br
+.RI "Called when the server couldn't create a room (OpCreateRoom failed)\&. "
+.ti -1c
+.RI "void \fBOnJoinRandomFailed\fP (short returnCode, string message)"
+.br
+.RI "Called when a previous OpJoinRandom call failed on the server\&. "
+.ti -1c
+.RI "void \fBOnJoinRoomFailed\fP (short returnCode, string message)"
+.br
+.RI "Called when a previous OpJoinRoom call failed on the server\&. "
+.ti -1c
+.RI "void \fBOnLeftRoom\fP ()"
+.br
+.RI "Called when the local user/client left a room, so the game's logic can clean up it's internal state\&. "
+.ti -1c
+.RI "void \fBOnFriendListUpdate\fP (List< \fBFriendInfo\fP > friendList)"
+.br
+.RI "Called when the server sent the response to a FindFriends request\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Container type for callbacks defined by \fBIMatchmakingCallbacks\fP\&. 
+
+See MatchMakingCallbackTargets\&. 
+.PP
+While the interfaces of callbacks wrap up the methods that will be called, the container classes implement a simple way to call a method on all registered objects\&. 
+.PP
+Definition at line \fB4139\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.MatchMakingCallbacksContainer (\fBLoadBalancingClient\fP client)"
+
+.PP
+Definition at line \fB4143\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnCreatedRoom ()"
+
+.PP
+Called when this client created a room and entered it\&. \fBOnJoinedRoom()\fP will be called as well\&. 
+.PP
+This callback is only called on the client which created a room (see OpCreateRoom)\&.
+.PP
+As any client might close (or drop connection) anytime, there is a chance that the creator of a room does not execute OnCreatedRoom\&.
+.PP
+If you need specific room properties or a 'start signal', implement OnMasterClientSwitched() and make each new MasterClient check the room's state\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4148\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnCreateRoomFailed (short returnCode, string message)"
+
+.PP
+Called when the server couldn't create a room (OpCreateRoom failed)\&. Creating a room may fail for various reasons\&. Most often, the room already exists (roomname in use) or the \fBRoomOptions\fP clash and it's impossible to create the room\&.
+.PP
+When creating a room fails on a Game Server: The client will cache the failure internally and returns to the Master Server before it calls the fail-callback\&. This way, the client is ready to find/create a room at the moment of the callback\&. In this case, the client skips calling OnConnectedToMaster but returning to the Master Server will still call OnConnected\&. Treat callbacks of OnConnected as pure information that the client could connect\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIreturnCode\fP Operation ReturnCode from the server\&.
+.br
+\fImessage\fP Debug message for the error\&.
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4168\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnFriendListUpdate (List< \fBFriendInfo\fP > friendList)"
+
+.PP
+Called when the server sent the response to a FindFriends request\&. After calling OpFindFriends, the Master Server will cache the friend list and send updates to the friend list\&. The friends includes the name, userId, online state and the room (if any) for each requested user/friend\&.
+.PP
+Use the friendList to update your UI and store it, if the UI should highlight changes\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4208\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnJoinedRoom ()"
+
+.PP
+Called when the \fBLoadBalancingClient\fP entered a room, no matter if this client created it or simply joined\&. When this is called, you can access the existing players in \fBRoom\&.Players\fP, their custom properties and \fBRoom\&.CustomProperties\fP\&.
+.PP
+In this callback, you could create player objects\&. For example in Unity, instantiate a prefab for the player\&.
+.PP
+If you want a match to be started 'actively', enable the user to signal 'ready' (using OpRaiseEvent or a Custom Property)\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4158\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnJoinRandomFailed (short returnCode, string message)"
+
+.PP
+Called when a previous OpJoinRandom call failed on the server\&. The most common causes are that a room is full or does not exist (due to someone else being faster or closing the room)\&.
+.PP
+This operation is only ever sent to the Master Server\&. Once a room is found by the Master Server, the client will head off to the designated Game Server and use the operation Join on the Game Server\&.
+.PP
+When using multiple lobbies (via OpJoinLobby or a \fBTypedLobby\fP parameter), another lobby might have more/fitting rooms\&.
+.br
+ 
+.PP
+\fBParameters\fP
+.RS 4
+\fIreturnCode\fP Operation ReturnCode from the server\&.
+.br
+\fImessage\fP Debug message for the error\&.
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4178\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnJoinRoomFailed (short returnCode, string message)"
+
+.PP
+Called when a previous OpJoinRoom call failed on the server\&. Joining a room may fail for various reasons\&. Most often, the room is full or does not exist anymore (due to someone else being faster or closing the room)\&.
+.PP
+When joining a room fails on a Game Server: The client will cache the failure internally and returns to the Master Server before it calls the fail-callback\&. This way, the client is ready to find/create a room at the moment of the callback\&. In this case, the client skips calling OnConnectedToMaster but returning to the Master Server will still call OnConnected\&. Treat callbacks of OnConnected as pure information that the client could connect\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIreturnCode\fP Operation ReturnCode from the server\&.
+.br
+\fImessage\fP Debug message for the error\&.
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4188\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.MatchMakingCallbacksContainer\&.OnLeftRoom ()"
+
+.PP
+Called when the local user/client left a room, so the game's logic can clean up it's internal state\&. When leaving a room, the \fBLoadBalancingClient\fP will disconnect the Game Server and connect to the Master Server\&. This wraps up multiple internal actions\&.
+.PP
+Wait for the callback OnConnectedToMaster, before you use lobbies and join or create rooms\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IMatchmakingCallbacks\fP\&.
+.PP
+Definition at line \fB4198\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

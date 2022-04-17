@@ -1,0 +1,243 @@
+\doxysection{Tick\+Manager.\+cs}
+\label{_tick_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/TickManager/TickManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/TickManager/TickManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple.Internal}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{class }TickManager : IInRoomCallbacks}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} Dictionary<int, ConnectionTickOffsets> perConnOffsets = \textcolor{keyword}{new} Dictionary<int, ConnectionTickOffsets>();}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} List<int> connections = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} TickManager single;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} needToSendInitialForNewConn;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Bootstrap()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             single = \textcolor{keyword}{new} TickManager();}
+\DoxyCodeLine{00036             PhotonNetwork.NetworkingClient.AddCallbackTarget(single);}
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 \textcolor{preprocessor}{        \#region PUN Room Callbacks}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Realtime.Player newPlayer)}
+\DoxyCodeLine{00043         \{}
+\DoxyCodeLine{00044             AddConnection(newPlayer.ActorNumber);}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Realtime.Player otherPlayer)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             RemoveConnection(otherPlayer.ActorNumber);}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged) \{ \}}
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Realtime.Player targetPlayer, Hashtable changedProps) \{ \}}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnMasterClientSwitched(Realtime.Player newMasterClient) \{ \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} PreSnapshot(\textcolor{keywordtype}{int} currentFrameId)}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < connections.Count; ++i)}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{if} (!ReferenceEquals(perConnOffsets[connections[i]], \textcolor{keyword}{null}))}
+\DoxyCodeLine{00066                 \{}
+\DoxyCodeLine{00067                     var offsets = perConnOffsets[connections[i]];}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069                     var originFrameId = offsets.ConvertFrameLocalToOrigin(currentFrameId);}
+\DoxyCodeLine{00070                     \textcolor{keywordtype}{float} timeBeforeConsumption = offsets.validFrameMask[originFrameId] ? Time.time -\/ offsets.frameArriveTime[originFrameId] : -\/1;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072                     offsets.frameTimeBeforeConsumption[originFrameId] = timeBeforeConsumption;}
+\DoxyCodeLine{00073                     \textcolor{comment}{//Debug.Log(timeBeforeConsumption);}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075                     offsets.SnapshotAdvance();}
+\DoxyCodeLine{00076                 \}}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} PostSnapshot(\textcolor{keywordtype}{int} currentFrameId)}
+\DoxyCodeLine{00080         \{}
+\DoxyCodeLine{00081             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < connections.Count; ++i)}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (!ReferenceEquals(perConnOffsets[connections[i]], \textcolor{keyword}{null}))}
+\DoxyCodeLine{00083                     perConnOffsets[connections[i]].PostSnapshot();}
+\DoxyCodeLine{00084         \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{static} ConnectionTickOffsets LogIncomingFrame(\textcolor{keywordtype}{int} connId, \textcolor{keywordtype}{int} originFrameId, out FrameArrival arrival)}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             ConnectionTickOffsets offsets;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{comment}{//Debug.Log("{}conn: "{} + connId + "{} fid: "{} + originFrameId);}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             \textcolor{keywordflow}{if} (!perConnOffsets.TryGetValue(connId, out offsets) || offsets == \textcolor{keyword}{null})}
+\DoxyCodeLine{00100             \{}
+\DoxyCodeLine{00101                 LogNewConnection(connId, originFrameId, frameCount, out offsets);}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordtype}{int} localFrameId = originFrameId + offsets.originToLocalFrame;}
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (localFrameId >= frameCount)}
+\DoxyCodeLine{00106                 localFrameId -\/= frameCount;}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             offsets.frameArriveTime[originFrameId] = Time.time;}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             \textcolor{keywordtype}{int} currTargFrameId = NetMaster.CurrentFrameId; \textcolor{comment}{// offsets.currTargFrameId;}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             \textcolor{comment}{//bool frameIsInFuture;}}
+\DoxyCodeLine{00113             \textcolor{keywordtype}{int} frameOffsetFromCurrentTarg;}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{keywordflow}{if} (localFrameId == currTargFrameId)}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 \textcolor{comment}{//frameIsInFuture = false;}}
+\DoxyCodeLine{00118                 frameOffsetFromCurrentTarg = 0;}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00123                 frameOffsetFromCurrentTarg = currTargFrameId -\/ localFrameId;}
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg < 0)}
+\DoxyCodeLine{00125                     frameOffsetFromCurrentTarg += frameCount;}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg >= TickEngineSettings.halfFrameCount)}
+\DoxyCodeLine{00127                     frameOffsetFromCurrentTarg -\/= frameCount;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129                 \textcolor{comment}{//frameIsInFuture = frameOffsetFromCurrentTarg != 0 \&\& frameOffsetFromCurrentTarg < TickEngineSettings.halfFrameCount;}}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00133             \textcolor{keyword}{const} \textcolor{keywordtype}{string} STR\_TAG = \textcolor{stringliteral}{"{}\(\backslash\)nSeeing many of these messages indicates a buffer underrun, due to an unstable connection, too small a buffer setting, or too high a tick rate."{}};}
+\DoxyCodeLine{00134 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg >= 0)}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg == 0)}
+\DoxyCodeLine{00141                 \{}
+\DoxyCodeLine{00142 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00143                     \textcolor{keywordflow}{if} (TickEngineSettings.LogLevel == TickEngineSettings.LogInfoLevel.All)}
+\DoxyCodeLine{00144                     \{}
+\DoxyCodeLine{00145                         \textcolor{keywordtype}{string} strframes = \textcolor{stringliteral}{"{} Incoming Frame: <b>"{}} + originFrameId + \textcolor{stringliteral}{"{}</b> Current Interpolation: "{}} + offsets.ConvertFrameLocalToOrigin(NetMaster.PreviousFrameId) + \textcolor{stringliteral}{"{}-\/>"{}} + offsets.ConvertFrameLocalToOrigin(currTargFrameId);}
+\DoxyCodeLine{00146                         Debug.Log(\textcolor{stringliteral}{"{}<b>Late Update </b>conn: "{}} + connId + \textcolor{stringliteral}{"{} "{}} + strframes + \textcolor{stringliteral}{"{}. Already interpolating to this frame. Not critically late, but getting close."{}} + STR\_TAG);}
+\DoxyCodeLine{00147                     \}}
+\DoxyCodeLine{00148 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00149                 \}}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg == 1)}
+\DoxyCodeLine{00151                 \{}
+\DoxyCodeLine{00152 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00153                     \textcolor{keywordflow}{if} (TickEngineSettings.LogLevel >= TickEngineSettings.LogInfoLevel.WarningsAndErrors)}
+\DoxyCodeLine{00154                     \{}
+\DoxyCodeLine{00155                         \textcolor{keywordtype}{string} strframes = \textcolor{stringliteral}{"{} Incoming Frame: <b>"{}} + originFrameId + \textcolor{stringliteral}{"{}</b> Current Interpolation: "{}} + offsets.ConvertFrameLocalToOrigin(NetMaster.PreviousFrameId) + \textcolor{stringliteral}{"{}-\/>"{}} + offsets.ConvertFrameLocalToOrigin(currTargFrameId);}
+\DoxyCodeLine{00156                         Debug.LogWarning(\textcolor{stringliteral}{"{}<b>Critically Late Update</b> conn: "{}} + connId + \textcolor{stringliteral}{"{} "{}} + strframes + \textcolor{stringliteral}{"{} Already applied and now interpolating from this frame. Snapshots will be rewound and reapplied."{}} + STR\_TAG);}
+\DoxyCodeLine{00157                     \}}
+\DoxyCodeLine{00158 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00159                 \}}
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg >= TickEngineSettings.halfFrameCount)}
+\DoxyCodeLine{00161                 \{}
+\DoxyCodeLine{00162 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00163                     \textcolor{keywordtype}{string} strframes = \textcolor{stringliteral}{"{} Incoming Frame: <b>"{}} + originFrameId + \textcolor{stringliteral}{"{}</b> Current Interpolation: "{}} + offsets.ConvertFrameLocalToOrigin(NetMaster.PreviousFrameId) + \textcolor{stringliteral}{"{}-\/>"{}} + offsets.ConvertFrameLocalToOrigin(currTargFrameId);}
+\DoxyCodeLine{00164                     Debug.LogError(\textcolor{stringliteral}{"{}<b>Critically Late Update</b> conn: "{}} + connId + \textcolor{stringliteral}{"{} "{}} + strframes + \textcolor{stringliteral}{"{} DATA LOSS HAS OCCURRED EVEN FOR RELIABLE PACKETS. Increase Buffer size in "{}}}
+\DoxyCodeLine{00165                         + typeof(TickEngineSettings).Name + \textcolor{stringliteral}{"{}."{}} + STR\_TAG);}
+\DoxyCodeLine{00166 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00167                 \}}
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00169                 \{}
+\DoxyCodeLine{00170 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00171                     \textcolor{keywordflow}{if} (TickEngineSettings.LogLevel >= TickEngineSettings.LogInfoLevel.WarningsAndErrors)}
+\DoxyCodeLine{00172                     \{}
+\DoxyCodeLine{00173                         \textcolor{keywordtype}{string} strframes = \textcolor{stringliteral}{"{} Incoming Frame: <b>"{}} + originFrameId + \textcolor{stringliteral}{"{}</b> Current Interpolation: "{}} + offsets.ConvertFrameLocalToOrigin(NetMaster.PreviousFrameId) + \textcolor{stringliteral}{"{}-\/>"{}} + offsets.ConvertFrameLocalToOrigin(currTargFrameId);}
+\DoxyCodeLine{00174                         Debug.LogWarning(\textcolor{stringliteral}{"{}<b>Critically Late Update</b> conn: "{}} + connId + \textcolor{stringliteral}{"{} "{}} + strframes + \textcolor{stringliteral}{"{} Already applied and now interpolating from this frame. Snapshots will be rewound and reapplied"{}} + STR\_TAG);}
+\DoxyCodeLine{00175                     \}}
+\DoxyCodeLine{00176 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00177                 \}}
+\DoxyCodeLine{00178             \}}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (frameOffsetFromCurrentTarg <= (-\/(TickEngineSettings.halfFrameCount)))}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00182                 \textcolor{keywordtype}{string} strframes = \textcolor{stringliteral}{"{} Incoming Frame: <b>"{}} + originFrameId + \textcolor{stringliteral}{"{}</b> Current Interpolation: "{}} + offsets.ConvertFrameLocalToOrigin(NetMaster.PreviousFrameId) + \textcolor{stringliteral}{"{}-\/>"{}} + offsets.ConvertFrameLocalToOrigin(currTargFrameId);}
+\DoxyCodeLine{00183                 Debug.LogError(\textcolor{stringliteral}{"{}<b>Critically Late Update</b> conn: "{}} + connId + \textcolor{stringliteral}{"{} "{}} + strframes + \textcolor{stringliteral}{"{} DATA LOSS HAS OCCURRED EVEN FOR RELIABLE PACKETS. Increase Buffer size in "{}}}
+\DoxyCodeLine{00184                         + typeof(TickEngineSettings).Name + \textcolor{stringliteral}{"{}."{}} + STR\_TAG);}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186             \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             arrival = (FrameArrival)frameOffsetFromCurrentTarg;}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             \textcolor{comment}{//Debug.Log(Time.time + "{} ARRIVAL "{} + arrival + "{} fid:"{} + originFrameId + "{} half: "{} + TickEngineSettings.halfFrameCount);}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{keywordtype}{bool} frameIsInFuture = frameOffsetFromCurrentTarg <= 0;}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             offsets.frameArrivedTooLate |= !frameIsInFuture;}
+\DoxyCodeLine{00195             offsets.validFrameMask.Set(originFrameId, \textcolor{keyword}{true} \textcolor{comment}{/*frameIsInFuture*/});}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197             \textcolor{keywordflow}{return} offsets;}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LogNewConnection(\textcolor{keywordtype}{int} connId, \textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{int} frameCount, out ConnectionTickOffsets offsets)}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             \textcolor{keywordtype}{int} currentFrame = NetMaster.CurrentFrameId;}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00205             \textcolor{keywordtype}{int} startingFrameId = currentFrame + (TickEngineSettings.targetBufferSize \textcolor{comment}{/*+ 1*/});}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{while} (startingFrameId >= frameCount)}
+\DoxyCodeLine{00207                 startingFrameId -\/= frameCount;}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordtype}{int} originToLocal = startingFrameId -\/ originFrameId;}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{if} (originToLocal < 0)}
+\DoxyCodeLine{00211                 originToLocal += frameCount;}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             \textcolor{keywordtype}{int} localToOrigin = frameCount -\/ originToLocal;}
+\DoxyCodeLine{00214             \textcolor{keywordflow}{if} (localToOrigin < 0)}
+\DoxyCodeLine{00215                 localToOrigin += frameCount;}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00219             offsets = \textcolor{keyword}{new} ConnectionTickOffsets(connId, originToLocal, localToOrigin);}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             AddConnection(connId, offsets);}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddConnection(\textcolor{keywordtype}{int} connId, ConnectionTickOffsets offsets = \textcolor{keyword}{null})}
+\DoxyCodeLine{00226         \{}
+\DoxyCodeLine{00227 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00229             \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.ActorNumber == connId)}
+\DoxyCodeLine{00230                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00231 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00232             \textcolor{keywordflow}{if} (!connections.Contains(connId))}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 perConnOffsets.Add(connId, offsets);}
+\DoxyCodeLine{00235                 connections.Add(connId);}
+\DoxyCodeLine{00237                 NetMsgSends.newPlayers.Add(connId);}
+\DoxyCodeLine{00238                 needToSendInitialForNewConn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00239             \}}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242                 perConnOffsets[connId] = offsets;}
+\DoxyCodeLine{00243             \}}
+\DoxyCodeLine{00244         \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveConnection(\textcolor{keywordtype}{int} connId)}
+\DoxyCodeLine{00247         \{}
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (perConnOffsets.ContainsKey(connId))}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 perConnOffsets.Remove(connId);}
+\DoxyCodeLine{00251                 connections.Remove(connId);}
+\DoxyCodeLine{00252             \}}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255     \}}
+\DoxyCodeLine{00256 \}}
+\DoxyCodeLine{00257 }
+
+\end{DoxyCode}

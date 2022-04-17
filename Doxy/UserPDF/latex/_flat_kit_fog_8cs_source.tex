@@ -1,0 +1,226 @@
+\doxysection{Flat\+Kit\+Fog.\+cs}
+\label{_flat_kit_fog_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Fog/FlatKitFog.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Fog/FlatKitFog.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine.Rendering.Universal;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{comment}{// TODO: Remove for URP 13.}}
+\DoxyCodeLine{00006 \textcolor{comment}{// https://docs.unity3d.com/Packages/com.unity.render-\/pipelines.universal@13.1/manual/upgrade-\/guide-\/2022-\/1.html}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#pragma warning disable CS0618}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }FlatKit \{}
+\DoxyCodeLine{00010 \textcolor{keyword}{public} \textcolor{keyword}{class }FlatKitFog : ScriptableRendererFeature \{}
+\DoxyCodeLine{00011     \textcolor{keyword}{class }EffectPass : ScriptableRenderPass \{}
+\DoxyCodeLine{00012         \textcolor{keyword}{private} readonly ProfilingSampler \_profilingSampler = \textcolor{keyword}{new} ProfilingSampler(\textcolor{stringliteral}{"{}Flat Kit Fog"{}});}
+\DoxyCodeLine{00013         \textcolor{keyword}{private} RTHandle \_destination;}
+\DoxyCodeLine{00014         \textcolor{keyword}{private} readonly Material \_effectMaterial;}
+\DoxyCodeLine{00015         \textcolor{keyword}{private} RenderTargetHandle \_temporaryColorTexture;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017         \textcolor{keyword}{public} EffectPass(Material effectMaterial) \{}
+\DoxyCodeLine{00018             \_effectMaterial = effectMaterial;}
+\DoxyCodeLine{00019         \}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Setup(RTHandle destination = \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00022             \_destination = destination;}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#if UNITY\_2020\_3\_OR\_NEWER}}
+\DoxyCodeLine{00024             ConfigureInput(ScriptableRenderPassInput.Depth);}
+\DoxyCodeLine{00025 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00026         \}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Execute(ScriptableRenderContext context, ref RenderingData renderingData) \{}
+\DoxyCodeLine{00029             CommandBuffer cmd = CommandBufferPool.Get();}
+\DoxyCodeLine{00030             \textcolor{keyword}{using} (\textcolor{keyword}{new} ProfilingScope(cmd, \_profilingSampler)) \{}
+\DoxyCodeLine{00031                 RenderTextureDescriptor opaqueDescriptor = renderingData.cameraData.cameraTargetDescriptor;}
+\DoxyCodeLine{00032                 opaqueDescriptor.depthBufferBits = 0;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{\#if UNITY\_2022\_1\_OR\_NEWER}}
+\DoxyCodeLine{00035                 var cameraTargetHandle = renderingData.cameraData.renderer.cameraColorTargetHandle;}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00037                 var cameraTargetHandle = renderingData.cameraData.renderer.cameraColorTarget;}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{if} (\_destination == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00041                     cmd.GetTemporaryRT(\_temporaryColorTexture.id, opaqueDescriptor, FilterMode.Point);}
+\DoxyCodeLine{00042                     cmd.Blit(cameraTargetHandle, \_temporaryColorTexture.Identifier(), \_effectMaterial);}
+\DoxyCodeLine{00043                     cmd.Blit(\_temporaryColorTexture.Identifier(), cameraTargetHandle);}
+\DoxyCodeLine{00044                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00045                     cmd.Blit(cameraTargetHandle, \_destination, \_effectMaterial);}
+\DoxyCodeLine{00046                 \}}
+\DoxyCodeLine{00047             \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             context.ExecuteCommandBuffer(cmd);}
+\DoxyCodeLine{00050             CommandBufferPool.Release(cmd);}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 \textcolor{preprocessor}{\#if UNITY\_2020\_3\_OR\_NEWER}}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnCameraCleanup(CommandBuffer cmd) \{}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} FrameCleanup(CommandBuffer cmd) \{}
+\DoxyCodeLine{00057 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00058             cmd.ReleaseTemporaryRT(\_temporaryColorTexture.id);}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060     \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062     [Header(\textcolor{stringliteral}{"{}Create > FlatKit > Fog Settings"{}})]}
+\DoxyCodeLine{00063     \textcolor{keyword}{public} FogSettings settings;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065     \textcolor{keyword}{private} Material \_material;}
+\DoxyCodeLine{00066     \textcolor{keyword}{private} EffectPass \_effectPass;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068     \textcolor{keyword}{private} Texture2D \_lutDepth;}
+\DoxyCodeLine{00069     \textcolor{keyword}{private} Texture2D \_lutHeight;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} ShaderName = \textcolor{stringliteral}{"{}Hidden/FlatKit/FogFilter"{}};}
+\DoxyCodeLine{00072     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} DistanceLut = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_DistanceLUT"{}});}
+\DoxyCodeLine{00073     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} Near = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_Near"{}});}
+\DoxyCodeLine{00074     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} Far = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_Far"{}});}
+\DoxyCodeLine{00075     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} UseDistanceFog = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_UseDistanceFog"{}});}
+\DoxyCodeLine{00076     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} UseDistanceFogOnSky = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_UseDistanceFogOnSky"{}});}
+\DoxyCodeLine{00077     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} DistanceFogIntensity = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_DistanceFogIntensity"{}});}
+\DoxyCodeLine{00078     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} HeightLut = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_HeightLUT"{}});}
+\DoxyCodeLine{00079     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} LowWorldY = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_LowWorldY"{}});}
+\DoxyCodeLine{00080     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} HighWorldY = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_HighWorldY"{}});}
+\DoxyCodeLine{00081     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} UseHeightFog = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_UseHeightFog"{}});}
+\DoxyCodeLine{00082     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} UseHeightFogOnSky = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_UseHeightFogOnSky"{}});}
+\DoxyCodeLine{00083     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} HeightFogIntensity = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_HeightFogIntensity"{}});}
+\DoxyCodeLine{00084     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} DistanceHeightBlend = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_DistanceHeightBlend"{}});}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Create() \{}
+\DoxyCodeLine{00087         \textcolor{keywordflow}{if} (settings == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00088             Debug.LogWarning(\textcolor{stringliteral}{"{}[FlatKit] Missing Fog Settings"{}});}
+\DoxyCodeLine{00089             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         InitMaterial();}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \_effectPass = \textcolor{keyword}{new} EffectPass(\_material) \{}
+\DoxyCodeLine{00095             renderPassEvent = settings.renderEvent}
+\DoxyCodeLine{00096         \};}
+\DoxyCodeLine{00097     \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) \{}
+\DoxyCodeLine{00100 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00101         \textcolor{keywordflow}{if} (renderingData.cameraData.isPreviewCamera) \{}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keywordflow}{if} (settings == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00107             Debug.LogWarning(\textcolor{stringliteral}{"{}[FlatKit] Missing Fog Settings"{}});}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00109         \}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         InitMaterial();}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \_effectPass.Setup(\textcolor{keyword}{null});}
+\DoxyCodeLine{00114         renderer.EnqueuePass(\_effectPass);}
+\DoxyCodeLine{00115     \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 \textcolor{preprocessor}{\#if UNITY\_2020\_3\_OR\_NEWER}}
+\DoxyCodeLine{00118     \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose(\textcolor{keywordtype}{bool} disposing) \{}
+\DoxyCodeLine{00119         CoreUtils.Destroy(\_material);}
+\DoxyCodeLine{00120     \}}
+\DoxyCodeLine{00121 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123     \textcolor{keyword}{private} \textcolor{keywordtype}{void} InitMaterial() \{}
+\DoxyCodeLine{00124 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00125         ShaderIncludeUtilities.AddAlwaysIncludedShader(ShaderName);}
+\DoxyCodeLine{00126 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keywordflow}{if} (\_material == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00129             var shader = Shader.Find(ShaderName);}
+\DoxyCodeLine{00130             \textcolor{keywordflow}{if} (shader == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \_material = \textcolor{keyword}{new} Material(shader);}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keywordflow}{if} (\_material == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00138             Debug.LogWarning(\textcolor{stringliteral}{"{}[FlatKit] Missing Fog Material"{}});}
+\DoxyCodeLine{00139         \}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         UpdateShader();}
+\DoxyCodeLine{00142     \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateShader() \{}
+\DoxyCodeLine{00145         \textcolor{keywordflow}{if} (\_material == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00146             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00147         \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         UpdateDistanceLut();}
+\DoxyCodeLine{00150         \_material.SetTexture(DistanceLut, \_lutDepth);}
+\DoxyCodeLine{00151         \_material.SetFloat(Near, settings.near);}
+\DoxyCodeLine{00152         \_material.SetFloat(Far, settings.far);}
+\DoxyCodeLine{00153         \_material.SetFloat(UseDistanceFog, settings.useDistance ? 1f : 0f);}
+\DoxyCodeLine{00154         \_material.SetFloat(UseDistanceFogOnSky, settings.useDistanceFogOnSky ? 1f : 0f);}
+\DoxyCodeLine{00155         \_material.SetFloat(DistanceFogIntensity, settings.distanceFogIntensity);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         UpdateHeightLut();}
+\DoxyCodeLine{00158         \_material.SetTexture(HeightLut, \_lutHeight);}
+\DoxyCodeLine{00159         \_material.SetFloat(LowWorldY, settings.low);}
+\DoxyCodeLine{00160         \_material.SetFloat(HighWorldY, settings.high);}
+\DoxyCodeLine{00161         \_material.SetFloat(UseHeightFog, settings.useHeight ? 1f : 0f);}
+\DoxyCodeLine{00162         \_material.SetFloat(UseHeightFogOnSky, settings.useHeightFogOnSky ? 1f : 0f);}
+\DoxyCodeLine{00163         \_material.SetFloat(HeightFogIntensity, settings.heightFogIntensity);}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         \_material.SetFloat(DistanceHeightBlend, settings.distanceHeightBlend);}
+\DoxyCodeLine{00166     \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateDistanceLut() \{}
+\DoxyCodeLine{00169         \textcolor{keywordflow}{if} (settings.distanceGradient == \textcolor{keyword}{null}) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keywordflow}{if} (\_lutDepth != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00172             DestroyImmediate(\_lutDepth);}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175         \textcolor{keyword}{const} \textcolor{keywordtype}{int} width = 256;}
+\DoxyCodeLine{00176         \textcolor{keyword}{const} \textcolor{keywordtype}{int} height = 1;}
+\DoxyCodeLine{00177         \_lutDepth = \textcolor{keyword}{new} Texture2D(width, height, TextureFormat.RGBA32, \textcolor{comment}{/*mipChain=*/}\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{00178             wrapMode = TextureWrapMode.Clamp,}
+\DoxyCodeLine{00179             hideFlags = HideFlags.HideAndDontSave,}
+\DoxyCodeLine{00180             filterMode = FilterMode.Bilinear}
+\DoxyCodeLine{00181         \};}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{comment}{//22b5f7ed-\/989d-\/49d1-\/90d9-\/c62d76c3081a}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} x = 0; x < width; x++) \{}
+\DoxyCodeLine{00186             Color color = settings.distanceGradient.Evaluate(x / (width -\/ 1));}
+\DoxyCodeLine{00187             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} y = 0; y < height; y++) \{}
+\DoxyCodeLine{00188                 \_lutDepth.SetPixel(Mathf.CeilToInt(x), Mathf.CeilToInt(y), color);}
+\DoxyCodeLine{00189             \}}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         \_lutDepth.Apply();}
+\DoxyCodeLine{00193     \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateHeightLut() \{}
+\DoxyCodeLine{00196         \textcolor{keywordflow}{if} (settings.heightGradient == \textcolor{keyword}{null}) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         \textcolor{keywordflow}{if} (\_lutHeight != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00199             DestroyImmediate(\_lutHeight);}
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keyword}{const} \textcolor{keywordtype}{int} width = 256;}
+\DoxyCodeLine{00203         \textcolor{keyword}{const} \textcolor{keywordtype}{int} height = 1;}
+\DoxyCodeLine{00204         \_lutHeight = \textcolor{keyword}{new} Texture2D(width, height, TextureFormat.RGBA32, \textcolor{comment}{/*mipChain=*/}\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{00205             wrapMode = TextureWrapMode.Clamp,}
+\DoxyCodeLine{00206             hideFlags = HideFlags.HideAndDontSave,}
+\DoxyCodeLine{00207             filterMode = FilterMode.Bilinear}
+\DoxyCodeLine{00208         \};}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} x = 0; x < width; x++) \{}
+\DoxyCodeLine{00211             Color color = settings.heightGradient.Evaluate(x / (width -\/ 1));}
+\DoxyCodeLine{00212             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} y = 0; y < height; y++) \{}
+\DoxyCodeLine{00213                 \_lutHeight.SetPixel(Mathf.CeilToInt(x), Mathf.CeilToInt(y), color);}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217         \_lutHeight.Apply();}
+\DoxyCodeLine{00218     \}}
+\DoxyCodeLine{00219 \}}
+\DoxyCodeLine{00220 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,438 @@
+\doxysection{Sync\+Vitals.\+cs}
+\label{_sync_vitals_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/SyncVitals.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/SyncVitals.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun.Simple.ContactGroups;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{interface }IOnRootVitalBecameZero}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         \textcolor{keywordtype}{void} OnRootVitalBecameZero(Vital vital, IVitalsContactReactor causeOfDeath);}
+\DoxyCodeLine{00017     \}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncVitals : SyncObject<SyncVitals.Frame>}
+\DoxyCodeLine{00021         , IVitalsSystem}
+\DoxyCodeLine{00022         , IOnSnapshot}
+\DoxyCodeLine{00023         , IOnNetSerialize}
+\DoxyCodeLine{00024         , IOnAuthorityChanged}
+\DoxyCodeLine{00025         , IOnPostSimulate}
+\DoxyCodeLine{00026         , IOnVitalValueChange}
+\DoxyCodeLine{00027         , IOnCaptureState}
+\DoxyCodeLine{00028         \textcolor{comment}{//, IDamageable}}
+\DoxyCodeLine{00029         , IUseKeyframes}
+\DoxyCodeLine{00030         , IOnStateChange}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.VITALS; \} \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{comment}{//private List<IOnVitalChange> iOnVitalChange = new List<IOnVitalChange>();}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AllowReconstructionOfEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} SystemIndex \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} Vitals vitals = \textcolor{keyword}{new} Vitals();}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} Vitals Vitals \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitals; \} \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         [SerializeField]}
+\DoxyCodeLine{00046         \textcolor{keyword}{protected} ContactGroupMaskSelector contactGroups = \textcolor{keyword}{new} ContactGroupMaskSelector();}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} IContactGroupMask ValidContactGroups \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} contactGroups; \} \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         [Tooltip(\textcolor{stringliteral}{"{}Vital triggers/pickups must have this as a valid mount type. When pickups will attach to this mount when picked up."{}})]}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} MountSelector defaultMounting = \textcolor{keyword}{new} MountSelector(0);}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ValidMountsMask \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (1 << defaultMounting.id); \} \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} Mount DefaultMount \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         [Tooltip(\textcolor{stringliteral}{"{}When root vital <= zero, syncState.Despawn() will be called. This allows for a default handling of object 'death'."{}})]}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoDespawn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00057         [Tooltip(\textcolor{stringliteral}{"{}When OnStateChange changes from ObjState.Despawned to any other state, vital values will be reset to their starting defaults."{}})]}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} resetOnSpawn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         [System.NonSerialized]}
+\DoxyCodeLine{00063         \textcolor{keyword}{private} VitalsData lastSentData;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{comment}{// Callbacks}}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} List<IOnVitalsValueChange> OnVitalsValueChange = \textcolor{keyword}{new} List<IOnVitalsValueChange>(0);}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} List<IOnVitalsParamChange> OnVitalsParamChange = \textcolor{keyword}{new} List<IOnVitalsParamChange>(0);}
+\DoxyCodeLine{00068         \textcolor{keyword}{public} List<IOnRootVitalBecameZero> OnRootVitalBecameZero = \textcolor{keyword}{new} List<IOnRootVitalBecameZero>(0);}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{comment}{// Cached Items}}
+\DoxyCodeLine{00071         \textcolor{keyword}{protected} SyncState syncState;}
+\DoxyCodeLine{00072         \textcolor{keyword}{private} Vital[] vitalArray;}
+\DoxyCodeLine{00073         \textcolor{keyword}{protected} Vital rootVital;}
+\DoxyCodeLine{00074         \textcolor{keyword}{private} \textcolor{keywordtype}{int} vitalsCount;}
+\DoxyCodeLine{00075         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} defaultMountingMask;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{comment}{// runtime states}}
+\DoxyCodeLine{00078         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} isPredicted;}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080 \textcolor{preprocessor}{        \#region Frame}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             \textcolor{keyword}{public} VitalsData vitalsData;}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId) \{ \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId, Vitals vitals) : base(frameId)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 vitalsData = \textcolor{keyword}{new} VitalsData(vitals);}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                 var srcVitalsData = (sourceFrame as Frame).vitalsData;}
+\DoxyCodeLine{00100                 vitalsData.CopyFrom(srcVitalsData);}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} PopulateFrames()}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             frames = \textcolor{keyword}{new} Frame[frameCount + 1];}
+\DoxyCodeLine{00109             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i <= frameCount; ++i)}
+\DoxyCodeLine{00110                 frames[i] = \textcolor{keyword}{new} Frame(i, vitals);}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113 \textcolor{preprocessor}{        \#endregion Frame}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             base.OnAwake();}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             this.transform.EnsureRootComponentExists<ContactManager, NetObject>();}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (netObj)}
+\DoxyCodeLine{00122                 syncState = netObj.GetComponent<SyncState>();}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             vitalArray = vitals.VitalArray;}
+\DoxyCodeLine{00125             vitalsCount = vitals.vitalDefs.Count;}
+\DoxyCodeLine{00126             rootVital = vitalArray[0];}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00129             vitals.OnVitalValueChangeCallbacks.Add(\textcolor{keyword}{this});}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             lastSentData = \textcolor{keyword}{new} VitalsData(vitals);}
+\DoxyCodeLine{00132             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00133                 vitalArray[i].ResetValues();}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             defaultMountingMask = 1 << (defaultMounting.id);}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140             base.OnStart();}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             var mountsLookup = GetComponent<MountsManager>();}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (mountsLookup)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{if} (mountsLookup.mountIdLookup.ContainsKey(defaultMounting.id))}
+\DoxyCodeLine{00146                     DefaultMount = mountsLookup.mountIdLookup[defaultMounting.id];}
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00148                 \{}
+\DoxyCodeLine{00149                     Debug.LogWarning(\textcolor{stringliteral}{"{}Sync Vitals has a Default Mount setting of "{}}}
+\DoxyCodeLine{00150                     + MountSettings.GetName(defaultMounting.id) +}
+\DoxyCodeLine{00151                     \textcolor{stringliteral}{"{} but no such mount is defined yet on GameObject: '"{}} + name + \textcolor{stringliteral}{"{}'. Root mount will be used as a failsafe."{}});}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00154                     defaultMounting.id = 0;}
+\DoxyCodeLine{00155                     DefaultMount = mountsLookup.mountIdLookup[0];}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                 \}}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159         \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00164             OwnedIVitals.OnChangeAuthority(\textcolor{keyword}{this}, isMine, controllerChanged);}
+\DoxyCodeLine{00165         \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} Consumption TryTrigger(IContactReactor icontactReactor, ContactEvent contactEvent, \textcolor{keywordtype}{int} compatibleMounts)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171             var reactor = (icontactReactor as IVitalsContactReactor);}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             \textcolor{keywordflow}{if} (ReferenceEquals(reactor, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00174                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00177             if (contactGroups != 0)}
+\DoxyCodeLine{00178             \{}
+\DoxyCodeLine{00179                 \textcolor{comment}{//var groups = (reactor as Component).GetComponent<ContactGroupAssign>();}}
+\DoxyCodeLine{00180                 IContactGroupsAssign groups = contactEvent.contactTrigger.ContactGroupsAssign;}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182                 \textcolor{keywordtype}{int} triggermask = ReferenceEquals(groups, \textcolor{keyword}{null}) ? 0 : groups.Mask;}
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{if} ((contactGroups.Mask \& triggermask) == 0)}
+\DoxyCodeLine{00184                 \{}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00186                     Debug.Log(name + \textcolor{stringliteral}{"{} SyncVitals.TryTrigger() ContactGroup Mismatch. Cannot pick up '"{}} + (contactEvent.contactTrigger as Component).transform.root.name + \textcolor{stringliteral}{"{}' because its has a non-\/matching ContactGroupAssign."{}});}
+\DoxyCodeLine{00187 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00188                     \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00189                 \}}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00193             \textcolor{keywordflow}{if} ((compatibleMounts != defaultMountingMask) \&\& (compatibleMounts \& defaultMountingMask) == 0)}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             Vital vital = vitals.GetVital(reactor.VitalNameType);}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{if} (vital == \textcolor{keyword}{null})}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204             \textcolor{comment}{//double charge = vpr.Charge;}}
+\DoxyCodeLine{00205             Consumption consumed;}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207             \textcolor{keywordtype}{double} amountConsumed;}
+\DoxyCodeLine{00208             \{}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     \textcolor{keywordtype}{double} discharge = reactor.DischargeValue(contactEvent.contactType);}
+\DoxyCodeLine{00213                     amountConsumed = vitals.ApplyCharges(discharge, reactor.AllowOverload, reactor.Propagate);}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00216                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00217                 \{}
+\DoxyCodeLine{00218                     amountConsumed = vital.TestApplyChange(reactor, contactEvent);}
+\DoxyCodeLine{00219                 \}}
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             var consumable = icontactReactor as IVitalsConsumable;}
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (!ReferenceEquals(consumable, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00224                 consumed = TestConsumption(amountConsumed, consumable, contactEvent);}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00226                 consumed = Consumption.None;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00229         \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231         \textcolor{keyword}{protected} Consumption TestConsumption(\textcolor{keywordtype}{double} amountConsumed, IVitalsConsumable iva, ContactEvent contactEvent)}
+\DoxyCodeLine{00232         \{}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             var consumption = iva.Consumption;}
+\DoxyCodeLine{00235             var discharge = iva.DischargeValue(contactEvent.contactType);}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             \textcolor{keywordflow}{if} (consumption == Consumption.None)}
+\DoxyCodeLine{00238                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             \textcolor{keywordflow}{if} (consumption == Consumption.All)}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242                 \textcolor{keywordflow}{if} (amountConsumed != 0)}
+\DoxyCodeLine{00243                 \{}
+\DoxyCodeLine{00244                     iva.Charges = 0;}
+\DoxyCodeLine{00245                     \textcolor{keywordflow}{return} Consumption.All;}
+\DoxyCodeLine{00246                 \}}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00248             \}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             var consumed = amountConsumed == 0 ? Consumption.None : discharge == amountConsumed ? Consumption.All : Consumption.Partial;}
+\DoxyCodeLine{00251             iva.Charges -\/= amountConsumed;}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{keyword}{public} Mount TryPickup(IContactReactor reactor, ContactEvent contactEvent)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{return} DefaultMount;}
+\DoxyCodeLine{00258         \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPostSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{bool} isNetTick)}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             \textcolor{keywordflow}{if} (isNetTick)}
+\DoxyCodeLine{00263                 vitals.Simulate();}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00267         \{}
+\DoxyCodeLine{00268             var framedatas = frames[frameId].vitalsData.datas;}
+\DoxyCodeLine{00269             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00270                 framedatas[i] = vitalArray[i].VitalData;}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00276         \{}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00280             \textcolor{keywordflow}{if} (!enabled)}
+\DoxyCodeLine{00281             \{}
+\DoxyCodeLine{00282                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00283                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00284             \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286             Frame frame = frames[frameId];}
+\DoxyCodeLine{00287             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291             \textcolor{keywordflow}{return} vitals.Serialize(frame.vitalsData, lastSentData, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00297         \{}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00300             var frame = (IsMine) ? offtickFrame : frames[originFrameId];}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00303             \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00304             \{}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00306             \}}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(originFrameId);}
+\DoxyCodeLine{00309             var flags = vitals.Deserialize(frame.vitalsData, buffer, ref bitposition, isKeyframe);}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             frame.content =}
+\DoxyCodeLine{00312                 (flags \& SerializationFlags.IsComplete) != 0 ? FrameContents.Complete :}
+\DoxyCodeLine{00313                 (flags \& SerializationFlags.HasContent) != 0 ? FrameContents.Partial :}
+\DoxyCodeLine{00314                 FrameContents.Empty;}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316             \textcolor{comment}{//Debug.LogWarning(frame.frameId + "{} <b>DES "{} + frame.vitalsData.datas[0].Value + "{}</b> "{} + frame.vitalsData.datas[0].Value);}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320         \}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322 \textcolor{preprocessor}{        \#endregion Serialization}}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00330         [System.Obsolete(\textcolor{stringliteral}{"{}Use vitals.ApplyCharges() instead"{}})]}
+\DoxyCodeLine{00331         \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyDamage(\textcolor{keywordtype}{double} damage)}
+\DoxyCodeLine{00332         \{}
+\DoxyCodeLine{00333             \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00334                 \textcolor{keywordflow}{return} damage;}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336             \textcolor{keywordflow}{if} (damage == 0)}
+\DoxyCodeLine{00337                 \textcolor{keywordflow}{return} damage;}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339             \textcolor{keywordflow}{return} vitals.ApplyCharges(damage, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00340         \}}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnVitalValueChange(Vital vital)}
+\DoxyCodeLine{00343         \{}
+\DoxyCodeLine{00344             \textcolor{keywordflow}{if} (vital.VitalData.Value <= 0)}
+\DoxyCodeLine{00345             \{}
+\DoxyCodeLine{00346                 RootVitalBecameZero(vital);}
+\DoxyCodeLine{00347             \}}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnVitalsValueChange.Count; i < cnt; ++i)}
+\DoxyCodeLine{00350                 OnVitalsValueChange[i].OnVitalValueChange(vital);}
+\DoxyCodeLine{00351         \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnVitalParamChange(Vital vital)}
+\DoxyCodeLine{00354         \{}
+\DoxyCodeLine{00355             Debug.LogError(\textcolor{stringliteral}{"{}Not implemented"{}});}
+\DoxyCodeLine{00356             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnVitalsParamChange.Count; i < cnt; ++i)}
+\DoxyCodeLine{00357                 OnVitalsParamChange[i].OnVitalParamChange(vital);}
+\DoxyCodeLine{00358         \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360         }
+\DoxyCodeLine{00361         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} RootVitalBecameZero(Vital vital)}
+\DoxyCodeLine{00362         \{}
+\DoxyCodeLine{00363             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnRootVitalBecameZero.Count; i < cnt; ++i)}
+\DoxyCodeLine{00364                 OnRootVitalBecameZero[i].OnRootVitalBecameZero(vital, \textcolor{keyword}{null});}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366             \textcolor{keywordflow}{if} (autoDespawn)}
+\DoxyCodeLine{00367                 \textcolor{keywordflow}{if} (syncState)}
+\DoxyCodeLine{00368                     \textcolor{keywordflow}{if} (ReferenceEquals(rootVital, vital))}
+\DoxyCodeLine{00369                         syncState.Despawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00370         \}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00372         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} wasDespawned;}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStateChange(ObjState newState, ObjState previousState, Transform attachmentTransform, Mount attachTo = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} isReady = \textcolor{keyword}{true})}
+\DoxyCodeLine{00375         \{}
+\DoxyCodeLine{00377             \textcolor{keywordflow}{if} (wasDespawned \&\& newState != ObjState.Despawned)}
+\DoxyCodeLine{00378             \{}
+\DoxyCodeLine{00379                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00380                     vitalArray[i].ResetValues();}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382             \}}
+\DoxyCodeLine{00383             wasDespawned = newState == ObjState.Despawned;}
+\DoxyCodeLine{00384         \}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386         \textcolor{comment}{//public override bool OnSnapshot(int prevFrameId, int snapFrameId, int targFrameId)}}
+\DoxyCodeLine{00387         \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389         \textcolor{comment}{//          bool ready = base.OnSnapshot(prevFrameId, snapFrameId, targFrameId);}}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391         \textcolor{comment}{//          if (!ready)}}
+\DoxyCodeLine{00392         \textcolor{comment}{//      return false;}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394         \textcolor{comment}{//          Debug.LogWarning(snapFrame.);}}
+\DoxyCodeLine{00395         \textcolor{comment}{//  vitals.Apply(snapFrame.vitalsData);}}
+\DoxyCodeLine{00396         \textcolor{comment}{//  return true;}}
+\DoxyCodeLine{00397         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00400         \{}
+\DoxyCodeLine{00401             \textcolor{keywordflow}{if} (snapIsValid \&\& snapframe.content >= FrameContents.Extrapolated)}
+\DoxyCodeLine{00402             \{}
+\DoxyCodeLine{00403                 \textcolor{comment}{//Debug.LogWarning(snap.frameId + "{} "{} + netObj.frameValidMask[snap.frameId] + "{}/"{} + snap.content + "{} <b>snap: "{} + snap.vitalsData.datas[0].Value + "{}</b> "{} + snap.vitalsData.datas);}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405                 vitals.Apply(base.snapFrame.vitalsData);}
+\DoxyCodeLine{00406             \}}
+\DoxyCodeLine{00407         \}}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} InterpolateFrame(Frame targframe, Frame startframe, Frame endframe, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00412             targframe.CopyFrom(startframe);}
+\DoxyCodeLine{00413         \}}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00415         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ExtrapolateFrame(Frame prevframe, Frame snapframe, Frame targframe)}
+\DoxyCodeLine{00416         \{}
+\DoxyCodeLine{00417             var snapdatas = snapframe.vitalsData.datas;}
+\DoxyCodeLine{00418             var targdatas = targframe.vitalsData.datas;}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00421                 targdatas[i] = vitalArray[i].VitalDef.Extrapolate(snapdatas[i]);}
+\DoxyCodeLine{00422 }
+\DoxyCodeLine{00424             targframe.content = FrameContents.Extrapolated;}
+\DoxyCodeLine{00425         \}}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428     \}}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430 \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00432 \textcolor{comment}{//    [CustomEditor(typeof(SyncVitals))]}}
+\DoxyCodeLine{00433 \textcolor{comment}{//    [CanEditMultipleObjects]}}
+\DoxyCodeLine{00434 \textcolor{comment}{//    public class SyncVitalsEditor : ContactSystemHeaderEditor}}
+\DoxyCodeLine{00435 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00436 }
+\DoxyCodeLine{00437 \textcolor{comment}{//        protected override string HelpURL}}
+\DoxyCodeLine{00438 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00439 \textcolor{comment}{//            get \{ return REFERENCE\_DOCS\_PATH + "{}subsystems\#syncvitals\_component"{}; \}}}
+\DoxyCodeLine{00440 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442 \textcolor{comment}{//        protected override string TextTexturePath}}
+\DoxyCodeLine{00443 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00444 \textcolor{comment}{//            get \{ return "{}Header/SyncVitalsText"{}; \}}}
+\DoxyCodeLine{00445 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00446 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00449 \}}
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00451 }
+
+\end{DoxyCode}

@@ -1,0 +1,174 @@
+\doxysection{Sync\+Contact\+Scan.\+cs}
+\label{_sync_contact_scan_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncContactScan.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncContactScan.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Pun.Simple.Assists;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014        }
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncContactScan : SyncShootBase}
+\DoxyCodeLine{00017         , IOnSnapshot}
+\DoxyCodeLine{00018         , IOnAuthorityChanged}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{comment}{//public Enum Preset \{ Weapon, Grabber \}}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{void} UsePreset(Preset preset)}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             }
+\DoxyCodeLine{00027             \textcolor{keywordflow}{switch} (preset)}
+\DoxyCodeLine{00028             \{}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030                 \textcolor{keywordflow}{case} Preset.WeaponScan:}
+\DoxyCodeLine{00031                     triggerKey = KeyCode.R;}
+\DoxyCodeLine{00032                     grab = \textcolor{keyword}{false};}
+\DoxyCodeLine{00033                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{case} Preset.ContactScan:}
+\DoxyCodeLine{00036                     \{}
+\DoxyCodeLine{00037                         triggerKey = KeyCode.Alpha4;}
+\DoxyCodeLine{00038                         hitscanDefinition = \textcolor{keyword}{new} HitscanDefinition() \{ hitscanType = HitscanType.OverlapSphere, radius = 2 \};}
+\DoxyCodeLine{00039                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00040                     \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042                 \textcolor{keywordflow}{case} Preset.VitalsScan:}
+\DoxyCodeLine{00043                     \{}
+\DoxyCodeLine{00044                         triggerKey = KeyCode.Alpha4;}
+\DoxyCodeLine{00045                         hitscanDefinition = \textcolor{keyword}{new} HitscanDefinition() \{ hitscanType = HitscanType.OverlapSphere, radius = 2 \};}
+\DoxyCodeLine{00046                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00047                     \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{case} Preset.InventorysScan:}
+\DoxyCodeLine{00050                     \{}
+\DoxyCodeLine{00051                         triggerKey = KeyCode.Alpha4;}
+\DoxyCodeLine{00052                         hitscanDefinition = \textcolor{keyword}{new} HitscanDefinition() \{ hitscanType = HitscanType.OverlapSphere, radius = 2 \};}
+\DoxyCodeLine{00053                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00054                     \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00057                     \{}
+\DoxyCodeLine{00058                         triggerKey = KeyCode.Alpha4;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                         \textcolor{comment}{// If either the poke or grab bits are set, use both for settings. Otherwise just leave defaults.}}
+\DoxyCodeLine{00061                         \textcolor{keywordtype}{bool} isPoke = (preset \& Preset.Poke) != 0;}
+\DoxyCodeLine{00062                         \textcolor{keywordtype}{bool} isGrab = (preset \& Preset.Grab) != 0;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                         \textcolor{keywordflow}{if} (isPoke ||isGrab)}
+\DoxyCodeLine{00065                         \{}
+\DoxyCodeLine{00066                             poke = isPoke;}
+\DoxyCodeLine{00067                             grab = isGrab;}
+\DoxyCodeLine{00068                         \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00071                     \}}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.HITSCAN; \} \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} poke = \textcolor{keyword}{true};}
+\DoxyCodeLine{00079         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} grab = \textcolor{keyword}{true};}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} HitscanDefinition hitscanDefinition;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         [Tooltip(\textcolor{stringliteral}{"{}Render widgets that represent the shape of the hitscan when triggered."{}})]}
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} visualizeHitscan = \textcolor{keyword}{true};}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Trigger(Frame frame, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{float} timeshift = 0)}
+\DoxyCodeLine{00088         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (GetComponent<SyncContact>() \&\& !photonView.IsMine)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 hitscanDefinition.VisualizeHitscan(origin);}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             \textcolor{keywordtype}{int} nearest = -\/1;}
+\DoxyCodeLine{00097             RaycastHit[] rayhits;}
+\DoxyCodeLine{00098             Collider[] colhits;}
+\DoxyCodeLine{00099             \textcolor{keywordtype}{int} count = hitscanDefinition.GenericHitscanNonAlloc(origin, out rayhits, out colhits, ref nearest, visualizeHitscan);}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \textcolor{keywordflow}{if} (count <=0)}
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{comment}{//var contactTrigger = this.contactTrigger;// this.GetComponentInParent<ContactTrigger>();}}
+\DoxyCodeLine{00105             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} h = 0; h < count; ++h)}
+\DoxyCodeLine{00106             \{}
+\DoxyCodeLine{00107                 var col = colhits[h];}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                 var otherCT = col.transform.GetNestedComponentInParents<IContactTrigger, NetObject>();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111                 \textcolor{keywordflow}{if} (ReferenceEquals(otherCT, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00112                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 \textcolor{keywordflow}{if} (otherCT.NetObj == contactTrigger.NetObj)}
+\DoxyCodeLine{00115                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{if} (poke)}
+\DoxyCodeLine{00118                     contactTrigger.OnContact(otherCT, ContactType.Hitscan);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120                 \textcolor{keywordflow}{if} (grab)}
+\DoxyCodeLine{00121                     otherCT.OnContact(contactTrigger, ContactType.Hitscan);}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127     \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131     [CustomEditor(typeof(SyncContactScan))]}
+\DoxyCodeLine{00132     [CanEditMultipleObjects]}
+\DoxyCodeLine{00133     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncContactScanEditor : SyncShootBaseEditor}
+\DoxyCodeLine{00134     \{}
+\DoxyCodeLine{00135         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00136         \{}
+\DoxyCodeLine{00137             \textcolor{keyword}{get}}
+\DoxyCodeLine{00138             \{}
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Attach this component to any root or child GameObject to define a networked hitscan. "{}} +}
+\DoxyCodeLine{00140                     \textcolor{stringliteral}{"{}A NetObject is required on this object or a parent.\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00141                     \textcolor{stringliteral}{"{}Initiate a hitscan by calling:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00142                     \textcolor{stringliteral}{"{}this"{}} + typeof(SyncContactScan).Name + \textcolor{stringliteral}{"{}.QueueTrigger()"{}};}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SUBSYS\_PATH + \textcolor{stringliteral}{"{}\#synccontactscan\_component"{}}; \}}
+\DoxyCodeLine{00149         \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             \textcolor{keyword}{get}}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncScanText"{}};}
+\DoxyCodeLine{00156             \}}
+\DoxyCodeLine{00157         \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00160         \{}
+\DoxyCodeLine{00161             base.OnInspectorGUI();}
+\DoxyCodeLine{00162             \textcolor{keywordflow}{if} ((target as SyncContactScan).visualizeHitscan \&\& !EditorUserBuildSettings.development)}
+\DoxyCodeLine{00163                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Hitscan visualizations will not appear in release builds. 'Development Build' in 'Build Settings' is currently unchecked."{}}, MessageType.Error);}
+\DoxyCodeLine{00164         \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167     \}}
+\DoxyCodeLine{00168 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00169 \}}
+
+\end{DoxyCode}

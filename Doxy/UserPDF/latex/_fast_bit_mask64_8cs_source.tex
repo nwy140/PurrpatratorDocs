@@ -1,0 +1,376 @@
+\doxysection{Fast\+Bit\+Mask64.\+cs}
+\label{_fast_bit_mask64_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/FastBitMask/FastBitMask64.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/FastBitMask/FastBitMask64.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{struct }FastBitMask64}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} ulong bitmask;}
+\DoxyCodeLine{00018         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitcount;}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} ulong alltrue;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{int} BitCount}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{keyword}{get}}
+\DoxyCodeLine{00027             \{}
+\DoxyCodeLine{00028                 \textcolor{keywordflow}{return} bitcount;}
+\DoxyCodeLine{00029             \}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             \textcolor{keyword}{set}}
+\DoxyCodeLine{00032             \{}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{if} (value > 64)}
+\DoxyCodeLine{00036                 \{}
+\DoxyCodeLine{00037                     Debug.LogError(\textcolor{stringliteral}{"{}Attempting to set "{}} + typeof(FastBitMask64).Name + \textcolor{stringliteral}{"{}.bitcount to "{}} + value + \textcolor{stringliteral}{"{}, but the max allowed is 64."{}});}
+\DoxyCodeLine{00038                     bitcount = 64;}
+\DoxyCodeLine{00039                 \}}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (value < 0)}
+\DoxyCodeLine{00041                 \{}
+\DoxyCodeLine{00042                     Debug.LogError(\textcolor{stringliteral}{"{}Attempting to set "{}} + typeof(FastBitMask64).Name + \textcolor{stringliteral}{"{}.bitcount to "{}} + value + \textcolor{stringliteral}{"{}, but the min allowed is 0."{}});}
+\DoxyCodeLine{00043                     bitcount = 0;}
+\DoxyCodeLine{00044                 \}}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00046                     bitcount = value;}
+\DoxyCodeLine{00047 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00048                 bitcount = value;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051                 alltrue =}
+\DoxyCodeLine{00052                     (bitcount < 64) ? ((ulong)1 << bitcount) -\/ 1 :}
+\DoxyCodeLine{00053                     ulong.MaxValue;}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055                 \textcolor{comment}{// Clear any old bits that are no longer in use -\/ allows for very unchecked testing if we can assume they are all zero}}
+\DoxyCodeLine{00056                 bitmask = bitmask \& alltrue;}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} FastBitMask64(\textcolor{keywordtype}{int} bitcount)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (bitcount > 63 || bitcount < 0)}
+\DoxyCodeLine{00064                 RangeError(bitcount);}
+\DoxyCodeLine{00065 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066             this.bitmask = 0;}
+\DoxyCodeLine{00067             this.bitcount = bitcount;}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             alltrue =}
+\DoxyCodeLine{00070                 (bitcount < 64) ? ((ulong)1 << bitcount) -\/ 1 :}
+\DoxyCodeLine{00071                 ulong.MaxValue;}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{private} FastBitMask64(FastBitMask64 copyFrom)}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             this.bitmask = copyFrom.bitmask;}
+\DoxyCodeLine{00077             this.bitcount = copyFrom.bitcount;}
+\DoxyCodeLine{00078             this.alltrue = copyFrom.alltrue;}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} \textcolor{keyword}{this}[\textcolor{keywordtype}{int} bit]}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             \textcolor{keyword}{get}}
+\DoxyCodeLine{00084             \{}
+\DoxyCodeLine{00085 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00087                     RangeError(bit);}
+\DoxyCodeLine{00088 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} (bitmask \& ((ulong)1 << bit)) != 0;}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \textcolor{keyword}{set}}
+\DoxyCodeLine{00093             \{}
+\DoxyCodeLine{00094 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00096                     RangeError(bit);}
+\DoxyCodeLine{00097 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00099                 \{}
+\DoxyCodeLine{00100                     bitmask |= ((ulong)1 << bit);}
+\DoxyCodeLine{00101                 \}}
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103                 \{}
+\DoxyCodeLine{00104                     bitmask \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00105                 \}}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Get(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00110         \{}
+\DoxyCodeLine{00111 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00113                 RangeError(bit);}
+\DoxyCodeLine{00114 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115             \textcolor{keywordflow}{return} (bitmask \& ((ulong)1 << bit)) != 0;}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(\textcolor{keywordtype}{int} bit, \textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00122                 RangeError(bit);}
+\DoxyCodeLine{00123 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00124             \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 \textcolor{comment}{//bitmask |= singlemasks[bit];}}
+\DoxyCodeLine{00127                 bitmask |= ((ulong)1 << bit);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 bitmask \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133         \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTrue(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00136         \{}
+\DoxyCodeLine{00137 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00138             \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00139                 RangeError(bit);}
+\DoxyCodeLine{00140 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00141             bitmask |= ((ulong)1 << bit);}
+\DoxyCodeLine{00142         \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetFalse(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00145         \{}
+\DoxyCodeLine{00146 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00147             \textcolor{keywordflow}{if} (bit > 63 || bit < 0)}
+\DoxyCodeLine{00148                 RangeError(bit);}
+\DoxyCodeLine{00149 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00150             bitmask \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetAllTrue()}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             bitmask = alltrue;}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetAllFalse()}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00160             bitmask = 0;}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00166         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AllAreFalse \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} bitcount != 0 \&\& bitmask == 0; \} \}}
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AllAreTrue \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} bitcount == 0 || bitmask == alltrue; \} \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OR(FastBitMask64 other)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171             bitmask |= other.bitmask;}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AND(FastBitMask64 other)}
+\DoxyCodeLine{00175         \{}
+\DoxyCodeLine{00176             bitmask \&= other.bitmask;}
+\DoxyCodeLine{00177         \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{keyword}{public} \textcolor{keywordtype}{void} XOR(FastBitMask64 other)}
+\DoxyCodeLine{00180         \{}
+\DoxyCodeLine{00181             bitmask \string^= other.bitmask;}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{comment}{// TODO: these could be faster}}
+\DoxyCodeLine{00186         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountTrue()}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189             \textcolor{keywordtype}{int} truecount;}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191             \textcolor{keywordflow}{if} (bitmask == 0)}
+\DoxyCodeLine{00192                 truecount = 0;}
+\DoxyCodeLine{00193             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (bitmask == alltrue)}
+\DoxyCodeLine{00194                 truecount = bitcount;}
+\DoxyCodeLine{00195             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00196             \{}
+\DoxyCodeLine{00197                 truecount = 0;}
+\DoxyCodeLine{00198                 ulong scratch = bitmask;}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200                 \textcolor{keywordflow}{while} (scratch != 0)}
+\DoxyCodeLine{00201                 \{}
+\DoxyCodeLine{00202                     \textcolor{keywordflow}{if} ((scratch \& 1) == 1)}
+\DoxyCodeLine{00203                         truecount++;}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205                     scratch = scratch >> 1;}
+\DoxyCodeLine{00206                 \}}
+\DoxyCodeLine{00207             \}}
+\DoxyCodeLine{00208             \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00209         \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \textcolor{comment}{// TODO: these could be faster}}
+\DoxyCodeLine{00212         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountFalse()}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214             \textcolor{keywordflow}{if} (bitmask == 0)}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{return} bitcount;}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217             \textcolor{keywordflow}{if} (bitmask == alltrue)}
+\DoxyCodeLine{00218                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             \textcolor{keywordtype}{int} falsecount = 0;}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = bitcount; i < cnt; ++i)}
+\DoxyCodeLine{00223                 \textcolor{keywordflow}{if} ((bitmask \& ((ulong)1 << i)) == 0)}
+\DoxyCodeLine{00224                     falsecount++;}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{return} falsecount;}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00236         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ClearBitsBefore(\textcolor{keywordtype}{int} start, \textcolor{keywordtype}{int} count)}
+\DoxyCodeLine{00237         \{}
+\DoxyCodeLine{00238 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00239             \textcolor{keywordflow}{if} (start > 63 || start < 0)}
+\DoxyCodeLine{00240                 RangeError(start);}
+\DoxyCodeLine{00241 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00242             ulong mask = count == 64 ? ulong.MaxValue : ((ulong)1 << count) -\/ 1;}
+\DoxyCodeLine{00243             ulong mask1, mask2;}
+\DoxyCodeLine{00244             \textcolor{keywordtype}{int} offset = start -\/ count;}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordflow}{if} (offset >= 0)}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00249                 mask1 = mask << offset;}
+\DoxyCodeLine{00250                 mask2 = mask >> (bitcount -\/ offset);}
+\DoxyCodeLine{00251             \}}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 mask1 = mask >> -\/offset;}
+\DoxyCodeLine{00255                 mask2 = mask << (bitcount + offset);}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258             bitmask \&= \string~mask1 \& \string~mask2 \& alltrue;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00264         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountValidRange(\textcolor{keywordtype}{int} start, \textcolor{keywordtype}{int} lookahead)}
+\DoxyCodeLine{00265         \{}
+\DoxyCodeLine{00266 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00267             \textcolor{keywordflow}{if} (start > 63 || start < 0)}
+\DoxyCodeLine{00268                 RangeError(start);}
+\DoxyCodeLine{00269 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00271             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = lookahead; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00272             \{}
+\DoxyCodeLine{00273                 \textcolor{keywordtype}{int} b = start + i;}
+\DoxyCodeLine{00274                 \textcolor{keywordflow}{if} (b >= bitcount)}
+\DoxyCodeLine{00275                     b -\/= bitcount;}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277                 \textcolor{keywordflow}{if} ((bitmask \& ((ulong)1 << b)) != 0)}
+\DoxyCodeLine{00278                     \textcolor{keywordflow}{return} i + 1;}
+\DoxyCodeLine{00279             \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Copy(FastBitMask64 other)}
+\DoxyCodeLine{00285         \{}
+\DoxyCodeLine{00286             bitcount = other.bitcount;}
+\DoxyCodeLine{00287             bitmask = other.bitmask;}
+\DoxyCodeLine{00288             alltrue = other.alltrue;}
+\DoxyCodeLine{00289         \}}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare(FastBitMask64 other)}
+\DoxyCodeLine{00292         \{}
+\DoxyCodeLine{00293             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00294                 bitcount == other.bitcount \&\&}
+\DoxyCodeLine{00295                 bitmask == other.bitmask;}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RangeError(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00302         \{}
+\DoxyCodeLine{00303             Debug.LogError(\textcolor{stringliteral}{"{}Value of "{}} + bit + \textcolor{stringliteral}{"{} is out of the valid index range (0-\/63) for "{}} + typeof(FastBitMask64).Name + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00304         \}}
+\DoxyCodeLine{00305 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00306     \}}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }FastBitMask64Ext}
+\DoxyCodeLine{00309     \{}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311 \textcolor{preprocessor}{\#if DEBUG || UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder str = \textcolor{keyword}{new} StringBuilder(512);}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask64 ba, \textcolor{keywordtype}{int} greenbit = -\/1, \textcolor{keywordtype}{int} redbit = -\/1)}
+\DoxyCodeLine{00317         \{}
+\DoxyCodeLine{00318             str.Length = 0;}
+\DoxyCodeLine{00319             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00320             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00321             \{}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323                 \textcolor{keywordflow}{if} (i == greenbit)}
+\DoxyCodeLine{00324                     str.Append(\textcolor{stringliteral}{"{}<color=green>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00325                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i == redbit)}
+\DoxyCodeLine{00326                     str.Append(\textcolor{stringliteral}{"{}<color=red>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00327                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00328                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00331                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00332                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00333                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00334             \}}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00337         \}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask64 ba, \textcolor{keywordtype}{int} greenbit = -\/1, \textcolor{keywordtype}{bool}[] redbits = \textcolor{keyword}{null})}
+\DoxyCodeLine{00340         \{}
+\DoxyCodeLine{00341             str.Length = 0;}
+\DoxyCodeLine{00342             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00343             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00344             \{}
+\DoxyCodeLine{00345                 \textcolor{keywordflow}{if} (i == greenbit)}
+\DoxyCodeLine{00346                     str.Append(\textcolor{stringliteral}{"{}<color=green>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00347                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (redbits != \textcolor{keyword}{null} \&\& i < redbits.Length \&\& redbits[i])}
+\DoxyCodeLine{00348                     str.Append(\textcolor{stringliteral}{"{}<color=red>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00349                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00350                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00353                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00354                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00355                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00356             \}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00359         \}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask64 ba, StringBuilder[] colorbits = \textcolor{keyword}{null})}
+\DoxyCodeLine{00362         \{}
+\DoxyCodeLine{00363             str.Length = 0;}
+\DoxyCodeLine{00364             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00365             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00366             \{}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368                 \textcolor{keywordflow}{if} (colorbits != \textcolor{keyword}{null} \&\& i < colorbits.Length \&\& colorbits[i] != \textcolor{keyword}{null} \&\& colorbits[i].ToString() != \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00369                     str.Append(\textcolor{stringliteral}{"{}<b><color="{}} + colorbits[i].ToString() + \textcolor{stringliteral}{"{}>"{}} + (ba[i] ? 1 : 0) + \textcolor{stringliteral}{"{}</color></b>"{}});}
+\DoxyCodeLine{00370                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00371                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00372 }
+\DoxyCodeLine{00373                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00374                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00375                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00376                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00377             \}}
+\DoxyCodeLine{00378 }
+\DoxyCodeLine{00379             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00382         }
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00384 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386     \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389 \}}
+\DoxyCodeLine{00390 }
+
+\end{DoxyCode}

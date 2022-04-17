@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__water_editor_8cs_source" xml:lang="en-US">
+<title>WaterEditor.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Editor/WaterEditor.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__water_editor_8cs_source_1l00001"/>00001 <emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__water_editor_8cs_source_1l00002"/>00002 <emphasis role="keyword">using</emphasis>&#32;System.IO;
+<anchor xml:id="__water_editor_8cs_source_1l00003"/>00003 <emphasis role="keyword">using</emphasis>&#32;System.Text.RegularExpressions;
+<anchor xml:id="__water_editor_8cs_source_1l00004"/>00004 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_flat_kit">FlatKit</link>.<link linkend="_namespace_flat_kit_1_1_water">Water</link>;
+<anchor xml:id="__water_editor_8cs_source_1l00005"/>00005 <emphasis role="keyword">using</emphasis>&#32;UnityEditor;
+<anchor xml:id="__water_editor_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__water_editor_8cs_source_1l00007"/>00007 <emphasis role="keyword">using</emphasis>&#32;UnityEngine.Rendering;
+<anchor xml:id="__water_editor_8cs_source_1l00008"/>00008 
+<anchor xml:id="__water_editor_8cs_source_1l00009"/><link linkend="_class_flat_kit_water_editor">00009</link> <emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_flat_kit_water_editor">FlatKitWaterEditor</link>&#32;:&#32;ShaderGUI&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00010"/>00010 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Gradient&#32;_gradient;
+<anchor xml:id="__water_editor_8cs_source_1l00011"/>00011 
+<anchor xml:id="__water_editor_8cs_source_1l00012"/><link linkend="_class_flat_kit_water_editor_1a8a0dea8f567838df1eecc1fcfb13a2a8">00012</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_flat_kit_water_editor_1a8a0dea8f567838df1eecc1fcfb13a2a8">OnGUI</link>(MaterialEditor&#32;materialEditor,&#32;MaterialProperty[]&#32;properties)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00013"/>00013 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Material&#32;targetMaterial&#32;=&#32;materialEditor.target&#32;as&#32;Material;
+<anchor xml:id="__water_editor_8cs_source_1l00014"/>00014 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>[]&#32;keywords&#32;=&#32;targetMaterial.shaderKeywords;
+<anchor xml:id="__water_editor_8cs_source_1l00015"/>00015 
+<anchor xml:id="__water_editor_8cs_source_1l00016"/>00016 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!targetMaterial.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_COLORMODE_LINEAR&quot;</emphasis>)&#32;&amp;&amp;
+<anchor xml:id="__water_editor_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;!targetMaterial.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_COLORMODE_GRADIENT_TEXTURE&quot;</emphasis>))&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00018"/>00018 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.EnableKeyword(<emphasis role="stringliteral">&quot;_COLORMODE_LINEAR&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00020"/>00020 
+<anchor xml:id="__water_editor_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isColorModeGradient&#32;=&#32;targetMaterial.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_COLORMODE_GRADIENT_TEXTURE&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00022"/>00022 
+<anchor xml:id="__water_editor_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(MaterialProperty&#32;property&#32;<emphasis role="keywordflow">in</emphasis>&#32;properties)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;skipProperty&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00025"/>00025 
+<anchor xml:id="__water_editor_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isColorModeGradient)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;skipProperty&#32;|=&#32;ShowColorGradientExportBox(materialEditor,&#32;property);
+<anchor xml:id="__water_editor_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00029"/>00029 
+<anchor xml:id="__water_editor_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;brackets&#32;=&#32;<emphasis role="keyword">property</emphasis>.displayName.Split(<emphasis role="charliteral">&apos;[&apos;</emphasis>,&#32;<emphasis role="charliteral">&apos;]&apos;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;bracket&#32;<emphasis role="keywordflow">in</emphasis>&#32;brackets)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!property.displayName.Contains(<emphasis role="charliteral">&apos;[&apos;</emphasis>&#32;+&#32;bracket&#32;+&#32;<emphasis role="charliteral">&apos;]&apos;</emphasis>))&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00036"/>00036 
+<anchor xml:id="__water_editor_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;param&#32;=&#32;bracket;
+<anchor xml:id="__water_editor_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isNegative&#32;=&#32;bracket.StartsWith(<emphasis role="stringliteral">&quot;!&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isPositive&#32;=&#32;!isNegative;
+<anchor xml:id="__water_editor_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;param&#32;=&#32;bracket.TrimStart(<emphasis role="charliteral">&apos;!&apos;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;keywordOn&#32;=&#32;ArrayUtility.Contains(keywords,&#32;param);
+<anchor xml:id="__water_editor_8cs_source_1l00042"/>00042 
+<anchor xml:id="__water_editor_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isPositive&#32;&amp;&amp;&#32;!keywordOn)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;skipProperty&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00045"/>00045 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00046"/>00046 
+<anchor xml:id="__water_editor_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isNegative&#32;&amp;&amp;&#32;keywordOn)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;skipProperty&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00050"/>00050 
+<anchor xml:id="__water_editor_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(skipProperty)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00056"/>00056 
+<anchor xml:id="__water_editor_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;hideInInspector&#32;=&#32;(<emphasis role="keyword">property</emphasis>.flags&#32;&amp;&#32;MaterialProperty.PropFlags.HideInInspector)&#32;!=&#32;0;
+<anchor xml:id="__water_editor_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!skipProperty&#32;&amp;&amp;&#32;!hideInInspector)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;DrawStandard(materialEditor,&#32;property);
+<anchor xml:id="__water_editor_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00061"/>00061 
+<anchor xml:id="__water_editor_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(targetMaterial.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_COLORMODE_GRADIENT_TEXTURE&quot;</emphasis>)&#32;&amp;&amp;
+<anchor xml:id="__water_editor_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;property.type&#32;==&#32;MaterialProperty.PropType.Texture&#32;&amp;&amp;
+<anchor xml:id="__water_editor_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;property.displayName.StartsWith(<emphasis role="stringliteral">&quot;[_COLORMODE_GRADIENT_TEXTURE]&quot;</emphasis>)&#32;&amp;&amp;
+<anchor xml:id="__water_editor_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;property.textureValue&#32;!=&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUILayout.Space(-50);
+<anchor xml:id="__water_editor_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;(<emphasis role="keyword">new</emphasis>&#32;EditorGUILayout.HorizontalScope())&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUILayout.Space(15);
+<anchor xml:id="__water_editor_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(GUILayout.Button(<emphasis role="stringliteral">&quot;Reset&quot;</emphasis>,&#32;EditorStyles.miniButtonLeft,
+<anchor xml:id="__water_editor_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUILayout.Width(60f),&#32;GUILayout.ExpandWidth(<emphasis role="keyword">false</emphasis>)))&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">property</emphasis>.textureValue&#32;=&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00073"/>00073 
+<anchor xml:id="__water_editor_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUILayout.FlexibleSpace();
+<anchor xml:id="__water_editor_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00076"/>00076 
+<anchor xml:id="__water_editor_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.Space(60);
+<anchor xml:id="__water_editor_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00080"/>00080 
+<anchor xml:id="__water_editor_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;opaque&#32;=&#32;targetMaterial.GetInt(<emphasis role="stringliteral">&quot;_Opaque&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(opaque&#32;==&#32;1)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.SetOverrideTag(<emphasis role="stringliteral">&quot;RenderType&quot;</emphasis>,&#32;<emphasis role="stringliteral">&quot;Opaque&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.SetInt(<emphasis role="stringliteral">&quot;_ZWrite&quot;</emphasis>,&#32;1);
+<anchor xml:id="__water_editor_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.renderQueue&#32;=&#32;(int)&#32;RenderQueue.Geometry;
+<anchor xml:id="__water_editor_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}&#32;<emphasis role="keywordflow">else</emphasis>&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.SetOverrideTag(<emphasis role="stringliteral">&quot;RenderType&quot;</emphasis>,&#32;<emphasis role="stringliteral">&quot;Transparent&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.SetInt(<emphasis role="stringliteral">&quot;_ZWrite&quot;</emphasis>,&#32;0);
+<anchor xml:id="__water_editor_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targetMaterial.renderQueue&#32;=&#32;(int)&#32;RenderQueue.Transparent;
+<anchor xml:id="__water_editor_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00091"/>00091 
+<anchor xml:id="__water_editor_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;DrawQueueOffsetField(properties,&#32;targetMaterial);
+<anchor xml:id="__water_editor_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00094"/>00094 
+<anchor xml:id="__water_editor_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;DrawStandard(MaterialEditor&#32;materialEditor,&#32;MaterialProperty&#32;property)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;displayName&#32;=&#32;<emphasis role="keyword">property</emphasis>.displayName;
+<anchor xml:id="__water_editor_8cs_source_1l00097"/>00097 
+<anchor xml:id="__water_editor_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Remove&#32;everything&#32;in&#32;brackets.</emphasis>
+<anchor xml:id="__water_editor_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;displayName&#32;=&#32;Regex.Replace(displayName,&#32;<emphasis role="stringliteral">@&quot;&#32;?\[.*?\]&quot;</emphasis>,&#32;<emphasis role="keywordtype">string</emphasis>.Empty);
+<anchor xml:id="__water_editor_8cs_source_1l00100"/>00100 
+<anchor xml:id="__water_editor_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_flat_kit_1_1_water_1_1_tooltips">Tooltips</link>.<link linkend="_class_flat_kit_1_1_water_1_1_tooltips_1a16dcef679f978020d587c6befbee4d70">map</link>.TryGetValue(displayName.Trim(),&#32;out&#32;<emphasis role="keywordtype">string</emphasis>&#32;tooltip);
+<anchor xml:id="__water_editor_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;displayName&#32;=&#32;Regex.Replace(displayName,&#32;<emphasis role="stringliteral">@&quot;&#32;?\{.*?\}&quot;</emphasis>,&#32;<emphasis role="keywordtype">string</emphasis>.Empty);
+<anchor xml:id="__water_editor_8cs_source_1l00103"/>00103 
+<anchor xml:id="__water_editor_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;guiContent&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIContent(displayName,&#32;tooltip);
+<anchor xml:id="__water_editor_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;materialEditor.ShaderProperty(property,&#32;guiContent);
+<anchor xml:id="__water_editor_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00107"/>00107 
+<anchor xml:id="__water_editor_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;ShowColorGradientExportBox(MaterialEditor&#32;materialEditor,&#32;MaterialProperty&#32;property)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isGradientTexture&#32;=&#32;<emphasis role="keyword">property</emphasis>.type&#32;==&#32;MaterialProperty.PropType.Texture&#32;&amp;&amp;
+<anchor xml:id="__water_editor_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">property</emphasis>.displayName.StartsWith(<emphasis role="stringliteral">&quot;[_COLORMODE_GRADIENT_TEXTURE]&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isGradientTexture)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(property.textureValue&#32;!=&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00113"/>00113 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}&#32;<emphasis role="keywordflow">else</emphasis>&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00118"/>00118 
+<anchor xml:id="__water_editor_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;messageContent&#32;=
+<anchor xml:id="__water_editor_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUIUtility.TrTextContent(
+<anchor xml:id="__water_editor_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="stringliteral">&quot;Before&#32;the&#32;gradient&#32;can&#32;be&#32;used&#32;it&#32;needs&#32;to&#32;be&#32;exported&#32;as&#32;a&#32;texture.&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;buttonContent&#32;=&#32;EditorGUIUtility.TrTextContent(<emphasis role="stringliteral">&quot;Export&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;buttonPressed&#32;=&#32;GradientBoxWithButton(messageContent,&#32;buttonContent);
+<anchor xml:id="__water_editor_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(buttonPressed)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;texture&#32;=&#32;GradientToTexture(_gradient);
+<anchor xml:id="__water_editor_8cs_source_1l00126"/>00126 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PromptTextureSave(materialEditor,&#32;texture,&#32;property.name);
+<anchor xml:id="__water_editor_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00128"/>00128 
+<anchor xml:id="__water_editor_8cs_source_1l00129"/>00129 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00131"/>00131 
+<anchor xml:id="__water_editor_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;GradientBoxWithButton(GUIContent&#32;messageContent,&#32;GUIContent&#32;buttonContent)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;boxHeight&#32;=&#32;40f;
+<anchor xml:id="__water_editor_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.Space(5);
+<anchor xml:id="__water_editor_8cs_source_1l00135"/>00135 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rect&#32;rect&#32;=&#32;GUILayoutUtility.GetRect(messageContent,&#32;EditorStyles.helpBox);
+<anchor xml:id="__water_editor_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUILayoutUtility.GetRect(0f,&#32;boxHeight);
+<anchor xml:id="__water_editor_8cs_source_1l00137"/>00137 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rect.height&#32;+=&#32;boxHeight;
+<anchor xml:id="__water_editor_8cs_source_1l00138"/>00138 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;style&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(EditorStyles.helpBox);
+<anchor xml:id="__water_editor_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;style.fontSize&#32;+=&#32;2;
+<anchor xml:id="__water_editor_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUI.Label(rect,&#32;messageContent,&#32;style);
+<anchor xml:id="__water_editor_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;secondLineHeight&#32;=&#32;20f;
+<anchor xml:id="__water_editor_8cs_source_1l00142"/>00142 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;secondLineY&#32;=&#32;rect.yMax&#32;-&#32;secondLineHeight&#32;-&#32;15f;
+<anchor xml:id="__water_editor_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;buttonPosition&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Rect(rect.xMax&#32;-&#32;60f&#32;-&#32;4f,&#32;secondLineY,&#32;60f,&#32;secondLineHeight);
+<anchor xml:id="__water_editor_8cs_source_1l00144"/>00144 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;result&#32;=&#32;GUI.Button(buttonPosition,&#32;buttonContent);
+<anchor xml:id="__water_editor_8cs_source_1l00145"/>00145 
+<anchor xml:id="__water_editor_8cs_source_1l00146"/>00146 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;gradientPosition&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Rect(rect.xMin&#32;+&#32;8f,&#32;secondLineY,&#32;rect.width&#32;-&#32;60f&#32;-&#32;18f,&#32;secondLineHeight);
+<anchor xml:id="__water_editor_8cs_source_1l00147"/>00147 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(_gradient&#32;==&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_gradient&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Gradient();
+<anchor xml:id="__water_editor_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00150"/>00150 
+<anchor xml:id="__water_editor_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_gradient&#32;=&#32;EditorGUI.GradientField(gradientPosition,&#32;_gradient);
+<anchor xml:id="__water_editor_8cs_source_1l00152"/>00152 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.Space(10);
+<anchor xml:id="__water_editor_8cs_source_1l00153"/>00153 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;result;
+<anchor xml:id="__water_editor_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00155"/>00155 
+<anchor xml:id="__water_editor_8cs_source_1l00156"/>00156 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Texture2D&#32;GradientToTexture(Gradient&#32;g)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00157"/>00157 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;width&#32;=&#32;256;
+<anchor xml:id="__water_editor_8cs_source_1l00158"/>00158 
+<anchor xml:id="__water_editor_8cs_source_1l00159"/>00159 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Texture2D&#32;texture&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Texture2D(width,&#32;1,&#32;TextureFormat.RGBA32,&#32;<emphasis role="comment">/*mipChain=*/</emphasis><emphasis role="keyword">false</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00160"/>00160 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;name&#32;=&#32;<emphasis role="stringliteral">&quot;Flat&#32;Kit&#32;Water&#32;Color&#32;Gradient&quot;</emphasis>,
+<anchor xml:id="__water_editor_8cs_source_1l00161"/>00161 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;wrapMode&#32;=&#32;TextureWrapMode.Clamp,
+<anchor xml:id="__water_editor_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;hideFlags&#32;=&#32;HideFlags.HideAndDontSave,
+<anchor xml:id="__water_editor_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;filterMode&#32;=&#32;FilterMode.Point
+<anchor xml:id="__water_editor_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};
+<anchor xml:id="__water_editor_8cs_source_1l00165"/>00165 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">float</emphasis>&#32;x&#32;=&#32;0;
+<anchor xml:id="__water_editor_8cs_source_1l00166"/>00166 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;x&#32;&lt;&#32;width;
+<anchor xml:id="__water_editor_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;x++)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Color32&#32;color&#32;=&#32;g.Evaluate(x&#32;/&#32;(width&#32;-&#32;1));
+<anchor xml:id="__water_editor_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;texture.SetPixel(Mathf.CeilToInt(x),&#32;0,&#32;color);
+<anchor xml:id="__water_editor_8cs_source_1l00170"/>00170 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00171"/>00171 
+<anchor xml:id="__water_editor_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;texture.Apply();
+<anchor xml:id="__water_editor_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;texture;
+<anchor xml:id="__water_editor_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00175"/>00175 
+<anchor xml:id="__water_editor_8cs_source_1l00176"/>00176 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;PromptTextureSave(MaterialEditor&#32;materialEditor,&#32;Texture2D&#32;texture,&#32;<emphasis role="keywordtype">string</emphasis>&#32;propertyName)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Material&#32;material&#32;=&#32;materialEditor.target&#32;as&#32;Material;
+<anchor xml:id="__water_editor_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(material&#32;==&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00181"/>00181 
+<anchor xml:id="__water_editor_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;pngNameWithExtension&#32;=&#32;$<emphasis role="stringliteral">&quot;{materialEditor.target.name}{propertyName}.png&quot;</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00183"/>00183 
+<anchor xml:id="__water_editor_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;fullPath&#32;=
+<anchor xml:id="__water_editor_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorUtility.SaveFilePanel(<emphasis role="stringliteral">&quot;Save&#32;Gradient&#32;Texture&quot;</emphasis>,&#32;<emphasis role="stringliteral">&quot;Assets&quot;</emphasis>,&#32;pngNameWithExtension,&#32;<emphasis role="stringliteral">&quot;png&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(fullPath.Length&#32;&gt;&#32;0)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00187"/>00187 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SaveTextureAsPng(texture,&#32;fullPath,&#32;FilterMode.Point);
+<anchor xml:id="__water_editor_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;loadedTexture&#32;=&#32;LoadTexture(fullPath);
+<anchor xml:id="__water_editor_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(loadedTexture&#32;!=&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;material.SetTexture(propertyName,&#32;loadedTexture);
+<anchor xml:id="__water_editor_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}&#32;<emphasis role="keywordflow">else</emphasis>&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogWarning($<emphasis role="stringliteral">&quot;Could&#32;not&#32;load&#32;the&#32;texture&#32;from&#32;{fullPath}&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00193"/>00193 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00194"/>00194 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00195"/>00195 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00196"/>00196 
+<anchor xml:id="__water_editor_8cs_source_1l00197"/>00197 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;SaveTextureAsPng(Texture2D&#32;texture,&#32;<emphasis role="keywordtype">string</emphasis>&#32;fullPath,&#32;FilterMode&#32;filterMode)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00198"/>00198 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">byte</emphasis>[]&#32;bytes&#32;=&#32;texture.EncodeToPNG();
+<anchor xml:id="__water_editor_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(bytes&#32;==&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogError(<emphasis role="stringliteral">&quot;Could&#32;not&#32;encode&#32;texture&#32;as&#32;PNG.&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00203"/>00203 
+<anchor xml:id="__water_editor_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;File.WriteAllBytes(fullPath,&#32;bytes);
+<anchor xml:id="__water_editor_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;AssetDatabase.Refresh();
+<anchor xml:id="__water_editor_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Log($<emphasis role="stringliteral">&quot;Texture&#32;saved&#32;as:&#32;{fullPath}&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00207"/>00207 
+<anchor xml:id="__water_editor_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;pathRelativeToAssets&#32;=&#32;ConvertFullPathToAssetPath(fullPath);
+<anchor xml:id="__water_editor_8cs_source_1l00209"/>00209 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(pathRelativeToAssets.Length&#32;==&#32;0)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00210"/>00210 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogWarning($<emphasis role="stringliteral">&quot;Could&#32;not&#32;save&#32;the&#32;texture&#32;to&#32;{fullPath}.&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00211"/>00211 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00212"/>00212 
+<anchor xml:id="__water_editor_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TextureImporter&#32;importer&#32;=&#32;(TextureImporter)&#32;TextureImporter.GetAtPath(pathRelativeToAssets);
+<anchor xml:id="__water_editor_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Assert(importer&#32;!=&#32;<emphasis role="keyword">null</emphasis>,
+<anchor xml:id="__water_editor_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;$<emphasis role="stringliteral">&quot;[FlatKit]&#32;Could&#32;not&#32;create&#32;importer&#32;at&#32;{pathRelativeToAssets}.&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00216"/>00216 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(importer&#32;!=&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00217"/>00217 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.filterMode&#32;=&#32;filterMode;
+<anchor xml:id="__water_editor_8cs_source_1l00218"/>00218 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.textureType&#32;=&#32;TextureImporterType.Default;
+<anchor xml:id="__water_editor_8cs_source_1l00219"/>00219 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.textureCompression&#32;=&#32;TextureImporterCompression.Uncompressed;
+<anchor xml:id="__water_editor_8cs_source_1l00220"/>00220 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.mipmapEnabled&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00221"/>00221 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;textureSettings&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;TextureImporterPlatformSettings&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00222"/>00222 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;format&#32;=&#32;TextureImporterFormat.RGBA32
+<anchor xml:id="__water_editor_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};
+<anchor xml:id="__water_editor_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.SetPlatformTextureSettings(textureSettings);
+<anchor xml:id="__water_editor_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorUtility.SetDirty(importer);
+<anchor xml:id="__water_editor_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;importer.SaveAndReimport();
+<anchor xml:id="__water_editor_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00228"/>00228 
+<anchor xml:id="__water_editor_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Assert(importer&#32;!=&#32;<emphasis role="keyword">null</emphasis>,
+<anchor xml:id="__water_editor_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;$<emphasis role="stringliteral">&quot;[FlatKit]&#32;Could&#32;not&#32;change&#32;import&#32;settings&#32;of&#32;{fullPath}&#32;[{pathRelativeToAssets}]&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00232"/>00232 
+<anchor xml:id="__water_editor_8cs_source_1l00233"/>00233 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;Texture2D&#32;LoadTexture(<emphasis role="keywordtype">string</emphasis>&#32;fullPath)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00234"/>00234 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;pathRelativeToAssets&#32;=&#32;ConvertFullPathToAssetPath(fullPath);
+<anchor xml:id="__water_editor_8cs_source_1l00235"/>00235 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(pathRelativeToAssets.Length&#32;==&#32;0)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00236"/>00236 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00238"/>00238 
+<anchor xml:id="__water_editor_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;loadedTexture&#32;=&#32;AssetDatabase.LoadAssetAtPath(pathRelativeToAssets,&#32;typeof(Texture2D))&#32;as&#32;Texture2D;
+<anchor xml:id="__water_editor_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(loadedTexture&#32;==&#32;<emphasis role="keyword">null</emphasis>)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00241"/>00241 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogError($<emphasis role="stringliteral">&quot;[FlatKit]&#32;Could&#32;not&#32;load&#32;texture&#32;from&#32;{fullPath}&#32;[{pathRelativeToAssets}].&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00242"/>00242 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00243"/>00243 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00244"/>00244 
+<anchor xml:id="__water_editor_8cs_source_1l00245"/>00245 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;loadedTexture.filterMode&#32;=&#32;FilterMode.Point;
+<anchor xml:id="__water_editor_8cs_source_1l00246"/>00246 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;loadedTexture.wrapMode&#32;=&#32;TextureWrapMode.Clamp;
+<anchor xml:id="__water_editor_8cs_source_1l00247"/>00247 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;loadedTexture;
+<anchor xml:id="__water_editor_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00249"/>00249 
+<anchor xml:id="__water_editor_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;ConvertFullPathToAssetPath(<emphasis role="keywordtype">string</emphasis>&#32;fullPath)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;count&#32;=&#32;(Directory.GetCurrentDirectory()&#32;+&#32;Path.DirectorySeparatorChar).Length;
+<anchor xml:id="__water_editor_8cs_source_1l00252"/>00252 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(count&#32;&lt;&#32;0)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00253"/>00253 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;String.Empty;
+<anchor xml:id="__water_editor_8cs_source_1l00254"/>00254 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00255"/>00255 
+<anchor xml:id="__water_editor_8cs_source_1l00256"/>00256 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;fullPath.Remove(0,&#32;count);
+<anchor xml:id="__water_editor_8cs_source_1l00257"/>00257 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00258"/>00258 
+<anchor xml:id="__water_editor_8cs_source_1l00259"/>00259 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;DrawQueueOffsetField(MaterialProperty[]&#32;properties,&#32;Material&#32;material)&#32;{
+<anchor xml:id="__water_editor_8cs_source_1l00260"/>00260 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUIContent&#32;queueSlider&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIContent(<emphasis role="stringliteral">&quot;&#32;&#32;&#32;&#32;&#32;Priority&quot;</emphasis>,
+<anchor xml:id="__water_editor_8cs_source_1l00261"/>00261 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="stringliteral">&quot;Determines&#32;the&#32;chronological&#32;rendering&#32;order&#32;for&#32;a&#32;Material.&#32;High&#32;values&#32;are&#32;rendered&#32;first.&quot;</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00262"/>00262 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;queueOffsetRange&#32;=&#32;50;
+<anchor xml:id="__water_editor_8cs_source_1l00263"/>00263 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;MaterialProperty&#32;queueOffsetProp&#32;=&#32;FindProperty(<emphasis role="stringliteral">&quot;_QueueOffset&quot;</emphasis>,&#32;properties,&#32;<emphasis role="keyword">false</emphasis>);
+<anchor xml:id="__water_editor_8cs_source_1l00264"/>00264 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(queueOffsetProp&#32;==&#32;<emphasis role="keyword">null</emphasis>)&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00265"/>00265 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginChangeCheck();
+<anchor xml:id="__water_editor_8cs_source_1l00266"/>00266 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.showMixedValue&#32;=&#32;queueOffsetProp.hasMixedValue;
+<anchor xml:id="__water_editor_8cs_source_1l00267"/>00267 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;queue&#32;=&#32;EditorGUILayout.IntSlider(queueSlider,&#32;(<emphasis role="keywordtype">int</emphasis>)&#32;queueOffsetProp.floatValue,&#32;-queueOffsetRange,
+<anchor xml:id="__water_editor_8cs_source_1l00268"/>00268 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;queueOffsetRange);
+<anchor xml:id="__water_editor_8cs_source_1l00269"/>00269 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(EditorGUI.EndChangeCheck())
+<anchor xml:id="__water_editor_8cs_source_1l00270"/>00270 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;queueOffsetProp.floatValue&#32;=&#32;queue;
+<anchor xml:id="__water_editor_8cs_source_1l00271"/>00271 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.showMixedValue&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__water_editor_8cs_source_1l00272"/>00272 
+<anchor xml:id="__water_editor_8cs_source_1l00273"/>00273 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;material.renderQueue&#32;=&#32;(int)RenderQueue.Transparent&#32;+&#32;queue;
+<anchor xml:id="__water_editor_8cs_source_1l00274"/>00274 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__water_editor_8cs_source_1l00275"/>00275 }
+</programlisting></section>

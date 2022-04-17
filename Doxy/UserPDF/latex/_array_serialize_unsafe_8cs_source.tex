@@ -1,0 +1,613 @@
+\doxysection{Array\+Serialize\+Unsafe.\+cs}
+\label{_array_serialize_unsafe_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/ArraySerializeUnsafe.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/ArraySerializeUnsafe.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{/*}}
+\DoxyCodeLine{00002 \textcolor{comment}{* The MIT License (MIT)}}
+\DoxyCodeLine{00003 \textcolor{comment}{* }}
+\DoxyCodeLine{00004 \textcolor{comment}{* Copyright (c) 2018-\/2019 Davin Carten (emotitron) (davincarten@gmail.com)}}
+\DoxyCodeLine{00005 \textcolor{comment}{* }}
+\DoxyCodeLine{00006 \textcolor{comment}{* Permission is hereby granted, free of charge, to any person obtaining a copy}}
+\DoxyCodeLine{00007 \textcolor{comment}{* of this software and associated documentation files (the "{}Software"{}), to deal}}
+\DoxyCodeLine{00008 \textcolor{comment}{* in the Software without restriction, including without limitation the rights}}
+\DoxyCodeLine{00009 \textcolor{comment}{* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell}}
+\DoxyCodeLine{00010 \textcolor{comment}{* copies of the Software, and to permit persons to whom the Software is}}
+\DoxyCodeLine{00011 \textcolor{comment}{* furnished to do so, subject to the following conditions:}}
+\DoxyCodeLine{00012 \textcolor{comment}{* }}
+\DoxyCodeLine{00013 \textcolor{comment}{* The above copyright notice and this permission notice shall be included in}}
+\DoxyCodeLine{00014 \textcolor{comment}{* all copies or substantial portions of the Software.}}
+\DoxyCodeLine{00015 \textcolor{comment}{* }}
+\DoxyCodeLine{00016 \textcolor{comment}{* THE SOFTWARE IS PROVIDED "{}AS IS"{}, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR}}
+\DoxyCodeLine{00017 \textcolor{comment}{* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,}}
+\DoxyCodeLine{00018 \textcolor{comment}{* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE}}
+\DoxyCodeLine{00019 \textcolor{comment}{* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER}}
+\DoxyCodeLine{00020 \textcolor{comment}{* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,}}
+\DoxyCodeLine{00021 \textcolor{comment}{* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN}}
+\DoxyCodeLine{00022 \textcolor{comment}{* THE SOFTWARE.}}
+\DoxyCodeLine{00023 \textcolor{comment}{*/}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00026 \textcolor{preprocessor}{\#define UNITY\_ASSERTIONS}}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00030 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00031 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00034 \{}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }ArraySerializeUnsafe}
+\DoxyCodeLine{00037     \{}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} bufferOverrunMsg = \textcolor{stringliteral}{"{}Byte buffer overrun. Dataloss will occur."{}};}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 \textcolor{preprocessor}{        \#region Read/Write Signed Value}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSigned(ulong* buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00050             Write(buffer, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00058         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AppendSigned(ulong* buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00059         \{}
+\DoxyCodeLine{00060             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00061             Append(buffer, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00062         \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00071             Append(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00077         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00080             Append(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00086         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddSigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00087         \{}
+\DoxyCodeLine{00088             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00089             Append(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{comment}{// Inject}}
+\DoxyCodeLine{00097 \textcolor{comment}{}        \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00098         \{}
+\DoxyCodeLine{00099             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00100             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00106         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00109             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00115         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00118             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{comment}{// Poke}}
+\DoxyCodeLine{00127 \textcolor{comment}{}        \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} PokeSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00128         \{}
+\DoxyCodeLine{00129             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00130             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00137         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} PokeSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00140             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00147         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} PokeSigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00150             Write(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{comment}{// Read}}
+\DoxyCodeLine{00157 \textcolor{comment}{}        \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSigned(ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             uint value = (uint)Read(uPtr, ref bitposition, bits);}
+\DoxyCodeLine{00160             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164         \textcolor{comment}{// Peek}}
+\DoxyCodeLine{00168 \textcolor{comment}{}        \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{int} PeekSigned(ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170             uint value = (uint)Read(uPtr, ref bitposition, bits);}
+\DoxyCodeLine{00171             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00186         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Append(ulong* uPtr, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (bits <= 0)}
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAXBITS = 64;}
+\DoxyCodeLine{00192             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MODULUS = MAXBITS -\/ 1;}
+\DoxyCodeLine{00193             \textcolor{keywordtype}{int} offset = bitposition \& MODULUS;}
+\DoxyCodeLine{00194             \textcolor{keywordtype}{int} index = bitposition >> 6;}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             ulong offsetmask = ((1UL << offset) -\/ 1);}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             ulong result = (uPtr[index] \& offsetmask) | (value << offset);}
+\DoxyCodeLine{00199             uPtr[index] = result;}
+\DoxyCodeLine{00200             uPtr[index + 1] = result >> (MAXBITS -\/ offset);}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             bitposition += bits;}
+\DoxyCodeLine{00203         \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00214         \textcolor{comment}{//public unsafe static void Add(this ulong value, ulong* uPtr, ref int bitposition, int bits)}}
+\DoxyCodeLine{00215         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00216         \textcolor{comment}{//  if (bits == 0)}}
+\DoxyCodeLine{00217         \textcolor{comment}{//      return;}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{comment}{//  const int MAXBITS = 64;}}
+\DoxyCodeLine{00220         \textcolor{comment}{//  const int MODULUS = MAXBITS -\/ 1;}}
+\DoxyCodeLine{00221         \textcolor{comment}{//  int offset = bitposition \& MODULUS;}}
+\DoxyCodeLine{00222         \textcolor{comment}{//  int index = bitposition >> 6;}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224         \textcolor{comment}{//  ulong offsetmask = ((1UL << offset) -\/ 1);}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226         \textcolor{comment}{//  ulong result = (uPtr[index] \& offsetmask) | (value << offset);}}
+\DoxyCodeLine{00227         \textcolor{comment}{//  uPtr[index] = result;}}
+\DoxyCodeLine{00228         \textcolor{comment}{//  uPtr[index + 1] = result >> (MAXBITS -\/ offset);}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230         \textcolor{comment}{//  bitposition += bits;}}
+\DoxyCodeLine{00231         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00241         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Write(ulong* uPtr, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00242         \{}
+\DoxyCodeLine{00243             \textcolor{keywordflow}{if} (bits <= 0)}
+\DoxyCodeLine{00244                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAXBITS = 64;}
+\DoxyCodeLine{00247             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MODULUS = MAXBITS -\/ 1;}
+\DoxyCodeLine{00248             \textcolor{keywordtype}{int} offset = bitposition \& MODULUS;}
+\DoxyCodeLine{00249             \textcolor{keywordtype}{int} index = bitposition >> 6;}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251             ulong mask = ulong.MaxValue >> (64 -\/ bits);}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             ulong offsetmask = mask << offset;}
+\DoxyCodeLine{00254             ulong offsetcomp = value << offset;}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256             uPtr[index] = (uPtr[index] \& \string~offsetmask) | (offsetcomp \& offsetmask);}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258             offset = MAXBITS -\/ offset;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             \textcolor{keywordflow}{if} (offset < bits)}
+\DoxyCodeLine{00261             \{}
+\DoxyCodeLine{00262                 offsetmask = mask >> offset;}
+\DoxyCodeLine{00263                 offsetcomp = value >> offset;}
+\DoxyCodeLine{00264                 index++;}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266                 uPtr[index] = (uPtr[index] \& \string~offsetmask) | (offsetcomp \& offsetmask);}
+\DoxyCodeLine{00267             \}}
+\DoxyCodeLine{00268             bitposition += bits;}
+\DoxyCodeLine{00269         \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} ulong Read(ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00282                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAXBITS = 64;}
+\DoxyCodeLine{00285             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MODULUS = MAXBITS -\/ 1;}
+\DoxyCodeLine{00286             \textcolor{keywordtype}{int} offset = bitposition \& MODULUS; \textcolor{comment}{// this is just a modulus}}
+\DoxyCodeLine{00287             \textcolor{keywordtype}{int} index = bitposition >> 6;}
+\DoxyCodeLine{00288             }
+\DoxyCodeLine{00289             ulong mask = ulong.MaxValue >> (64 -\/ bits);}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291             ulong value = uPtr[index] >> offset;}
+\DoxyCodeLine{00292             value |= uPtr[index + 1] << (MAXBITS -\/ offset);}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294             bitposition += bits;}
+\DoxyCodeLine{00295             \textcolor{keywordflow}{return} value \& mask;}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00307         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} ulong Read(ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00308         \{}
+\DoxyCodeLine{00309             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00310                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAXBITS = 64;}
+\DoxyCodeLine{00313             \textcolor{keyword}{const} \textcolor{keywordtype}{int} MODULUS = MAXBITS -\/ 1;}
+\DoxyCodeLine{00314             \textcolor{keywordtype}{int} offset = bitposition \& MODULUS; \textcolor{comment}{// this is just a modulus}}
+\DoxyCodeLine{00315             \textcolor{keywordtype}{int} index = bitposition >> 6;}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             ulong mask = ulong.MaxValue >> (64 -\/ bits);}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319             ulong value = uPtr[index] >> offset;}
+\DoxyCodeLine{00320             value |= uPtr[index + 1] << (MAXBITS -\/ offset);}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             \textcolor{keywordflow}{return} value \& mask;}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325 \textcolor{preprocessor}{        \#region Secondary Add}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00332         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Add(\textcolor{keyword}{this} ulong value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00333         \{}
+\DoxyCodeLine{00334             Append(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00335         \}}
+\DoxyCodeLine{00341         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Add(\textcolor{keyword}{this} uint value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00342         \{}
+\DoxyCodeLine{00343             Append(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00344         \}}
+\DoxyCodeLine{00350         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Add(\textcolor{keyword}{this} ushort value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00351         \{}
+\DoxyCodeLine{00352             Append(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00359         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Add(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00360         \{}
+\DoxyCodeLine{00361             Append(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00362         \}}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00369         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00370         \{}
+\DoxyCodeLine{00371             Append(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00372         \}}
+\DoxyCodeLine{00378         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00379         \{}
+\DoxyCodeLine{00380             Append(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00381         \}}
+\DoxyCodeLine{00387         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             Append(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00390         \}}
+\DoxyCodeLine{00396         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddUnsigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00397         \{}
+\DoxyCodeLine{00398             Append(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00399         \}}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00402 }
+\DoxyCodeLine{00403 \textcolor{preprocessor}{        \#region Secondary Inject}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00409         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00411             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00412         \}}
+\DoxyCodeLine{00417         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00418         \{}
+\DoxyCodeLine{00419             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00420         \}}
+\DoxyCodeLine{00425         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00426         \{}
+\DoxyCodeLine{00427             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00428         \}}
+\DoxyCodeLine{00433         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00434         \{}
+\DoxyCodeLine{00435             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00436         \}}
+\DoxyCodeLine{00442         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00443         \{}
+\DoxyCodeLine{00444             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00445         \}}
+\DoxyCodeLine{00451         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00452         \{}
+\DoxyCodeLine{00453             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00454         \}}
+\DoxyCodeLine{00460         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00461         \{}
+\DoxyCodeLine{00462             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00463         \}}
+\DoxyCodeLine{00469         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00470         \{}
+\DoxyCodeLine{00471             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00472         \}}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476 \textcolor{preprocessor}{        \#region Secondary Poke}}
+\DoxyCodeLine{00477 }
+\DoxyCodeLine{00483         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Poke(\textcolor{keyword}{this} ulong value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00484         \{}
+\DoxyCodeLine{00485             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00486         \}}
+\DoxyCodeLine{00492         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Poke(\textcolor{keyword}{this} uint value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00493         \{}
+\DoxyCodeLine{00494             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00495         \}}
+\DoxyCodeLine{00501         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Poke(\textcolor{keyword}{this} ushort value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00502         \{}
+\DoxyCodeLine{00503             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00504         \}}
+\DoxyCodeLine{00509         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} Poke(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00510         \{}
+\DoxyCodeLine{00511             Write(uPtr, value, ref bitposition, bits);}
+\DoxyCodeLine{00512         \}}
+\DoxyCodeLine{00519         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00520         \{}
+\DoxyCodeLine{00521             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00522         \}}
+\DoxyCodeLine{00529         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00530         \{}
+\DoxyCodeLine{00531             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00532         \}}
+\DoxyCodeLine{00539         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} PokeUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00540         \{}
+\DoxyCodeLine{00541             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00542         \}}
+\DoxyCodeLine{00549         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} PokeUnsigned(\textcolor{keyword}{this} sbyte value, ulong* uPtr, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00550         \{}
+\DoxyCodeLine{00551             Write(uPtr, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00552         \}}
+\DoxyCodeLine{00553 }
+\DoxyCodeLine{00554 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556 }
+\DoxyCodeLine{00557 \textcolor{preprocessor}{        \#region ReadOut UInt64[] To Array}}
+\DoxyCodeLine{00558 }
+\DoxyCodeLine{00567         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(ulong* sourcePtr, \textcolor{keywordtype}{int} sourcePos, ulong* targetPtr, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00568         \{}
+\DoxyCodeLine{00569             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00570                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00571 }
+\DoxyCodeLine{00572             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00573             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00574 }
+\DoxyCodeLine{00575             \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00576             \{}
+\DoxyCodeLine{00577                 \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00578                 ulong val = Read(sourcePtr, ref readpos, cnt);}
+\DoxyCodeLine{00579                 Write(targetPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581                 remaining -\/= cnt;}
+\DoxyCodeLine{00582             \}}
+\DoxyCodeLine{00583         \}}
+\DoxyCodeLine{00584 }
+\DoxyCodeLine{00594         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} ulong[] source, \textcolor{keywordtype}{int} sourcePos, \textcolor{keywordtype}{byte}[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00595         \{}
+\DoxyCodeLine{00596             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00597                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00598             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00599             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00602             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604             fixed (ulong* sPtr = source)}
+\DoxyCodeLine{00605             fixed (\textcolor{keywordtype}{byte}* \_tPtr = target)}
+\DoxyCodeLine{00606             \{}
+\DoxyCodeLine{00607                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00608 }
+\DoxyCodeLine{00609                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00610                 \{}
+\DoxyCodeLine{00611                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00612                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00613                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615                     remaining -\/= cnt;}
+\DoxyCodeLine{00616                 \}}
+\DoxyCodeLine{00617             \}}
+\DoxyCodeLine{00618         \}}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00629         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} ulong[] source, \textcolor{keywordtype}{int} sourcePos, uint[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00630         \{}
+\DoxyCodeLine{00631             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00632                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00633             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00634             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00635 }
+\DoxyCodeLine{00636             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00637             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00638 }
+\DoxyCodeLine{00639             fixed (ulong* sPtr = source)}
+\DoxyCodeLine{00640             fixed (uint* \_tPtr = target)}
+\DoxyCodeLine{00641             \{}
+\DoxyCodeLine{00642                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00643 }
+\DoxyCodeLine{00644                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00645                 \{}
+\DoxyCodeLine{00646                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00647                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00648                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00649 }
+\DoxyCodeLine{00650                     remaining -\/= cnt;}
+\DoxyCodeLine{00651                 \}}
+\DoxyCodeLine{00652             \}}
+\DoxyCodeLine{00653         \}}
+\DoxyCodeLine{00663         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} ulong[] source, \textcolor{keywordtype}{int} sourcePos, ulong[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00664         \{}
+\DoxyCodeLine{00665             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00666                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00667             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00668             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00669 }
+\DoxyCodeLine{00670             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00671             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00672 }
+\DoxyCodeLine{00673             fixed (ulong* sPtr = source)}
+\DoxyCodeLine{00674             fixed (ulong* tPtr = target)}
+\DoxyCodeLine{00675             \{}
+\DoxyCodeLine{00676                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00677                 \{}
+\DoxyCodeLine{00678                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00679                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00680                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00682                     remaining -\/= cnt;}
+\DoxyCodeLine{00683                 \}}
+\DoxyCodeLine{00684             \}}
+\DoxyCodeLine{00685         \}}
+\DoxyCodeLine{00686 }
+\DoxyCodeLine{00687 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689 \textcolor{preprocessor}{        \#region ReadOut UInt32[] To Array}}
+\DoxyCodeLine{00690 }
+\DoxyCodeLine{00700         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} uint[] source, \textcolor{keywordtype}{int} sourcePos, \textcolor{keywordtype}{byte}[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00701         \{}
+\DoxyCodeLine{00702             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00703                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00704             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00705             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00706 }
+\DoxyCodeLine{00707             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00708             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00709 }
+\DoxyCodeLine{00710             fixed (uint* \_sPtr = source)}
+\DoxyCodeLine{00711             fixed (\textcolor{keywordtype}{byte}* \_tPtr = target)}
+\DoxyCodeLine{00712             \{}
+\DoxyCodeLine{00713                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00714                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00715 }
+\DoxyCodeLine{00716                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00717                 \{}
+\DoxyCodeLine{00718                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00719                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00720                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00721 }
+\DoxyCodeLine{00722                     remaining -\/= cnt;}
+\DoxyCodeLine{00723                 \}}
+\DoxyCodeLine{00724             \}}
+\DoxyCodeLine{00725         \}}
+\DoxyCodeLine{00735         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} uint[] source, \textcolor{keywordtype}{int} sourcePos, uint[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00736         \{}
+\DoxyCodeLine{00737             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00738                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00740             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00741             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00742 }
+\DoxyCodeLine{00743             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00744             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00745 }
+\DoxyCodeLine{00746             fixed (uint* \_sPtr = source)}
+\DoxyCodeLine{00747             fixed (uint* \_tPtr = target)}
+\DoxyCodeLine{00748             \{}
+\DoxyCodeLine{00749                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00750                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00751 }
+\DoxyCodeLine{00752                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00753                 \{}
+\DoxyCodeLine{00754                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00755                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00756                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00757 }
+\DoxyCodeLine{00758                     remaining -\/= cnt;}
+\DoxyCodeLine{00759                 \}}
+\DoxyCodeLine{00760             \}}
+\DoxyCodeLine{00761         \}}
+\DoxyCodeLine{00771         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} uint[] source, \textcolor{keywordtype}{int} sourcePos, ulong[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00772         \{}
+\DoxyCodeLine{00773             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00774                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00775             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00776             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00777 }
+\DoxyCodeLine{00778             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00779             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00780 }
+\DoxyCodeLine{00781             fixed (uint* \_sPtr = source)}
+\DoxyCodeLine{00782             fixed (ulong* tPtr = target)}
+\DoxyCodeLine{00783             \{}
+\DoxyCodeLine{00784                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00785 }
+\DoxyCodeLine{00786                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00787                 \{}
+\DoxyCodeLine{00788                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00789                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00790                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00791 }
+\DoxyCodeLine{00792                     remaining -\/= cnt;}
+\DoxyCodeLine{00793                 \}}
+\DoxyCodeLine{00794             \}}
+\DoxyCodeLine{00795         \}}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00798 }
+\DoxyCodeLine{00799 \textcolor{preprocessor}{        \#region ReadOut UInt8[] to Array}}
+\DoxyCodeLine{00800 }
+\DoxyCodeLine{00810         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] source, \textcolor{keywordtype}{int} sourcePos, ulong[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00811         \{}
+\DoxyCodeLine{00812             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00813                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00814 }
+\DoxyCodeLine{00815             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00816             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00817 }
+\DoxyCodeLine{00818             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00819             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00820 }
+\DoxyCodeLine{00821             fixed (\textcolor{keywordtype}{byte}* \_sPtr = source)}
+\DoxyCodeLine{00822             fixed (ulong* tPtr = target)}
+\DoxyCodeLine{00823             \{}
+\DoxyCodeLine{00824                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00825 }
+\DoxyCodeLine{00826                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00827                 \{}
+\DoxyCodeLine{00828                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00829                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00830                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00831 }
+\DoxyCodeLine{00832                     remaining -\/= cnt;}
+\DoxyCodeLine{00833                 \}}
+\DoxyCodeLine{00834             \}}
+\DoxyCodeLine{00835         \}}
+\DoxyCodeLine{00836 }
+\DoxyCodeLine{00846         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] source, \textcolor{keywordtype}{int} sourcePos, uint[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00847         \{}
+\DoxyCodeLine{00848             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00849                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00850 }
+\DoxyCodeLine{00851             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00852             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00853 }
+\DoxyCodeLine{00854             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00855             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00856 }
+\DoxyCodeLine{00857             fixed (\textcolor{keywordtype}{byte}* \_sPtr = source)}
+\DoxyCodeLine{00858             fixed (uint* \_tPtr = target)}
+\DoxyCodeLine{00859             \{}
+\DoxyCodeLine{00860                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00861                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00862 }
+\DoxyCodeLine{00863                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00864                 \{}
+\DoxyCodeLine{00865                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00866                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00867                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00868 }
+\DoxyCodeLine{00869                     remaining -\/= cnt;}
+\DoxyCodeLine{00870                 \}}
+\DoxyCodeLine{00871             \}}
+\DoxyCodeLine{00872         \}}
+\DoxyCodeLine{00882         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReadOutUnsafe(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] source, \textcolor{keywordtype}{int} sourcePos, \textcolor{keywordtype}{byte}[] target, ref \textcolor{keywordtype}{int} targetPos, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00883         \{}
+\DoxyCodeLine{00884             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00885                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00886 }
+\DoxyCodeLine{00887             \textcolor{keywordtype}{int} readpos = sourcePos;}
+\DoxyCodeLine{00888             \textcolor{keywordtype}{int} remaining = bits;}
+\DoxyCodeLine{00889 }
+\DoxyCodeLine{00890             System.Diagnostics.Debug.Assert((targetPos + bits) <= (target.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00891             System.Diagnostics.Debug.Assert((sourcePos + bits) <= (source.Length << 3), bufferOverrunMsg);}
+\DoxyCodeLine{00892 }
+\DoxyCodeLine{00893             fixed (\textcolor{keywordtype}{byte}* \_sPtr = source)}
+\DoxyCodeLine{00894             fixed (\textcolor{keywordtype}{byte}* \_tPtr = target)}
+\DoxyCodeLine{00895             \{}
+\DoxyCodeLine{00896                 ulong* sPtr = (ulong*)\_sPtr;}
+\DoxyCodeLine{00897                 ulong* tPtr = (ulong*)\_tPtr;}
+\DoxyCodeLine{00898 }
+\DoxyCodeLine{00899                 \textcolor{keywordflow}{while} (remaining > 0)}
+\DoxyCodeLine{00900                 \{}
+\DoxyCodeLine{00901                     \textcolor{keywordtype}{int} cnt = remaining > 64 ? 64 : remaining;}
+\DoxyCodeLine{00902                     ulong val = Read(sPtr, ref readpos, cnt);}
+\DoxyCodeLine{00903                     Write(tPtr, val, ref targetPos, cnt);}
+\DoxyCodeLine{00904 }
+\DoxyCodeLine{00905                     remaining -\/= cnt;}
+\DoxyCodeLine{00906                 \}}
+\DoxyCodeLine{00907             \}}
+\DoxyCodeLine{00908         \}}
+\DoxyCodeLine{00909 }
+\DoxyCodeLine{00910 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00911     \}}
+\DoxyCodeLine{00912 \}}
+
+\end{DoxyCode}

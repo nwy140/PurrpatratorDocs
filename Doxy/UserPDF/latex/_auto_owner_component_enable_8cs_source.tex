@@ -1,0 +1,306 @@
+\doxysection{Auto\+Owner\+Component\+Enable.\+cs}
+\label{_auto_owner_component_enable_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/AutoOwnerComponentEnable.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/AutoOwnerComponentEnable.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{class }AutoOwnerComponentEnable : NetComponent}
+\DoxyCodeLine{00016         , IOnAuthorityChanged}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keyword}{enum} EnableIf \{ Ignore, Owner, Other \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         [System.Serializable]}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{class }ComponentToggle}
+\DoxyCodeLine{00022         \{}
+\DoxyCodeLine{00023             \textcolor{keyword}{public} Behaviour component;}
+\DoxyCodeLine{00024             \textcolor{keyword}{public} EnableIf enableIfOwned = EnableIf.Owner;}
+\DoxyCodeLine{00025         \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} includeChildren = \textcolor{keyword}{true};}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} includeUnity = \textcolor{keyword}{true};}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} includePhoton = \textcolor{keyword}{false};}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} includeSimple = \textcolor{keyword}{false};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 \textcolor{preprocessor}{\#pragma warning disable 0414}}
+\DoxyCodeLine{00033         [HideInInspector] [SerializeField] \textcolor{keyword}{private} List<ComponentToggle> componentToggles = \textcolor{keyword}{new} List<ComponentToggle>();}
+\DoxyCodeLine{00034         [HideInInspector] [SerializeField] \textcolor{keyword}{private} List<Behaviour> componentLookup = \textcolor{keyword}{new} List<Behaviour>();}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#pragma warning restore 0414}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00038         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             base.Reset();}
+\DoxyCodeLine{00041             componentToggles.Clear();}
+\DoxyCodeLine{00042             FindUnrecognizedComponents();}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             base.OnStart();}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             SwitchAuth(IsMine);}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             base.OnJoinedRoom();}
+\DoxyCodeLine{00056             SwitchAuth(IsMine);}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00062             SwitchAuth(isMine);}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SwitchAuth(\textcolor{keywordtype}{bool} isMine)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < componentToggles.Count; ++i)}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 var item = componentToggles[i];}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{if} (item != \textcolor{keyword}{null} \&\& item.enableIfOwned != EnableIf.Ignore \&\& item.component != \textcolor{keyword}{null})}
+\DoxyCodeLine{00074                 \{}
+\DoxyCodeLine{00075                     item.component.enabled = (item.enableIfOwned == EnableIf.Owner) ? isMine : !isMine;}
+\DoxyCodeLine{00076                 \}}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{private} \textcolor{keyword}{static} List<Behaviour> components = \textcolor{keyword}{new} List<Behaviour>();}
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} FindUnrecognizedComponents()}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = componentLookup.Count -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 var comp = componentLookup[i];}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{if} (comp == \textcolor{keyword}{null} || (!includeChildren \&\& comp.gameObject != gameObject))}
+\DoxyCodeLine{00093                 \{}
+\DoxyCodeLine{00094                     \textcolor{keywordflow}{if} (componentLookup.Contains(comp))}
+\DoxyCodeLine{00095                     \{}
+\DoxyCodeLine{00096                         componentLookup.RemoveAt(i);}
+\DoxyCodeLine{00097                         componentToggles.RemoveAt(i);}
+\DoxyCodeLine{00098                     \}}
+\DoxyCodeLine{00099                 \}}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (includeChildren)}
+\DoxyCodeLine{00105                 transform.GetNestedComponentsInChildren<Behaviour, NetObject>(components);}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00107                 GetComponents<Behaviour>(components);}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             \textcolor{keywordflow}{foreach} (var comp \textcolor{keywordflow}{in} components)}
+\DoxyCodeLine{00112             \{}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{if} (comp == \textcolor{keyword}{null})}
+\DoxyCodeLine{00114                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116                 var nspace = comp.GetType().Namespace;}
+\DoxyCodeLine{00117                 var fullname = comp.GetType().FullName;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 \textcolor{keywordtype}{bool} itemize;}
+\DoxyCodeLine{00120                 EnableIf defaultEnableIf;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{if} (nspace == \textcolor{keyword}{null} || nspace == \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00123                 \{}
+\DoxyCodeLine{00124                     itemize = \textcolor{keyword}{true};}
+\DoxyCodeLine{00125                     defaultEnableIf = EnableIf.Owner;}
+\DoxyCodeLine{00126                 \}}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00128                 \{}
+\DoxyCodeLine{00129                     defaultEnableIf = EnableIf.Owner;}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131                     \textcolor{keywordflow}{if} (comp is AutoOwnerComponentEnable)}
+\DoxyCodeLine{00132                     \{}
+\DoxyCodeLine{00133                         itemize = \textcolor{keyword}{false};}
+\DoxyCodeLine{00134                     \}}
+\DoxyCodeLine{00135                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (comp is NetObject)}
+\DoxyCodeLine{00136                     \{}
+\DoxyCodeLine{00137                         itemize = \textcolor{keyword}{false};}
+\DoxyCodeLine{00138                     \}}
+\DoxyCodeLine{00139 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (comp is PhotonView)}
+\DoxyCodeLine{00141                     \{}
+\DoxyCodeLine{00142                         itemize = \textcolor{keyword}{false};}
+\DoxyCodeLine{00143                     \}}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00145                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (nspace.StartsWith(\textcolor{stringliteral}{"{}UnityEngine"{}}))}
+\DoxyCodeLine{00146                     \{}
+\DoxyCodeLine{00147                         itemize = includeUnity;}
+\DoxyCodeLine{00148                         defaultEnableIf = EnableIf.Ignore;}
+\DoxyCodeLine{00149                     \}}
+\DoxyCodeLine{00150                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (nspace.StartsWith(\textcolor{stringliteral}{"{}Photon."{}}))}
+\DoxyCodeLine{00151                     \{}
+\DoxyCodeLine{00152                         itemize = includePhoton;}
+\DoxyCodeLine{00153                         defaultEnableIf = EnableIf.Ignore;}
+\DoxyCodeLine{00154                     \}}
+\DoxyCodeLine{00155                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (nspace.StartsWith(\textcolor{stringliteral}{"{}emotitron."{}}))}
+\DoxyCodeLine{00156                     \{}
+\DoxyCodeLine{00157                         itemize = includeSimple;}
+\DoxyCodeLine{00158                         defaultEnableIf = EnableIf.Ignore;}
+\DoxyCodeLine{00159                     \}}
+\DoxyCodeLine{00160                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00161                     \{}
+\DoxyCodeLine{00162                         itemize = \textcolor{keyword}{true};}
+\DoxyCodeLine{00163                     \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167                 \textcolor{keywordflow}{if} (itemize)}
+\DoxyCodeLine{00168                 \{}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{if} (!componentLookup.Contains(comp))}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         componentToggles.Add(\textcolor{keyword}{new} ComponentToggle() \{ component = comp, enableIfOwned = defaultEnableIf \});}
+\DoxyCodeLine{00172                         componentLookup.Add(comp);}
+\DoxyCodeLine{00173                     \}}
+\DoxyCodeLine{00174                 \}}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176                 \{}
+\DoxyCodeLine{00177                     \textcolor{keywordflow}{if} (componentLookup.Contains(comp))}
+\DoxyCodeLine{00178                     \{}
+\DoxyCodeLine{00179                         componentToggles.RemoveAt(componentLookup.IndexOf(comp));}
+\DoxyCodeLine{00180                         componentLookup.Remove(comp);}
+\DoxyCodeLine{00181                     \}}
+\DoxyCodeLine{00182                 \}}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00190         [CustomEditor(typeof(AutoOwnerComponentEnable))]}
+\DoxyCodeLine{00191     \textcolor{keyword}{internal} \textcolor{keyword}{class }AutoOwnerComponentEnableEditor : AccessoryHeaderEditor}
+\DoxyCodeLine{00192     \{}
+\DoxyCodeLine{00193         SerializedProperty componentToggles;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             \textcolor{keyword}{get}}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Automatically enables and disables components on a Net Object based on ownership. "{}} +}
+\DoxyCodeLine{00200                     \textcolor{stringliteral}{"{}Use this to disable controller code on non-\/authority instances "{}} +}
+\DoxyCodeLine{00201                     \textcolor{stringliteral}{"{}(which is a requirement for networking)."{}};}
+\DoxyCodeLine{00202             \}}
+\DoxyCodeLine{00203         \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} isExpanded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00208         \{}
+\DoxyCodeLine{00209             base.OnEnable();}
+\DoxyCodeLine{00210             componentToggles = serializedObject.FindProperty(\textcolor{stringliteral}{"{}componentToggles"{}});}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00214         \{}
+\DoxyCodeLine{00215             base.OnInspectorGUI();}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217             (target as AutoOwnerComponentEnable).FindUnrecognizedComponents();}
+\DoxyCodeLine{00218             serializedObject.Update();}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             RenderList(componentToggles);}
+\DoxyCodeLine{00221         \}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RenderList(SerializedProperty list)}
+\DoxyCodeLine{00224         \{}
+\DoxyCodeLine{00225             \textcolor{keywordtype}{int} cnt = list.arraySize;}
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (cnt == 0)}
+\DoxyCodeLine{00227             \{}
+\DoxyCodeLine{00228                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}[0] Components Found"{}});}
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00230             \}}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232             GUIContent foldoutlabel = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}["{}} + cnt + \textcolor{stringliteral}{"{}] Components Found"{}});}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             var headerrect = EditorGUILayout.GetControlRect(\textcolor{keyword}{true}, 18);}
+\DoxyCodeLine{00235             \textcolor{comment}{//headerrect.xMin += 12;}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             isExpanded = EditorGUI.Foldout(headerrect, isExpanded, foldoutlabel, (GUIStyle)\textcolor{stringliteral}{"{}Foldout"{}});}
+\DoxyCodeLine{00238             \textcolor{comment}{//EditorGUI.LabelField(headerrect, "{}["{} + cnt + "{}] Component"{} + ((cnt == 1) ? "{}:"{} : "{}s:"{}), new GUIStyle() \{ padding = new RectOffset(6, 6, 2, 6) \});}}
+\DoxyCodeLine{00239             EditorGUI.LabelField(headerrect, \textcolor{stringliteral}{"{}Enable If:"{}}, \textcolor{keyword}{new} GUIStyle() \{ padding = \textcolor{keyword}{new} RectOffset(6, 6, 2, 6), alignment = TextAnchor.UpperRight \});}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{keywordflow}{if} (isExpanded)}
+\DoxyCodeLine{00242             \{}
+\DoxyCodeLine{00243                 EditorGUILayout.BeginVertical(\textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}));}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245                 \textcolor{keywordtype}{int} deleteIndex = -\/1;}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00249                 \{}
+\DoxyCodeLine{00250                     var listitem = list.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00251                     var enableIfOwned = listitem.FindPropertyRelative(\textcolor{stringliteral}{"{}enableIfOwned"{}});}
+\DoxyCodeLine{00252                     var comp = listitem.FindPropertyRelative(\textcolor{stringliteral}{"{}component"{}});}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254                     \textcolor{comment}{//EditorGUILayout.BeginVertical(new GUIStyle() \{ padding = new RectOffset(), margin = new RectOffset() \});}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00257                     \{}
+\DoxyCodeLine{00258                         \textcolor{keywordtype}{bool} notused = enableIfOwned.intValue == (int)AutoOwnerComponentEnable.EnableIf.Ignore;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260                         EditorGUILayout.BeginHorizontal(\textcolor{keyword}{new} GUIStyle() \{ fixedHeight = 18  \});}
+\DoxyCodeLine{00261                         \{}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263                             var obj = comp.objectReferenceValue;}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265                             EditorGUI.BeginDisabledGroup(notused);}
+\DoxyCodeLine{00266                             \{}
+\DoxyCodeLine{00267                                 \textcolor{keywordflow}{if} (obj)}
+\DoxyCodeLine{00268                                     EditorGUILayout.LabelField(comp.objectReferenceValue.GetType().Name, GUILayout.MinWidth(48));}
+\DoxyCodeLine{00269                                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00270                                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}none"{}}, GUILayout.MinWidth(48));}
+\DoxyCodeLine{00271                             \}}
+\DoxyCodeLine{00272                             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276                             EditorGUILayout.PropertyField(enableIfOwned, GUIContent.none, GUILayout.MaxWidth(64), GUILayout.MinWidth(54));}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278                             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00279                             \{}
+\DoxyCodeLine{00280                                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00281                             \}}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                         \}}
+\DoxyCodeLine{00284                         EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00285                     \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287                     \textcolor{comment}{//EditorGUILayout.EndVertical();}}
+\DoxyCodeLine{00288                 \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290                 \textcolor{keywordflow}{if} (deleteIndex != -\/1)}
+\DoxyCodeLine{00291                 \{}
+\DoxyCodeLine{00292                     Undo.RecordObject(target, \textcolor{stringliteral}{"{}Delete List Item "{}} + deleteIndex);}
+\DoxyCodeLine{00293                     list.DeleteArrayElementAtIndex(deleteIndex);}
+\DoxyCodeLine{00294                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00295                 \}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299             \}}
+\DoxyCodeLine{00300         \}}
+\DoxyCodeLine{00301     \}}
+\DoxyCodeLine{00302 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00303 \}}
+
+\end{DoxyCode}

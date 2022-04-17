@@ -1,0 +1,421 @@
+\doxysection{Support\+Logger.\+cs}
+\label{_support_logger_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/SupportLogger.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/SupportLogger.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}SupportLogger.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Implements callbacks of the Realtime API to logs selected information}}
+\DoxyCodeLine{00007 \textcolor{comment}{//   for support cases.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00020 \{}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00022     \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     \textcolor{keyword}{using} Stopwatch = System.Diagnostics.Stopwatch;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00031     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00032 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00035     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00036     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00037 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00045 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00046     [DisallowMultipleComponent]}
+\DoxyCodeLine{00047 \textcolor{preprocessor}{    \#if PUN\_2\_OR\_NEWER || FUSION\_UNITY}}
+\DoxyCodeLine{00048     [AddComponentMenu(\textcolor{stringliteral}{"{}"{}})] \textcolor{comment}{// hide from Unity Menus and searches}}
+\DoxyCodeLine{00049 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00050     \textcolor{keyword}{public} \textcolor{keyword}{class }SupportLogger : MonoBehaviour, IConnectionCallbacks , IMatchmakingCallbacks , IInRoomCallbacks, ILobbyCallbacks, IErrorInfoCallback}
+\DoxyCodeLine{00051 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{00052     \textcolor{keyword}{public} class SupportLogger : IConnectionCallbacks, IInRoomCallbacks, IMatchmakingCallbacks , ILobbyCallbacks}
+\DoxyCodeLine{00053 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00054     \{}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} LogTrafficStats = \textcolor{keyword}{true};}
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} loggedStillOfflineMessage;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{private} LoadBalancingClient client;}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{private} Stopwatch startStopwatch;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00066         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} initialOnApplicationPauseSkipped = \textcolor{keyword}{false};}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068         \textcolor{keyword}{private} \textcolor{keywordtype}{int} pingMax;}
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keywordtype}{int} pingMin;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00074         \textcolor{keyword}{public} LoadBalancingClient Client}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.client; \}}
+\DoxyCodeLine{00077             \textcolor{keyword}{set}}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if} (this.client != value)}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{if} (this.client != \textcolor{keyword}{null})}
+\DoxyCodeLine{00082                     \{}
+\DoxyCodeLine{00083                         this.client.RemoveCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00084                     \}}
+\DoxyCodeLine{00085                     this.client = value;}
+\DoxyCodeLine{00086                     \textcolor{keywordflow}{if} (this.client != \textcolor{keyword}{null})}
+\DoxyCodeLine{00087                     \{}
+\DoxyCodeLine{00088                         this.client.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00089                     \}}
+\DoxyCodeLine{00090                 \}}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095 \textcolor{preprocessor}{        \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00096         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00097         \{}
+\DoxyCodeLine{00098             this.LogBasics();}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{keywordflow}{if} (this.startStopwatch == \textcolor{keyword}{null})}
+\DoxyCodeLine{00101             \{}
+\DoxyCodeLine{00102                 this.startStopwatch = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{00103                 this.startStopwatch.Start();}
+\DoxyCodeLine{00104             \}}
+\DoxyCodeLine{00105         \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             this.Client = \textcolor{keyword}{null}; \textcolor{comment}{// will remove this SupportLogger as callback target}}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} OnApplicationPause(\textcolor{keywordtype}{bool} pause)}
+\DoxyCodeLine{00113         \{}
+\DoxyCodeLine{00114             \textcolor{keywordflow}{if} (!this.initialOnApplicationPauseSkipped)}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 this.initialOnApplicationPauseSkipped = \textcolor{keyword}{true};}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             Debug.Log(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} SupportLogger OnApplicationPause(\{1\}). Client: \{2\}."{}}, this.GetFormattedTimestamp(), pause, this.client == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}null"{}} : this.client.State.ToString()));}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} OnApplicationQuit()}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             this.CancelInvoke();}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keyword}{public} \textcolor{keywordtype}{void} StartLogStats()}
+\DoxyCodeLine{00130         \{}
+\DoxyCodeLine{00131 \textcolor{preprocessor}{            \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00132             this.InvokeRepeating(\textcolor{stringliteral}{"{}LogStats"{}}, 10, 10);}
+\DoxyCodeLine{00133 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00134             Debug.Log(\textcolor{stringliteral}{"{}Not implemented for non-\/Unity projects."{}});}
+\DoxyCodeLine{00135 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \textcolor{keyword}{public} \textcolor{keywordtype}{void} StopLogStats()}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140 \textcolor{preprocessor}{            \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00141             this.CancelInvoke(\textcolor{stringliteral}{"{}LogStats"{}});}
+\DoxyCodeLine{00142 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00143             Debug.Log(\textcolor{stringliteral}{"{}Not implemented for non-\/Unity projects."{}});}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00145         \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147         \textcolor{keyword}{private} \textcolor{keywordtype}{void} StartTrackValues()}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149 \textcolor{preprocessor}{            \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00150             this.InvokeRepeating(\textcolor{stringliteral}{"{}TrackValues"{}}, 0.5f, 0.5f);}
+\DoxyCodeLine{00151 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00152             Debug.Log(\textcolor{stringliteral}{"{}Not implemented for non-\/Unity projects."{}});}
+\DoxyCodeLine{00153 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156         \textcolor{keyword}{private} \textcolor{keywordtype}{void} StopTrackValues()}
+\DoxyCodeLine{00157         \{}
+\DoxyCodeLine{00158 \textcolor{preprocessor}{            \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00159             this.CancelInvoke(\textcolor{stringliteral}{"{}TrackValues"{}});}
+\DoxyCodeLine{00160 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00161             Debug.Log(\textcolor{stringliteral}{"{}Not implemented for non-\/Unity projects."{}});}
+\DoxyCodeLine{00162 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         \textcolor{keyword}{private} \textcolor{keywordtype}{string} GetFormattedTimestamp()}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (this.startStopwatch == \textcolor{keyword}{null})}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 this.startStopwatch = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{00170                 this.startStopwatch.Start();}
+\DoxyCodeLine{00171             \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             TimeSpan span = this.startStopwatch.Elapsed;}
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (span.Minutes > 0)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}[\{0\}:\{1\}.\{1\}]"{}}, span.Minutes, span.Seconds, span.Milliseconds);}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}[\{0\}.\{1\}]"{}}, span.Seconds, span.Milliseconds);}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{comment}{// called via InvokeRepeatedly}}
+\DoxyCodeLine{00184         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TrackValues()}
+\DoxyCodeLine{00185         \{}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{if} (this.client != \textcolor{keyword}{null})}
+\DoxyCodeLine{00187             \{}
+\DoxyCodeLine{00188                 \textcolor{keywordtype}{int} currentRtt = this.client.LoadBalancingPeer.RoundTripTime;}
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{if} (currentRtt > this.pingMax)}
+\DoxyCodeLine{00190                 \{}
+\DoxyCodeLine{00191                     this.pingMax = currentRtt;}
+\DoxyCodeLine{00192                 \}}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{if} (currentRtt < this.pingMin)}
+\DoxyCodeLine{00194                 \{}
+\DoxyCodeLine{00195                     this.pingMin = currentRtt;}
+\DoxyCodeLine{00196                 \}}
+\DoxyCodeLine{00197             \}}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00204         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LogStats()}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{if} (this.client == \textcolor{keyword}{null} || this.client.State == ClientState.PeerCreated)}
+\DoxyCodeLine{00207             \{}
+\DoxyCodeLine{00208                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (this.LogTrafficStats)}
+\DoxyCodeLine{00212             \{}
+\DoxyCodeLine{00213                 Debug.Log(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} SupportLogger \{1\} Ping min/max: \{2\}/\{3\}"{}}, this.GetFormattedTimestamp() , this.client.LoadBalancingPeer.VitalStatsToString(\textcolor{keyword}{false}) , \textcolor{keyword}{this}.pingMin , \textcolor{keyword}{this}.pingMax));}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00220         \textcolor{keyword}{private} \textcolor{keywordtype}{void} LogBasics()}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (this.client != \textcolor{keyword}{null})}
+\DoxyCodeLine{00223             \{}
+\DoxyCodeLine{00224                 List<string> buildProperties = \textcolor{keyword}{new} List<string>(10);}
+\DoxyCodeLine{00225 \textcolor{preprocessor}{                \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00226                 buildProperties.Add(Application.unityVersion);}
+\DoxyCodeLine{00227                 buildProperties.Add(Application.platform.ToString());}
+\DoxyCodeLine{00228 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00229 \textcolor{preprocessor}{                \#if ENABLE\_IL2CPP}}
+\DoxyCodeLine{00230                 buildProperties.Add(\textcolor{stringliteral}{"{}ENABLE\_IL2CPP"{}});}
+\DoxyCodeLine{00231 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00232 \textcolor{preprocessor}{                \#if ENABLE\_MONO}}
+\DoxyCodeLine{00233                 buildProperties.Add(\textcolor{stringliteral}{"{}ENABLE\_MONO"{}});}
+\DoxyCodeLine{00234 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00235 \textcolor{preprocessor}{                \#if DEBUG}}
+\DoxyCodeLine{00236                 buildProperties.Add(\textcolor{stringliteral}{"{}DEBUG"{}});}
+\DoxyCodeLine{00237 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00238 \textcolor{preprocessor}{                \#if MASTER}}
+\DoxyCodeLine{00239                 buildProperties.Add(\textcolor{stringliteral}{"{}MASTER"{}});}
+\DoxyCodeLine{00240 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00241 \textcolor{preprocessor}{                \#if NET\_4\_6}}
+\DoxyCodeLine{00242                 buildProperties.Add(\textcolor{stringliteral}{"{}NET\_4\_6"{}});}
+\DoxyCodeLine{00243 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00244 \textcolor{preprocessor}{                \#if NET\_STANDARD\_2\_0}}
+\DoxyCodeLine{00245                 buildProperties.Add(\textcolor{stringliteral}{"{}NET\_STANDARD\_2\_0"{}});}
+\DoxyCodeLine{00246 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00247 \textcolor{preprocessor}{                \#if NETFX\_CORE}}
+\DoxyCodeLine{00248                 buildProperties.Add(\textcolor{stringliteral}{"{}NETFX\_CORE"{}});}
+\DoxyCodeLine{00249 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00250 \textcolor{preprocessor}{                \#if NET\_LEGACY}}
+\DoxyCodeLine{00251                 buildProperties.Add(\textcolor{stringliteral}{"{}NET\_LEGACY"{}});}
+\DoxyCodeLine{00252 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00253 \textcolor{preprocessor}{                \#if UNITY\_64}}
+\DoxyCodeLine{00254                 buildProperties.Add(\textcolor{stringliteral}{"{}UNITY\_64"{}});}
+\DoxyCodeLine{00255 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00256 \textcolor{preprocessor}{                \#if UNITY\_FUSION}}
+\DoxyCodeLine{00257                 buildProperties.Add(\textcolor{stringliteral}{"{}UNITY\_FUSION"{}});}
+\DoxyCodeLine{00258 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261                 StringBuilder sb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263                 \textcolor{keywordtype}{string} appIdShort = \textcolor{keywordtype}{string}.IsNullOrEmpty(this.client.AppId) || this.client.AppId.Length < 8 ? this.client.AppId : \textcolor{keywordtype}{string}.Concat(this.client.AppId.Substring(0, 8), \textcolor{stringliteral}{"{}***"{}});}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265                 sb.AppendFormat(\textcolor{stringliteral}{"{}\{0\} SupportLogger Info: "{}}, this.GetFormattedTimestamp());}
+\DoxyCodeLine{00266                 sb.AppendFormat(\textcolor{stringliteral}{"{}AppID: \(\backslash\)"{}\{0\}\(\backslash\)"{} AppVersion: \(\backslash\)"{}\{1\}\(\backslash\)"{} Client: v\{2\} (\{4\}) Build: \{3\} "{}}, appIdShort, this.client.AppVersion, PhotonPeer.Version, \textcolor{keywordtype}{string}.Join(\textcolor{stringliteral}{"{}, "{}}, buildProperties.ToArray()), \textcolor{keyword}{this}.client.LoadBalancingPeer.TargetFramework);}
+\DoxyCodeLine{00267                 \textcolor{keywordflow}{if} (this.client != \textcolor{keyword}{null} \&\& this.client.LoadBalancingPeer != \textcolor{keyword}{null} \&\& \textcolor{keyword}{this}.client.LoadBalancingPeer.SocketImplementation != \textcolor{keyword}{null})}
+\DoxyCodeLine{00268                 \{}
+\DoxyCodeLine{00269                     sb.AppendFormat(\textcolor{stringliteral}{"{}Socket: \{0\} "{}}, this.client.LoadBalancingPeer.SocketImplementation.Name);}
+\DoxyCodeLine{00270                 \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272                 sb.AppendFormat(\textcolor{stringliteral}{"{}UserId: \(\backslash\)"{}\{0\}\(\backslash\)"{} AuthType: \{1\} AuthMode: \{2\} \{3\} "{}}, this.client.UserId, (\textcolor{keyword}{this}.client.AuthValues != \textcolor{keyword}{null}) ? \textcolor{keyword}{this}.client.AuthValues.AuthType.ToString() : \textcolor{stringliteral}{"{}N/A"{}}, \textcolor{keyword}{this}.client.AuthMode, \textcolor{keyword}{this}.client.EncryptionMode);}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                 sb.AppendFormat(\textcolor{stringliteral}{"{}State: \{0\} "{}}, this.client.State);}
+\DoxyCodeLine{00275                 sb.AppendFormat(\textcolor{stringliteral}{"{}PeerID: \{0\} "{}}, this.client.LoadBalancingPeer.PeerID);}
+\DoxyCodeLine{00276                 sb.AppendFormat(\textcolor{stringliteral}{"{}NameServer: \{0\} Current Server: \{1\} IP: \{2\} Region: \{3\} "{}}, this.client.NameServerHost, \textcolor{keyword}{this}.client.CurrentServerAddress, \textcolor{keyword}{this}.client.LoadBalancingPeer.ServerIpAddress, \textcolor{keyword}{this}.client.CloudRegion);}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278                 Debug.LogWarning(sb.ToString());}
+\DoxyCodeLine{00279             \}}
+\DoxyCodeLine{00280         \}}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnConnected()}
+\DoxyCodeLine{00284         \{}
+\DoxyCodeLine{00285             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnConnected()."{}});}
+\DoxyCodeLine{00286             this.pingMax = 0;}
+\DoxyCodeLine{00287             this.pingMin = this.client.LoadBalancingPeer.RoundTripTime;}
+\DoxyCodeLine{00288             this.LogBasics();}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             \textcolor{keywordflow}{if} (this.LogTrafficStats)}
+\DoxyCodeLine{00291             \{}
+\DoxyCodeLine{00292                 this.client.LoadBalancingPeer.TrafficStatsEnabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00293                 this.client.LoadBalancingPeer.TrafficStatsEnabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00294                 this.StartLogStats();}
+\DoxyCodeLine{00295             \}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297             this.StartTrackValues();}
+\DoxyCodeLine{00298         \}}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnConnectedToMaster()}
+\DoxyCodeLine{00301         \{}
+\DoxyCodeLine{00302             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnConnectedToMaster()."{}});}
+\DoxyCodeLine{00303         \}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnFriendListUpdate(List<FriendInfo> friendList)}
+\DoxyCodeLine{00306         \{}
+\DoxyCodeLine{00307             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnFriendListUpdate(friendList)."{}});}
+\DoxyCodeLine{00308         \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinedLobby()}
+\DoxyCodeLine{00311         \{}
+\DoxyCodeLine{00312             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnJoinedLobby("{}} + this.client.CurrentLobby + \textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00313         \}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLeftLobby()}
+\DoxyCodeLine{00316         \{}
+\DoxyCodeLine{00317             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnLeftLobby()."{}});}
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00321         \{}
+\DoxyCodeLine{00322             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnCreateRoomFailed("{}} + returnCode+\textcolor{stringliteral}{"{},"{}}+message+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00326         \{}
+\DoxyCodeLine{00327             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnJoinedRoom("{}} + this.client.CurrentRoom + \textcolor{stringliteral}{"{}). "{}} + \textcolor{keyword}{this}.client.CurrentLobby + \textcolor{stringliteral}{"{} GameServer:"{}} + \textcolor{keyword}{this}.client.GameServerAddress);}
+\DoxyCodeLine{00328         \}}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00331         \{}
+\DoxyCodeLine{00332             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnJoinRoomFailed("{}} + returnCode+\textcolor{stringliteral}{"{},"{}}+message+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00333         \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00336         \{}
+\DoxyCodeLine{00337             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnJoinRandomFailed("{}} + returnCode+\textcolor{stringliteral}{"{},"{}}+message+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCreatedRoom()}
+\DoxyCodeLine{00341         \{}
+\DoxyCodeLine{00342             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnCreatedRoom("{}} + this.client.CurrentRoom + \textcolor{stringliteral}{"{}). "{}} + \textcolor{keyword}{this}.client.CurrentLobby + \textcolor{stringliteral}{"{} GameServer:"{}} + \textcolor{keyword}{this}.client.GameServerAddress);}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnLeftRoom()."{}});}
+\DoxyCodeLine{00348         \}}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDisconnected(DisconnectCause cause)}
+\DoxyCodeLine{00351         \{}
+\DoxyCodeLine{00352             this.StopLogStats();}
+\DoxyCodeLine{00353             this.StopTrackValues();}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnDisconnected("{}} + cause + \textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00356             this.LogBasics();}
+\DoxyCodeLine{00357             this.LogStats();}
+\DoxyCodeLine{00358         \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRegionListReceived(RegionHandler regionHandler)}
+\DoxyCodeLine{00361         \{}
+\DoxyCodeLine{00362             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnRegionListReceived(regionHandler)."{}});}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomListUpdate(List<RoomInfo> roomList)}
+\DoxyCodeLine{00366         \{}
+\DoxyCodeLine{00367             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnRoomListUpdate(roomList). roomList.Count: "{}} + roomList.Count);}
+\DoxyCodeLine{00368         \}}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00371         \{}
+\DoxyCodeLine{00372             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnPlayerEnteredRoom("{}} + newPlayer+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00376         \{}
+\DoxyCodeLine{00377             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnPlayerLeftRoom("{}} + otherPlayer+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00378         \}}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00381         \{}
+\DoxyCodeLine{00382             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnRoomPropertiesUpdate(propertiesThatChanged)."{}});}
+\DoxyCodeLine{00383         \}}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00386         \{}
+\DoxyCodeLine{00387             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnPlayerPropertiesUpdate(targetPlayer,changedProps)."{}});}
+\DoxyCodeLine{00388         \}}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00391         \{}
+\DoxyCodeLine{00392             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnMasterClientSwitched("{}} + newMasterClient+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00393         \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCustomAuthenticationResponse(Dictionary<string, object> data)}
+\DoxyCodeLine{00396         \{}
+\DoxyCodeLine{00397             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnCustomAuthenticationResponse("{}} + data.ToStringFull()+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00398         \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCustomAuthenticationFailed (\textcolor{keywordtype}{string} debugMessage)}
+\DoxyCodeLine{00401         \{}
+\DoxyCodeLine{00402             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnCustomAuthenticationFailed("{}} + debugMessage+\textcolor{stringliteral}{"{})."{}});}
+\DoxyCodeLine{00403         \}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)}
+\DoxyCodeLine{00406         \{}
+\DoxyCodeLine{00407             Debug.Log(this.GetFormattedTimestamp() + \textcolor{stringliteral}{"{} SupportLogger OnLobbyStatisticsUpdate(lobbyStatistics)."{}});}
+\DoxyCodeLine{00408         \}}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411 \textcolor{preprocessor}{        \#if !SUPPORTED\_UNITY}}
+\DoxyCodeLine{00412         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{class }Debug}
+\DoxyCodeLine{00413         \{}
+\DoxyCodeLine{00414             \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Log(\textcolor{keywordtype}{string} msg)}
+\DoxyCodeLine{00415             \{}
+\DoxyCodeLine{00416                 System.Diagnostics.Debug.WriteLine(msg);}
+\DoxyCodeLine{00417             \}}
+\DoxyCodeLine{00418             \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LogWarning(\textcolor{keywordtype}{string} msg)}
+\DoxyCodeLine{00419             \{}
+\DoxyCodeLine{00420                 System.Diagnostics.Debug.WriteLine(msg);}
+\DoxyCodeLine{00421             \}}
+\DoxyCodeLine{00422             \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LogError(\textcolor{keywordtype}{string} msg)}
+\DoxyCodeLine{00423             \{}
+\DoxyCodeLine{00424                 System.Diagnostics.Debug.WriteLine(msg);}
+\DoxyCodeLine{00425             \}}
+\DoxyCodeLine{00426         \}}
+\DoxyCodeLine{00427 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnErrorInfo(ErrorInfo errorInfo)}
+\DoxyCodeLine{00430         \{}
+\DoxyCodeLine{00431             Debug.LogError(errorInfo.ToString());}
+\DoxyCodeLine{00432         \}}
+\DoxyCodeLine{00433     \}}
+\DoxyCodeLine{00434 \}}
+
+\end{DoxyCode}

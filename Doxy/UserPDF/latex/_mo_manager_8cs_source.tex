@@ -1,0 +1,499 @@
+\doxysection{Mo\+Manager.\+cs}
+\label{_mo_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/WeiYuen/Scripts/MissionObjectives/MoManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/WeiYuen/Scripts/MissionObjectives/MoManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }SInt.MissionObjectives}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{comment}{// Mo Stands for MissionObjectives}}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }MoManager : MonoBehaviour}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         [Header(\textcolor{stringliteral}{"{}Mission List"{}})]}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} List<MoOwner> missions;}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} PhotonView PV;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{static} MoManager instance;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isAllowDebugInput;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{comment}{// Singleton}}
+\DoxyCodeLine{00027             MoManager.instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029             PV = GetComponent<PhotonView>();}
+\DoxyCodeLine{00030             \textcolor{keywordflow}{foreach} (var m \textcolor{keywordflow}{in} missions)}
+\DoxyCodeLine{00031             \{}
+\DoxyCodeLine{00032                 m.Init(m.rootNode);}
+\DoxyCodeLine{00033             \}}
+\DoxyCodeLine{00034         \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             StartCoroutine(waitForReadyInGame());}
+\DoxyCodeLine{00039             SceneSpecificTweaks();}
+\DoxyCodeLine{00040         \}}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SceneSpecificTweaks()}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (SceneManager.GetActiveScene().name.Contains(\textcolor{stringliteral}{"{}Tutorial"{}}))}
+\DoxyCodeLine{00044             \{}
+\DoxyCodeLine{00045                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}sweepTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00046             \} }
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FactionSpecificTweaks()}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (SceneManager.GetActiveScene().name.Contains(\textcolor{stringliteral}{"{}Tutorial"{}}))}
+\DoxyCodeLine{00052             \{}
+\DoxyCodeLine{00053                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055             \textcolor{comment}{//var humanPlayer = GameObject.FindGameObjectWithTag("{}Player\_Human"{});}}
+\DoxyCodeLine{00056             \textcolor{comment}{//Chores chore = humanPlayer.GetComponent<Chores>();}}
+\DoxyCodeLine{00057             \textcolor{comment}{//Debug.Log("{}SweepTask:"{} + Chores.sweepTask);}}
+\DoxyCodeLine{00058             \textcolor{keywordflow}{if} (Chores.sweepTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00059             \{}
+\DoxyCodeLine{00060                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}sweepTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00061             \}}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (Chores.wipeTask == \textcolor{keyword}{true}) \textcolor{comment}{//Euan: changed this to true instead of false}}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}wipeTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (Chores.waterTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}waterTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070             \textcolor{keywordflow}{if} (Chores.dustTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00071             \{}
+\DoxyCodeLine{00072                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}dustTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (Chores.trashTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}trashTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{if} (Chores.toyTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}toyTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00081             \}}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (Chores.fridgeTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}fridgeTask"{}}, MoStatus.Active);}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (Chores.washDishTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00087             \{}
+\DoxyCodeLine{00088                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}H5"{}}, MoStatus.Active);}
+\DoxyCodeLine{00089                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}H6"{}}, MoStatus.Active);}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (Chores.makeBedTask == \textcolor{keyword}{true})}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 SetMoDataProgressionStatus(\textcolor{stringliteral}{"{}H4"{}}, MoStatus.Active);}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095             \textcolor{comment}{//sweepTask}}
+\DoxyCodeLine{00096             \textcolor{comment}{//wipeTask}}
+\DoxyCodeLine{00097             \textcolor{comment}{//waterTask}}
+\DoxyCodeLine{00098             \textcolor{comment}{//dustTask}}
+\DoxyCodeLine{00099             \textcolor{comment}{//trashTask}}
+\DoxyCodeLine{00100             \textcolor{comment}{//toyTask}}
+\DoxyCodeLine{00101             \textcolor{comment}{//fridgeTask}}
+\DoxyCodeLine{00102             \textcolor{comment}{//washDishTask}}
+\DoxyCodeLine{00103             \textcolor{comment}{//makeBedTask}}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{comment}{//public void HandleFactionSpecificCompletion()}}
+\DoxyCodeLine{00107         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00108         \textcolor{comment}{//    if (Chores.doneSweepTask == true)}}
+\DoxyCodeLine{00109         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00110         \textcolor{comment}{//        TryProgressMoByID("{}sweepTask"{});}}
+\DoxyCodeLine{00111         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00112         \textcolor{comment}{//    if (Chores.doneWipeTask == true) //Euan: changed this to true instead of false}}
+\DoxyCodeLine{00113         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00114         \textcolor{comment}{//        TryProgressMoByID("{}wipeTask"{} );}}
+\DoxyCodeLine{00115         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00116         \textcolor{comment}{//    if (Chores.doneWaterTask == true)}}
+\DoxyCodeLine{00117         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00118         \textcolor{comment}{//        TryProgressMoByID("{}waterTask"{} );}}
+\DoxyCodeLine{00119         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00120         \textcolor{comment}{//    if (Chores.doneDustTask == true)}}
+\DoxyCodeLine{00121         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00122         \textcolor{comment}{//        TryProgressMoByID("{}dustTask"{} );}}
+\DoxyCodeLine{00123         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00124         \textcolor{comment}{//    if (Chores.doneTrashTask == true)}}
+\DoxyCodeLine{00125         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00126         \textcolor{comment}{//        TryProgressMoByID("{}trashTask"{} );}}
+\DoxyCodeLine{00127         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00128         \textcolor{comment}{//    if (Chores.doneCleanToy == true)}}
+\DoxyCodeLine{00129         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00130         \textcolor{comment}{//        TryProgressMoByID("{}toyTask"{} );}}
+\DoxyCodeLine{00131         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00132         \textcolor{comment}{//    if (Chores.doneFridgeTask == true)}}
+\DoxyCodeLine{00133         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00134         \textcolor{comment}{//        TryProgressMoByID("{}fridgeTask"{} );}}
+\DoxyCodeLine{00135         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00136         \textcolor{comment}{//    /*}}
+\DoxyCodeLine{00137         \textcolor{comment}{//    if (Chores.washDishTask == true)}}
+\DoxyCodeLine{00138         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00139         \textcolor{comment}{//        SetMoDataProgressionStatus("{}H5"{}, MoStatus.Active);}}
+\DoxyCodeLine{00140         \textcolor{comment}{//        SetMoDataProgressionStatus("{}H6"{}, MoStatus.Active);}}
+\DoxyCodeLine{00141         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00142         \textcolor{comment}{//    if (Chores.makeBedTask == true)}}
+\DoxyCodeLine{00143         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00144         \textcolor{comment}{//        SetMoDataProgressionStatus("{}H4"{}, MoStatus.Active);}}
+\DoxyCodeLine{00145         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00146         \textcolor{comment}{//    */}}
+\DoxyCodeLine{00147         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00148         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{foreach} (var m \textcolor{keywordflow}{in} missions)}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 m.OnRefresh();}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{comment}{// Debug Input for Chore Complete Call Test}}
+\DoxyCodeLine{00156             \textcolor{comment}{// Press 1 2 3 to try Progress an objective}}
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (isAllowDebugInput)}
+\DoxyCodeLine{00158             \{}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{foreach} (var m \textcolor{keywordflow}{in} missions)}
+\DoxyCodeLine{00160                 \{}
+\DoxyCodeLine{00161                     \textcolor{comment}{// Cat }}
+\DoxyCodeLine{00162                     TryProgressMoByID(\textcolor{stringliteral}{"{}C"{}} + Input.inputString);}
+\DoxyCodeLine{00163                     TryProgressMoByID(\textcolor{stringliteral}{"{}H"{}} + Input.inputString);}
+\DoxyCodeLine{00164                 \}}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166             \textcolor{comment}{//HandleFactionSpecificCompletion();}}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{comment}{// To Complete a specific chore, select the mission objective manager gameobject, and view your objective's ID via the inspector}}
+\DoxyCodeLine{00170         \textcolor{comment}{// Then Call this Method anywhere via MoManager.instance.TryProgressMoDataByID(  /*objective Id here*/);}}
+\DoxyCodeLine{00171         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TryProgressMoByID(\textcolor{keywordtype}{string} targetUniqueID)}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             PV.RPC(nameof(TryProgressMoByIDRPC), RpcTarget.AllBuffered, targetUniqueID);}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         [PunRPC]}
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TryProgressMoByIDRPC(\textcolor{keywordtype}{string} targetUniqueID)}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{foreach} (var m \textcolor{keywordflow}{in} missions)}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 var node = m.FindMoDataByID(targetUniqueID);}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{if} (node != \textcolor{keyword}{null})}
+\DoxyCodeLine{00183                 \{}
+\DoxyCodeLine{00184                     node.TryProgress();}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186             \}}
+\DoxyCodeLine{00187         \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189         \textcolor{keyword}{public} MoData SearchMoByID(\textcolor{keywordtype}{string} targetUniqueID)}
+\DoxyCodeLine{00190         \{}
+\DoxyCodeLine{00191             MoData node = \textcolor{keyword}{null};}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{foreach} (var m \textcolor{keywordflow}{in} missions)}
+\DoxyCodeLine{00193             \{}
+\DoxyCodeLine{00194                 node = m.FindMoDataByID(targetUniqueID);}
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{if} (node != \textcolor{keyword}{null})}
+\DoxyCodeLine{00196                     \textcolor{keywordflow}{return} node;}
+\DoxyCodeLine{00197             \}}
+\DoxyCodeLine{00198             \textcolor{keywordflow}{return} node;}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetMoDataProgressionStatus(\textcolor{keywordtype}{string} targetUniqueID, MoStatus newMoStatus)}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             MoData foundMoData = SearchMoByID(targetUniqueID);}
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (foundMoData != \textcolor{keyword}{null})}
+\DoxyCodeLine{00204             \{}
+\DoxyCodeLine{00205                 \textcolor{keywordflow}{if} (foundMoData.progress.moStatus == MoStatus.Complete) \textcolor{comment}{// can't make completed objectives active again, need to set it back to inactive before becoming active again}}
+\DoxyCodeLine{00206                 \{}
+\DoxyCodeLine{00207                     \textcolor{keywordflow}{if} (newMoStatus == MoStatus.Active)}
+\DoxyCodeLine{00208                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00209                 \}}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{if} (foundMoData.progress.moStatus == MoStatus.Unavailable) \textcolor{comment}{// can't make unavailable quest suddenly become active,  need to set it back to inactive before becoming active again}}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     \textcolor{keywordflow}{if} (newMoStatus == MoStatus.Active)}
+\DoxyCodeLine{00213                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00215                 foundMoData.progress.moStatus = newMoStatus;}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         IEnumerator waitForReadyInGame()}
+\DoxyCodeLine{00220         \{}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{comment}{//var hash = PhotonNetwork.LocalPlayer.CustomProperties;}}
+\DoxyCodeLine{00224 \textcolor{comment}{}            \textcolor{comment}{//yield return new WaitUntil(() => hash.ContainsKey("{}ReadyInGame"{}));}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{comment}{//yield return new WaitUntil(() => (bool)hash["{}ReadyInGame"{}] == true);}}
+\DoxyCodeLine{00227             \textcolor{comment}{//yield return new WaitUntil(() => PhotonNetwork.PlayerList.All(n => n.CustomProperties.ContainsKey("{}ReadyInGame"{}) == true));}}
+\DoxyCodeLine{00228             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitUntil(() => PhotonNetwork.PlayerList.All(n => PhotonNetwork.PlayerList.Length == 2));}
+\DoxyCodeLine{00229             yield \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00230             FactionSpecificTweaks();}
+\DoxyCodeLine{00231             \textcolor{comment}{//if (PhotonNetwork.IsMasterClient == true)}}
+\DoxyCodeLine{00232             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00233             \textcolor{comment}{//    Debug.Log("{}Finished Ready "{});}}
+\DoxyCodeLine{00234             \textcolor{comment}{//    SpawnObjects();}}
+\DoxyCodeLine{00235             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239     \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00243     \textcolor{comment}{//human}}
+\DoxyCodeLine{00244     \textcolor{comment}{// Chore Button Inteact}}
+\DoxyCodeLine{00245     \textcolor{comment}{// Rigging Furniture ` Trap With Cooldown}}
+\DoxyCodeLine{00246     \textcolor{comment}{// }}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248     \textcolor{comment}{//Cat}}
+\DoxyCodeLine{00249     \textcolor{comment}{// Take food to specific Location}}
+\DoxyCodeLine{00250     \textcolor{comment}{// Destroy Furniture BUtton}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253     \textcolor{comment}{// }}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255     [System.Serializable]}
+\DoxyCodeLine{00256     \textcolor{keyword}{public} \textcolor{keyword}{class }MoOwner}
+\DoxyCodeLine{00257     \{}
+\DoxyCodeLine{00258         [Header(\textcolor{stringliteral}{"{}Owner who owns this Mission objective"{}})]}
+\DoxyCodeLine{00259         \textcolor{keyword}{public} Faction faction;}
+\DoxyCodeLine{00260         \textcolor{comment}{//public int viewID;}}
+\DoxyCodeLine{00261         [Header(\textcolor{stringliteral}{"{}Mission objective Data"{}})]}
+\DoxyCodeLine{00262         \textcolor{keyword}{public} MoData rootNode;}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264         \textcolor{keyword}{public} GameObject uiElementPrefab;}
+\DoxyCodeLine{00265         \textcolor{keyword}{public} List<LayoutGroup> uiLayoutGroups;}
+\DoxyCodeLine{00266         \textcolor{comment}{//MoManager manager;}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269         [Header(\textcolor{stringliteral}{"{}Runtime Generation"{}})]}
+\DoxyCodeLine{00270         \textcolor{keyword}{public} List<MoUIElement> moUIElements;}
+\DoxyCodeLine{00271         \textcolor{keyword}{public} List<MoData> allMoDatasFound;}
+\DoxyCodeLine{00272         \textcolor{keyword}{public} Dictionary<string, MoData> moDataDictionary = \textcolor{keyword}{new}();}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{keyword}{public} MoData FindMoDataByID(\textcolor{keywordtype}{string} targetUniqueID)}
+\DoxyCodeLine{00276         \{}
+\DoxyCodeLine{00277             \textcolor{keywordflow}{if} (moDataDictionary.ContainsKey(targetUniqueID) == \textcolor{keyword}{true})}
+\DoxyCodeLine{00278             \{}
+\DoxyCodeLine{00279                 \textcolor{keywordflow}{return} moDataDictionary[targetUniqueID];}
+\DoxyCodeLine{00280             \}}
+\DoxyCodeLine{00281             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284   }
+\DoxyCodeLine{00285         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Init(MoData curNode)}
+\DoxyCodeLine{00286         \{}
+\DoxyCodeLine{00287             \textcolor{comment}{//manager = newManager;}}
+\DoxyCodeLine{00288             \textcolor{comment}{//if (PhotonNetwork.IsMasterClient == false)}}
+\DoxyCodeLine{00289             \textcolor{comment}{//    return;}}
+\DoxyCodeLine{00290             \textcolor{keywordtype}{string} s = faction.ToString();}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey(\textcolor{stringliteral}{"{}Role"{}}))}
+\DoxyCodeLine{00292             \{}
+\DoxyCodeLine{00293                 s = (string)PhotonNetwork.LocalPlayer.CustomProperties[\textcolor{stringliteral}{"{}Role"{}}];}
+\DoxyCodeLine{00294             \}}
+\DoxyCodeLine{00295             Faction curfactionRole;}
+\DoxyCodeLine{00296             curfactionRole = (Faction)System.Enum.Parse(typeof(Faction), s);}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             Debug.Log(\textcolor{stringliteral}{"{}Faction + "{}} + curfactionRole);}
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (curfactionRole.Equals(faction))}
+\DoxyCodeLine{00300             \{}
+\DoxyCodeLine{00301                 SetupNode(curNode);}
+\DoxyCodeLine{00302                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j = 0; j < curNode.childMoData.Count; j++)}
+\DoxyCodeLine{00303                 \{}
+\DoxyCodeLine{00304                     \textcolor{comment}{//curNode.childMoData[j]= setupNode(curNode.childMoData[j]);}}
+\DoxyCodeLine{00305                     Init(curNode.childMoData[j]);}
+\DoxyCodeLine{00306                 \}}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308         \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310         \textcolor{keyword}{public} MoData SetupNode(MoData childNode)}
+\DoxyCodeLine{00311         \{}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{if} (childNode.progress.moStatus == MoStatus.Inactive)}
+\DoxyCodeLine{00313             \{}
+\DoxyCodeLine{00314                 \textcolor{comment}{//childNode.progress.moStatus = MoStatus.Active;}}
+\DoxyCodeLine{00315                 \textcolor{keywordflow}{if} (childNode.uniqueId == \textcolor{keyword}{null})}
+\DoxyCodeLine{00316                     Debug.LogError(childNode.title + \textcolor{stringliteral}{"{} Missing UniqueID"{}});}
+\DoxyCodeLine{00317                 \textcolor{keywordflow}{if} (moDataDictionary.ContainsKey(childNode.uniqueId) == \textcolor{keyword}{false})}
+\DoxyCodeLine{00318                 \{}
+\DoxyCodeLine{00319                     allMoDatasFound.Add(childNode);}
+\DoxyCodeLine{00320                     moDataDictionary.Add(childNode.uniqueId, childNode);}
+\DoxyCodeLine{00321                 \}}
+\DoxyCodeLine{00322                  \textcolor{comment}{// Attach to UI for Displaying Objective Lists}}
+\DoxyCodeLine{00323                 \textcolor{comment}{//var spawnedObj = PhotonNetwork.InstantiateRoomObject(uiElementPrefab.name, uiLayoutGroups[i].transform.position, Quaternion.identity);}}
+\DoxyCodeLine{00324                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < uiLayoutGroups.Count; i++)}
+\DoxyCodeLine{00325                 \{}
+\DoxyCodeLine{00326                     var spawnedObj = GameObject.Instantiate(uiElementPrefab, uiLayoutGroups[i].transform);}
+\DoxyCodeLine{00327                     MoUIElement newUIElement = spawnedObj.GetComponent<MoUIElement>();}
+\DoxyCodeLine{00328                     \textcolor{comment}{//newUIElement.titleText.text = objectiveData.subObjectivesData[j].title;}}
+\DoxyCodeLine{00329                     \textcolor{comment}{//newUIElement.titleText.text = .title;}}
+\DoxyCodeLine{00330                     newUIElement.name = childNode.uniqueId + \textcolor{stringliteral}{"{} | "{}} + newUIElement.name;}
+\DoxyCodeLine{00331                     newUIElement.UpdateUIElement(childNode);}
+\DoxyCodeLine{00332                     newUIElement.transform.SetParent(uiLayoutGroups[i].transform);}
+\DoxyCodeLine{00333                     moUIElements.Add(newUIElement);}
+\DoxyCodeLine{00334                 \}}
+\DoxyCodeLine{00335             \}}
+\DoxyCodeLine{00336             \textcolor{keywordflow}{return} childNode;}
+\DoxyCodeLine{00337         \}}
+\DoxyCodeLine{00338         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRefresh()}
+\DoxyCodeLine{00339         \{}
+\DoxyCodeLine{00340             \textcolor{keywordflow}{foreach} (var u \textcolor{keywordflow}{in} moUIElements)}
+\DoxyCodeLine{00341             \{}
+\DoxyCodeLine{00342                 u.UpdateUIElement(moDataDictionary[u.moUniqueID]);}
+\DoxyCodeLine{00343             \}}
+\DoxyCodeLine{00344         \}}
+\DoxyCodeLine{00345     \}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347     [System.Serializable]}
+\DoxyCodeLine{00348     \textcolor{keyword}{public} \textcolor{keyword}{class }MoData}
+\DoxyCodeLine{00349     \{}
+\DoxyCodeLine{00350         [Header(\textcolor{stringliteral}{"{}Objective Identifier"{}})]}
+\DoxyCodeLine{00351         \textcolor{comment}{// list of Characters that have been assigned this MissionObjective}}
+\DoxyCodeLine{00352         \textcolor{keyword}{public} \textcolor{keywordtype}{string} title; \textcolor{comment}{// Title of the objective // }}
+\DoxyCodeLine{00353         \textcolor{keyword}{public} \textcolor{keywordtype}{string} uniqueId; \textcolor{comment}{// ID of this mission // Can be represented using Photon View ID}}
+\DoxyCodeLine{00354         [Multiline]}
+\DoxyCodeLine{00355         \textcolor{keyword}{public} \textcolor{keywordtype}{string} visualDescription; \textcolor{comment}{// Description of the objective //}}
+\DoxyCodeLine{00356         \textcolor{comment}{//public ObjectiveInfo objectiveInfo;}}
+\DoxyCodeLine{00357         \textcolor{keyword}{public} ObjectiveProgress progress;}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isHideCheckMark;}
+\DoxyCodeLine{00360         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isHideUIElement;}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362         [Header(\textcolor{stringliteral}{"{}Unity Events"{}})]}
+\DoxyCodeLine{00363         \textcolor{keyword}{public} UnityEvent OnProgression;}
+\DoxyCodeLine{00364         \textcolor{keyword}{public} UnityEvent OnCompletion;}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366         [System.Serializable]}
+\DoxyCodeLine{00367         \textcolor{keyword}{public} \textcolor{keyword}{class }ObjectiveProgress}
+\DoxyCodeLine{00368         \{}
+\DoxyCodeLine{00369             \textcolor{keyword}{public} MoStatus moStatus;}
+\DoxyCodeLine{00370             \textcolor{keyword}{public} \textcolor{keywordtype}{int} count; \textcolor{comment}{// this value must reach 0 for this objective to be marked as completed}}
+\DoxyCodeLine{00371                               \textcolor{comment}{// Can also be used to represent Number of things to do... }}
+\DoxyCodeLine{00372                               \textcolor{comment}{// i.e Kill a specific number of enemies, Deliver a specific number of items}}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374             \textcolor{keyword}{public} \textcolor{keywordtype}{int} rewardValue; \textcolor{comment}{// Can be used for exp or score}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isFailedConditionMet; \textcolor{comment}{// You cant complete your objective if your failed conditions have been met}}
+\DoxyCodeLine{00377                                               \textcolor{comment}{// i.e Timer Up }}
+\DoxyCodeLine{00378 }
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CanTryComplete}
+\DoxyCodeLine{00381             \{}
+\DoxyCodeLine{00382                 \textcolor{keyword}{get}}
+\DoxyCodeLine{00383                 \{}
+\DoxyCodeLine{00384                     \textcolor{keywordtype}{bool} condition1Check = this.moStatus == MoStatus.Active \&\& this.count <= 0;}
+\DoxyCodeLine{00385                     \textcolor{keywordtype}{bool} condition2Check = !isFailedConditionMet;}
+\DoxyCodeLine{00386                     \textcolor{keywordflow}{return} condition1Check \&\& condition2Check;}
+\DoxyCodeLine{00387                 \}}
+\DoxyCodeLine{00388             \}}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391         \}}
+\DoxyCodeLine{00392         [Header(\textcolor{stringliteral}{"{}All child objectives have to be completed before this objective can be completed"{}})]}
+\DoxyCodeLine{00393         [Header(\textcolor{stringliteral}{"{}Child Mission Objectives Data"{}})]}
+\DoxyCodeLine{00394         \textcolor{keyword}{public} List<MoData> childMoData;}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsAllChildObjectivesComplete}
+\DoxyCodeLine{00397         \{}
+\DoxyCodeLine{00398             \textcolor{keyword}{get}}
+\DoxyCodeLine{00399             \{}
+\DoxyCodeLine{00400                 \textcolor{keywordflow}{if} (childMoData.Count == 0)}
+\DoxyCodeLine{00401                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00402                 \textcolor{comment}{//var completedChildObjectives = childMoData.FindAll(x => x.progress.CanTryComplete == true);}}
+\DoxyCodeLine{00403                 var completedChildObjectives = childMoData.FindAll(x=>x.progress.moStatus == MoStatus.Complete);}
+\DoxyCodeLine{00404                 \textcolor{keywordflow}{if} (completedChildObjectives.Count == childMoData.Count)}
+\DoxyCodeLine{00405                 \{}
+\DoxyCodeLine{00406                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00407                 \}}
+\DoxyCodeLine{00408                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00409             \}}
+\DoxyCodeLine{00410         \}}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TryComplete()}
+\DoxyCodeLine{00413         \{}
+\DoxyCodeLine{00414             \textcolor{keywordflow}{if} (this.progress.CanTryComplete \&\& IsAllChildObjectivesComplete)}
+\DoxyCodeLine{00415             \{}
+\DoxyCodeLine{00416                 progress.moStatus = MoStatus.Complete;}
+\DoxyCodeLine{00417                 OnCompletion.Invoke();}
+\DoxyCodeLine{00418             \}}
+\DoxyCodeLine{00419         \}}
+\DoxyCodeLine{00420         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TryProgress()}
+\DoxyCodeLine{00421         \{}
+\DoxyCodeLine{00422             \textcolor{keywordflow}{if} (progress.moStatus == MoStatus.Active)}
+\DoxyCodeLine{00423             \{}
+\DoxyCodeLine{00424                 \textcolor{comment}{//if (progress.count > 0)}}
+\DoxyCodeLine{00425                 \{}
+\DoxyCodeLine{00426                     progress.count-\/-\/;}
+\DoxyCodeLine{00427                     OnProgression.Invoke();}
+\DoxyCodeLine{00428                 \}}
+\DoxyCodeLine{00429                 TryComplete();}
+\DoxyCodeLine{00430             \}}
+\DoxyCodeLine{00431         \}}
+\DoxyCodeLine{00432         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TryProgress(\textcolor{keywordtype}{int} progressIncrement)}
+\DoxyCodeLine{00433         \{}
+\DoxyCodeLine{00434             \textcolor{keywordflow}{if} (progress.count > 0)}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 \textcolor{comment}{// invert increment}}
+\DoxyCodeLine{00437                 progress.count -\/= progressIncrement;}
+\DoxyCodeLine{00438                 \textcolor{comment}{// when count reaches 0, the objective is considered allowed to be completed}}
+\DoxyCodeLine{00439             \}}
+\DoxyCodeLine{00440             TryComplete();}
+\DoxyCodeLine{00441         \}}
+\DoxyCodeLine{00442     \}}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00452     \textcolor{comment}{//[System.Serializable]}}
+\DoxyCodeLine{00453     \textcolor{comment}{//public class ObjectiveInfo}}
+\DoxyCodeLine{00454     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460     \textcolor{keyword}{public} \textcolor{keyword}{enum} MoStatus}
+\DoxyCodeLine{00461     \{}
+\DoxyCodeLine{00462         Inactive,}
+\DoxyCodeLine{00463         Active,}
+\DoxyCodeLine{00464         Complete,}
+\DoxyCodeLine{00465         Failed,}
+\DoxyCodeLine{00466         Abandoned,}
+\DoxyCodeLine{00467         Unavailable,}
+\DoxyCodeLine{00468         \textcolor{comment}{// Insipired by https://docs.gamecreator.one/quests/quests/create-\/quests}}
+\DoxyCodeLine{00469     \}}
+\DoxyCodeLine{00470     \textcolor{keyword}{public} \textcolor{keyword}{enum} Faction \textcolor{comment}{// Role}}
+\DoxyCodeLine{00471     \{}
+\DoxyCodeLine{00472         None,}
+\DoxyCodeLine{00473         Human,}
+\DoxyCodeLine{00474         Cat,}
+\DoxyCodeLine{00475     \}}
+\DoxyCodeLine{00476 \}}
+\DoxyCodeLine{00477 }
+\DoxyCodeLine{00478 \textcolor{comment}{// https://gist.github.com/nwy140/62da88ae8a5eba0500491f2f2e7fc6a8}}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480 \textcolor{comment}{/*}}
+\DoxyCodeLine{00481 \textcolor{comment}{\#Tech Refs}}
+\DoxyCodeLine{00482 \textcolor{comment}{https://en.wikipedia.org/wiki/Quest\_(video\_games)}}
+\DoxyCodeLine{00483 \textcolor{comment}{Kill quests}}
+\DoxyCodeLine{00484 \textcolor{comment}{A kill quest sends the character out to kill either a specific number of named creatures, or a specific NPC (non-\/player character). These types of quests often require the character to bring back proof of their work, such as trophies, or body parts (boar tusks, wolf pelts, etc.).[citation needed]}}
+\DoxyCodeLine{00485 \textcolor{comment}{}}
+\DoxyCodeLine{00486 \textcolor{comment}{Combo quests}}
+\DoxyCodeLine{00487 \textcolor{comment}{The combo quest requires a player to attack certain enemies or structures with a combination of attacks until the required number of combos is reached. Enemies in these quests are usually either immortal or infinite in number, until the player is successful. At this point, the enemies would either be killed, or stop appearing.[citation needed]}}
+\DoxyCodeLine{00488 \textcolor{comment}{}}
+\DoxyCodeLine{00489 \textcolor{comment}{Delivery quests }}
+\DoxyCodeLine{00490 \textcolor{comment}{Another type of quest is the delivery quest, also known as a FedEx quest[6][7] or fetch-\/carry quest.[8] This involves the character being sent to deliver an item from one location to another.[6][9] Sometimes, the character may need to collect the item first, instead of being handed the item to deliver when starting the quest. These quests are made challenging by asking the character to journey through unfamiliar or dangerous terrain, sometimes while facing a time limit.[10]}}
+\DoxyCodeLine{00491 \textcolor{comment}{}}
+\DoxyCodeLine{00492 \textcolor{comment}{Gather quests}}
+\DoxyCodeLine{00493 \textcolor{comment}{Gather quests, also known as collection quests or fetch quests, require a character to collect a number of items. These can either be gathered from a location or environment, or require the character to kill creatures in order to collect the required items. The quest may also require the character to collect a number of different items, for example to assemble a device.[10]}}
+\DoxyCodeLine{00494 \textcolor{comment}{}}
+\DoxyCodeLine{00495 \textcolor{comment}{Escort quests}}
+\DoxyCodeLine{00496 \textcolor{comment}{}}
+\DoxyCodeLine{00497 \textcolor{comment}{\#Narrative}}
+\DoxyCodeLine{00498 \textcolor{comment}{https://donjon.bin.sh/fantasy/adventure/}}
+\DoxyCodeLine{00499 \textcolor{comment}{}}
+\DoxyCodeLine{00500 \textcolor{comment}{\#Inspiration}}
+\DoxyCodeLine{00501 \textcolor{comment}{https://www.gtagarage.com/mods/show.php?id=5038}}
+\DoxyCodeLine{00502 \textcolor{comment}{https://docs.google.com/document/d/1eo7MYI1tdrEIAND5fA65A\_NE83FSvbxzv7\_mTmyVuz8/edit}}
+\DoxyCodeLine{00503 \textcolor{comment}{}}
+\DoxyCodeLine{00504 \textcolor{comment}{ */}}
+
+\end{DoxyCode}

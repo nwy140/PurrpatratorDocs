@@ -1,0 +1,118 @@
+\doxysection{Photon\+Rigidbody\+View.\+cs}
+\label{_photon_rigidbody_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonRigidbodyView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonRigidbodyView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonRigidbodyView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Component to synchronize rigidbodies via PUN.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     [RequireComponent(typeof(Rigidbody))]}
+\DoxyCodeLine{00018     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon Rigidbody View"{}})]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonRigidbodyView : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Distance;}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Angle;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{private} Rigidbody m\_Body;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{private} Vector3 m\_NetworkPosition;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{private} Quaternion m\_NetworkRotation;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         [HideInInspector]}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeVelocity = \textcolor{keyword}{true};}
+\DoxyCodeLine{00032         [HideInInspector]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeAngularVelocity = \textcolor{keyword}{false};}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [HideInInspector]}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_TeleportEnabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00037         [HideInInspector]}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{float} m\_TeleportIfDistanceGreaterThan = 3.0f;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             this.m\_Body = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             this.m\_NetworkPosition = \textcolor{keyword}{new} Vector3();}
+\DoxyCodeLine{00045             this.m\_NetworkRotation = \textcolor{keyword}{new} Quaternion();}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{if} (!this.photonView.IsMine)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 this.m\_Body.position = Vector3.MoveTowards(this.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition, \textcolor{keyword}{this}.m\_Distance * (1.0f / PhotonNetwork.SerializationRate));}
+\DoxyCodeLine{00053                 this.m\_Body.rotation = Quaternion.RotateTowards(this.m\_Body.rotation, \textcolor{keyword}{this}.m\_NetworkRotation, \textcolor{keyword}{this}.m\_Angle * (1.0f / PhotonNetwork.SerializationRate));}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 stream.SendNext(this.m\_Body.position);}
+\DoxyCodeLine{00062                 stream.SendNext(this.m\_Body.rotation);}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{if} (this.m\_SynchronizeVelocity)}
+\DoxyCodeLine{00065                 \{}
+\DoxyCodeLine{00066                     stream.SendNext(this.m\_Body.velocity);}
+\DoxyCodeLine{00067                 \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{if} (this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00070                 \{}
+\DoxyCodeLine{00071                     stream.SendNext(this.m\_Body.angularVelocity);}
+\DoxyCodeLine{00072                 \}}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 this.m\_NetworkPosition = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00077                 this.m\_NetworkRotation = (Quaternion)stream.ReceiveNext();}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if} (this.m\_TeleportEnabled)}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{if} (Vector3.Distance(\textcolor{keyword}{this}.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition) > this.m\_TeleportIfDistanceGreaterThan)}
+\DoxyCodeLine{00082                     \{}
+\DoxyCodeLine{00083                         this.m\_Body.position = this.m\_NetworkPosition;}
+\DoxyCodeLine{00084                     \}}
+\DoxyCodeLine{00085                 \}}
+\DoxyCodeLine{00086                 }
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{if} (this.m\_SynchronizeVelocity || this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00088                 \{}
+\DoxyCodeLine{00089                     \textcolor{keywordtype}{float} lag = Mathf.Abs((\textcolor{keywordtype}{float})(PhotonNetwork.Time -\/ info.SentServerTime));}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091                     \textcolor{keywordflow}{if} (this.m\_SynchronizeVelocity)}
+\DoxyCodeLine{00092                     \{}
+\DoxyCodeLine{00093                         this.m\_Body.velocity = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095                         this.m\_NetworkPosition += this.m\_Body.velocity * lag;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097                         this.m\_Distance = Vector3.Distance(this.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition);}
+\DoxyCodeLine{00098                     \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                     \textcolor{keywordflow}{if} (this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00101                     \{}
+\DoxyCodeLine{00102                         this.m\_Body.angularVelocity = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104                         this.m\_NetworkRotation = Quaternion.Euler(this.m\_Body.angularVelocity * lag) * this.m\_NetworkRotation;}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                         this.m\_Angle = Quaternion.Angle(this.m\_Body.rotation, \textcolor{keyword}{this}.m\_NetworkRotation);}
+\DoxyCodeLine{00107                     \}}
+\DoxyCodeLine{00108                 \}}
+\DoxyCodeLine{00109             \}}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111     \}}
+\DoxyCodeLine{00112 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,306 @@
+\doxysection{Sync\+Owner.\+cs}
+\label{_sync_owner_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncOwner.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncOwner.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncOwner : SyncObject<SyncOwner.Frame>}
+\DoxyCodeLine{00016         , IOnCaptureState}
+\DoxyCodeLine{00017         , IOnNetSerialize}
+\DoxyCodeLine{00018         , IOnSnapshot}
+\DoxyCodeLine{00019         , IUseKeyframes}
+\DoxyCodeLine{00020         , IOnIncrementFrame}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.OWNERSHIP; \} \}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} reliableOwnerChange = \textcolor{keyword}{true};}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} pendingOwnerChange;}
+\DoxyCodeLine{00028         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} pendingOwnerId = -\/1;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             \textcolor{keyword}{public} \textcolor{keywordtype}{int} ownerActorId;}
+\DoxyCodeLine{00033             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ownerHasChanged;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00036             \{}
+\DoxyCodeLine{00037                 ownerActorId = -\/1;}
+\DoxyCodeLine{00038                 ownerHasChanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00039                 base.Clear();}
+\DoxyCodeLine{00040             \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00043             \{}
+\DoxyCodeLine{00044                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00045                 Frame src = sourceFrame as Frame;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047                 ownerActorId = src.ownerActorId;}
+\DoxyCodeLine{00048                 ownerHasChanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (!isMine)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 pendingOwnerChange = \textcolor{keyword}{false};}
+\DoxyCodeLine{00059                 ticksUntilOwnershipRetry = -\/1;}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{comment}{//public void TakeOwnership()}}
+\DoxyCodeLine{00064         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TransferOwner(\textcolor{keywordtype}{int} newOwnerId)}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00071             \{}
+\DoxyCodeLine{00072                 pendingOwnerChange = \textcolor{keyword}{true};}
+\DoxyCodeLine{00073                 pendingOwnerId = newOwnerId;}
+\DoxyCodeLine{00074             \}}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             Frame frame = frames[frameId];}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             \textcolor{keywordflow}{if} (pendingOwnerChange)}
+\DoxyCodeLine{00084             \{}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086                 \textcolor{comment}{//Debug.Log(Time.time + "{} fid: "{} + frameId + "{} CAP OWNER "{} + pendingOwnerId);}}
+\DoxyCodeLine{00087                 var photonView = this.photonView;}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                 \textcolor{comment}{// If we are master and we are taking control of scene objects, immediately change owner. Otherwise we are just setting the new owner as controller and awaiting them to take over.}}
+\DoxyCodeLine{00090                 \textcolor{keywordflow}{if} (photonView.OwnerActorNr != 0)}
+\DoxyCodeLine{00091                 \{}
+\DoxyCodeLine{00092                     ticksUntilOwnershipRetry = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00093                 \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095                 NetMasterCallbacks.postCallbackActions.Enqueue(DeferredOwnerChange);}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097                 frame.ownerActorId = pendingOwnerId;}
+\DoxyCodeLine{00098                 frame.ownerHasChanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00099                 pendingOwnerChange = \textcolor{keyword}{false};}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 frames[frameId].ownerActorId = photonView.OwnerActorNr;}
+\DoxyCodeLine{00105             \}}
+\DoxyCodeLine{00106         \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110             }
+\DoxyCodeLine{00111             var frame = frames[frameId];}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordtype}{bool} sendReliable = frame.ownerHasChanged \&\& (reliableOwnerChange || keyframeRate == 0 || (writeFlags \& SerializationFlags.NewConnection) != 0);}
+\DoxyCodeLine{00114             \textcolor{keywordtype}{bool} hascontent = sendReliable || IsKeyframe(frameId);}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             \textcolor{comment}{//if (sendReliable)}}
+\DoxyCodeLine{00117             \textcolor{comment}{//    Debug.LogError(frameId + "{} OWNER "{} + frame.ownerActorId + "{} "{} + frame.ownerHasChanged);}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (!hascontent)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 buffer.Write(0, ref bitposition, 1);}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             buffer.Write(1, ref bitposition, 1);}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             var flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             buffer.WritePackedBytes((uint)frame.ownerActorId, ref bitposition, 32);}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (sendReliable)}
+\DoxyCodeLine{00132                 flags |= SerializationFlags.ForceReliable;}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival frameArrival)}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             var frame = frames[originFrameId];}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{comment}{// First read content, hold off on applying content to frame until we are sure we want to keep it.}}
+\DoxyCodeLine{00142             \textcolor{keywordtype}{bool} hascontent = buffer.Read(ref bitposition, 1) != 0;}
+\DoxyCodeLine{00143             \textcolor{keywordtype}{int} ownerActorId = hascontent ? (int)buffer.ReadPackedBytes(ref bitposition, 32) : -\/1;}
+\DoxyCodeLine{00144             }
+\DoxyCodeLine{00145             \textcolor{comment}{// Ignore incoming updates if we are the current owner and the source is not the recognized controller. }}
+\DoxyCodeLine{00146             \textcolor{comment}{// Leaves frame as it was -\/ since this might overwrite valid data.}}
+\DoxyCodeLine{00147             \textcolor{keywordflow}{if} (photonView.IsMine) \textcolor{comment}{// \&\& hascontent \&\& ownerActorId !=  \&\& photonView.ControllerActorNr != netObj.originHistory[originFrameId])}}
+\DoxyCodeLine{00148             \{}
+\DoxyCodeLine{00149                 \textcolor{comment}{//Debug.LogError("{}fid:"{} + originFrameId + "{} DES IGNORE newown: "{} + frame.ownerActorId);}}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00151             \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (hascontent)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00156                 frame.ownerActorId = ownerActorId;}
+\DoxyCodeLine{00157                 \textcolor{comment}{//Debug.LogError("{}fid:"{} + originFrameId + "{} DES newown: "{} + frame.ownerActorId + "{} cur:"{} + NetMaster.CurrentFrameId + "{} ctr:"{} + photonView.OwnerActorNr + "{}:"{} + photonView.ControllerActorNr) ;}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162             \{}
+\DoxyCodeLine{00163                 frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166         \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \textcolor{comment}{//public override bool OnSnapshot(int prevFrameId, int snapFrameId, int targFrameId, bool prevIsValid, bool snapIsValid, bool targIsValid)}}
+\DoxyCodeLine{00169         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00170         \textcolor{comment}{//    var frame = frames[snapFrameId];}}
+\DoxyCodeLine{00171         \textcolor{comment}{//    var ready = base.OnSnapshot(prevFrameId, snapFrameId, targFrameId, prevIsValid, snapIsValid, targIsValid);}}
+\DoxyCodeLine{00172         \textcolor{comment}{//    Debug.LogError(frame.ownerActorId + "{} -\/> "{} + photonView.OwnerActorNr);}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174         \textcolor{comment}{//    return ready;}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             \textcolor{keywordflow}{if} (snapIsValid \&\& snapframe.content == FrameContents.Complete)}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 \textcolor{keywordtype}{int} newOwnerId = snapframe.ownerActorId;}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184                 \textcolor{comment}{//if (photonView.AmOwner \&\& newOwnerId != photonView.OwnerActorNr)}}
+\DoxyCodeLine{00185                 \textcolor{comment}{//    Debug.LogError("{}fid:"{} + snap.frameId + "{} SNAP ILLEGAL new: "{} + snap.ownerActorId + "{} old: "{} + photonView.OwnerActorNr + "{}:"{} + photonView.ControllerActorNr);}}
+\DoxyCodeLine{00186                 \textcolor{comment}{//else}}
+\DoxyCodeLine{00187                 \{}
+\DoxyCodeLine{00188                     \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00189                     \textcolor{comment}{//    Debug.LogError(Time.time + "{} ENQU OWN fid:"{} + snap.frameId + "{} SNAP new: "{} + snap.ownerActorId + "{} old: "{} + photonView.OwnerActorNr);}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191                     pendingOwnerId = newOwnerId;}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                     NetMasterCallbacks.postCallbackActions.Enqueue(DeferredOwnerChange);}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                     ticksUntilOwnershipRetry = -\/1;}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197                     \textcolor{comment}{//if (false)}}
+\DoxyCodeLine{00198                     \textcolor{comment}{//    DeferredOwnerChange();}}
+\DoxyCodeLine{00199                 \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201             \}}
+\DoxyCodeLine{00202         \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DeferredOwnerChange()}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206             \textcolor{comment}{//if (newOwnerId != photonView.OwnerActorNr)}}
+\DoxyCodeLine{00207             \{}
+\DoxyCodeLine{00208                 Realtime.Player pendingOwner;}
+\DoxyCodeLine{00209                 PhotonNetwork.CurrentRoom.Players.TryGetValue(pendingOwnerId, out pendingOwner);}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                 \textcolor{comment}{//Debug.LogError(Time.time + "{} SYNC\_OWN Apply newOwner? "{} + (pendingOwner == null ? "{}null"{} : pendingOwnerId.ToString()));}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213                 photonView.OwnerActorNr = pendingOwnerId;}
+\DoxyCodeLine{00214                 photonView.ControllerActorNr = pendingOwnerId;}
+\DoxyCodeLine{00215             \}}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} ticksUntilOwnershipRetry = -\/1;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnIncrementFrame(\textcolor{keywordtype}{int} newFrameId, \textcolor{keywordtype}{int} newSubFrameId, \textcolor{keywordtype}{int} previousFrameId, \textcolor{keywordtype}{int} prevSubFrameId)}
+\DoxyCodeLine{00222         \{}
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (newSubFrameId != 0)}
+\DoxyCodeLine{00227                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{comment}{//Debug.LogError(ticksUntilOwnershipRetry);}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             \textcolor{keywordflow}{if} (ticksUntilOwnershipRetry >= 0)}
+\DoxyCodeLine{00232             \{}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{if} (ticksUntilOwnershipRetry == 0)}
+\DoxyCodeLine{00234                 \{}
+\DoxyCodeLine{00235                     \textcolor{comment}{// Fallback ownership transfer in case our tick based method suffered horrendous loss.}}
+\DoxyCodeLine{00236                     Debug.LogError(name + \textcolor{stringliteral}{"{} FALLBACK OWNER CHANGE "{}} + photonView.ControllerActorNr);}
+\DoxyCodeLine{00237                     photonView.TransferOwnership(photonView.Controller);}
+\DoxyCodeLine{00238                     ticksUntilOwnershipRetry = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00239                 \}}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00241                 \{}
+\DoxyCodeLine{00242                     ticksUntilOwnershipRetry-\/-\/;}
+\DoxyCodeLine{00243                 \}}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249         \textcolor{comment}{//public void TEST()}}
+\DoxyCodeLine{00250         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00251         \textcolor{comment}{//    if (!test)}}
+\DoxyCodeLine{00252         \textcolor{comment}{//        return;}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{comment}{//    if (photonView.IsMine)}}
+\DoxyCodeLine{00256         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00257         \textcolor{comment}{//        var players = PhotonNetwork.PlayerList;}}
+\DoxyCodeLine{00258         \textcolor{comment}{//        Debug.Log("{}TEST "{} + players.Length);}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{comment}{//        int escape = 0;}}
+\DoxyCodeLine{00261         \textcolor{comment}{//        Player player;}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{comment}{//        int rand;}}
+\DoxyCodeLine{00264         \textcolor{comment}{//        do}}
+\DoxyCodeLine{00265         \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00266         \textcolor{comment}{//            rand = Random.Range(0, players.Length);}}
+\DoxyCodeLine{00267         \textcolor{comment}{//            player = players[rand];}}
+\DoxyCodeLine{00268         \textcolor{comment}{//            escape++;}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270         \textcolor{comment}{//            if (escape > 100)}}
+\DoxyCodeLine{00271         \textcolor{comment}{//                break;}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         \textcolor{comment}{//        \} while (players.Length > 1 \&\& players[rand] == PhotonNetwork.LocalPlayer);}}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{comment}{//        if (escape > 100)}}
+\DoxyCodeLine{00276         \textcolor{comment}{//            Debug.Log("{}Overflow finding other player."{});}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278         \textcolor{comment}{//        Debug.Log("{}Changing player to "{} + player.ActorNumber + "{} / "{} + players.Length);}}
+\DoxyCodeLine{00279         \textcolor{comment}{//        TransferOwner(player.ActorNumber);}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00282         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00283 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285         [CustomEditor(typeof(SyncObject<>), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00286         [CanEditMultipleObjects]}
+\DoxyCodeLine{00287         \textcolor{keyword}{public} \textcolor{keyword}{class }SyncObjectTFrameEditor : Simple.SyncObjectEditor}
+\DoxyCodeLine{00288         \{}
+\DoxyCodeLine{00289             \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00290             \{}
+\DoxyCodeLine{00291                 \textcolor{keyword}{get}}
+\DoxyCodeLine{00292                 \{}
+\DoxyCodeLine{00293                     \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncOwnerText"{}};}
+\DoxyCodeLine{00294                 \}}
+\DoxyCodeLine{00295             \}}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00299     \}}
+\DoxyCodeLine{00300 \}}
+
+\end{DoxyCode}

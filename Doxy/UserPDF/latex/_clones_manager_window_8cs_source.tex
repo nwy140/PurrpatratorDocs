@@ -1,0 +1,191 @@
+\doxysection{Clones\+Manager\+Window.\+cs}
+\label{_clones_manager_window_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ClonesManagerWindow.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ClonesManagerWindow.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{keyword}{namespace }ParrelSync}
+\DoxyCodeLine{00006 \{}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} \textcolor{keyword}{class }ClonesManagerWindow : EditorWindow}
+\DoxyCodeLine{00011     \{}
+\DoxyCodeLine{00015         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isCloneCreated}
+\DoxyCodeLine{00016         \{}
+\DoxyCodeLine{00017             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ClonesManager.GetCloneProjectsPath().Count >= 1; \}}
+\DoxyCodeLine{00018         \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         [MenuItem(\textcolor{stringliteral}{"{}ParrelSync/Clones Manager"{}}, priority = 0)]}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InitWindow()}
+\DoxyCodeLine{00022         \{}
+\DoxyCodeLine{00023             ClonesManagerWindow window = (ClonesManagerWindow)EditorWindow.GetWindow(typeof(ClonesManagerWindow));}
+\DoxyCodeLine{00024             window.titleContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Clones Manager"{}});}
+\DoxyCodeLine{00025             window.Show();}
+\DoxyCodeLine{00026         \}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00031         Vector2 clonesScrollPos;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnGUI()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00036             \textcolor{keywordflow}{if} (ClonesManager.IsClone())}
+\DoxyCodeLine{00037             \{}
+\DoxyCodeLine{00038                 \textcolor{comment}{//Find out the original project name and show the help box}}
+\DoxyCodeLine{00039                 \textcolor{keywordtype}{string} originalProjectPath = ClonesManager.GetOriginalProjectPath();}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{if} (originalProjectPath == \textcolor{keywordtype}{string}.Empty)}
+\DoxyCodeLine{00041                 \{}
+\DoxyCodeLine{00043                     EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00044                         \textcolor{stringliteral}{"{}This project is a clone, but the link to the original seems lost.\(\backslash\)nYou have to manually open the original and create a new clone instead of this one.\(\backslash\)n"{}},}
+\DoxyCodeLine{00045                         MessageType.Warning);}
+\DoxyCodeLine{00046                 \}}
+\DoxyCodeLine{00047                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00048                 \{}
+\DoxyCodeLine{00050                     EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00051                         \textcolor{stringliteral}{"{}This project is a clone of the project '"{}} + Path.GetFileName(originalProjectPath) + \textcolor{stringliteral}{"{}'.\(\backslash\)nIf you want to make changes the project files or manage clones, please open the original project through Unity Hub."{}},}
+\DoxyCodeLine{00052                         MessageType.Info);}
+\DoxyCodeLine{00053                 \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055                 \textcolor{comment}{//Clone project custom argument.}}
+\DoxyCodeLine{00056                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00057                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Arguments"{}}, GUILayout.Width(70));}
+\DoxyCodeLine{00058                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}?"{}}, GUILayout.Width(20)))}
+\DoxyCodeLine{00059                 \{}
+\DoxyCodeLine{00060                     Application.OpenURL(ExternalLinks.CustomArgumentHelpLink);}
+\DoxyCodeLine{00061                 \}}
+\DoxyCodeLine{00062                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 \textcolor{keywordtype}{string} argumentFilePath = Path.Combine(ClonesManager.GetCurrentProjectPath(), ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00065                 \textcolor{comment}{//Need to be careful with file reading / writing since it will effect the deletion of}}
+\DoxyCodeLine{00066                 \textcolor{comment}{//  the clone project(The directory won't be fully deleted if there's still file inside being read or write).}}
+\DoxyCodeLine{00067                 \textcolor{comment}{//The argument file will be deleted first at the beginning of the project deletion process}}
+\DoxyCodeLine{00068                 \textcolor{comment}{//to prevent any further being read and write.}}
+\DoxyCodeLine{00069                 \textcolor{comment}{//Will need to take some extra cautious if want to change the design of how file editing is handled.}}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{if} (File.Exists(argumentFilePath))}
+\DoxyCodeLine{00071                 \{}
+\DoxyCodeLine{00072                     \textcolor{keywordtype}{string} argument = File.ReadAllText(argumentFilePath, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00073                     \textcolor{keywordtype}{string} argumentTextAreaInput = EditorGUILayout.TextArea(argument,}
+\DoxyCodeLine{00074                         GUILayout.Height(50),}
+\DoxyCodeLine{00075                         GUILayout.MaxWidth(300)}
+\DoxyCodeLine{00076                     );}
+\DoxyCodeLine{00077                     File.WriteAllText(argumentFilePath, argumentTextAreaInput, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00078                 \}}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}No argument file found."{}});}
+\DoxyCodeLine{00082                 \}}
+\DoxyCodeLine{00083             \}}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{else}\textcolor{comment}{// If it is an original project...}}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{if} (isCloneCreated)}
+\DoxyCodeLine{00087                 \{}
+\DoxyCodeLine{00088                     GUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00089                     GUILayout.Label(\textcolor{stringliteral}{"{}Clones of this Project"{}});}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091                     \textcolor{comment}{//List all clones}}
+\DoxyCodeLine{00092                     clonesScrollPos =}
+\DoxyCodeLine{00093                          EditorGUILayout.BeginScrollView(clonesScrollPos);}
+\DoxyCodeLine{00094                     var cloneProjectsPath = ClonesManager.GetCloneProjectsPath();}
+\DoxyCodeLine{00095                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cloneProjectsPath.Count; i++)}
+\DoxyCodeLine{00096                     \{}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098                         GUILayout.BeginVertical(\textcolor{stringliteral}{"{}GroupBox"{}});}
+\DoxyCodeLine{00099                         \textcolor{keywordtype}{string} cloneProjectPath = cloneProjectsPath[i];}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101                         \textcolor{keywordtype}{bool} isOpenInAnotherInstance = ClonesManager.IsCloneProjectRunning(cloneProjectPath);}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103                         \textcolor{keywordflow}{if} (isOpenInAnotherInstance == \textcolor{keyword}{true})}
+\DoxyCodeLine{00104                             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Clone "{}} + i + \textcolor{stringliteral}{"{} (Running)"{}}, EditorStyles.boldLabel);}
+\DoxyCodeLine{00105                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00106                             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Clone "{}} + i);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                         GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00110                         EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Clone project path"{}}, cloneProjectPath, EditorStyles.textField);}
+\DoxyCodeLine{00111                         \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}View Folder"{}}, GUILayout.Width(80)))}
+\DoxyCodeLine{00112                         \{}
+\DoxyCodeLine{00113                             ClonesManager.OpenProjectInFileExplorer(cloneProjectPath);}
+\DoxyCodeLine{00114                         \}}
+\DoxyCodeLine{00115                         GUILayout.EndHorizontal();}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                         GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00118                         EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Arguments"{}}, GUILayout.Width(70));}
+\DoxyCodeLine{00119                         \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}?"{}}, GUILayout.Width(20)))}
+\DoxyCodeLine{00120                         \{}
+\DoxyCodeLine{00121                             Application.OpenURL(ExternalLinks.CustomArgumentHelpLink);}
+\DoxyCodeLine{00122                         \}}
+\DoxyCodeLine{00123                         GUILayout.EndHorizontal();}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                         \textcolor{keywordtype}{string} argumentFilePath = Path.Combine(cloneProjectPath, ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00126                         \textcolor{comment}{//Need to be careful with file reading/writing since it will effect the deletion of}}
+\DoxyCodeLine{00127                         \textcolor{comment}{//the clone project(The directory won't be fully deleted if there's still file inside being read or write).}}
+\DoxyCodeLine{00128                         \textcolor{comment}{//The argument file will be deleted first at the beginning of the project deletion process }}
+\DoxyCodeLine{00129                         \textcolor{comment}{//to prevent any further being read and write.}}
+\DoxyCodeLine{00130                         \textcolor{comment}{//Will need to take some extra cautious if want to change the design of how file editing is handled.}}
+\DoxyCodeLine{00131                         \textcolor{keywordflow}{if} (File.Exists(argumentFilePath))}
+\DoxyCodeLine{00132                         \{}
+\DoxyCodeLine{00133                             \textcolor{keywordtype}{string} argument = File.ReadAllText(argumentFilePath, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00134                             \textcolor{keywordtype}{string} argumentTextAreaInput = EditorGUILayout.TextArea(argument,}
+\DoxyCodeLine{00135                                 GUILayout.Height(50),}
+\DoxyCodeLine{00136                                 GUILayout.MaxWidth(300)}
+\DoxyCodeLine{00137                             );}
+\DoxyCodeLine{00138                             File.WriteAllText(argumentFilePath, argumentTextAreaInput, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00139                         \}}
+\DoxyCodeLine{00140                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00141                         \{}
+\DoxyCodeLine{00142                             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}No argument file found."{}});}
+\DoxyCodeLine{00143                         \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                         EditorGUILayout.Space();}
+\DoxyCodeLine{00146                         EditorGUILayout.Space();}
+\DoxyCodeLine{00147                         EditorGUILayout.Space();}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150                         EditorGUI.BeginDisabledGroup(isOpenInAnotherInstance);}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                         \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Open in New Editor"{}}))}
+\DoxyCodeLine{00153                         \{}
+\DoxyCodeLine{00154                             ClonesManager.OpenProject(cloneProjectPath);}
+\DoxyCodeLine{00155                         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                         GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00158                         \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Delete"{}}))}
+\DoxyCodeLine{00159                         \{}
+\DoxyCodeLine{00160                             \textcolor{keywordtype}{bool} \textcolor{keyword}{delete} = EditorUtility.DisplayDialog(}
+\DoxyCodeLine{00161                                 \textcolor{stringliteral}{"{}Delete the clone?"{}},}
+\DoxyCodeLine{00162                                 \textcolor{stringliteral}{"{}Are you sure you want to delete the clone project '"{}} + ClonesManager.GetCurrentProject().name + \textcolor{stringliteral}{"{}\_clone'?"{}},}
+\DoxyCodeLine{00163                                 \textcolor{stringliteral}{"{}Delete"{}},}
+\DoxyCodeLine{00164                                 \textcolor{stringliteral}{"{}Cancel"{}});}
+\DoxyCodeLine{00165                             \textcolor{keywordflow}{if} (\textcolor{keyword}{delete})}
+\DoxyCodeLine{00166                             \{}
+\DoxyCodeLine{00167                                 ClonesManager.DeleteClone(cloneProjectPath);}
+\DoxyCodeLine{00168                             \}}
+\DoxyCodeLine{00169                         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171                         GUILayout.EndHorizontal();}
+\DoxyCodeLine{00172                         EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00173                         GUILayout.EndVertical();}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175                     \}}
+\DoxyCodeLine{00176                     EditorGUILayout.EndScrollView();}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178                     \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Add new clone"{}}))}
+\DoxyCodeLine{00179                     \{}
+\DoxyCodeLine{00180                         ClonesManager.CreateCloneFromCurrent();}
+\DoxyCodeLine{00181                     \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183                     GUILayout.EndVertical();}
+\DoxyCodeLine{00184                     GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00187                 \{}
+\DoxyCodeLine{00189                     EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}No project clones found. Create a new one!"{}}, MessageType.Info);}
+\DoxyCodeLine{00190                     \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Create new clone"{}}))}
+\DoxyCodeLine{00191                     \{}
+\DoxyCodeLine{00192                         ClonesManager.CreateCloneFromCurrent();}
+\DoxyCodeLine{00193                     \}}
+\DoxyCodeLine{00194                 \}}
+\DoxyCodeLine{00195             \}}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197     \}}
+\DoxyCodeLine{00198 \}}
+
+\end{DoxyCode}

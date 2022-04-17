@@ -1,0 +1,253 @@
+\doxysection{First\+Person\+Controller.\+cs}
+\label{_first_person_controller_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/FirstPersonController/Scripts/FirstPersonController.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/FirstPersonController/Scripts/FirstPersonController.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 \textcolor{preprocessor}{\#if ENABLE\_INPUT\_SYSTEM \&\& STARTER\_ASSETS\_PACKAGES\_CHECKED}}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine.InputSystem;}
+\DoxyCodeLine{00004 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{comment}{/* Note: animations are called via the controller for both the character and capsule using animator null checks}}
+\DoxyCodeLine{00007 \textcolor{comment}{ */}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }StarterAssets}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011     [RequireComponent(typeof(CharacterController))]}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if ENABLE\_INPUT\_SYSTEM \&\& STARTER\_ASSETS\_PACKAGES\_CHECKED}}
+\DoxyCodeLine{00013     [RequireComponent(typeof(PlayerInput))]}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{class }FirstPersonController : MonoBehaviour}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         [Header(\textcolor{stringliteral}{"{}Player"{}})]}
+\DoxyCodeLine{00018         [Tooltip(\textcolor{stringliteral}{"{}Move speed of the character in m/s"{}})]}
+\DoxyCodeLine{00019         \textcolor{keyword}{public} \textcolor{keywordtype}{float} MoveSpeed = 4.0f;}
+\DoxyCodeLine{00020         [Tooltip(\textcolor{stringliteral}{"{}Sprint speed of the character in m/s"{}})]}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keywordtype}{float} SprintSpeed = 6.0f;}
+\DoxyCodeLine{00022         [Tooltip(\textcolor{stringliteral}{"{}Rotation speed of the character"{}})]}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{float} RotationSpeed = 1.0f;}
+\DoxyCodeLine{00024         [Tooltip(\textcolor{stringliteral}{"{}Acceleration and deceleration"{}})]}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{float} SpeedChangeRate = 10.0f;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         [Space(10)]}
+\DoxyCodeLine{00028         [Tooltip(\textcolor{stringliteral}{"{}The height the player can jump"{}})]}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{float} JumpHeight = 1.2f;}
+\DoxyCodeLine{00030         [Tooltip(\textcolor{stringliteral}{"{}The character uses its own gravity value. The engine default is -\/9.81f"{}})]}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{float} Gravity = -\/15.0f;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [Space(10)]}
+\DoxyCodeLine{00034         [Tooltip(\textcolor{stringliteral}{"{}Time required to pass before being able to jump again. Set to 0f to instantly jump again"{}})]}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{float} JumpTimeout = 0.1f;}
+\DoxyCodeLine{00036         [Tooltip(\textcolor{stringliteral}{"{}Time required to pass before entering the fall state. Useful for walking down stairs"{}})]}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keywordtype}{float} FallTimeout = 0.15f;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [Header(\textcolor{stringliteral}{"{}Player Grounded"{}})]}
+\DoxyCodeLine{00040         [Tooltip(\textcolor{stringliteral}{"{}If the character is grounded or not. Not part of the CharacterController built in grounded check"{}})]}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Grounded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00042         [Tooltip(\textcolor{stringliteral}{"{}Useful for rough ground"{}})]}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{float} GroundedOffset = -\/0.14f;}
+\DoxyCodeLine{00044         [Tooltip(\textcolor{stringliteral}{"{}The radius of the grounded check. Should match the radius of the CharacterController"{}})]}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{float} GroundedRadius = 0.5f;}
+\DoxyCodeLine{00046         [Tooltip(\textcolor{stringliteral}{"{}What layers the character uses as ground"{}})]}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} LayerMask GroundLayers;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         [Header(\textcolor{stringliteral}{"{}Cinemachine"{}})]}
+\DoxyCodeLine{00050         [Tooltip(\textcolor{stringliteral}{"{}The follow target set in the Cinemachine Virtual Camera that the camera will follow"{}})]}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} GameObject CinemachineCameraTarget;}
+\DoxyCodeLine{00052         [Tooltip(\textcolor{stringliteral}{"{}How far in degrees can you move the camera up"{}})]}
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{float} TopClamp = 90.0f;}
+\DoxyCodeLine{00054         [Tooltip(\textcolor{stringliteral}{"{}How far in degrees can you move the camera down"{}})]}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{float} BottomClamp = -\/90.0f;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{comment}{// cinemachine}}
+\DoxyCodeLine{00058         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_cinemachineTargetPitch;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{comment}{// player}}
+\DoxyCodeLine{00061         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_speed;}
+\DoxyCodeLine{00062         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_rotationVelocity;}
+\DoxyCodeLine{00063         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_verticalVelocity;}
+\DoxyCodeLine{00064         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_terminalVelocity = 53.0f;}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{comment}{// timeout deltatime}}
+\DoxyCodeLine{00067         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_jumpTimeoutDelta;}
+\DoxyCodeLine{00068         \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_fallTimeoutDelta;}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{keyword}{private} CharacterController \_controller;}
+\DoxyCodeLine{00071         \textcolor{keyword}{private} StarterAssetsInputs \_input;}
+\DoxyCodeLine{00072         \textcolor{keyword}{private} GameObject \_mainCamera;}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} \_threshold = 0.01f;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{comment}{// get a reference to our main camera}}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (\_mainCamera == \textcolor{keyword}{null})}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 \_mainCamera = GameObject.FindGameObjectWithTag(\textcolor{stringliteral}{"{}MainCamera"{}});}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \_controller = GetComponent<CharacterController>();}
+\DoxyCodeLine{00088             \_input = GetComponent<StarterAssetsInputs>();}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{comment}{// reset our timeouts on start}}
+\DoxyCodeLine{00091             \_jumpTimeoutDelta = JumpTimeout;}
+\DoxyCodeLine{00092             \_fallTimeoutDelta = FallTimeout;}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             JumpAndGravity();}
+\DoxyCodeLine{00098             GroundedCheck();}
+\DoxyCodeLine{00099             Move();}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{private} \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             CameraRotation();}
+\DoxyCodeLine{00105         \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107         \textcolor{keyword}{private} \textcolor{keywordtype}{void} GroundedCheck()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             \textcolor{comment}{// set sphere position, with offset}}
+\DoxyCodeLine{00110             Vector3 spherePosition = \textcolor{keyword}{new} Vector3(transform.position.x, transform.position.y -\/ GroundedOffset, transform.position.z);}
+\DoxyCodeLine{00111             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CameraRotation()}
+\DoxyCodeLine{00115         \{}
+\DoxyCodeLine{00116             \textcolor{comment}{// if there is an input}}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if} (\_input.look.sqrMagnitude >= \_threshold)}
+\DoxyCodeLine{00118             \{}
+\DoxyCodeLine{00119                 \_cinemachineTargetPitch += \_input.look.y * RotationSpeed * Time.deltaTime;}
+\DoxyCodeLine{00120                 \_rotationVelocity = \_input.look.x * RotationSpeed * Time.deltaTime;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122                 \textcolor{comment}{// clamp our pitch rotation}}
+\DoxyCodeLine{00123                 \_cinemachineTargetPitch = ClampAngle(\_cinemachineTargetPitch, BottomClamp, TopClamp);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                 \textcolor{comment}{// Update Cinemachine camera target pitch}}
+\DoxyCodeLine{00126                 CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(\_cinemachineTargetPitch, 0.0f, 0.0f);}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128                 \textcolor{comment}{// rotate the player left and right}}
+\DoxyCodeLine{00129                 transform.Rotate(Vector3.up * \_rotationVelocity);}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Move()}
+\DoxyCodeLine{00134         \{}
+\DoxyCodeLine{00135             \textcolor{comment}{// set target speed based on move speed, sprint speed and if sprint is pressed}}
+\DoxyCodeLine{00136             \textcolor{keywordtype}{float} targetSpeed = \_input.sprint ? SprintSpeed : MoveSpeed;}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{comment}{// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{comment}{// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude}}
+\DoxyCodeLine{00141             \textcolor{comment}{// if there is no input, set the target speed to 0}}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (\_input.move == Vector2.zero) targetSpeed = 0.0f;}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             \textcolor{comment}{// a reference to the players current horizontal velocity}}
+\DoxyCodeLine{00145             \textcolor{keywordtype}{float} currentHorizontalSpeed = \textcolor{keyword}{new} Vector3(\_controller.velocity.x, 0.0f, \_controller.velocity.z).magnitude;}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{keywordtype}{float} speedOffset = 0.1f;}
+\DoxyCodeLine{00148             \textcolor{keywordtype}{float} inputMagnitude = \_input.analogMovement ? \_input.move.magnitude : 1f;}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             \textcolor{comment}{// accelerate or decelerate to target speed}}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (currentHorizontalSpeed < targetSpeed -\/ speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{comment}{// creates curved result rather than a linear one giving a more organic speed change}}
+\DoxyCodeLine{00154                 \textcolor{comment}{// note T in Lerp is clamped, so we don't need to clamp our speed}}
+\DoxyCodeLine{00155                 \_speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                 \textcolor{comment}{// round speed to 3 decimal places}}
+\DoxyCodeLine{00158                 \_speed = Mathf.Round(\_speed * 1000f) / 1000f;}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00161             \{}
+\DoxyCodeLine{00162                 \_speed = targetSpeed;}
+\DoxyCodeLine{00163             \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             \textcolor{comment}{// normalise input direction}}
+\DoxyCodeLine{00166             Vector3 inputDirection = \textcolor{keyword}{new} Vector3(\_input.move.x, 0.0f, \_input.move.y).normalized;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168             \textcolor{comment}{// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude}}
+\DoxyCodeLine{00169             \textcolor{comment}{// if there is a move input rotate player when the player is moving}}
+\DoxyCodeLine{00170             \textcolor{keywordflow}{if} (\_input.move != Vector2.zero)}
+\DoxyCodeLine{00171             \{}
+\DoxyCodeLine{00172                 \textcolor{comment}{// move}}
+\DoxyCodeLine{00173                 inputDirection = transform.right * \_input.move.x + transform.forward * \_input.move.y;}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176             \textcolor{comment}{// move the player}}
+\DoxyCodeLine{00177             \_controller.Move(inputDirection.normalized * (\_speed * Time.deltaTime) + \textcolor{keyword}{new} Vector3(0.0f, \_verticalVelocity, 0.0f) * Time.deltaTime);}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{private} \textcolor{keywordtype}{void} JumpAndGravity()}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (Grounded)}
+\DoxyCodeLine{00183             \{}
+\DoxyCodeLine{00184                 \textcolor{comment}{// reset the fall timeout timer}}
+\DoxyCodeLine{00185                 \_fallTimeoutDelta = FallTimeout;}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{comment}{// stop our velocity dropping infinitely when grounded}}
+\DoxyCodeLine{00188                 \textcolor{keywordflow}{if} (\_verticalVelocity < 0.0f)}
+\DoxyCodeLine{00189                 \{}
+\DoxyCodeLine{00190                     \_verticalVelocity = -\/2f;}
+\DoxyCodeLine{00191                 \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                 \textcolor{comment}{// Jump}}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{if} (\_input.jump \&\& \_jumpTimeoutDelta <= 0.0f)}
+\DoxyCodeLine{00195                 \{}
+\DoxyCodeLine{00196                     \textcolor{comment}{// the square root of H * -\/2 * G = how much velocity needed to reach desired height}}
+\DoxyCodeLine{00197                     \_verticalVelocity = Mathf.Sqrt(JumpHeight * -\/2f * Gravity);}
+\DoxyCodeLine{00198                 \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200                 \textcolor{comment}{// jump timeout}}
+\DoxyCodeLine{00201                 \textcolor{keywordflow}{if} (\_jumpTimeoutDelta >= 0.0f)}
+\DoxyCodeLine{00202                 \{}
+\DoxyCodeLine{00203                     \_jumpTimeoutDelta -\/= Time.deltaTime;}
+\DoxyCodeLine{00204                 \}}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00207             \{}
+\DoxyCodeLine{00208                 \textcolor{comment}{// reset the jump timeout timer}}
+\DoxyCodeLine{00209                 \_jumpTimeoutDelta = JumpTimeout;}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                 \textcolor{comment}{// fall timeout}}
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{if} (\_fallTimeoutDelta >= 0.0f)}
+\DoxyCodeLine{00213                 \{}
+\DoxyCodeLine{00214                     \_fallTimeoutDelta -\/= Time.deltaTime;}
+\DoxyCodeLine{00215                 \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217                 \textcolor{comment}{// if we are not grounded, do not jump}}
+\DoxyCodeLine{00218                 \_input.jump = \textcolor{keyword}{false};}
+\DoxyCodeLine{00219             \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{comment}{// apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)}}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (\_verticalVelocity < \_terminalVelocity)}
+\DoxyCodeLine{00223             \{}
+\DoxyCodeLine{00224                 \_verticalVelocity += Gravity * Time.deltaTime;}
+\DoxyCodeLine{00225             \}}
+\DoxyCodeLine{00226         \}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ClampAngle(\textcolor{keywordtype}{float} lfAngle, \textcolor{keywordtype}{float} lfMin, \textcolor{keywordtype}{float} lfMax)}
+\DoxyCodeLine{00229         \{}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{if} (lfAngle < -\/360f) lfAngle += 360f;}
+\DoxyCodeLine{00231             \textcolor{keywordflow}{if} (lfAngle > 360f) lfAngle -\/= 360f;}
+\DoxyCodeLine{00232             \textcolor{keywordflow}{return} Mathf.Clamp(lfAngle, lfMin, lfMax);}
+\DoxyCodeLine{00233         \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDrawGizmosSelected()}
+\DoxyCodeLine{00236         \{}
+\DoxyCodeLine{00237             Color transparentGreen = \textcolor{keyword}{new} Color(0.0f, 1.0f, 0.0f, 0.35f);}
+\DoxyCodeLine{00238             Color transparentRed = \textcolor{keyword}{new} Color(1.0f, 0.0f, 0.0f, 0.35f);}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             \textcolor{keywordflow}{if} (Grounded) Gizmos.color = transparentGreen;}
+\DoxyCodeLine{00241             \textcolor{keywordflow}{else} Gizmos.color = transparentRed;}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{comment}{// when selected, draw a gizmo in the position of, and matching radius of, the grounded collider}}
+\DoxyCodeLine{00244             Gizmos.DrawSphere(\textcolor{keyword}{new} Vector3(transform.position.x, transform.position.y -\/ GroundedOffset, transform.position.z), GroundedRadius);}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246     \}}
+\DoxyCodeLine{00247 \}}
+
+\end{DoxyCode}

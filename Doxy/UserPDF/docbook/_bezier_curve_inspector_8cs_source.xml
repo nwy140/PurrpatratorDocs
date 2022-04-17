@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__bezier_curve_inspector_8cs_source" xml:lang="en-US">
+<title>BezierCurveInspector.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/Editor/BezierCurveInspector.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__bezier_curve_inspector_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&#32;file=&quot;Bezier.cs&quot;&#32;company=&quot;Exit&#32;Games&#32;GmbH&quot;&gt;</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&#32;&#32;Part&#32;of:&#32;Photon&#32;Unity&#32;Networking&#32;Demos</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00005"/>00005 <emphasis role="comment">//&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00006"/>00006 <emphasis role="comment">//&#32;&#32;Original:&#32;http://catlikecoding.com/unity/tutorials/curves-and-splines/</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00007"/>00007 <emphasis role="comment">//&#32;&#32;Used&#32;in&#32;SlotRacer&#32;Demo</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00008"/>00008 <emphasis role="comment">//&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00009"/>00009 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00010"/>00010 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00011"/>00011 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00012"/>00012 <emphasis role="keyword">using</emphasis>&#32;UnityEditor;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00013"/>00013 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00014"/>00014 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00015"/>00015 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils">Photon.Pun.Demo.SlotRacer.Utils</link>
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00016"/>00016 {
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;[CustomEditor(typeof(BezierCurve))]
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00018"/><link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_inspector">00018</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_inspector">BezierCurveInspector</link>&#32;:&#32;Editor
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;lineSteps&#32;=&#32;10;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;directionScale&#32;=&#32;0.5f;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00022"/>00022 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve">BezierCurve</link>&#32;curve;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Transform&#32;handleTransform;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Quaternion&#32;handleRotation;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00026"/>00026 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnSceneGUI()
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;curve&#32;=&#32;target&#32;as&#32;<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve">BezierCurve</link>;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;handleTransform&#32;=&#32;curve.transform;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;handleRotation&#32;=&#32;Tools.pivotRotation&#32;==&#32;PivotRotation.Local&#32;?
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;handleTransform.rotation&#32;:&#32;Quaternion.identity;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;p0&#32;=&#32;ShowPoint(0);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;p1&#32;=&#32;ShowPoint(1);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;p2&#32;=&#32;ShowPoint(2);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;p3&#32;=&#32;ShowPoint(3);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.color&#32;=&#32;Color.gray;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.DrawLine(p0,&#32;p1);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.DrawLine(p2,&#32;p3);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ShowDirections();
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.DrawBezier(p0,&#32;p3,&#32;p1,&#32;p2,&#32;Color.white,&#32;<emphasis role="keyword">null</emphasis>,&#32;2f);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00045"/>00045 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00046"/>00046 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;ShowDirections()
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.color&#32;=&#32;Color.green;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;point&#32;=&#32;curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1ab0ddde7ee6e80735b6f5040914205573">GetPoint</link>(0f);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.DrawLine(point,&#32;point&#32;+&#32;curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1a60e43d49168c7ea908595f2c06d0f75b">GetDirection</link>(0f)&#32;*&#32;directionScale);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;1;&#32;i&#32;&lt;=&#32;lineSteps;&#32;i++)
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;point&#32;=&#32;curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1ab0ddde7ee6e80735b6f5040914205573">GetPoint</link>(i&#32;/&#32;(<emphasis role="keywordtype">float</emphasis>)lineSteps);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Handles.DrawLine(point,&#32;point&#32;+&#32;curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1a60e43d49168c7ea908595f2c06d0f75b">GetDirection</link>(i&#32;/&#32;(<emphasis role="keywordtype">float</emphasis>)lineSteps)&#32;*&#32;directionScale);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00058"/>00058 
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Vector3&#32;ShowPoint(<emphasis role="keywordtype">int</emphasis>&#32;index)
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;point&#32;=&#32;handleTransform.TransformPoint(curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1a416c2cc4ddebf15c3da6065ea249b4e8">points</link>[index]);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginChangeCheck();
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;point&#32;=&#32;Handles.DoPositionHandle(point,&#32;handleRotation);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(EditorGUI.EndChangeCheck())
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Undo.RecordObject(curve,&#32;<emphasis role="stringliteral">&quot;Move&#32;Point&quot;</emphasis>);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorUtility.SetDirty(curve);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;curve.<link linkend="_class_photon_1_1_pun_1_1_demo_1_1_slot_racer_1_1_utils_1_1_bezier_curve_1a416c2cc4ddebf15c3da6065ea249b4e8">points</link>[index]&#32;=&#32;handleTransform.InverseTransformPoint(point);
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;point;
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__bezier_curve_inspector_8cs_source_1l00073"/>00073 }
+</programlisting></section>

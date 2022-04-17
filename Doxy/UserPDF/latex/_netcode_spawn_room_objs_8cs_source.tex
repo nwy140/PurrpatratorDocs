@@ -1,0 +1,231 @@
+\doxysection{Netcode\+Spawn\+Room\+Objs.\+cs}
+\label{_netcode_spawn_room_objs_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/CustomUtilities/NetcodeSpawnRoomObjs.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/CustomUtilities/NetcodeSpawnRoomObjs.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} SInt.Netcode.PhotonPUN;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{public} \textcolor{keyword}{class }NetcodeSpawnRoomObjs : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011     \textcolor{comment}{// You can't synchronize game objects in photon}}
+\DoxyCodeLine{00012     \textcolor{comment}{// You may only synchronize their View IDs}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     \textcolor{comment}{// https://answers.unity.com/questions/700268/send-\/gameobject-\/through-\/photon-\/rpc.html}}
+\DoxyCodeLine{00015     [Header(\textcolor{stringliteral}{"{}All Objs must be in the resources folder"{}})]}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} ObjInstantiationData[] objsToSpawn;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     PhotonView PV;}
+\DoxyCodeLine{00020     \textcolor{comment}{//public ObjectivesManager objectivesManager;}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     [Header(\textcolor{stringliteral}{"{}Runtime Generation"{}})]}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} List<PhotonView> instantiatedObjects;}
+\DoxyCodeLine{00024     \textcolor{keyword}{public} List<GameObject> instantiatedPrefabsSource;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     \textcolor{comment}{//TODO: Serializable Class}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         TryGetComponent(out PV);}
+\DoxyCodeLine{00031     \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033     \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00034     \{}
+\DoxyCodeLine{00035         \textcolor{comment}{//SpawnObjects();}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient == \textcolor{keyword}{true})}
+\DoxyCodeLine{00038             StartCoroutine(waitForReadyInGame());}
+\DoxyCodeLine{00039     \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042     IEnumerator waitForReadyInGame()}
+\DoxyCodeLine{00043     \{}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{comment}{//var hash = PhotonNetwork.LocalPlayer.CustomProperties;}}
+\DoxyCodeLine{00047 \textcolor{comment}{}        \textcolor{comment}{//yield return new WaitUntil(() => hash.ContainsKey("{}ReadyInGame"{}));}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{comment}{//yield return new WaitUntil(() => (bool)hash["{}ReadyInGame"{}] == true);}}
+\DoxyCodeLine{00050         \textcolor{comment}{//yield return new WaitUntil(() => PhotonNetwork.PlayerList.All(n => n.CustomProperties.ContainsKey("{}ReadyInGame"{}) == true));}}
+\DoxyCodeLine{00051         yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitUntil(() => PhotonNetwork.PlayerList.All(n =>PhotonNetwork.PlayerList.Length == 2));}
+\DoxyCodeLine{00052         yield \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient == \textcolor{keyword}{true})}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             Debug.Log(\textcolor{stringliteral}{"{}Finished Ready "{}});}
+\DoxyCodeLine{00057             SpawnObjects();}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059     \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SpawnObjects()}
+\DoxyCodeLine{00062     \{}
+\DoxyCodeLine{00063         Debug.Log(\textcolor{stringliteral}{"{}Spawn Human Props"{}});}
+\DoxyCodeLine{00064         \textcolor{keywordflow}{foreach} (var o \textcolor{keywordflow}{in} objsToSpawn)}
+\DoxyCodeLine{00065         \{}
+\DoxyCodeLine{00066             o.actualQuantity = Random.Range(o.minQuantity, o.maxQuantity);}
+\DoxyCodeLine{00067             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < o.actualQuantity; i++)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 Vector3 spawnPosOffset = Vector3.zero;}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{if} (o.isApplyRandomSpawnPosOffset)}
+\DoxyCodeLine{00071                     spawnPosOffset = transform.position + Random.onUnitSphere * o.radius;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 o.actualYRotation = Random.Range(o.minYRotation, o.maxYRotation);}
+\DoxyCodeLine{00074                 Quaternion spawnRotOffset = Quaternion.Euler(Vector3.up * o.actualYRotation);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076                 \textcolor{keywordflow}{if} (o.possibleSpawnPoints.Count <= 0)}
+\DoxyCodeLine{00077                     o.possibleSpawnPoints.Add(this.transform);}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079                 Transform targetTransform = o.possibleSpawnPoints[Random.Range(0, o.possibleSpawnPoints.Count)];}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} (o.possibleObjPrefabs.Length > 0)}
+\DoxyCodeLine{00081                 \{}
+\DoxyCodeLine{00082                     PhotonView targetObjPrefab = o.possibleObjPrefabs[Random.Range(0, o.possibleObjPrefabs.Length)];}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                      \textcolor{keywordflow}{if}(o.noRepeats == \textcolor{keyword}{true})}
+\DoxyCodeLine{00085                     \{ }
+\DoxyCodeLine{00086                         \textcolor{keywordflow}{if} (instantiatedPrefabsSource.Contains(targetObjPrefab.gameObject))}
+\DoxyCodeLine{00087                         \{}
+\DoxyCodeLine{00088                             i-\/-\/;}
+\DoxyCodeLine{00089                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00090                         \}}
+\DoxyCodeLine{00091                     \}}
+\DoxyCodeLine{00092                     instantiatedPrefabsSource.Add(targetObjPrefab.gameObject);}
+\DoxyCodeLine{00093                     var spawnedObj = PhotonNetwork.InstantiateRoomObject(targetObjPrefab.name, targetTransform.position + spawnPosOffset, targetTransform.rotation * spawnRotOffset);}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095                     \textcolor{keywordflow}{if} (spawnedObj != \textcolor{keyword}{null})}
+\DoxyCodeLine{00096                     \{}
+\DoxyCodeLine{00097                         instantiatedObjects.Add(spawnedObj.GetComponent<PhotonView>());}
+\DoxyCodeLine{00098                         \textcolor{comment}{//ObjectivesDataHolder objectiveHolderComp = spawnedObj.GetComponent<ObjectivesDataHolder>();}}
+\DoxyCodeLine{00099                         \textcolor{comment}{//if (objectiveHolderComp != null)}}
+\DoxyCodeLine{00100                         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00101                         \textcolor{comment}{//    objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00102                         \textcolor{comment}{//    objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00103                         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00104                     \}}
+\DoxyCodeLine{00105                 \}}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108     \}}
+\DoxyCodeLine{00109 \}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 [System.Serializable]}
+\DoxyCodeLine{00113 \textcolor{keyword}{public} \textcolor{keyword}{class }ObjInstantiationData}
+\DoxyCodeLine{00114 \{}
+\DoxyCodeLine{00115     \textcolor{comment}{//[Header("{}Randomly Select an Obj to spawn from this list"{})]}}
+\DoxyCodeLine{00116     \textcolor{comment}{//public PhotonView[] objs;}}
+\DoxyCodeLine{00117     [Header(\textcolor{stringliteral}{"{}Random PrefabsTo Select From"{}})]}
+\DoxyCodeLine{00118     \textcolor{keyword}{public} PhotonView[] possibleObjPrefabs;}
+\DoxyCodeLine{00119     [Header(\textcolor{stringliteral}{"{}Random Transform Spawn Points To Select From"{}})]}
+\DoxyCodeLine{00120     \textcolor{keyword}{public} List<Transform> possibleSpawnPoints;}
+\DoxyCodeLine{00121     [Header(\textcolor{stringliteral}{"{}Random Quantity To Spawn"{}})]}
+\DoxyCodeLine{00122     \textcolor{keyword}{public} \textcolor{keywordtype}{int} minQuantity = 0;}
+\DoxyCodeLine{00123     \textcolor{keyword}{public} \textcolor{keywordtype}{int} maxQuantity = 1;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125     [Tooltip(\textcolor{stringliteral}{"{}Do not spawn repeated Objects"{}})]}
+\DoxyCodeLine{00126     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} noRepeats;}
+\DoxyCodeLine{00127     [Header(\textcolor{stringliteral}{"{}Random Y Rotation"{}})]}
+\DoxyCodeLine{00128     \textcolor{keyword}{public} \textcolor{keywordtype}{float} minYRotation = 0;}
+\DoxyCodeLine{00129     \textcolor{keyword}{public} \textcolor{keywordtype}{float} maxYRotation = 0;}
+\DoxyCodeLine{00130     [Header(\textcolor{stringliteral}{"{}Random onUnitSphere Radius Offset"{}})]}
+\DoxyCodeLine{00131     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isApplyRandomSpawnPosOffset;}
+\DoxyCodeLine{00132     \textcolor{keyword}{public} \textcolor{keywordtype}{float} radius = 2f;}
+\DoxyCodeLine{00133     [Header(\textcolor{stringliteral}{"{}Actual Value after Random Range"{}})]}
+\DoxyCodeLine{00134     \textcolor{keyword}{public} \textcolor{keywordtype}{int} actualQuantity = 1; \textcolor{comment}{// Actual Value after Random Range}}
+\DoxyCodeLine{00135     \textcolor{keyword}{public} \textcolor{keywordtype}{float} actualYRotation;}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137     \textcolor{comment}{//public PhotonView[] localRefs;}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139     \textcolor{comment}{// Read: https://doc.photonengine.com/en-\/us/pun/current/gameplay/instantiation}}
+\DoxyCodeLine{00140     \textcolor{comment}{//public PhotonView GetRandomObj()}}
+\DoxyCodeLine{00141     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00142     \textcolor{comment}{//    return objs[Random.Range(0, objs.Length)];}}
+\DoxyCodeLine{00143     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00144 \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146 \textcolor{preprocessor}{\#region  Redundant}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 \textcolor{comment}{//public void SpawnObjectsAndSetupTeamHumanObjectives()}}
+\DoxyCodeLine{00149 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00150 \textcolor{comment}{//    Debug.Log("{}Spawn Human Props"{});}}
+\DoxyCodeLine{00151 \textcolor{comment}{//    foreach (var o in objsToSpawn)}}
+\DoxyCodeLine{00152 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00153 \textcolor{comment}{//        o.actualQuantity = Random.Range(o.minQuantity, o.maxQuantity);}}
+\DoxyCodeLine{00154 \textcolor{comment}{//        for (int i = 0; i < o.actualQuantity; i++)}}
+\DoxyCodeLine{00155 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00156 \textcolor{comment}{//            if (o.isUseRandomSpawnPosWithinRadius)}}
+\DoxyCodeLine{00157 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00158 \textcolor{comment}{//                var spawnPos = transform.position + Random.onUnitSphere * o.radius;}}
+\DoxyCodeLine{00159 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00160 \textcolor{comment}{//            var objToSpawn = o.GetRandomObj();}}
+\DoxyCodeLine{00161 \textcolor{comment}{//            var spawnedObj = PhotonNetwork.InstantiateRoomObject(objToSpawn.name, transform.position, transform.rotation);}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 \textcolor{comment}{//            if (spawnedObj != null)}}
+\DoxyCodeLine{00164 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{comment}{//                instantiatedObjects.Add(spawnedObj.GetComponent<PhotonView>());}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168 \textcolor{comment}{//                //ObjectivesDataHolder objectiveHolderComp = spawnedObj.GetComponent<ObjectivesDataHolder>();}}
+\DoxyCodeLine{00169 \textcolor{comment}{//                //if (objectiveHolderComp != null)}}
+\DoxyCodeLine{00170 \textcolor{comment}{//                //\{}}
+\DoxyCodeLine{00171 \textcolor{comment}{//                //    objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00172 \textcolor{comment}{//                //    objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00173 \textcolor{comment}{//                //\}}}
+\DoxyCodeLine{00174 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00175 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00176 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00177 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00178 \textcolor{comment}{//public void SpawnObjectsAndSetupTeamCatObjectives()}}
+\DoxyCodeLine{00179 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181 \textcolor{comment}{//    Debug.Log("{}Spawn Cat Props"{});}}
+\DoxyCodeLine{00182 \textcolor{comment}{//    foreach (var o in cat\_objsToSpawn)}}
+\DoxyCodeLine{00183 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00184 \textcolor{comment}{//        o.actualQuantity = Random.Range(o.minQuantity, o.maxQuantity);}}
+\DoxyCodeLine{00185 \textcolor{comment}{//        for (int i = 0; i < o.actualQuantity; i++)}}
+\DoxyCodeLine{00186 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00187 \textcolor{comment}{//            if (o.isUseRandomSpawnPosWithinRadius)}}
+\DoxyCodeLine{00188 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00189 \textcolor{comment}{//                var spawnPos = transform.position + Random.onUnitSphere * o.radius;}}
+\DoxyCodeLine{00190 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00191 \textcolor{comment}{//            var objToSpawn = o.GetRandomObj();}}
+\DoxyCodeLine{00192 \textcolor{comment}{//            var spawnedObj = PhotonNetwork.InstantiateRoomObject(objToSpawn.name, transform.position, transform.rotation);}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194 \textcolor{comment}{//            if (spawnedObj != null)}}
+\DoxyCodeLine{00195 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197 \textcolor{comment}{//                instantiatedObjects.Add(spawnedObj.GetComponent<PhotonView>());}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 \textcolor{comment}{//                //ObjectivesDataHolder objectiveHolderComp = spawnedObj.GetComponent<ObjectivesDataHolder>();}}
+\DoxyCodeLine{00200 \textcolor{comment}{//                //if (objectiveHolderComp != null)}}
+\DoxyCodeLine{00201 \textcolor{comment}{//                //\{}}
+\DoxyCodeLine{00202 \textcolor{comment}{//                //    objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00203 \textcolor{comment}{//                //    objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);}}
+\DoxyCodeLine{00204 \textcolor{comment}{//                //\}}}
+\DoxyCodeLine{00205 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00206 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00207 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00208 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00209 \textcolor{comment}{//public  void OnEnable()}}
+\DoxyCodeLine{00210 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00211 \textcolor{comment}{//    TryGetComponent(out PV);}}
+\DoxyCodeLine{00212 \textcolor{comment}{//    StartCoroutine(WaitForPlayerJoin());}}
+\DoxyCodeLine{00213 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215 \textcolor{comment}{//IEnumerator WaitForPlayerJoin()}}
+\DoxyCodeLine{00216 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00217 \textcolor{comment}{//    yield return new WaitUntil(() => PhotonNetwork.IsConnectedAndReady);}}
+\DoxyCodeLine{00218 \textcolor{comment}{//    if (PhotonNetwork.IsMasterClient)}}
+\DoxyCodeLine{00219 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00220 \textcolor{comment}{//        foreach (var o in objsToInstantiate)}}
+\DoxyCodeLine{00221 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00222 \textcolor{comment}{//            o.InstantiateRandomObj(transform.position, transform.rotation);}}
+\DoxyCodeLine{00223 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00224 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00225 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00226 \textcolor{preprocessor}{\#endregion Redundant}}
+
+\end{DoxyCode}

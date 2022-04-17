@@ -1,0 +1,512 @@
+\doxysection{Stylized\+Surface\+Editor.\+cs}
+\label{_stylized_surface_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Shaders/Editor/StylizedSurfaceEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Shaders/Editor/StylizedSurfaceEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Text.RegularExpressions;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} FlatKit.StylizedSurface;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{public} \textcolor{keyword}{enum} SurfaceType \{}
+\DoxyCodeLine{00011     Opaque,}
+\DoxyCodeLine{00012     Transparent}
+\DoxyCodeLine{00013 \}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{public} \textcolor{keyword}{enum} BlendMode \{}
+\DoxyCodeLine{00016     Alpha, \textcolor{comment}{// Old school alpha-\/blending mode, fresnel does not affect amount of transparency}}
+\DoxyCodeLine{00017     Premultiply, \textcolor{comment}{// Physically plausible transparency mode, implemented as alpha pre-\/multiply}}
+\DoxyCodeLine{00018     Additive,}
+\DoxyCodeLine{00019     Multiply}
+\DoxyCodeLine{00020 \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{keyword}{public} \textcolor{keyword}{enum} RenderFace \{}
+\DoxyCodeLine{00023     Front = 2,}
+\DoxyCodeLine{00024     Back = 1,}
+\DoxyCodeLine{00025     Both = 0}
+\DoxyCodeLine{00026 \}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028 \textcolor{keyword}{public} \textcolor{keyword}{class }StylizedSurfaceEditor : BaseShaderGUI \{}
+\DoxyCodeLine{00029     \textcolor{keyword}{private} Material \_target;}
+\DoxyCodeLine{00030     \textcolor{keyword}{private} MaterialProperty[] \_properties;}
+\DoxyCodeLine{00031     \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_celShadingNumSteps = 0;}
+\DoxyCodeLine{00032     \textcolor{keyword}{private} AnimationCurve \_gradient = \textcolor{keyword}{new} AnimationCurve(\textcolor{keyword}{new} Keyframe(0, 0), \textcolor{keyword}{new} Keyframe(1, 1));}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     \textcolor{keyword}{private} MaterialProperty QueueOffsetProp \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Dictionary<string, bool> FoldoutStates =}
+\DoxyCodeLine{00037         \textcolor{keyword}{new} Dictionary<string, bool> \{\{\textcolor{stringliteral}{"{}Rendering options"{}}, \textcolor{keyword}{false}\}\};}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Color HashColor = \textcolor{keyword}{new} Color(0.85023f, 0.85034f, 0.85045f, 0.85056f);}
+\DoxyCodeLine{00040     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} ColorPropertyName = Shader.PropertyToID(\textcolor{stringliteral}{"{}\_BaseColor"{}});}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042     \textcolor{keywordtype}{void} DrawStandard(MaterialProperty property) \{}
+\DoxyCodeLine{00043         \textcolor{keywordtype}{string} displayName = \textcolor{keyword}{property}.displayName;}
+\DoxyCodeLine{00044         \textcolor{comment}{// Remove everything in square brackets.}}
+\DoxyCodeLine{00045         displayName = Regex.Replace(displayName, \textcolor{stringliteral}{@"{} ?\(\backslash\)[.*?\(\backslash\)]"{}}, \textcolor{keywordtype}{string}.Empty);}
+\DoxyCodeLine{00046         Tooltips.map.TryGetValue(displayName, out \textcolor{keywordtype}{string} tooltip);}
+\DoxyCodeLine{00047         var guiContent = \textcolor{keyword}{new} GUIContent(displayName, tooltip);}
+\DoxyCodeLine{00048         \textcolor{keywordflow}{if} (property.type == MaterialProperty.PropType.Texture) \{}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if} (!property.name.Contains(\textcolor{stringliteral}{"{}\_BaseMap"{}})) \{}
+\DoxyCodeLine{00050                 EditorGUILayout.Space(15);}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             materialEditor.TexturePropertySingleLine(guiContent, property);}
+\DoxyCodeLine{00054         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00055             materialEditor.ShaderProperty(property, guiContent);}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057     \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059     MaterialProperty FindProperty(\textcolor{keywordtype}{string} name) \{}
+\DoxyCodeLine{00060         \textcolor{keywordflow}{return} FindProperty(name, \_properties);}
+\DoxyCodeLine{00061     \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063     \textcolor{keywordtype}{bool} HasProperty(\textcolor{keywordtype}{string} name) \{}
+\DoxyCodeLine{00064         \textcolor{keywordflow}{return} \_target != \textcolor{keyword}{null} \&\& \_target.HasProperty(name);}
+\DoxyCodeLine{00065     \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 \textcolor{preprocessor}{\#if UNITY\_2021\_2\_OR\_NEWER}}
+\DoxyCodeLine{00068     [Obsolete(\textcolor{stringliteral}{"{}MaterialChanged has been renamed ValidateMaterial"{}}, \textcolor{keyword}{false})]}
+\DoxyCodeLine{00069 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00070     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} MaterialChanged(Material material) \{ \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties) \{}
+\DoxyCodeLine{00073         this.materialEditor = materialEditor;}
+\DoxyCodeLine{00074         \_properties = properties;}
+\DoxyCodeLine{00075         \_target = materialEditor.target as Material;}
+\DoxyCodeLine{00076         Debug.Assert(\_target != \textcolor{keyword}{null}, \textcolor{stringliteral}{"{}\_target != null"{}});}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keywordflow}{if} (\_target.shader.name.Equals(\textcolor{stringliteral}{"{}FlatKit/Stylized Surface With Outline"{}})) \{}
+\DoxyCodeLine{00079             EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00080                 \textcolor{stringliteral}{"{}'Stylized Surface with Outline' shader has been deprecated. Please use the outline section in the 'Stylized Surface' shader."{}},}
+\DoxyCodeLine{00081                 MessageType.Warning);}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{keywordtype}{int} originalIntentLevel = EditorGUI.indentLevel;}
+\DoxyCodeLine{00085         \textcolor{keywordtype}{int} foldoutRemainingItems = 0;}
+\DoxyCodeLine{00086         \textcolor{keywordtype}{bool} latestFoldoutState = \textcolor{keyword}{false};}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keywordflow}{foreach} (MaterialProperty property \textcolor{keywordflow}{in} properties) \{}
+\DoxyCodeLine{00089             \textcolor{keywordtype}{string} displayName = \textcolor{keyword}{property}.displayName;}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (displayName.Contains(\textcolor{stringliteral}{"{}["{}}) \&\& !displayName.Contains(\textcolor{stringliteral}{"{}FOLDOUT"{}})) \{}
+\DoxyCodeLine{00092                 EditorGUI.indentLevel += 1;}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordtype}{bool} skipProperty = \textcolor{keyword}{false};}
+\DoxyCodeLine{00096             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[\_CELPRIMARYMODE\_SINGLE]"{}}) \&\&}
+\DoxyCodeLine{00097                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_CELPRIMARYMODE\_SINGLE"{}});}
+\DoxyCodeLine{00098             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[\_CELPRIMARYMODE\_STEPS]"{}}) \&\&}
+\DoxyCodeLine{00099                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_CELPRIMARYMODE\_STEPS"{}});}
+\DoxyCodeLine{00100             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[\_CELPRIMARYMODE\_CURVE]"{}}) \&\&}
+\DoxyCodeLine{00101                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_CELPRIMARYMODE\_CURVE"{}});}
+\DoxyCodeLine{00102             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_CEL\_EXTRA\_ON]"{}}) \&\& !\textcolor{keyword}{property}.name.Equals(\textcolor{stringliteral}{"{}\_CelExtraEnabled"{}}) \&\&}
+\DoxyCodeLine{00103                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_CEL\_EXTRA\_ON"{}});}
+\DoxyCodeLine{00104             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_SPECULAR\_ON]"{}}) \&\& !\textcolor{keyword}{property}.name.Equals(\textcolor{stringliteral}{"{}\_SpecularEnabled"{}}) \&\&}
+\DoxyCodeLine{00105                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_SPECULAR\_ON"{}});}
+\DoxyCodeLine{00106             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_RIM\_ON]"{}}) \&\& !\textcolor{keyword}{property}.name.Equals(\textcolor{stringliteral}{"{}\_RimEnabled"{}}) \&\&}
+\DoxyCodeLine{00107                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_RIM\_ON"{}});}
+\DoxyCodeLine{00108             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_GRADIENT\_ON]"{}}) \&\& !\textcolor{keyword}{property}.name.Equals(\textcolor{stringliteral}{"{}\_GradientEnabled"{}}) \&\&}
+\DoxyCodeLine{00109                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_GRADIENT\_ON"{}});}
+\DoxyCodeLine{00110             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[\_UNITYSHADOWMODE\_MULTIPLY]"{}}) \&\&}
+\DoxyCodeLine{00111                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_UNITYSHADOWMODE\_MULTIPLY"{}});}
+\DoxyCodeLine{00112             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[\_UNITYSHADOWMODE\_COLOR]"{}}) \&\&}
+\DoxyCodeLine{00113                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_UNITYSHADOWMODE\_COLOR"{}});}
+\DoxyCodeLine{00114             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_ENABLE\_LIGHTMAP\_DIR]"{}}) \&\&}
+\DoxyCodeLine{00115                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_ENABLE\_LIGHTMAP\_DIR"{}});}
+\DoxyCodeLine{00116             skipProperty |= displayName.Contains(\textcolor{stringliteral}{"{}[DR\_OUTLINE\_ON]"{}}) \&\&}
+\DoxyCodeLine{00117                             !\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_OUTLINE\_ON"{}});}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_ENABLE\_LIGHTMAP\_DIR"{}}) \&\&}
+\DoxyCodeLine{00120                 displayName.Contains(\textcolor{stringliteral}{"{}Override light direction"{}})) \{}
+\DoxyCodeLine{00121                 var dirPitch = \_target.GetFloat(\textcolor{stringliteral}{"{}\_LightmapDirectionPitch"{}});}
+\DoxyCodeLine{00122                 var dirYaw = \_target.GetFloat(\textcolor{stringliteral}{"{}\_LightmapDirectionYaw"{}});}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 var dirPitchRad = dirPitch * Mathf.Deg2Rad;}
+\DoxyCodeLine{00125                 var dirYawRad = dirYaw * Mathf.Deg2Rad;}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127                 var direction = \textcolor{keyword}{new} Vector4(Mathf.Sin(dirPitchRad) * Mathf.Sin(dirYawRad), Mathf.Cos(dirPitchRad),}
+\DoxyCodeLine{00128                     Mathf.Sin(dirPitchRad) * Mathf.Cos(dirYawRad), 0.0f);}
+\DoxyCodeLine{00129                 \_target.SetVector(\textcolor{stringliteral}{"{}\_LightmapDirection"{}}, direction);}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (displayName.Contains(\textcolor{stringliteral}{"{}FOLDOUT"{}})) \{}
+\DoxyCodeLine{00133                 \textcolor{keywordtype}{string} foldoutName = displayName.Split(\textcolor{charliteral}{'('}, \textcolor{charliteral}{')'})[1];}
+\DoxyCodeLine{00134                 \textcolor{keywordtype}{string} foldoutItemCount = displayName.Split(\textcolor{charliteral}{'\{'}, \textcolor{charliteral}{'\}'})[1];}
+\DoxyCodeLine{00135                 foldoutRemainingItems = Convert.ToInt32(foldoutItemCount);}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{if} (!FoldoutStates.ContainsKey(property.name)) \{}
+\DoxyCodeLine{00137                     FoldoutStates.Add(property.name, \textcolor{keyword}{false});}
+\DoxyCodeLine{00138                 \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 EditorGUILayout.Space();}
+\DoxyCodeLine{00141                 FoldoutStates[\textcolor{keyword}{property}.name] =}
+\DoxyCodeLine{00142                     EditorGUILayout.Foldout(FoldoutStates[property.name], foldoutName);}
+\DoxyCodeLine{00143                 latestFoldoutState = FoldoutStates[\textcolor{keyword}{property}.name];}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{keywordflow}{if} (foldoutRemainingItems > 0) \{}
+\DoxyCodeLine{00147                 skipProperty = skipProperty || !latestFoldoutState;}
+\DoxyCodeLine{00148                 EditorGUI.indentLevel += 1;}
+\DoxyCodeLine{00149                 -\/-\/foldoutRemainingItems;}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_CELPRIMARYMODE\_STEPS"{}}) \&\& displayName.Contains(\textcolor{stringliteral}{"{}[LAST\_PROP\_STEPS]"{}})) \{}
+\DoxyCodeLine{00153                 EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00154                     \textcolor{stringliteral}{"{}This mode creates a step texture that control the light/shadow transition. To use:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00155                     \textcolor{stringliteral}{"{}1. Set the number of steps (e.g. 3 means three steps between lit and shaded regions), \(\backslash\)n"{}} +}
+\DoxyCodeLine{00156                     \textcolor{stringliteral}{"{}2. Save the steps as a texture -\/ 'Save Ramp Texture' button"{}},}
+\DoxyCodeLine{00157                     MessageType.Info);}
+\DoxyCodeLine{00158                 \textcolor{keywordtype}{int} currentNumSteps = \_target.GetInt(\textcolor{stringliteral}{"{}\_CelNumSteps"{}});}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{if} (currentNumSteps != \_celShadingNumSteps) \{}
+\DoxyCodeLine{00160                     \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Save Ramp Texture"{}})) \{}
+\DoxyCodeLine{00161                         \_celShadingNumSteps = currentNumSteps;}
+\DoxyCodeLine{00162                         PromptTextureSave(materialEditor, GenerateStepTexture, \textcolor{stringliteral}{"{}\_CelStepTexture"{}}, FilterMode.Point);}
+\DoxyCodeLine{00163                     \}}
+\DoxyCodeLine{00164                 \}}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (\_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_CELPRIMARYMODE\_CURVE"{}}) \&\& displayName.Contains(\textcolor{stringliteral}{"{}[LAST\_PROP\_CURVE]"{}})) \{}
+\DoxyCodeLine{00168                 EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00169                     \textcolor{stringliteral}{"{}This mode uses arbitrary curves to control the light/shadow transition. How to use:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00170                     \textcolor{stringliteral}{"{}1. Set shading curve (generally from 0.0 to 1.0)\(\backslash\)n"{}} +}
+\DoxyCodeLine{00171                     \textcolor{stringliteral}{"{}2. [Optional] Save the curve preset\(\backslash\)n"{}} +}
+\DoxyCodeLine{00172                     \textcolor{stringliteral}{"{}3. Save the curve as a texture."{}},}
+\DoxyCodeLine{00173                     MessageType.Info);}
+\DoxyCodeLine{00174                 \_gradient = EditorGUILayout.CurveField(\textcolor{stringliteral}{"{}Shading curve"{}}, \_gradient);}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Save Ramp Texture"{}})) \{}
+\DoxyCodeLine{00177                     PromptTextureSave(materialEditor, GenerateCurveTexture, \textcolor{stringliteral}{"{}\_CelCurveTexture"{}},}
+\DoxyCodeLine{00178                         FilterMode.Trilinear);}
+\DoxyCodeLine{00179                 \}}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (!skipProperty \&\&}
+\DoxyCodeLine{00183                 property.type == MaterialProperty.PropType.Color \&\&}
+\DoxyCodeLine{00184                 property.colorValue == HashColor) \{}
+\DoxyCodeLine{00185                 \textcolor{keyword}{property}.colorValue = \_target.GetColor(ColorPropertyName);}
+\DoxyCodeLine{00186             \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (!skipProperty \&\& property.name.Contains(\textcolor{stringliteral}{"{}\_EmissionMap"{}})) \{}
+\DoxyCodeLine{00189                 \textcolor{keywordtype}{bool} emission = materialEditor.EmissionEnabledProperty();}
+\DoxyCodeLine{00190                 \textcolor{keywordflow}{if} (emission) \{}
+\DoxyCodeLine{00191                     \_target.EnableKeyword(\textcolor{stringliteral}{"{}\_EMISSION"{}});}
+\DoxyCodeLine{00192                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00193                     \_target.DisableKeyword(\textcolor{stringliteral}{"{}\_EMISSION"{}});}
+\DoxyCodeLine{00194                 \}}
+\DoxyCodeLine{00195             \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197             \textcolor{keywordtype}{bool} hideInInspector = (\textcolor{keyword}{property}.flags \& MaterialProperty.PropFlags.HideInInspector) != 0;}
+\DoxyCodeLine{00198             \textcolor{keywordflow}{if} (!hideInInspector \&\& !skipProperty) \{}
+\DoxyCodeLine{00199                 DrawStandard(property);}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (!skipProperty \&\& property.name.Contains(\textcolor{stringliteral}{"{}\_EmissionColor"{}})) \{}
+\DoxyCodeLine{00203                 EditorGUILayout.Space(15);}
+\DoxyCodeLine{00204                 DrawTileOffset(materialEditor, FindProperty(\textcolor{stringliteral}{"{}\_BaseMap"{}}));}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207             EditorGUI.indentLevel = originalIntentLevel;}
+\DoxyCodeLine{00208         \}}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         EditorGUILayout.Space();}
+\DoxyCodeLine{00211         FoldoutStates[\textcolor{stringliteral}{"{}Rendering options"{}}] =}
+\DoxyCodeLine{00212             EditorGUILayout.Foldout(FoldoutStates[\textcolor{stringliteral}{"{}Rendering options"{}}], \textcolor{stringliteral}{"{}Rendering options"{}});}
+\DoxyCodeLine{00213         \textcolor{keywordflow}{if} (FoldoutStates[\textcolor{stringliteral}{"{}Rendering options"{}}]) \{}
+\DoxyCodeLine{00214             EditorGUI.indentLevel += 1;}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             HandleUrpSettings(\_target, materialEditor);}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             QueueOffsetProp = FindProperty(\textcolor{stringliteral}{"{}\_QueueOffset"{}}, \_properties, \textcolor{keyword}{false});}
+\DoxyCodeLine{00219             DrawQueueOffsetField();}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             materialEditor.EnableInstancingField();}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224         \textcolor{comment}{// Toggle the outline pass.}}
+\DoxyCodeLine{00225         \_target.SetShaderPassEnabled(\textcolor{stringliteral}{"{}SRPDefaultUnlit"{}}, \_target.IsKeywordEnabled(\textcolor{stringliteral}{"{}DR\_OUTLINE\_ON"{}}));}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227         \textcolor{comment}{/*}}
+\DoxyCodeLine{00228 \textcolor{comment}{        if (HasProperty("{}\_MainTex"{})) \{}}
+\DoxyCodeLine{00229 \textcolor{comment}{            TransferToBaseMap();}}
+\DoxyCodeLine{00230 \textcolor{comment}{        \}}}
+\DoxyCodeLine{00231 \textcolor{comment}{        //*/}}
+\DoxyCodeLine{00232     \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234     \textcolor{comment}{// Adapted from BaseShaderGUI.cs.}}
+\DoxyCodeLine{00235     \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleUrpSettings(Material material, MaterialEditor materialEditor) \{}
+\DoxyCodeLine{00236         \textcolor{keywordtype}{bool} alphaClip = \textcolor{keyword}{false};}
+\DoxyCodeLine{00237         \textcolor{keywordflow}{if} (material.HasProperty(\textcolor{stringliteral}{"{}\_AlphaClip"{}})) \{}
+\DoxyCodeLine{00238             alphaClip = material.GetFloat(\textcolor{stringliteral}{"{}\_AlphaClip"{}}) >= 0.5;}
+\DoxyCodeLine{00239         \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241         \textcolor{keywordflow}{if} (alphaClip) \{}
+\DoxyCodeLine{00242             material.EnableKeyword(\textcolor{stringliteral}{"{}\_ALPHATEST\_ON"{}});}
+\DoxyCodeLine{00243         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00244             material.DisableKeyword(\textcolor{stringliteral}{"{}\_ALPHATEST\_ON"{}});}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keywordflow}{if} (HasProperty(\textcolor{stringliteral}{"{}\_Surface"{}})) \{}
+\DoxyCodeLine{00248             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00249             var surfaceProp = FindProperty(\textcolor{stringliteral}{"{}\_Surface"{}});}
+\DoxyCodeLine{00250             EditorGUI.showMixedValue = surfaceProp.hasMixedValue;}
+\DoxyCodeLine{00251             var surfaceType = (SurfaceType) surfaceProp.floatValue;}
+\DoxyCodeLine{00252             EditorGUILayout.Separator();}
+\DoxyCodeLine{00253             surfaceType = (SurfaceType) EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Surface Type"{}}, surfaceType);}
+\DoxyCodeLine{00254             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck()) \{}
+\DoxyCodeLine{00255                 materialEditor.RegisterPropertyChangeUndo(\textcolor{stringliteral}{"{}Surface Type"{}});}
+\DoxyCodeLine{00256                 surfaceProp.floatValue = (float) surfaceType;}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{keywordflow}{if} (surfaceType == SurfaceType.Opaque) \{}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{if} (alphaClip) \{}
+\DoxyCodeLine{00261                     material.renderQueue = (int) UnityEngine.Rendering.RenderQueue.AlphaTest;}
+\DoxyCodeLine{00262                     material.SetOverrideTag(\textcolor{stringliteral}{"{}RenderType"{}}, \textcolor{stringliteral}{"{}TransparentCutout"{}});}
+\DoxyCodeLine{00263                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00264                     material.renderQueue = (int) UnityEngine.Rendering.RenderQueue.Geometry;}
+\DoxyCodeLine{00265                     material.SetOverrideTag(\textcolor{stringliteral}{"{}RenderType"{}}, \textcolor{stringliteral}{"{}Opaque"{}});}
+\DoxyCodeLine{00266                 \}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268                 material.renderQueue +=}
+\DoxyCodeLine{00269                     material.HasProperty(\textcolor{stringliteral}{"{}\_QueueOffset"{}}) ? (int) material.GetFloat(\textcolor{stringliteral}{"{}\_QueueOffset"{}}) : 0;}
+\DoxyCodeLine{00270                 material.SetInt(\textcolor{stringliteral}{"{}\_SrcBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.One);}
+\DoxyCodeLine{00271                 material.SetInt(\textcolor{stringliteral}{"{}\_DstBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.Zero);}
+\DoxyCodeLine{00272                 material.SetInt(\textcolor{stringliteral}{"{}\_ZWrite"{}}, 1);}
+\DoxyCodeLine{00273                 material.DisableKeyword(\textcolor{stringliteral}{"{}\_ALPHAPREMULTIPLY\_ON"{}});}
+\DoxyCodeLine{00274                 material.SetShaderPassEnabled(\textcolor{stringliteral}{"{}ShadowCaster"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00275             \} \textcolor{keywordflow}{else} \textcolor{comment}{// Transparent}}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00277                 BlendMode blendMode = (BlendMode) material.GetFloat(\textcolor{stringliteral}{"{}\_Blend"{}});}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279                 \textcolor{comment}{// Specific Transparent Mode Settings}}
+\DoxyCodeLine{00280                 \textcolor{keywordflow}{switch} (blendMode) \{}
+\DoxyCodeLine{00281                     \textcolor{keywordflow}{case} BlendMode.Alpha:}
+\DoxyCodeLine{00282                         material.SetInt(\textcolor{stringliteral}{"{}\_SrcBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.SrcAlpha);}
+\DoxyCodeLine{00283                         material.SetInt(\textcolor{stringliteral}{"{}\_DstBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);}
+\DoxyCodeLine{00284                         material.DisableKeyword(\textcolor{stringliteral}{"{}\_ALPHAPREMULTIPLY\_ON"{}});}
+\DoxyCodeLine{00285                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00286                     \textcolor{keywordflow}{case} BlendMode.Premultiply:}
+\DoxyCodeLine{00287                         material.SetInt(\textcolor{stringliteral}{"{}\_SrcBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.One);}
+\DoxyCodeLine{00288                         material.SetInt(\textcolor{stringliteral}{"{}\_DstBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);}
+\DoxyCodeLine{00289                         material.EnableKeyword(\textcolor{stringliteral}{"{}\_ALPHAPREMULTIPLY\_ON"{}});}
+\DoxyCodeLine{00290                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00291                     \textcolor{keywordflow}{case} BlendMode.Additive:}
+\DoxyCodeLine{00292                         material.SetInt(\textcolor{stringliteral}{"{}\_SrcBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.SrcAlpha);}
+\DoxyCodeLine{00293                         material.SetInt(\textcolor{stringliteral}{"{}\_DstBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.One);}
+\DoxyCodeLine{00294                         material.DisableKeyword(\textcolor{stringliteral}{"{}\_ALPHAPREMULTIPLY\_ON"{}});}
+\DoxyCodeLine{00295                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00296                     \textcolor{keywordflow}{case} BlendMode.Multiply:}
+\DoxyCodeLine{00297                         material.SetInt(\textcolor{stringliteral}{"{}\_SrcBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.DstColor);}
+\DoxyCodeLine{00298                         material.SetInt(\textcolor{stringliteral}{"{}\_DstBlend"{}}, (\textcolor{keywordtype}{int}) UnityEngine.Rendering.BlendMode.Zero);}
+\DoxyCodeLine{00299                         material.DisableKeyword(\textcolor{stringliteral}{"{}\_ALPHAPREMULTIPLY\_ON"{}});}
+\DoxyCodeLine{00300                         material.EnableKeyword(\textcolor{stringliteral}{"{}\_ALPHAMODULATE\_ON"{}});}
+\DoxyCodeLine{00301                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00302                 \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304                 \textcolor{comment}{// General Transparent Material Settings}}
+\DoxyCodeLine{00305                 material.SetOverrideTag(\textcolor{stringliteral}{"{}RenderType"{}}, \textcolor{stringliteral}{"{}Transparent"{}});}
+\DoxyCodeLine{00306                 material.SetInt(\textcolor{stringliteral}{"{}\_ZWrite"{}}, 0);}
+\DoxyCodeLine{00307                 material.renderQueue = (int) UnityEngine.Rendering.RenderQueue.Transparent;}
+\DoxyCodeLine{00308                 material.renderQueue +=}
+\DoxyCodeLine{00309                     material.HasProperty(\textcolor{stringliteral}{"{}\_QueueOffset"{}}) ? (int) material.GetFloat(\textcolor{stringliteral}{"{}\_QueueOffset"{}}) : 0;}
+\DoxyCodeLine{00310                 material.SetShaderPassEnabled(\textcolor{stringliteral}{"{}ShadowCaster"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00311             \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             \textcolor{comment}{// DR: draw popup.}}
+\DoxyCodeLine{00314             \textcolor{keywordflow}{if} (surfaceType == SurfaceType.Transparent \&\& HasProperty(\textcolor{stringliteral}{"{}\_Blend"{}})) \{}
+\DoxyCodeLine{00315                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00316                 var blendModeProp = FindProperty(\textcolor{stringliteral}{"{}\_Blend"{}});}
+\DoxyCodeLine{00317                 EditorGUI.showMixedValue = blendModeProp.hasMixedValue;}
+\DoxyCodeLine{00318                 var blendMode = (BlendMode) blendModeProp.floatValue;}
+\DoxyCodeLine{00319                 blendMode = (BlendMode) EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Blend Mode"{}}, blendMode);}
+\DoxyCodeLine{00320                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck()) \{}
+\DoxyCodeLine{00321                     materialEditor.RegisterPropertyChangeUndo(\textcolor{stringliteral}{"{}Blend Mode"{}});}
+\DoxyCodeLine{00322                     blendModeProp.floatValue = (float) blendMode;}
+\DoxyCodeLine{00323                 \}}
+\DoxyCodeLine{00324             \}}
+\DoxyCodeLine{00325         \}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327         \textcolor{comment}{// DR: draw popup.}}
+\DoxyCodeLine{00328         \textcolor{keywordflow}{if} (HasProperty(\textcolor{stringliteral}{"{}\_Cull"{}})) \{}
+\DoxyCodeLine{00329             EditorGUILayout.Separator();}
+\DoxyCodeLine{00330             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00331             var cullingProp = FindProperty(\textcolor{stringliteral}{"{}\_Cull"{}});}
+\DoxyCodeLine{00332             EditorGUI.showMixedValue = cullingProp.hasMixedValue;}
+\DoxyCodeLine{00333             var culling = (RenderFace) cullingProp.floatValue;}
+\DoxyCodeLine{00334             culling = (RenderFace) EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Render Faces"{}}, culling);}
+\DoxyCodeLine{00335             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck()) \{}
+\DoxyCodeLine{00336                 materialEditor.RegisterPropertyChangeUndo(\textcolor{stringliteral}{"{}Render Faces"{}});}
+\DoxyCodeLine{00337                 cullingProp.floatValue = (float) culling;}
+\DoxyCodeLine{00338                 material.doubleSidedGI = (RenderFace) cullingProp.floatValue != RenderFace.Front;}
+\DoxyCodeLine{00339             \}}
+\DoxyCodeLine{00340         \}}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342         \textcolor{keywordflow}{if} (HasProperty(\textcolor{stringliteral}{"{}\_AlphaClip"{}})) \{}
+\DoxyCodeLine{00343             EditorGUILayout.Separator();}
+\DoxyCodeLine{00344             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00345             var alphaClipProp = FindProperty(\textcolor{stringliteral}{"{}\_AlphaClip"{}});}
+\DoxyCodeLine{00346             EditorGUI.showMixedValue = alphaClipProp.hasMixedValue;}
+\DoxyCodeLine{00347             var alphaClipEnabled = EditorGUILayout.Toggle(\textcolor{stringliteral}{"{}Alpha Clipping"{}}, alphaClipProp.floatValue == 1);}
+\DoxyCodeLine{00348             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00349                 alphaClipProp.floatValue = alphaClipEnabled ? 1 : 0;}
+\DoxyCodeLine{00350             EditorGUI.showMixedValue = \textcolor{keyword}{false};}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352             \textcolor{keywordflow}{if} (alphaClipProp.floatValue == 1 \&\& HasProperty(\textcolor{stringliteral}{"{}\_Cutoff"{}})) \{}
+\DoxyCodeLine{00353                 var alphaCutoffProp = FindProperty(\textcolor{stringliteral}{"{}\_Cutoff"{}});}
+\DoxyCodeLine{00354                 materialEditor.ShaderProperty(alphaCutoffProp, \textcolor{stringliteral}{"{}Threshold"{}}, 1);}
+\DoxyCodeLine{00355             \}}
+\DoxyCodeLine{00356         \}}
+\DoxyCodeLine{00357     \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359     \textcolor{keyword}{private} \textcolor{keywordtype}{void} PromptTextureSave(MaterialEditor materialEditor, Func<Texture2D> generate, \textcolor{keywordtype}{string} propertyName,}
+\DoxyCodeLine{00360         FilterMode filterMode) \{}
+\DoxyCodeLine{00361         var rampTexture = generate();}
+\DoxyCodeLine{00362         var pngNameNoExtension = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\{1\}-\/ramp"{}}, materialEditor.target.name, propertyName);}
+\DoxyCodeLine{00363         var fullPath =}
+\DoxyCodeLine{00364             EditorUtility.SaveFilePanel(\textcolor{stringliteral}{"{}Save Ramp Texture"{}}, \textcolor{stringliteral}{"{}Assets"{}}, pngNameNoExtension, \textcolor{stringliteral}{"{}png"{}});}
+\DoxyCodeLine{00365         \textcolor{keywordflow}{if} (fullPath.Length > 0) \{}
+\DoxyCodeLine{00366             SaveTextureAsPng(rampTexture, fullPath, filterMode);}
+\DoxyCodeLine{00367             var loadedTexture = LoadTexture(fullPath);}
+\DoxyCodeLine{00368             \textcolor{keywordflow}{if} (loadedTexture != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00369                 \_target.SetTexture(propertyName, loadedTexture);}
+\DoxyCodeLine{00370             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00371                 Debug.LogWarning(\textcolor{stringliteral}{"{}Could not save the texture. Make sure the destination is in the Assets folder."{}});}
+\DoxyCodeLine{00372             \}}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374     \}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376     \textcolor{keyword}{private} Texture2D GenerateStepTexture() \{}
+\DoxyCodeLine{00377         \textcolor{keywordtype}{int} numSteps = \_celShadingNumSteps;}
+\DoxyCodeLine{00378         var t2d = \textcolor{keyword}{new} Texture2D(numSteps + 1, \textcolor{comment}{/*height=*/}1, TextureFormat.R8, \textcolor{comment}{/*mipChain=*/}\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{00379             filterMode = FilterMode.Point,}
+\DoxyCodeLine{00380             wrapMode = TextureWrapMode.Clamp}
+\DoxyCodeLine{00381         \};}
+\DoxyCodeLine{00382         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < numSteps + 1; i++) \{}
+\DoxyCodeLine{00383             var color = Color.white * i / numSteps;}
+\DoxyCodeLine{00384             t2d.SetPixel(i, 0, color);}
+\DoxyCodeLine{00385         \}}
+\DoxyCodeLine{00386 }
+\DoxyCodeLine{00387         t2d.Apply();}
+\DoxyCodeLine{00388         \textcolor{keywordflow}{return} t2d;}
+\DoxyCodeLine{00389     \}}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391     \textcolor{keyword}{private} Texture2D GenerateCurveTexture() \{}
+\DoxyCodeLine{00392         \textcolor{keyword}{const} \textcolor{keywordtype}{int} width = 256;}
+\DoxyCodeLine{00393         \textcolor{keyword}{const} \textcolor{keywordtype}{int} height = 1;}
+\DoxyCodeLine{00394         var lut = \textcolor{keyword}{new} Texture2D(width, height, TextureFormat.R8, \textcolor{comment}{/*mipChain=*/}\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{00395             alphaIsTransparency = \textcolor{keyword}{false},}
+\DoxyCodeLine{00396             wrapMode = TextureWrapMode.Clamp,}
+\DoxyCodeLine{00397             hideFlags = HideFlags.HideAndDontSave,}
+\DoxyCodeLine{00398             filterMode = FilterMode.Trilinear}
+\DoxyCodeLine{00399         \};}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} x = 0; x < width; x++) \{}
+\DoxyCodeLine{00402             \textcolor{keywordtype}{float} value = \_gradient.Evaluate(x / width);}
+\DoxyCodeLine{00403             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} y = 0; y < height; y++) \{}
+\DoxyCodeLine{00404                 var color = Color.white * value;}
+\DoxyCodeLine{00405                 lut.SetPixel(Mathf.CeilToInt(x), Mathf.CeilToInt(y), color);}
+\DoxyCodeLine{00406             \}}
+\DoxyCodeLine{00407         \}}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keywordflow}{return} lut;}
+\DoxyCodeLine{00410     \}}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412     \textcolor{keyword}{private} \textcolor{keywordtype}{void} SaveTextureAsPng(Texture2D texture, \textcolor{keywordtype}{string} fullPath, FilterMode filterMode) \{}
+\DoxyCodeLine{00413         \textcolor{keywordtype}{byte}[] bytes = texture.EncodeToPNG();}
+\DoxyCodeLine{00414         File.WriteAllBytes(fullPath, bytes);}
+\DoxyCodeLine{00415         AssetDatabase.Refresh();}
+\DoxyCodeLine{00416         Debug.Log(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Texture saved as: \{0\}"{}}, fullPath));}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418         \textcolor{keywordtype}{string} pathRelativeToAssets = ConvertFullPathToAssetPath(fullPath);}
+\DoxyCodeLine{00419         TextureImporter importer = (TextureImporter) TextureImporter.GetAtPath(pathRelativeToAssets);}
+\DoxyCodeLine{00420         \textcolor{keywordflow}{if} (importer != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00421             importer.filterMode = filterMode;}
+\DoxyCodeLine{00422             importer.textureType = TextureImporterType.SingleChannel;}
+\DoxyCodeLine{00423             importer.textureCompression = TextureImporterCompression.Uncompressed;}
+\DoxyCodeLine{00424             importer.mipmapEnabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00425             var textureSettings = \textcolor{keyword}{new} TextureImporterPlatformSettings \{}
+\DoxyCodeLine{00426                 format = TextureImporterFormat.R8}
+\DoxyCodeLine{00427             \};}
+\DoxyCodeLine{00428             importer.SetPlatformTextureSettings(textureSettings);}
+\DoxyCodeLine{00429             EditorUtility.SetDirty(importer);}
+\DoxyCodeLine{00430             importer.SaveAndReimport();}
+\DoxyCodeLine{00431         \}}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433         \textcolor{comment}{//22b5f7ed-\/989d-\/49d1-\/90d9-\/c62d76c3081a}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435         Debug.Assert(importer,}
+\DoxyCodeLine{00436             \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}[FlatKit] Could not change import settings of \{0\} [\{1\}]"{}},}
+\DoxyCodeLine{00437                 fullPath, pathRelativeToAssets));}
+\DoxyCodeLine{00438     \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440     \textcolor{keyword}{private} \textcolor{keyword}{static} Texture2D LoadTexture(\textcolor{keywordtype}{string} fullPath) \{}
+\DoxyCodeLine{00441         \textcolor{keywordtype}{string} pathRelativeToAssets = ConvertFullPathToAssetPath(fullPath);}
+\DoxyCodeLine{00442         \textcolor{keywordflow}{if} (pathRelativeToAssets.Length == 0) \{}
+\DoxyCodeLine{00443             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00444         \}}
+\DoxyCodeLine{00445 }
+\DoxyCodeLine{00446         var loadedTexture = AssetDatabase.LoadAssetAtPath(pathRelativeToAssets, typeof(Texture2D)) as Texture2D;}
+\DoxyCodeLine{00447         \textcolor{keywordflow}{if} (loadedTexture == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00448             Debug.LogError(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}[FlatKit] Could not load texture from \{0\} [\{1\}]."{}}, fullPath,}
+\DoxyCodeLine{00449                 pathRelativeToAssets));}
+\DoxyCodeLine{00450             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00451         \}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453         loadedTexture.filterMode = FilterMode.Point;}
+\DoxyCodeLine{00454         loadedTexture.wrapMode = TextureWrapMode.Clamp;}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456         \textcolor{keywordflow}{return} loadedTexture;}
+\DoxyCodeLine{00457     \}}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459     \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ConvertFullPathToAssetPath(\textcolor{keywordtype}{string} fullPath) \{}
+\DoxyCodeLine{00460         \textcolor{keywordtype}{int} count = (Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar).Length;}
+\DoxyCodeLine{00461         \textcolor{keywordflow}{if} (count < 0) \{}
+\DoxyCodeLine{00462             \textcolor{keywordflow}{return} String.Empty;}
+\DoxyCodeLine{00463         \}}
+\DoxyCodeLine{00464 }
+\DoxyCodeLine{00465         \textcolor{keywordflow}{return} fullPath.Remove(0, count);}
+\DoxyCodeLine{00466     \}}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468 \textcolor{preprocessor}{\#if !UNITY\_2020\_3\_OR\_NEWER}}
+\DoxyCodeLine{00469     \textcolor{keyword}{private} \textcolor{keyword}{new} \textcolor{keywordtype}{void} DrawQueueOffsetField() \{}
+\DoxyCodeLine{00470         GUIContent queueSlider = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}     Priority"{}},}
+\DoxyCodeLine{00471             \textcolor{stringliteral}{"{}Determines the chronological rendering order for a Material. High values are rendered first."{}});}
+\DoxyCodeLine{00472         \textcolor{keyword}{const} \textcolor{keywordtype}{int} queueOffsetRange = 50;}
+\DoxyCodeLine{00473         MaterialProperty queueOffsetProp = FindProperty(\textcolor{stringliteral}{"{}\_QueueOffset"{}}, \_properties, \textcolor{keyword}{false});}
+\DoxyCodeLine{00474         \textcolor{keywordflow}{if} (queueOffsetProp == \textcolor{keyword}{null}) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00475         EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00476         EditorGUI.showMixedValue = queueOffsetProp.hasMixedValue;}
+\DoxyCodeLine{00477         var queue = EditorGUILayout.IntSlider(queueSlider, (\textcolor{keywordtype}{int}) queueOffsetProp.floatValue, -\/queueOffsetRange,}
+\DoxyCodeLine{00478             queueOffsetRange);}
+\DoxyCodeLine{00479         \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00480             queueOffsetProp.floatValue = queue;}
+\DoxyCodeLine{00481         EditorGUI.showMixedValue = \textcolor{keyword}{false};}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00483         \_target.renderQueue = (int)RenderQueue.Transparent + queue;}
+\DoxyCodeLine{00484     \}}
+\DoxyCodeLine{00485 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487     \textcolor{keyword}{private} \textcolor{keywordtype}{void} TransferToBaseMap() \{}
+\DoxyCodeLine{00488         var baseMapProp = FindProperty(\textcolor{stringliteral}{"{}\_MainTex"{}});}
+\DoxyCodeLine{00489         var baseColorProp = FindProperty(\textcolor{stringliteral}{"{}\_Color"{}});}
+\DoxyCodeLine{00490         \_target.SetTexture(\textcolor{stringliteral}{"{}\_BaseMap"{}}, baseMapProp.textureValue);}
+\DoxyCodeLine{00491         var baseMapTiling = baseMapProp.textureScaleAndOffset;}
+\DoxyCodeLine{00492         \_target.SetTextureScale(\textcolor{stringliteral}{"{}\_BaseMap"{}}, \textcolor{keyword}{new} Vector2(baseMapTiling.x, baseMapTiling.y));}
+\DoxyCodeLine{00493         \_target.SetTextureOffset(\textcolor{stringliteral}{"{}\_BaseMap"{}}, \textcolor{keyword}{new} Vector2(baseMapTiling.z, baseMapTiling.w));}
+\DoxyCodeLine{00494         \_target.SetColor(\textcolor{stringliteral}{"{}\_BaseColor"{}}, baseColorProp.colorValue);}
+\DoxyCodeLine{00495     \}}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497     \textcolor{keyword}{private} \textcolor{keywordtype}{void} TransferToMainTex() \{}
+\DoxyCodeLine{00498         var baseMapProp = FindProperty(\textcolor{stringliteral}{"{}\_BaseMap"{}});}
+\DoxyCodeLine{00499         var baseColorProp = FindProperty(\textcolor{stringliteral}{"{}\_BaseColor"{}});}
+\DoxyCodeLine{00500         \_target.SetTexture(\textcolor{stringliteral}{"{}\_MainTex"{}}, baseMapProp.textureValue);}
+\DoxyCodeLine{00501         var baseMapTiling = baseMapProp.textureScaleAndOffset;}
+\DoxyCodeLine{00502         \_target.SetTextureScale(\textcolor{stringliteral}{"{}\_MainTex"{}}, \textcolor{keyword}{new} Vector2(baseMapTiling.x, baseMapTiling.y));}
+\DoxyCodeLine{00503         \_target.SetTextureOffset(\textcolor{stringliteral}{"{}\_MainTex"{}}, \textcolor{keyword}{new} Vector2(baseMapTiling.z, baseMapTiling.w));}
+\DoxyCodeLine{00504         \_target.SetColor(\textcolor{stringliteral}{"{}\_Color"{}}, baseColorProp.colorValue);}
+\DoxyCodeLine{00505     \}}
+\DoxyCodeLine{00506 \}}
+
+\end{DoxyCode}

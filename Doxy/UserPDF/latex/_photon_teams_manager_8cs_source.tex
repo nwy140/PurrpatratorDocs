@@ -1,0 +1,524 @@
+\doxysection{Photon\+Teams\+Manager.\+cs}
+\label{_photon_teams_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PhotonTeamsManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PhotonTeamsManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonTeamsManager.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities, }}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Implements teams in a room/game with help of player properties.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <remarks>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// Teams are defined by name and code. Change this to get more / different teams.}}
+\DoxyCodeLine{00010 \textcolor{comment}{// There are no rules when / if you can join a team. You could add this in JoinTeam or something.}}
+\DoxyCodeLine{00011 \textcolor{comment}{// </remarks>                                                                                           }}
+\DoxyCodeLine{00012 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00013 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00020 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00023 \{}
+\DoxyCodeLine{00024     [Serializable]}
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTeam}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Name;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} Code;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} [\{1\}]"{}}, this.Name, this.Code);}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034     \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00043     [DisallowMultipleComponent]}
+\DoxyCodeLine{00044     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTeamsManager : MonoBehaviour, IMatchmakingCallbacks, IInRoomCallbacks}
+\DoxyCodeLine{00045     \{}
+\DoxyCodeLine{00046 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00047 \textcolor{preprocessor}{        \#pragma warning disable 0414}}
+\DoxyCodeLine{00048         [SerializeField]}
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} listFoldIsOpen = \textcolor{keyword}{true};}
+\DoxyCodeLine{00050 \textcolor{preprocessor}{        \#pragma warning restore 0414}}
+\DoxyCodeLine{00051 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [SerializeField]}
+\DoxyCodeLine{00054         \textcolor{keyword}{private} List<PhotonTeam> teamsList = \textcolor{keyword}{new} List<PhotonTeam>}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             \textcolor{keyword}{new} PhotonTeam \{ Name = \textcolor{stringliteral}{"{}Blue"{}}, Code = 1 \},}
+\DoxyCodeLine{00057             \textcolor{keyword}{new} PhotonTeam \{ Name = \textcolor{stringliteral}{"{}Red"{}}, Code = 2 \}}
+\DoxyCodeLine{00058         \};}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{private} Dictionary<byte, PhotonTeam> teamsByCode;}
+\DoxyCodeLine{00061         \textcolor{keyword}{private} Dictionary<string, PhotonTeam> teamsByName;}
+\DoxyCodeLine{00062         }
+\DoxyCodeLine{00064         \textcolor{keyword}{private} Dictionary<byte, HashSet<Player>> playersPerTeam;}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} TeamPlayerProp = \textcolor{stringliteral}{"{}\_pt"{}};}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{event} Action<Player, PhotonTeam> PlayerJoinedTeam;}
+\DoxyCodeLine{00070         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{event} Action<Player, PhotonTeam> PlayerLeftTeam;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{private} \textcolor{keyword}{static} PhotonTeamsManager instance;}
+\DoxyCodeLine{00073         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonTeamsManager Instance}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075             \textcolor{keyword}{get}}
+\DoxyCodeLine{00076             \{}
+\DoxyCodeLine{00077                 \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00078                 \{}
+\DoxyCodeLine{00079                     instance = FindObjectOfType<PhotonTeamsManager>();}
+\DoxyCodeLine{00080                     \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00081                     \{}
+\DoxyCodeLine{00082                         GameObject obj = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00083                         obj.name = \textcolor{stringliteral}{"{}PhotonTeamsManager"{}};}
+\DoxyCodeLine{00084                         instance = obj.AddComponent<PhotonTeamsManager>();}
+\DoxyCodeLine{00085                     \}}
+\DoxyCodeLine{00086                     instance.Init();}
+\DoxyCodeLine{00087                 \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} instance;}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 \textcolor{preprocessor}{        \#region MonoBehaviour}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null} || ReferenceEquals(\textcolor{keyword}{this}, instance))}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 this.Init();}
+\DoxyCodeLine{00100                 instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 Destroy(\textcolor{keyword}{this});}
+\DoxyCodeLine{00105             \}}
+\DoxyCodeLine{00106         \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110             PhotonNetwork.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             PhotonNetwork.RemoveCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00116             this.ClearTeams();}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Init()}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             teamsByCode = \textcolor{keyword}{new} Dictionary<byte, PhotonTeam>(teamsList.Count);}
+\DoxyCodeLine{00122             teamsByName = \textcolor{keyword}{new} Dictionary<string, PhotonTeam>(teamsList.Count);}
+\DoxyCodeLine{00123             playersPerTeam = \textcolor{keyword}{new} Dictionary<byte, HashSet<Player>>(teamsList.Count);}
+\DoxyCodeLine{00124             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < teamsList.Count; i++)}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 teamsByCode[teamsList[i].Code] = teamsList[i];}
+\DoxyCodeLine{00127                 teamsByName[teamsList[i].Name] = teamsList[i];}
+\DoxyCodeLine{00128                 playersPerTeam[teamsList[i].Code] = \textcolor{keyword}{new} HashSet<Player>();}
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130         \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134 \textcolor{preprocessor}{        \#region IMatchmakingCallbacks}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnJoinedRoom()}
+\DoxyCodeLine{00137         \{}
+\DoxyCodeLine{00138             this.UpdateTeams();}
+\DoxyCodeLine{00139         \}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnLeftRoom()}
+\DoxyCodeLine{00142         \{}
+\DoxyCodeLine{00143             this.ClearTeams();}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keywordtype}{void} IInRoomCallbacks.OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{keywordtype}{object} temp;}
+\DoxyCodeLine{00149             \textcolor{keywordflow}{if} (changedProps.TryGetValue(TeamPlayerProp, out temp))}
+\DoxyCodeLine{00150             \{}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{if} (temp == \textcolor{keyword}{null})}
+\DoxyCodeLine{00152                 \{}
+\DoxyCodeLine{00153                     \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{byte} code \textcolor{keywordflow}{in} playersPerTeam.Keys)}
+\DoxyCodeLine{00154                     \{}
+\DoxyCodeLine{00155                         \textcolor{keywordflow}{if} (playersPerTeam[code].Remove(targetPlayer))}
+\DoxyCodeLine{00156                         \{}
+\DoxyCodeLine{00157                             \textcolor{keywordflow}{if} (PlayerLeftTeam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00158                             \{}
+\DoxyCodeLine{00159                                 PlayerLeftTeam(targetPlayer, teamsByCode[code]);}
+\DoxyCodeLine{00160                             \}}
+\DoxyCodeLine{00161                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00162                         \}}
+\DoxyCodeLine{00163                     \}}
+\DoxyCodeLine{00164                 \} }
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (temp is \textcolor{keywordtype}{byte})}
+\DoxyCodeLine{00166                 \{}
+\DoxyCodeLine{00167                     \textcolor{keywordtype}{byte} teamCode = (byte) temp;}
+\DoxyCodeLine{00168                     \textcolor{comment}{// check if player switched teams, remove from previous team }}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{byte} code \textcolor{keywordflow}{in} playersPerTeam.Keys)}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         \textcolor{keywordflow}{if} (code == teamCode)}
+\DoxyCodeLine{00172                         \{}
+\DoxyCodeLine{00173                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00174                         \}}
+\DoxyCodeLine{00175                         \textcolor{keywordflow}{if} (playersPerTeam[code].Remove(targetPlayer))}
+\DoxyCodeLine{00176                         \{}
+\DoxyCodeLine{00177                             \textcolor{keywordflow}{if} (PlayerLeftTeam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00178                             \{}
+\DoxyCodeLine{00179                                 PlayerLeftTeam(targetPlayer, teamsByCode[code]);}
+\DoxyCodeLine{00180                             \}}
+\DoxyCodeLine{00181                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00182                         \}}
+\DoxyCodeLine{00183                     \}}
+\DoxyCodeLine{00184                     PhotonTeam team = teamsByCode[teamCode];}
+\DoxyCodeLine{00185                     \textcolor{keywordflow}{if} (!playersPerTeam[teamCode].Add(targetPlayer))}
+\DoxyCodeLine{00186                     \{}
+\DoxyCodeLine{00187                         Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Unexpected situation while setting team \{0\} for player \{1\}, updating teams for all"{}}, team, targetPlayer);}
+\DoxyCodeLine{00188                         this.UpdateTeams();}
+\DoxyCodeLine{00189                     \}}
+\DoxyCodeLine{00190                     \textcolor{keywordflow}{if} (PlayerJoinedTeam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00191                     \{}
+\DoxyCodeLine{00192                         PlayerJoinedTeam(targetPlayer, team);}
+\DoxyCodeLine{00193                     \}}
+\DoxyCodeLine{00194                 \}}
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00196                 \{}
+\DoxyCodeLine{00197                     Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Unexpected: custom property key \{0\} should have of type byte, instead we got \{1\} of type \{2\}. Player: \{3\}"{}}, }
+\DoxyCodeLine{00198                         TeamPlayerProp, temp, temp.GetType(), targetPlayer);}
+\DoxyCodeLine{00199                 \}}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201         \}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203         \textcolor{keywordtype}{void} IInRoomCallbacks.OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (otherPlayer.IsInactive)}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00208             \}}
+\DoxyCodeLine{00209             PhotonTeam team = otherPlayer.GetPhotonTeam();}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{if} (team != \textcolor{keyword}{null} \&\& !playersPerTeam[team.Code].Remove(otherPlayer))}
+\DoxyCodeLine{00211             \{}
+\DoxyCodeLine{00212                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Unexpected situation while removing player \{0\} who left from team \{1\}, updating teams for all"{}}, otherPlayer, team);}
+\DoxyCodeLine{00213                 \textcolor{comment}{// revert to 'brute force' in case of unexpected situation}}
+\DoxyCodeLine{00214                 this.UpdateTeams();}
+\DoxyCodeLine{00215             \}}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218         \textcolor{keywordtype}{void} IInRoomCallbacks.OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             PhotonTeam team = newPlayer.GetPhotonTeam();}
+\DoxyCodeLine{00221             \textcolor{keywordflow}{if} (team == \textcolor{keyword}{null})}
+\DoxyCodeLine{00222             \{}
+\DoxyCodeLine{00223                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00224             \}}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (playersPerTeam[team.Code].Contains(newPlayer))}
+\DoxyCodeLine{00226             \{}
+\DoxyCodeLine{00227                 \textcolor{comment}{// player rejoined w/ same team}}
+\DoxyCodeLine{00228                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00229             \}}
+\DoxyCodeLine{00230             \textcolor{comment}{// check if player rejoined w/ different team, remove from previous team }}
+\DoxyCodeLine{00231             \textcolor{keywordflow}{foreach} (var key \textcolor{keywordflow}{in} teamsByCode.Keys)}
+\DoxyCodeLine{00232             \{}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{if} (playersPerTeam[key].Remove(newPlayer))}
+\DoxyCodeLine{00234                 \{}
+\DoxyCodeLine{00235                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00236                 \}}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (!playersPerTeam[team.Code].Add(newPlayer))}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Unexpected situation while adding player \{0\} who joined to team \{1\}, updating teams for all"{}}, newPlayer, team);}
+\DoxyCodeLine{00241                 \textcolor{comment}{// revert to 'brute force' in case of unexpected situation}}
+\DoxyCodeLine{00242                 this.UpdateTeams();}
+\DoxyCodeLine{00243             \}}
+\DoxyCodeLine{00244         \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248 \textcolor{preprocessor}{        \#region Private methods}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateTeams()}
+\DoxyCodeLine{00251         \{}
+\DoxyCodeLine{00252             this.ClearTeams();}
+\DoxyCodeLine{00253             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < PhotonNetwork.PlayerList.Length; i++)}
+\DoxyCodeLine{00254             \{}
+\DoxyCodeLine{00255                 Player player = PhotonNetwork.PlayerList[i];}
+\DoxyCodeLine{00256                 PhotonTeam playerTeam = player.GetPhotonTeam();}
+\DoxyCodeLine{00257                 \textcolor{keywordflow}{if} (playerTeam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00258                 \{}
+\DoxyCodeLine{00259                     playersPerTeam[playerTeam.Code].Add(player);}
+\DoxyCodeLine{00260                 \}}
+\DoxyCodeLine{00261             \}}
+\DoxyCodeLine{00262         \}}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ClearTeams()}
+\DoxyCodeLine{00265         \{}
+\DoxyCodeLine{00266             \textcolor{keywordflow}{foreach} (var key \textcolor{keywordflow}{in} playersPerTeam.Keys)}
+\DoxyCodeLine{00267             \{}
+\DoxyCodeLine{00268                 playersPerTeam[key].Clear();}
+\DoxyCodeLine{00269             \}}
+\DoxyCodeLine{00270         \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274 \textcolor{preprocessor}{        \#region Public API}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00282         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamByCode(\textcolor{keywordtype}{byte} code, out PhotonTeam team)}
+\DoxyCodeLine{00283         \{}
+\DoxyCodeLine{00284             \textcolor{keywordflow}{return} teamsByCode.TryGetValue(code, out team);}
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00293         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamByName(\textcolor{keywordtype}{string} teamName, out PhotonTeam team)}
+\DoxyCodeLine{00294         \{}
+\DoxyCodeLine{00295             \textcolor{keywordflow}{return} teamsByName.TryGetValue(teamName, out team);}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00302         \textcolor{keyword}{public} PhotonTeam[] GetAvailableTeams()}
+\DoxyCodeLine{00303         \{}
+\DoxyCodeLine{00304             \textcolor{keywordflow}{if} (teamsList != \textcolor{keyword}{null})}
+\DoxyCodeLine{00305             \{}
+\DoxyCodeLine{00306                 \textcolor{keywordflow}{return} teamsList.ToArray();}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00309         \}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00317         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamMembers(\textcolor{keywordtype}{byte} code, out Player[] members)}
+\DoxyCodeLine{00318         \{}
+\DoxyCodeLine{00319             members = \textcolor{keyword}{null};}
+\DoxyCodeLine{00320             HashSet<Player> players;}
+\DoxyCodeLine{00321             \textcolor{keywordflow}{if} (this.playersPerTeam.TryGetValue(code, out players))}
+\DoxyCodeLine{00322             \{}
+\DoxyCodeLine{00323                 members = \textcolor{keyword}{new} Player[players.Count];}
+\DoxyCodeLine{00324                 \textcolor{keywordtype}{int} i = 0;}
+\DoxyCodeLine{00325                 \textcolor{keywordflow}{foreach} (var player \textcolor{keywordflow}{in} players)}
+\DoxyCodeLine{00326                 \{}
+\DoxyCodeLine{00327                     members[i] = player;}
+\DoxyCodeLine{00328                     i++;}
+\DoxyCodeLine{00329                 \}}
+\DoxyCodeLine{00330                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00331             \}}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00333         \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00341         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamMembers(\textcolor{keywordtype}{string} teamName, out Player[] members)}
+\DoxyCodeLine{00342         \{}
+\DoxyCodeLine{00343             members = \textcolor{keyword}{null};}
+\DoxyCodeLine{00344             PhotonTeam team;}
+\DoxyCodeLine{00345             \textcolor{keywordflow}{if} (this.TryGetTeamByName(teamName, out team))}
+\DoxyCodeLine{00346             \{}
+\DoxyCodeLine{00347                 \textcolor{keywordflow}{return} this.TryGetTeamMembers(team.Code, out members);}
+\DoxyCodeLine{00348             \}}
+\DoxyCodeLine{00349             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00350         \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00358         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamMembers(PhotonTeam team, out Player[] members)}
+\DoxyCodeLine{00359         \{}
+\DoxyCodeLine{00360             members = \textcolor{keyword}{null};}
+\DoxyCodeLine{00361             \textcolor{keywordflow}{if} (team != \textcolor{keyword}{null})}
+\DoxyCodeLine{00362             \{}
+\DoxyCodeLine{00363                 \textcolor{keywordflow}{return} this.TryGetTeamMembers(team.Code, out members);}
+\DoxyCodeLine{00364             \}}
+\DoxyCodeLine{00365             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00366         \}}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00374         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetTeamMatesOfPlayer(Player player, out Player[] teamMates)}
+\DoxyCodeLine{00375         \{}
+\DoxyCodeLine{00376             teamMates = \textcolor{keyword}{null};}
+\DoxyCodeLine{00377             \textcolor{keywordflow}{if} (player == \textcolor{keyword}{null})}
+\DoxyCodeLine{00378             \{}
+\DoxyCodeLine{00379                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00380             \}}
+\DoxyCodeLine{00381             PhotonTeam team = player.GetPhotonTeam();}
+\DoxyCodeLine{00382             \textcolor{keywordflow}{if} (team == \textcolor{keyword}{null})}
+\DoxyCodeLine{00383             \{}
+\DoxyCodeLine{00384                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00385             \}}
+\DoxyCodeLine{00386             HashSet<Player> players;}
+\DoxyCodeLine{00387             \textcolor{keywordflow}{if} (this.playersPerTeam.TryGetValue(team.Code, out players))}
+\DoxyCodeLine{00388             \{}
+\DoxyCodeLine{00389                 \textcolor{keywordflow}{if} (!players.Contains(player))}
+\DoxyCodeLine{00390                 \{}
+\DoxyCodeLine{00391                     Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Unexpected situation while getting team mates of player \{0\} who is joined to team \{1\}, updating teams for all"{}}, player, team);}
+\DoxyCodeLine{00392                     \textcolor{comment}{// revert to 'brute force' in case of unexpected situation}}
+\DoxyCodeLine{00393                     this.UpdateTeams();}
+\DoxyCodeLine{00394                 \}}
+\DoxyCodeLine{00395                 teamMates = \textcolor{keyword}{new} Player[players.Count -\/ 1];}
+\DoxyCodeLine{00396                 \textcolor{keywordtype}{int} i = 0;}
+\DoxyCodeLine{00397                 \textcolor{keywordflow}{foreach} (var p \textcolor{keywordflow}{in} players)}
+\DoxyCodeLine{00398                 \{}
+\DoxyCodeLine{00399                     \textcolor{keywordflow}{if} (p.Equals(player))}
+\DoxyCodeLine{00400                     \{}
+\DoxyCodeLine{00401                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00402                     \}}
+\DoxyCodeLine{00403                     teamMates[i] = p;}
+\DoxyCodeLine{00404                     i++;}
+\DoxyCodeLine{00405                 \}}
+\DoxyCodeLine{00406                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00407             \}}
+\DoxyCodeLine{00408             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00409         \}}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00416         \textcolor{keyword}{public} \textcolor{keywordtype}{int} GetTeamMembersCount(\textcolor{keywordtype}{byte} code)}
+\DoxyCodeLine{00417         \{}
+\DoxyCodeLine{00418             PhotonTeam team;}
+\DoxyCodeLine{00419             \textcolor{keywordflow}{if} (this.TryGetTeamByCode(code, out team))}
+\DoxyCodeLine{00420             \{}
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{return} this.GetTeamMembersCount(team);}
+\DoxyCodeLine{00422             \}}
+\DoxyCodeLine{00423             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00424         \}}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00431         \textcolor{keyword}{public} \textcolor{keywordtype}{int} GetTeamMembersCount(\textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00432         \{}
+\DoxyCodeLine{00433             PhotonTeam team;}
+\DoxyCodeLine{00434             \textcolor{keywordflow}{if} (this.TryGetTeamByName(name, out team))}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 \textcolor{keywordflow}{return} this.GetTeamMembersCount(team);}
+\DoxyCodeLine{00437             \}}
+\DoxyCodeLine{00438             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00439         \}}
+\DoxyCodeLine{00440 }
+\DoxyCodeLine{00446         \textcolor{keyword}{public} \textcolor{keywordtype}{int} GetTeamMembersCount(PhotonTeam team)}
+\DoxyCodeLine{00447         \{}
+\DoxyCodeLine{00448             HashSet<Player> players;}
+\DoxyCodeLine{00449             \textcolor{keywordflow}{if} (team != \textcolor{keyword}{null} \&\& this.playersPerTeam.TryGetValue(team.Code, out players) \&\& players != \textcolor{keyword}{null})}
+\DoxyCodeLine{00450             \{}
+\DoxyCodeLine{00451                 \textcolor{keywordflow}{return} players.Count;}
+\DoxyCodeLine{00452             \}}
+\DoxyCodeLine{00453             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00454         \}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458 \textcolor{preprocessor}{        \#region Unused methods}}
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnFriendListUpdate(List<FriendInfo> friendList)}
+\DoxyCodeLine{00461         \{}
+\DoxyCodeLine{00462         \}}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnCreatedRoom()}
+\DoxyCodeLine{00465         \{}
+\DoxyCodeLine{00466         \}}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00469         \{}
+\DoxyCodeLine{00470         \}}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00473         \{}
+\DoxyCodeLine{00474         \}}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476         \textcolor{keywordtype}{void} IMatchmakingCallbacks.OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00477         \{}
+\DoxyCodeLine{00478         \}}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480         \textcolor{keywordtype}{void} IInRoomCallbacks.OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00481         \{}
+\DoxyCodeLine{00482         \}}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484         \textcolor{keywordtype}{void} IInRoomCallbacks.OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00485         \{}
+\DoxyCodeLine{00486         \}}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00489     \}}
+\DoxyCodeLine{00490 }
+\DoxyCodeLine{00492     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PhotonTeamExtensions}
+\DoxyCodeLine{00493     \{}
+\DoxyCodeLine{00496         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonTeam GetPhotonTeam(\textcolor{keyword}{this} Player player)}
+\DoxyCodeLine{00497         \{}
+\DoxyCodeLine{00498             \textcolor{keywordtype}{object} teamId;}
+\DoxyCodeLine{00499             PhotonTeam team;}
+\DoxyCodeLine{00500             \textcolor{keywordflow}{if} (player.CustomProperties.TryGetValue(PhotonTeamsManager.TeamPlayerProp, out teamId) \&\& PhotonTeamsManager.Instance.TryGetTeamByCode((\textcolor{keywordtype}{byte})teamId, out team))}
+\DoxyCodeLine{00501             \{}
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{return} team;}
+\DoxyCodeLine{00503             \}}
+\DoxyCodeLine{00504             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00505         \}}
+\DoxyCodeLine{00506 }
+\DoxyCodeLine{00513         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinTeam(\textcolor{keyword}{this} Player player, PhotonTeam team)}
+\DoxyCodeLine{00514         \{}
+\DoxyCodeLine{00515             \textcolor{keywordflow}{if} (team == \textcolor{keyword}{null})}
+\DoxyCodeLine{00516             \{}
+\DoxyCodeLine{00517                 Debug.LogWarning(\textcolor{stringliteral}{"{}JoinTeam failed: PhotonTeam provided is null"{}});}
+\DoxyCodeLine{00518                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00519             \}}
+\DoxyCodeLine{00520             PhotonTeam currentTeam = player.GetPhotonTeam();}
+\DoxyCodeLine{00521             \textcolor{keywordflow}{if} (currentTeam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00522             \{}
+\DoxyCodeLine{00523                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}JoinTeam failed: player (\{0\}) is already joined to a team (\{1\}), call SwitchTeam instead"{}}, player, team);}
+\DoxyCodeLine{00524                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00525             \}}
+\DoxyCodeLine{00526             \textcolor{keywordflow}{return} player.SetCustomProperties(\textcolor{keyword}{new} Hashtable \{ \{ PhotonTeamsManager.TeamPlayerProp, team.Code \} \});}
+\DoxyCodeLine{00527         \}}
+\DoxyCodeLine{00528 }
+\DoxyCodeLine{00535         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinTeam(\textcolor{keyword}{this} Player player, \textcolor{keywordtype}{byte} teamCode)}
+\DoxyCodeLine{00536         \{}
+\DoxyCodeLine{00537             PhotonTeam team;}
+\DoxyCodeLine{00538             \textcolor{keywordflow}{return} PhotonTeamsManager.Instance.TryGetTeamByCode(teamCode, out team) \&\& player.JoinTeam(team);}
+\DoxyCodeLine{00539         \}}
+\DoxyCodeLine{00540 }
+\DoxyCodeLine{00547         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinTeam(\textcolor{keyword}{this} Player player, \textcolor{keywordtype}{string} teamName)}
+\DoxyCodeLine{00548         \{}
+\DoxyCodeLine{00549             PhotonTeam team;}
+\DoxyCodeLine{00550             \textcolor{keywordflow}{return} PhotonTeamsManager.Instance.TryGetTeamByName(teamName, out team) \&\& player.JoinTeam(team);}
+\DoxyCodeLine{00551         \}}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00557         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SwitchTeam(\textcolor{keyword}{this} Player player, PhotonTeam team)}
+\DoxyCodeLine{00558         \{}
+\DoxyCodeLine{00559             \textcolor{keywordflow}{if} (team == \textcolor{keyword}{null})}
+\DoxyCodeLine{00560             \{}
+\DoxyCodeLine{00561                 Debug.LogWarning(\textcolor{stringliteral}{"{}SwitchTeam failed: PhotonTeam provided is null"{}});}
+\DoxyCodeLine{00562                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00563             \}}
+\DoxyCodeLine{00564             PhotonTeam currentTeam = player.GetPhotonTeam();}
+\DoxyCodeLine{00565             \textcolor{keywordflow}{if} (currentTeam == \textcolor{keyword}{null})}
+\DoxyCodeLine{00566             \{}
+\DoxyCodeLine{00567                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}SwitchTeam failed: player (\{0\}) was not joined to any team, call JoinTeam instead"{}}, player);}
+\DoxyCodeLine{00568                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00569             \}}
+\DoxyCodeLine{00570             \textcolor{keywordflow}{if} (currentTeam.Code == team.Code)}
+\DoxyCodeLine{00571             \{}
+\DoxyCodeLine{00572                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}SwitchTeam failed: player (\{0\}) is already joined to the same team \{1\}"{}}, player, team);}
+\DoxyCodeLine{00573                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00574             \}}
+\DoxyCodeLine{00575             \textcolor{keywordflow}{return} player.SetCustomProperties(\textcolor{keyword}{new} Hashtable \{ \{ PhotonTeamsManager.TeamPlayerProp, team.Code \} \},}
+\DoxyCodeLine{00576                 \textcolor{keyword}{new} Hashtable \{ \{ PhotonTeamsManager.TeamPlayerProp, currentTeam.Code \}\});}
+\DoxyCodeLine{00577         \}}
+\DoxyCodeLine{00578 }
+\DoxyCodeLine{00584         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SwitchTeam(\textcolor{keyword}{this} Player player, \textcolor{keywordtype}{byte} teamCode)}
+\DoxyCodeLine{00585         \{}
+\DoxyCodeLine{00586             PhotonTeam team;}
+\DoxyCodeLine{00587             \textcolor{keywordflow}{return} PhotonTeamsManager.Instance.TryGetTeamByCode(teamCode, out team) \&\& player.SwitchTeam(team);}
+\DoxyCodeLine{00588         \}}
+\DoxyCodeLine{00589 }
+\DoxyCodeLine{00595         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SwitchTeam(\textcolor{keyword}{this} Player player, \textcolor{keywordtype}{string} teamName)}
+\DoxyCodeLine{00596         \{}
+\DoxyCodeLine{00597             PhotonTeam team;}
+\DoxyCodeLine{00598             \textcolor{keywordflow}{return} PhotonTeamsManager.Instance.TryGetTeamByName(teamName, out team) \&\& player.SwitchTeam(team);}
+\DoxyCodeLine{00599         \}}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00606         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} LeaveCurrentTeam(\textcolor{keyword}{this} Player player)}
+\DoxyCodeLine{00607         \{}
+\DoxyCodeLine{00608             PhotonTeam currentTeam = player.GetPhotonTeam();}
+\DoxyCodeLine{00609             \textcolor{keywordflow}{if} (currentTeam == \textcolor{keyword}{null})}
+\DoxyCodeLine{00610             \{}
+\DoxyCodeLine{00611                 Debug.LogWarningFormat(\textcolor{stringliteral}{"{}LeaveCurrentTeam failed: player (\{0\}) was not joined to any team"{}}, player);}
+\DoxyCodeLine{00612                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00613             \}}
+\DoxyCodeLine{00614             \textcolor{keywordflow}{return} player.SetCustomProperties(\textcolor{keyword}{new} Hashtable \{\{PhotonTeamsManager.TeamPlayerProp, \textcolor{keyword}{null}\}\}, \textcolor{keyword}{new} Hashtable \{\{PhotonTeamsManager.TeamPlayerProp, currentTeam.Code\}\});}
+\DoxyCodeLine{00615         \}}
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00623         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TryGetTeamMates(\textcolor{keyword}{this} Player player, out Player[] teamMates)}
+\DoxyCodeLine{00624         \{}
+\DoxyCodeLine{00625             \textcolor{keywordflow}{return} PhotonTeamsManager.Instance.TryGetTeamMatesOfPlayer(player, out teamMates);}
+\DoxyCodeLine{00626         \}}
+\DoxyCodeLine{00627     \}}
+\DoxyCodeLine{00628 \}}
+
+\end{DoxyCode}

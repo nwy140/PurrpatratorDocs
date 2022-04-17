@@ -1,0 +1,216 @@
+\doxysection{World\+Bounds\+Group.\+cs}
+\label{_world_bounds_group_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBoundsGroup.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBoundsGroup.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     [System.Serializable]}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBoundsGroup}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} defaultName = \textcolor{stringliteral}{"{}Default"{}};}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} newAddName = \textcolor{stringliteral}{"{}Unnamed"{}};}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{string} name = defaultName;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         [System.NonSerialized]}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} System.Action OnWorldBoundChanged;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{comment}{//[System.NonSerialized]}}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{comment}{/*readonly*/} ElementCrusher crusher = GetUncompressedCrusher();}
+\DoxyCodeLine{00030         \textcolor{comment}{//public int resolution = 100;}}
+\DoxyCodeLine{00031         \textcolor{comment}{//public bool accurateCenter = false;}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [System.NonSerialized]}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} readonly List<WorldBounds> activeWorldBounds = \textcolor{keyword}{new} List<WorldBounds>();}
+\DoxyCodeLine{00035         \textcolor{comment}{//public void Add(WorldBounds wb) \{ activeMapBoundsObjects.Add(wb);  \}}}
+\DoxyCodeLine{00036         \textcolor{comment}{//public void Remove(WorldBounds wb) \{ activeMapBoundsObjects.Remove(wb); \}}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ActiveBoundsObjCount \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} activeWorldBounds.Count; \} \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [System.NonSerialized]}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} Bounds \_combinedWorldBounds;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{static} ElementCrusher GetUncompressedCrusher()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             \textcolor{keywordflow}{return} \textcolor{keyword}{new} ElementCrusher(TRSType.Position, \textcolor{keyword}{false})}
+\DoxyCodeLine{00046             \{}
+\DoxyCodeLine{00047                 enableLocalSelector = \textcolor{keyword}{false},}
+\DoxyCodeLine{00048                 hideFieldName = \textcolor{keyword}{true},}
+\DoxyCodeLine{00049                 XCrusher = \textcolor{keyword}{new} FloatCrusher() \{ axis = Axis.X, outOfBoundsHandling = OutOfBoundsHandling.Clamp, Resolution = 100, BitsDeterminedBy = BitsDeterminedBy.Uncompressed \},}
+\DoxyCodeLine{00050                 YCrusher = \textcolor{keyword}{new} FloatCrusher() \{ axis = Axis.Y, outOfBoundsHandling = OutOfBoundsHandling.Clamp, Resolution = 100, BitsDeterminedBy = BitsDeterminedBy.Uncompressed \},}
+\DoxyCodeLine{00051                 ZCrusher = \textcolor{keyword}{new} FloatCrusher() \{ axis = Axis.Z, outOfBoundsHandling = OutOfBoundsHandling.Clamp, Resolution = 100, BitsDeterminedBy = BitsDeterminedBy.Uncompressed \}}
+\DoxyCodeLine{00052             \};}
+\DoxyCodeLine{00053         \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetActiveBounds()}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             activeWorldBounds.Clear();}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RecalculateWorldCombinedBounds()}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             var xc = crusher.XCrusher;}
+\DoxyCodeLine{00066             var yc = crusher.YCrusher;}
+\DoxyCodeLine{00067             var zc = crusher.ZCrusher;}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{if} (activeWorldBounds.Count == 0)}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 \_combinedWorldBounds = \textcolor{keyword}{new} Bounds();}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 \textcolor{comment}{// When we have no bounds for a group, default to uncompressed to ensure "{}always works"{}}}
+\DoxyCodeLine{00074                 \textcolor{comment}{//xc.BitsDeterminedBy = BitsDeterminedBy.Uncompressed;}}
+\DoxyCodeLine{00075                 \textcolor{comment}{//yc.BitsDeterminedBy = BitsDeterminedBy.Uncompressed;}}
+\DoxyCodeLine{00076                 \textcolor{comment}{//zcs.BitsDeterminedBy = BitsDeterminedBy.Uncompressed;}}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (xc.BitsDeterminedBy > 0 ||}
+\DoxyCodeLine{00083                     xc.BitsDeterminedBy == BitsDeterminedBy.SetBits || xc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || xc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)}
+\DoxyCodeLine{00084                 \{}
+\DoxyCodeLine{00085                     xc.Resolution = 100;}
+\DoxyCodeLine{00086                     xc.BitsDeterminedBy = BitsDeterminedBy.Resolution;}
+\DoxyCodeLine{00087                 \}}
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{if} (yc.BitsDeterminedBy > 0 ||}
+\DoxyCodeLine{00089                     yc.BitsDeterminedBy == BitsDeterminedBy.SetBits || yc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || yc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)}
+\DoxyCodeLine{00090                 \{}
+\DoxyCodeLine{00091                     yc.Resolution = 100;}
+\DoxyCodeLine{00092                     yc.BitsDeterminedBy = BitsDeterminedBy.Resolution;}
+\DoxyCodeLine{00093                 \}}
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{if} (zc.BitsDeterminedBy > 0 ||}
+\DoxyCodeLine{00095                     zc.BitsDeterminedBy == BitsDeterminedBy.SetBits || zc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || zc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)}
+\DoxyCodeLine{00096                 \{}
+\DoxyCodeLine{00097                     zc.Resolution = 100;}
+\DoxyCodeLine{00098                     zc.BitsDeterminedBy = BitsDeterminedBy.Resolution;}
+\DoxyCodeLine{00099                 \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101                 \textcolor{comment}{// must have a starting bounds to encapsulate, otherwise it starts encapsulating a 0,0,0 center }}
+\DoxyCodeLine{00102                 \textcolor{comment}{// which may not be desired if the group doesn't encapsulate 0,0,0}}
+\DoxyCodeLine{00103                 \_combinedWorldBounds = activeWorldBounds[0].myBounds;}
+\DoxyCodeLine{00104                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i < activeWorldBounds.Count; i++)}
+\DoxyCodeLine{00105                 \{}
+\DoxyCodeLine{00106                     \_combinedWorldBounds.Encapsulate(activeWorldBounds[i].myBounds);}
+\DoxyCodeLine{00107                 \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                 \textcolor{comment}{//xc.AccurateCenter = accurateCenter;}}
+\DoxyCodeLine{00110                 \textcolor{comment}{//yc.AccurateCenter = accurateCenter;}}
+\DoxyCodeLine{00111                 \textcolor{comment}{//zc.AccurateCenter = accurateCenter;}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113                 \textcolor{comment}{//xc.Resolution = (ulong)resolution;}}
+\DoxyCodeLine{00114                 \textcolor{comment}{//yc.Resolution = (ulong)resolution;}}
+\DoxyCodeLine{00115                 \textcolor{comment}{//zc.Resolution = (ulong)resolution;}}
+\DoxyCodeLine{00116                 crusher.Bounds = \_combinedWorldBounds;}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{comment}{//if(Application.isPlaying)}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{if} (OnWorldBoundChanged != \textcolor{keyword}{null})}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 OnWorldBoundChanged();}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126         \textcolor{comment}{//public void UpdateWorldBounds(bool mute = false)}}
+\DoxyCodeLine{00127         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00128         \textcolor{comment}{//  // No log messages if commanded, if just starting up, or just shutting down.}}
+\DoxyCodeLine{00129         \textcolor{comment}{//  WorldBoundsSO.SetWorldRanges(0, \_combinedWorldBounds, muteMessages || mute);}}
+\DoxyCodeLine{00130         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} StringBuilder strb = \textcolor{keyword}{new} StringBuilder(); \textcolor{comment}{// .editorReusable;}}
+\DoxyCodeLine{00135         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} BoundsReportHeight = 3 * 12 + 4;}
+\DoxyCodeLine{00136         \textcolor{keyword}{public} \textcolor{keywordtype}{string} BoundsReport()}
+\DoxyCodeLine{00137         \{}
+\DoxyCodeLine{00138             strb.Length = 0;}
+\DoxyCodeLine{00139             strb.Append(\textcolor{stringliteral}{"{}Encapsulates ["{}}).Append(ActiveBoundsObjCount).Append(\textcolor{stringliteral}{"{}] "{}}).Append(typeof(WorldBounds).Name)}
+\DoxyCodeLine{00140                 .Append(\textcolor{stringliteral}{"{}\(\backslash\)nCombined Center: "{}}).Append(\_combinedWorldBounds.center)}
+\DoxyCodeLine{00141                 .Append(\textcolor{stringliteral}{"{}\(\backslash\)nCombined Size: "{}}).Append(\_combinedWorldBounds.size);}
+\DoxyCodeLine{00142             \textcolor{comment}{//.Append("{}\(\backslash\)nBits: "{}).Append(crusher.TallyBits())}}
+\DoxyCodeLine{00143             \textcolor{comment}{//.Append("{} ("{}).Append(crusher.XCrusher.GetBits())}}
+\DoxyCodeLine{00144             \textcolor{comment}{//.Append("{}, "{}).Append(crusher.YCrusher.GetBits())}}
+\DoxyCodeLine{00145             \textcolor{comment}{//.Append("{}, "{}).Append(crusher.ZCrusher.GetBits())}}
+\DoxyCodeLine{00146             \textcolor{comment}{//.Append("{})\(\backslash\)nActual Res: "{})}}
+\DoxyCodeLine{00147             \textcolor{comment}{//.Append(crusher.XCrusher.GetResAtBits()).Append("{}, "{})}}
+\DoxyCodeLine{00148             \textcolor{comment}{//.Append(crusher.YCrusher.GetResAtBits()).Append("{}, "{})}}
+\DoxyCodeLine{00149             \textcolor{comment}{//.Append(crusher.ZCrusher.GetResAtBits())}}
+\DoxyCodeLine{00150             \textcolor{comment}{//.Append("{}\(\backslash\)nActual Prec: "{})}}
+\DoxyCodeLine{00151             \textcolor{comment}{//.Append(crusher.XCrusher.GetPrecAtBits().ToString("{}N5"{})).Append("{}, "{})}}
+\DoxyCodeLine{00152             \textcolor{comment}{//.Append(crusher.YCrusher.GetPrecAtBits().ToString("{}N5"{})).Append("{}, "{})}}
+\DoxyCodeLine{00153             \textcolor{comment}{//.Append(crusher.ZCrusher.GetPrecAtBits().ToString("{}N5"{}));}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{return} strb.ToString();}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00158     \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163     [CustomPropertyDrawer(typeof(WorldBoundsGroup))]}
+\DoxyCodeLine{00164     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBoundsSettingsDrawer : PropertyDrawer}
+\DoxyCodeLine{00165     \{}
+\DoxyCodeLine{00166         \textcolor{comment}{//static GUIContent gngc = new GUIContent("{}"{}, "{}(Editor only name), used in selection popup lists to identify each group."{});}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect position, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170             \textcolor{keywordtype}{bool} haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             \textcolor{keywordtype}{float} lw = EditorGUIUtility.labelWidth;}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             Rect r = position;}
+\DoxyCodeLine{00175             \textcolor{comment}{//r.xMax = lw -\/ 4;}}
+\DoxyCodeLine{00176             r.height = 16;}
+\DoxyCodeLine{00177             \textcolor{comment}{//r.xMax -\/= 18;}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             var name = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}name"{}});}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             EditorGUI.BeginDisabledGroup(name.stringValue == WorldBoundsGroup.defaultName);}
+\DoxyCodeLine{00182             \textcolor{keywordtype}{string} n = EditorGUI.DelayedTextField(r, \textcolor{comment}{/*gngc,*/} name.stringValue);}
+\DoxyCodeLine{00183             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185             \textcolor{keywordflow}{if} (n != name.stringValue)}
+\DoxyCodeLine{00186             \{}
+\DoxyCodeLine{00187                 Undo.RecordObject(property.serializedObject.targetObject, \textcolor{stringliteral}{"{}Undo World Bounds Group name change."{}});}
+\DoxyCodeLine{00188                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00189                 name.stringValue = n;}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00192                 WorldBoundsSettings.EnsureNamesAreUnique();}
+\DoxyCodeLine{00193                 \textcolor{keyword}{property}.serializedObject.Update();}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             r.y += 18;}
+\DoxyCodeLine{00197             r.xMax += 18;}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00200             \{}
+\DoxyCodeLine{00201                 EditorUtility.SetDirty(property.serializedObject.targetObject);}
+\DoxyCodeLine{00202                 \textcolor{comment}{//AssetDatabase.SaveAssets();}}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00208         \{}
+\DoxyCodeLine{00209             \textcolor{keywordflow}{return} base.GetPropertyHeight(property, label); \textcolor{comment}{/*+ 18 + 16 + 1*/};}
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211     \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00214 \}}
+
+\end{DoxyCode}

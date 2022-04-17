@@ -1,0 +1,141 @@
+\doxysection{Contact\+Reactor\+Base.\+cs}
+\label{_contact_reactor_base_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/ContactReactorBase.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/ContactReactorBase.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }ContactReactorBase : NetComponent}
+\DoxyCodeLine{00016         , IContactReactor}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AutoAddNetObj \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [Utilities.VersaMask(\textcolor{keyword}{true})]}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00024         [HideInInspector] \textcolor{keyword}{public} ContactType triggerOn = ContactType.Enter | ContactType.Stay | ContactType.Exit | ContactType.Hitscan;}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} ContactType TriggerOn \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} triggerOn; \} \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00028         [SerializeField]}
+\DoxyCodeLine{00029         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} DebugMismatches;}
+\DoxyCodeLine{00030 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keywordtype}{bool} IsPickup \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{comment}{// cache}}
+\DoxyCodeLine{00035         \textcolor{keyword}{protected} SyncState syncState;}
+\DoxyCodeLine{00036         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} syncStateMountMask;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwakeInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             \textcolor{keywordflow}{if} (isNetObject)}
+\DoxyCodeLine{00041             \{}
+\DoxyCodeLine{00042                 syncState = transform.GetNestedComponentInParent<SyncState, NetObject>();}
+\DoxyCodeLine{00043                 syncStateMountMask = (syncState) ? syncState.mountableTo.mask : 0;}
+\DoxyCodeLine{00044             \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             base.OnAwakeInitialize(isNetObject);}
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keyword}{virtual} Consumption OnContactEvent(ContactEvent contactEvent)}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             \textcolor{comment}{// Don't react to contact events if we are using a sync. It will capture and manage contact events.}}
+\DoxyCodeLine{00052             \textcolor{comment}{//if (deferToISyncContact)}}
+\DoxyCodeLine{00053             \textcolor{comment}{//    return Consumption.None;}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             \textcolor{comment}{//if (contactEvent.contactType == ContactType.Hitscan)}}
+\DoxyCodeLine{00056             \textcolor{comment}{//    Debug.Log(Time.time + "{} SCAN "{} + name + "{} OnContactEvent "{} + contactEvent);}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058             var contactType = contactEvent.contactType;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             \textcolor{keywordflow}{if} (triggerOn != 0 \&\& (contactType \& triggerOn) == 0)}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (IsPickup)}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 var system = contactEvent.contactSystem;}
+\DoxyCodeLine{00067                 \textcolor{keywordtype}{int} systemMount = system.ValidMountsMask;}
+\DoxyCodeLine{00068                 \textcolor{keywordtype}{int} mountableTo = syncState.mountableTo;}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{if} (systemMount != 0 \&\& (systemMount \& mountableTo) == 0)}
+\DoxyCodeLine{00070                 \{}
+\DoxyCodeLine{00071 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{if} (DebugMismatches)}
+\DoxyCodeLine{00073                         Debug.LogWarning(name + \textcolor{stringliteral}{"{} mount mask mismatch with: '"{}} + system.NetObj.name + \textcolor{stringliteral}{"{}':"{}} + system.GetType().Name + \textcolor{stringliteral}{"{}["{}} + system.SystemIndex + \textcolor{stringliteral}{"{}] masks: "{}} + systemMount + \textcolor{stringliteral}{"{} <-\/> "{}} + mountableTo);}
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00075                     \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00076                 \}}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{return} ProcessContactEvent(contactEvent);}
+\DoxyCodeLine{00080         \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} Consumption ProcessContactEvent(ContactEvent contactEvent);}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084     \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }ContactReactorBase<T> : ContactReactorBase\textcolor{comment}{// NetComponent }}
+\DoxyCodeLine{00087         , IOnContactEvent}
+\DoxyCodeLine{00088         where T : class, IContactSystem}
+\DoxyCodeLine{00089     \{}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091     \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095     [CustomEditor(typeof(ContactReactorBase), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00096     [CanEditMultipleObjects]}
+\DoxyCodeLine{00097     \textcolor{keyword}{public} \textcolor{keyword}{class }ContactReactorsBaseEditor : ReactorHeaderEditor}
+\DoxyCodeLine{00098     \{}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             \textcolor{keyword}{get}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Reacts to <i>"{}} + typeof(IOnContactEvent).Name + \textcolor{stringliteral}{"{}</i> callbacks, "{}} +}
+\DoxyCodeLine{00105                     \textcolor{stringliteral}{"{}by testing for a valid interaction with the <i>"{}} + typeof(IContactSystem).Name + \textcolor{stringliteral}{"{}</i> involved in the contact."{}};}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{protected} SyncState syncState;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00112         \{}
+\DoxyCodeLine{00113             base.OnEnable();}
+\DoxyCodeLine{00114             syncState = (target as ContactReactorBase).transform.GetNestedComponentInParent<SyncState, NetObject>();}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUIFooter()}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             base.OnInspectorGUIFooter();}
+\DoxyCodeLine{00120             SyncStateWarnings();}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SyncStateWarnings()}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{if} (syncState == \textcolor{keyword}{null})}
+\DoxyCodeLine{00126             \{}
+\DoxyCodeLine{00127                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}A SyncState is required for this Net Object to be mountable."{}}, MessageType.Warning);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (syncState.mountableTo == 0)}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}SyncState on this object has no allowed 'Mountable To' Types. This object will not be compatible with any system."{}}, MessageType.Warning);}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133         \}}
+\DoxyCodeLine{00134     \}}
+\DoxyCodeLine{00135 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00136 \}}
+
+\end{DoxyCode}

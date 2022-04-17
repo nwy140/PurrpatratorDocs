@@ -1,0 +1,137 @@
+\doxysection{Starter\+Assets\+Deploy\+Menu.\+cs}
+\label{_starter_assets_deploy_menu_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Editor/StarterAssetsDeployMenu.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Editor/StarterAssetsDeployMenu.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{preprocessor}{\#if STARTER\_ASSETS\_PACKAGES\_CHECKED}}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} Cinemachine;}
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{namespace }StarterAssets}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00010     \textcolor{comment}{// This class needs to be a scriptable object to support dynamic determination of StarterAssets install path}}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} \textcolor{keyword}{partial class }StarterAssetsDeployMenu : ScriptableObject}
+\DoxyCodeLine{00012     \{}
+\DoxyCodeLine{00013         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} MenuRoot = \textcolor{stringliteral}{"{}Tools/Starter Assets"{}};}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015         \textcolor{comment}{// prefab names}}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} MainCameraPrefabName = \textcolor{stringliteral}{"{}MainCamera"{}};}
+\DoxyCodeLine{00017         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PlayerCapsulePrefabName = \textcolor{stringliteral}{"{}PlayerCapsule"{}};}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         \textcolor{comment}{// names in hierarchy}}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CinemachineVirtualCameraName = \textcolor{stringliteral}{"{}PlayerFollowCamera"{}};}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{comment}{// tags}}
+\DoxyCodeLine{00023         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PlayerTag = \textcolor{stringliteral}{"{}Player"{}};}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} MainCameraTag = \textcolor{stringliteral}{"{}MainCamera"{}};}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CinemachineTargetTag = \textcolor{stringliteral}{"{}CinemachineTarget"{}};}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{comment}{// Get the path to the template prefabs }}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} StarterAssetsPath => PathToThisFile;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject \_cinemachineVirtualCamera;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} StarterAssetsInstallPath}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             \textcolor{keyword}{get}}
+\DoxyCodeLine{00040             \{}
+\DoxyCodeLine{00041                 \textcolor{keywordtype}{string} path = PathToThisFile;}
+\DoxyCodeLine{00042                 \textcolor{comment}{// where this file is relative to install path:}}
+\DoxyCodeLine{00043                 \textcolor{keywordflow}{return} path.Substring(0, path.LastIndexOf(\textcolor{stringliteral}{"{}StarterAssets"{}}));}
+\DoxyCodeLine{00044             \}}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} PathToThisFile}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             \textcolor{keyword}{get}}
+\DoxyCodeLine{00050             \{}
+\DoxyCodeLine{00051                 var dummy = CreateInstance<StarterAssetsDeployMenu>();}
+\DoxyCodeLine{00052                 \textcolor{keywordtype}{string} path = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(dummy));}
+\DoxyCodeLine{00053                 DestroyImmediate(dummy);}
+\DoxyCodeLine{00054                 \textcolor{keywordflow}{return} path.Substring(0, path.LastIndexOf(\textcolor{stringliteral}{"{}/Editor/StarterAssetsDeployMenu.cs"{}}));}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00062         [MenuItem(MenuRoot + \textcolor{stringliteral}{"{}/Reinstall Dependencies"{}}, \textcolor{keyword}{false})]}
+\DoxyCodeLine{00063         \textcolor{keyword}{static} \textcolor{keywordtype}{void} ResetPackageChecker()}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             ScriptingDefineUtils.RemoveScriptingDefine(PackageChecker.PackageCheckerScriptingDefine);}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{preprocessor}{\#if STARTER\_ASSETS\_PACKAGES\_CHECKED}}
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CheckCameras(\textcolor{keywordtype}{string} prefabPath, Transform targetParent)}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             CheckMainCamera(prefabPath);}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             GameObject vcam = GameObject.Find(CinemachineVirtualCameraName);}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             \textcolor{keywordflow}{if} (!vcam)}
+\DoxyCodeLine{00076             \{}
+\DoxyCodeLine{00077                 HandleInstantiatingPrefab(StarterAssetsPath + prefabPath,}
+\DoxyCodeLine{00078                     CinemachineVirtualCameraName,}
+\DoxyCodeLine{00079                     out GameObject vcamPrefab);}
+\DoxyCodeLine{00080                 \_cinemachineVirtualCamera = vcamPrefab;}
+\DoxyCodeLine{00081             \}}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \_cinemachineVirtualCamera = vcam;}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             GameObject[] targets = GameObject.FindGameObjectsWithTag(CinemachineTargetTag);}
+\DoxyCodeLine{00088             GameObject target = targets.FirstOrDefault(t => t.transform.IsChildOf(targetParent));}
+\DoxyCodeLine{00089             \textcolor{keywordflow}{if} (target == \textcolor{keyword}{null})}
+\DoxyCodeLine{00090             \{}
+\DoxyCodeLine{00091                 target = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}PlayerCameraRoot"{}});}
+\DoxyCodeLine{00092                 target.transform.SetParent(targetParent);}
+\DoxyCodeLine{00093                 target.transform.localPosition = \textcolor{keyword}{new} Vector3(0f, 1.375f, 0f);}
+\DoxyCodeLine{00094                 target.tag = CinemachineTargetTag;}
+\DoxyCodeLine{00095                 Undo.RegisterCreatedObjectUndo(target, \textcolor{stringliteral}{"{}Created new cinemachine target"{}});}
+\DoxyCodeLine{00096             \}}
+\DoxyCodeLine{00097             CheckVirtualCameraFollowReference(target, \_cinemachineVirtualCamera);}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CheckMainCamera(\textcolor{keywordtype}{string} prefabPath)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             GameObject[] mainCameras = GameObject.FindGameObjectsWithTag(MainCameraTag);}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (mainCameras.Length < 1)}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{comment}{// if there are no MainCameras, add one}}
+\DoxyCodeLine{00107                 HandleInstantiatingPrefab(StarterAssetsPath + prefabPath, MainCameraPrefabName,}
+\DoxyCodeLine{00108                     out \_);}
+\DoxyCodeLine{00109             \}}
+\DoxyCodeLine{00110             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 \textcolor{comment}{// make sure the found camera has a cinemachine brain (we only need 1)}}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{if} (!mainCameras[0].TryGetComponent(out CinemachineBrain cinemachineBrain))}
+\DoxyCodeLine{00114                     mainCameras[0].AddComponent<CinemachineBrain>();}
+\DoxyCodeLine{00115             \}}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CheckVirtualCameraFollowReference(GameObject target,}
+\DoxyCodeLine{00119             GameObject cinemachineVirtualCamera)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             var serializedObject =}
+\DoxyCodeLine{00122                 \textcolor{keyword}{new} SerializedObject(cinemachineVirtualCamera.GetComponent<CinemachineVirtualCamera>());}
+\DoxyCodeLine{00123             var serializedProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_Follow"{}});}
+\DoxyCodeLine{00124             serializedProperty.objectReferenceValue = target.transform;}
+\DoxyCodeLine{00125             serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} HandleInstantiatingPrefab(\textcolor{keywordtype}{string} path, \textcolor{keywordtype}{string} prefabName, out GameObject prefab)}
+\DoxyCodeLine{00129         \{}
+\DoxyCodeLine{00130             prefab = (GameObject) PrefabUtility.InstantiatePrefab(}
+\DoxyCodeLine{00131                 AssetDatabase.LoadAssetAtPath<Object>(\$\textcolor{stringliteral}{"{}\{path\}\{prefabName\}.prefab"{}}));}
+\DoxyCodeLine{00132             Undo.RegisterCreatedObjectUndo(prefab, \textcolor{stringliteral}{"{}Instantiate Starter Asset Prefab"{}});}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             prefab.transform.localPosition = Vector3.zero;}
+\DoxyCodeLine{00135             prefab.transform.localEulerAngles = Vector3.zero;}
+\DoxyCodeLine{00136             prefab.transform.localScale = Vector3.one;}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00139     \}}
+\DoxyCodeLine{00140 \}}
+
+\end{DoxyCode}

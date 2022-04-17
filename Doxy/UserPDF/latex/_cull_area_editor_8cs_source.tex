@@ -1,0 +1,262 @@
+\doxysection{Cull\+Area\+Editor.\+cs}
+\label{_cull_area_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/Editor/CullAreaEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/Editor/CullAreaEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CullAreaEditor.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Custom inspector for CullArea}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     [CanEditMultipleObjects]}
+\DoxyCodeLine{00017     [CustomEditor(typeof(CullArea))]}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }CullAreaEditor : Editor}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} alignEditorCamera, showHelpEntries;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{private} CullArea cullArea;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{enum} UP\_AXIS\_OPTIONS}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             SideScrollerMode = 0,}
+\DoxyCodeLine{00027             TopDownOr3DMode = 1}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} UP\_AXIS\_OPTIONS upAxisOptions;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             cullArea = (CullArea)target;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036             \textcolor{comment}{// Destroying the newly created cull area if there is already one existing}}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (FindObjectsOfType<CullArea>().Length > 1)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 Debug.LogWarning(\textcolor{stringliteral}{"{}Destroying newly created cull area because there is already one existing in the scene."{}});}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041                 DestroyImmediate(cullArea);}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00044             \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             \textcolor{comment}{// Prevents the dropdown from resetting}}
+\DoxyCodeLine{00047             \textcolor{keywordflow}{if} (cullArea != \textcolor{keyword}{null})}
+\DoxyCodeLine{00048             \{}
+\DoxyCodeLine{00049                 upAxisOptions = cullArea.YIsUpAxis ? UP\_AXIS\_OPTIONS.SideScrollerMode : UP\_AXIS\_OPTIONS.TopDownOr3DMode;}
+\DoxyCodeLine{00050             \}}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             \textcolor{keywordflow}{if} (Application.isEditor \&\& !Application.isPlaying)}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 OnInspectorGUIEditMode();}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 OnInspectorGUIPlayMode();}
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00072         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnInspectorGUIEditMode()}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076 \textcolor{preprocessor}{            \#region DEFINE\_UP\_AXIS}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00080                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Select game type"{}}, EditorStyles.boldLabel);}
+\DoxyCodeLine{00081                 upAxisOptions = (UP\_AXIS\_OPTIONS)EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Game type"{}}, upAxisOptions);}
+\DoxyCodeLine{00082                 cullArea.YIsUpAxis = (upAxisOptions == UP\_AXIS\_OPTIONS.SideScrollerMode);}
+\DoxyCodeLine{00083                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00084             \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             EditorGUILayout.Space();}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090 \textcolor{preprocessor}{            \#region SUBDIVISION}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00094                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Set the number of subdivisions"{}}, EditorStyles.boldLabel);}
+\DoxyCodeLine{00095                 cullArea.NumberOfSubdivisions = EditorGUILayout.IntSlider(\textcolor{stringliteral}{"{}Number of subdivisions"{}}, cullArea.NumberOfSubdivisions, 0, CullArea.MAX\_NUMBER\_OF\_SUBDIVISIONS);}
+\DoxyCodeLine{00096                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098                 EditorGUILayout.Space();}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 \textcolor{keywordflow}{if} (cullArea.NumberOfSubdivisions != 0)}
+\DoxyCodeLine{00101                 \{}
+\DoxyCodeLine{00102                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < cullArea.Subdivisions.Length; ++index)}
+\DoxyCodeLine{00103                     \{}
+\DoxyCodeLine{00104                         \textcolor{keywordflow}{if} ((index + 1) <= cullArea.NumberOfSubdivisions)}
+\DoxyCodeLine{00105                         \{}
+\DoxyCodeLine{00106                             \textcolor{keywordtype}{string} countMessage = (index + 1) + \textcolor{stringliteral}{"{}. Subdivision: row / column count"{}};}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108                             EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00109                             cullArea.Subdivisions[index] = EditorGUILayout.Vector2Field(countMessage, cullArea.Subdivisions[index]);}
+\DoxyCodeLine{00110                             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                             EditorGUILayout.Space();}
+\DoxyCodeLine{00113                         \}}
+\DoxyCodeLine{00114                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00115                         \{}
+\DoxyCodeLine{00116                             cullArea.Subdivisions[index] = \textcolor{keyword}{new} UnityEngine.Vector2(1, 1);}
+\DoxyCodeLine{00117                         \}}
+\DoxyCodeLine{00118                     \}}
+\DoxyCodeLine{00119                 \}}
+\DoxyCodeLine{00120             \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             EditorGUILayout.Space();}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126 \textcolor{preprocessor}{            \#region UPDATING\_MAIN\_CAMERA}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             \{}
+\DoxyCodeLine{00129                 EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}View and camera options"{}}, EditorStyles.boldLabel);}
+\DoxyCodeLine{00132                 alignEditorCamera = EditorGUILayout.Toggle(\textcolor{stringliteral}{"{}Automatically align editor view with grid"{}}, alignEditorCamera);}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                 \textcolor{keywordflow}{if} (Camera.main != \textcolor{keyword}{null})}
+\DoxyCodeLine{00135                 \{}
+\DoxyCodeLine{00136                     \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Align main camera with grid"{}}))}
+\DoxyCodeLine{00137                     \{}
+\DoxyCodeLine{00138                         Undo.RecordObject(Camera.main.transform, \textcolor{stringliteral}{"{}Align main camera with grid."{}});}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                         \textcolor{keywordtype}{float} yCoord = cullArea.YIsUpAxis ? cullArea.Center.y : Mathf.Max(cullArea.Size.x, cullArea.Size.y);}
+\DoxyCodeLine{00141                         \textcolor{keywordtype}{float} zCoord = cullArea.YIsUpAxis ? -\/Mathf.Max(cullArea.Size.x, cullArea.Size.y) : cullArea.Center.y;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143                         Camera.main.transform.position = \textcolor{keyword}{new} Vector3(cullArea.Center.x, yCoord, zCoord);}
+\DoxyCodeLine{00144                         Camera.main.transform.LookAt(cullArea.transform.position);}
+\DoxyCodeLine{00145                     \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Current main camera position is "{}} + Camera.main.transform.position.ToString());}
+\DoxyCodeLine{00148                 \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00151             \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 cullArea.RecreateCellHierarchy = \textcolor{keyword}{true};}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 AlignEditorView();}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             EditorGUILayout.Space();}
+\DoxyCodeLine{00163             EditorGUILayout.Space();}
+\DoxyCodeLine{00164             EditorGUILayout.Space();}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             showHelpEntries = EditorGUILayout.Foldout(showHelpEntries, \textcolor{stringliteral}{"{}Need help with this component?"{}});}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (showHelpEntries)}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}To find help you can either follow the tutorial or have a look at the forums by clicking on the buttons below."{}}, MessageType.Info);}
+\DoxyCodeLine{00170                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Open the tutorial"{}}))}
+\DoxyCodeLine{00172                 \{}
+\DoxyCodeLine{00173                     Application.OpenURL(\textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/v2/demos-\/and-\/tutorials/package-\/demos/culling-\/demo"{}});}
+\DoxyCodeLine{00174                 \}}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Take me to the forums"{}}))}
+\DoxyCodeLine{00176                 \{}
+\DoxyCodeLine{00177                     Application.OpenURL(\textcolor{stringliteral}{"{}https://forum.photonengine.com/categories/unity-\/networking-\/plugin-\/pun"{}});}
+\DoxyCodeLine{00178                 \}}
+\DoxyCodeLine{00179                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00186         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnInspectorGUIPlayMode()}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}No changes allowed when game is running. Please exit play mode first."{}}, EditorStyles.boldLabel);}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnSceneGUI()}
+\DoxyCodeLine{00192         \{}
+\DoxyCodeLine{00193             Handles.BeginGUI();}
+\DoxyCodeLine{00194             GUILayout.BeginArea(\textcolor{keyword}{new} Rect(Screen.width -\/ 110, Screen.height -\/ 90, 100, 60));}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Reset position"{}}))}
+\DoxyCodeLine{00197             \{}
+\DoxyCodeLine{00198                 cullArea.transform.position = Vector3.zero;}
+\DoxyCodeLine{00199             \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Reset scaling"{}}))}
+\DoxyCodeLine{00202             \{}
+\DoxyCodeLine{00203                 cullArea.transform.localScale = \textcolor{keyword}{new} Vector3(25.0f, 25.0f, 25.0f);}
+\DoxyCodeLine{00204             \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             GUILayout.EndArea();}
+\DoxyCodeLine{00207             Handles.EndGUI();}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{comment}{// Checking for changes of the transform}}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{if} (cullArea.transform.hasChanged)}
+\DoxyCodeLine{00211             \{}
+\DoxyCodeLine{00212                 \textcolor{comment}{// Resetting position}}
+\DoxyCodeLine{00213                 \textcolor{keywordtype}{float} posX = cullArea.transform.position.x;}
+\DoxyCodeLine{00214                 \textcolor{keywordtype}{float} posY = cullArea.YIsUpAxis ? cullArea.transform.position.y : 0.0f;}
+\DoxyCodeLine{00215                 \textcolor{keywordtype}{float} posZ = !cullArea.YIsUpAxis ? cullArea.transform.position.z : 0.0f;}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217                 cullArea.transform.position = \textcolor{keyword}{new} Vector3(posX, posY, posZ);}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 \textcolor{comment}{// Resetting scaling}}
+\DoxyCodeLine{00220                 \textcolor{keywordflow}{if} (cullArea.Size.x < 1.0f || cullArea.Size.y < 1.0f)}
+\DoxyCodeLine{00221                 \{}
+\DoxyCodeLine{00222                     \textcolor{keywordtype}{float} scaleX = (cullArea.transform.localScale.x < 1.0f) ? 1.0f : cullArea.transform.localScale.x;}
+\DoxyCodeLine{00223                     \textcolor{keywordtype}{float} scaleY = (cullArea.transform.localScale.y < 1.0f) ? 1.0f : cullArea.transform.localScale.y;}
+\DoxyCodeLine{00224                     \textcolor{keywordtype}{float} scaleZ = (cullArea.transform.localScale.z < 1.0f) ? 1.0f : cullArea.transform.localScale.z;}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226                     cullArea.transform.localScale = \textcolor{keyword}{new} Vector3(scaleX, scaleY, scaleZ);}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228                     Debug.LogWarning(\textcolor{stringliteral}{"{}Scaling on a single axis can not be lower than 1. Resetting..."{}});}
+\DoxyCodeLine{00229                 \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231                 cullArea.RecreateCellHierarchy = \textcolor{keyword}{true};}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233                 AlignEditorView();}
+\DoxyCodeLine{00234             \}}
+\DoxyCodeLine{00235         \}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00240         \textcolor{keyword}{private} \textcolor{keywordtype}{void} AlignEditorView()}
+\DoxyCodeLine{00241         \{}
+\DoxyCodeLine{00242             \textcolor{keywordflow}{if} (!alignEditorCamera)}
+\DoxyCodeLine{00243             \{}
+\DoxyCodeLine{00244                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{comment}{// This creates a temporary game object in order to align the editor view.}}
+\DoxyCodeLine{00248             \textcolor{comment}{// The created game object is destroyed afterwards.}}
+\DoxyCodeLine{00249             GameObject tmpGo = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251             \textcolor{keywordtype}{float} yCoord = cullArea.YIsUpAxis ? cullArea.Center.y : Mathf.Max(cullArea.Size.x, cullArea.Size.y);}
+\DoxyCodeLine{00252             \textcolor{keywordtype}{float} zCoord = cullArea.YIsUpAxis ? -\/Mathf.Max(cullArea.Size.x, cullArea.Size.y) : cullArea.Center.y;}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254             tmpGo.transform.position = \textcolor{keyword}{new} Vector3(cullArea.Center.x, yCoord, zCoord);}
+\DoxyCodeLine{00255             tmpGo.transform.LookAt(cullArea.transform.position);}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (SceneView.lastActiveSceneView != \textcolor{keyword}{null})}
+\DoxyCodeLine{00258             \{}
+\DoxyCodeLine{00259                 SceneView.lastActiveSceneView.AlignViewToObject(tmpGo.transform);}
+\DoxyCodeLine{00260             \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262             DestroyImmediate(tmpGo);}
+\DoxyCodeLine{00263         \}}
+\DoxyCodeLine{00264     \}}
+\DoxyCodeLine{00265 \}}
+
+\end{DoxyCode}

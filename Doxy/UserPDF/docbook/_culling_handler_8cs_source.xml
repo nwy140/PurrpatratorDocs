@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__culling_handler_8cs_source" xml:lang="en-US">
+<title>CullingHandler.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullingHandler.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__culling_handler_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&#32;file=&quot;CullingHandler.cs&quot;&#32;company=&quot;Exit&#32;Games&#32;GmbH&quot;&gt;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&#32;&#32;Part&#32;of:&#32;Photon&#32;Unity&#32;Utilities,</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00005"/>00005 <emphasis role="comment">//&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00006"/>00006 <emphasis role="comment">//&#32;&#32;Handles&#32;the&#32;network&#32;culling.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00007"/>00007 <emphasis role="comment">//&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00008"/>00008 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00009"/>00009 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00010"/>00010 
+<anchor xml:id="__culling_handler_8cs_source_1l00011"/>00011 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__culling_handler_8cs_source_1l00012"/>00012 
+<anchor xml:id="__culling_handler_8cs_source_1l00013"/>00013 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__culling_handler_8cs_source_1l00014"/>00014 
+<anchor xml:id="__culling_handler_8cs_source_1l00015"/>00015 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>;
+<anchor xml:id="__culling_handler_8cs_source_1l00016"/>00016 
+<anchor xml:id="__culling_handler_8cs_source_1l00017"/>00017 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_utility_scripts">Photon.Pun.UtilityScripts</link>
+<anchor xml:id="__culling_handler_8cs_source_1l00018"/>00018 {
+<anchor xml:id="__culling_handler_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;ExitGames.Client.<link linkend="_namespace_exit_games_1_1_client_1_1_photon">Photon</link>;
+<anchor xml:id="__culling_handler_8cs_source_1l00020"/>00020 
+<anchor xml:id="__culling_handler_8cs_source_1l00021"/>00021 
+<anchor xml:id="__culling_handler_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;[RequireComponent(typeof(<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>))]
+<anchor xml:id="__culling_handler_8cs_source_1l00026"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_culling_handler">00026</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_culling_handler">CullingHandler</link>&#32;:&#32;MonoBehaviour,&#32;<link linkend="_interface_photon_1_1_pun_1_1_i_pun_observable">IPunObservable</link>
+<anchor xml:id="__culling_handler_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00028"/>00028 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;VARIABLES</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00029"/>00029 
+<anchor xml:id="__culling_handler_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;orderIndex;
+<anchor xml:id="__culling_handler_8cs_source_1l00031"/>00031 
+<anchor xml:id="__culling_handler_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area">CullArea</link>&#32;cullArea;
+<anchor xml:id="__culling_handler_8cs_source_1l00033"/>00033 
+<anchor xml:id="__culling_handler_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;List&lt;byte&gt;&#32;previousActiveCells,&#32;activeCells;
+<anchor xml:id="__culling_handler_8cs_source_1l00035"/>00035 
+<anchor xml:id="__culling_handler_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&#32;pView;
+<anchor xml:id="__culling_handler_8cs_source_1l00037"/>00037 
+<anchor xml:id="__culling_handler_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Vector3&#32;lastPosition,&#32;currentPosition;
+<anchor xml:id="__culling_handler_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__culling_handler_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__culling_handler_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;used&#32;to&#32;limit&#32;the&#32;number&#32;of&#32;UpdateInterestGroups&#32;calls&#32;per&#32;second&#32;(there&#32;is&#32;no&#32;use&#32;to&#32;change&#32;groups&#32;more&#32;than&#32;a&#32;few&#32;times&#32;per&#32;second,&#32;even&#32;if&#32;the&#32;Culling&#32;algorithm&#32;makes&#32;it&#32;look&#32;like&#32;that)</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;timeSinceUpdate;
+<anchor xml:id="__culling_handler_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;see&#32;timeSinceUpdate</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;timeBetweenUpdatesMin&#32;=&#32;0.33f;
+<anchor xml:id="__culling_handler_8cs_source_1l00045"/>00045 
+<anchor xml:id="__culling_handler_8cs_source_1l00046"/>00046 
+<anchor xml:id="__culling_handler_8cs_source_1l00047"/>00047 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00048"/>00048 
+<anchor xml:id="__culling_handler_8cs_source_1l00049"/>00049 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;UNITY_FUNCTIONS</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00050"/>00050 
+<anchor xml:id="__culling_handler_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnEnable()
+<anchor xml:id="__culling_handler_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.pView&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__culling_handler_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView&#32;=&#32;GetComponent&lt;PhotonView&gt;();
+<anchor xml:id="__culling_handler_8cs_source_1l00059"/>00059 
+<anchor xml:id="__culling_handler_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00065"/>00065 
+<anchor xml:id="__culling_handler_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__culling_handler_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.cullArea&#32;=&#32;FindObjectOfType&lt;CullArea&gt;();
+<anchor xml:id="__culling_handler_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00070"/>00070 
+<anchor xml:id="__culling_handler_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.previousActiveCells&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;byte&gt;(0);
+<anchor xml:id="__culling_handler_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.activeCells&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;byte&gt;(0);
+<anchor xml:id="__culling_handler_8cs_source_1l00073"/>00073 
+<anchor xml:id="__culling_handler_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.currentPosition&#32;=&#32;this.lastPosition&#32;=&#32;transform.position;
+<anchor xml:id="__culling_handler_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00076"/>00076 
+<anchor xml:id="__culling_handler_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Start()
+<anchor xml:id="__culling_handler_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00086"/>00086 
+<anchor xml:id="__culling_handler_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1acd3228520b05c60cddddb9a3b75f3b1d">InRoom</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>&#32;==&#32;0)
+<anchor xml:id="__culling_handler_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a449aad3553d332c2b8e4d52e4996ba79">Group</link>&#32;=&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>;
+<anchor xml:id="__culling_handler_8cs_source_1l00092"/>00092 
+<anchor xml:id="__culling_handler_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1aa941f29879694fd0a54f1ae58f8e394a">SetInterestGroups</link>(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>,&#32;<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__culling_handler_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;This&#32;is&#32;used&#32;to&#32;continuously&#32;update&#32;the&#32;active&#32;group.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1ab2d16cdf07e50e1afcfb6ca8786d14c9">ObservedComponents</link>.Add(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__culling_handler_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00102"/>00102 
+<anchor xml:id="__culling_handler_8cs_source_1l00103"/>00103 
+<anchor xml:id="__culling_handler_8cs_source_1l00104"/>00104 
+<anchor xml:id="__culling_handler_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Update()
+<anchor xml:id="__culling_handler_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00113"/>00113 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00114"/>00114 
+<anchor xml:id="__culling_handler_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;we&apos;ll&#32;limit&#32;how&#32;often&#32;this&#32;update&#32;may&#32;run&#32;at&#32;all&#32;(to&#32;avoid&#32;too&#32;frequent&#32;changes&#32;and&#32;flooding&#32;the&#32;server&#32;with&#32;SetInterestGroups&#32;calls)</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.timeSinceUpdate&#32;+=&#32;Time.deltaTime;
+<anchor xml:id="__culling_handler_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.timeSinceUpdate&#32;&lt;&#32;this.timeBetweenUpdatesMin)
+<anchor xml:id="__culling_handler_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00121"/>00121 
+<anchor xml:id="__culling_handler_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.lastPosition&#32;=&#32;this.currentPosition;
+<anchor xml:id="__culling_handler_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.currentPosition&#32;=&#32;transform.position;
+<anchor xml:id="__culling_handler_8cs_source_1l00124"/>00124 
+<anchor xml:id="__culling_handler_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;This&#32;is&#32;a&#32;simple&#32;position&#32;comparison&#32;of&#32;the&#32;current&#32;and&#32;the&#32;previous&#32;position.&#32;</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00126"/>00126 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;When&#32;using&#32;Network&#32;Culling&#32;in&#32;a&#32;bigger&#32;project&#32;keep&#32;in&#32;mind&#32;that&#32;there&#32;might</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;be&#32;more&#32;transform-related&#32;options,&#32;e.g.&#32;the&#32;rotation,&#32;or&#32;other&#32;options&#32;to&#32;check.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00128"/>00128 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.currentPosition&#32;!=&#32;this.lastPosition)
+<anchor xml:id="__culling_handler_8cs_source_1l00129"/>00129 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.HaveActiveCellsChanged())
+<anchor xml:id="__culling_handler_8cs_source_1l00131"/>00131 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.UpdateInterestGroups();
+<anchor xml:id="__culling_handler_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.timeSinceUpdate&#32;=&#32;0;
+<anchor xml:id="__culling_handler_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00135"/>00135 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00137"/>00137 
+<anchor xml:id="__culling_handler_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnGUI()
+<anchor xml:id="__culling_handler_8cs_source_1l00142"/>00142 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00144"/>00144 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00145"/>00145 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00146"/>00146 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00147"/>00147 
+<anchor xml:id="__culling_handler_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;subscribedAndActiveCells&#32;=&#32;<emphasis role="stringliteral">&quot;Inside&#32;cells:\n&quot;</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;subscribedCells&#32;=&#32;<emphasis role="stringliteral">&quot;Subscribed&#32;cells:\n&quot;</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00150"/>00150 
+<anchor xml:id="__culling_handler_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;index&#32;=&#32;0;&#32;index&#32;&lt;&#32;this.activeCells.Count;&#32;++index)
+<anchor xml:id="__culling_handler_8cs_source_1l00152"/>00152 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00153"/>00153 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(index&#32;&lt;=&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>)
+<anchor xml:id="__culling_handler_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00155"/>00155 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;subscribedAndActiveCells&#32;+=&#32;this.activeCells[index]&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;|&#32;&quot;</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00156"/>00156 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00157"/>00157 
+<anchor xml:id="__culling_handler_8cs_source_1l00158"/>00158 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;subscribedCells&#32;+=&#32;this.activeCells[index]&#32;+&#32;<emphasis role="stringliteral">&quot;&#32;|&#32;&quot;</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00159"/>00159 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00160"/>00160 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUI.Label(<emphasis role="keyword">new</emphasis>&#32;Rect(20.0f,&#32;Screen.height&#32;-&#32;120.0f,&#32;200.0f,&#32;40.0f),&#32;<emphasis role="stringliteral">&quot;&lt;color=white&gt;PhotonView&#32;Group:&#32;&quot;</emphasis>&#32;+&#32;<emphasis role="keyword">this</emphasis>.pView.Group&#32;+&#32;<emphasis role="stringliteral">&quot;&lt;/color&gt;&quot;</emphasis>,&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle()&#32;{&#32;alignment&#32;=&#32;TextAnchor.UpperLeft,&#32;fontSize&#32;=&#32;16&#32;});
+<anchor xml:id="__culling_handler_8cs_source_1l00161"/>00161 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUI.Label(<emphasis role="keyword">new</emphasis>&#32;Rect(20.0f,&#32;Screen.height&#32;-&#32;100.0f,&#32;200.0f,&#32;40.0f),&#32;<emphasis role="stringliteral">&quot;&lt;color=white&gt;&quot;</emphasis>&#32;+&#32;subscribedAndActiveCells&#32;+&#32;<emphasis role="stringliteral">&quot;&lt;/color&gt;&quot;</emphasis>,&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle()&#32;{&#32;alignment&#32;=&#32;TextAnchor.UpperLeft,&#32;fontSize&#32;=&#32;16&#32;});
+<anchor xml:id="__culling_handler_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUI.Label(<emphasis role="keyword">new</emphasis>&#32;Rect(20.0f,&#32;Screen.height&#32;-&#32;60.0f,&#32;200.0f,&#32;40.0f),&#32;<emphasis role="stringliteral">&quot;&lt;color=white&gt;&quot;</emphasis>&#32;+&#32;subscribedCells&#32;+&#32;<emphasis role="stringliteral">&quot;&lt;/color&gt;&quot;</emphasis>,&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle()&#32;{&#32;alignment&#32;=&#32;TextAnchor.UpperLeft,&#32;fontSize&#32;=&#32;16&#32;});
+<anchor xml:id="__culling_handler_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00164"/>00164 
+<anchor xml:id="__culling_handler_8cs_source_1l00165"/>00165 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00166"/>00166 
+<anchor xml:id="__culling_handler_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;HaveActiveCellsChanged()
+<anchor xml:id="__culling_handler_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>&#32;==&#32;0)
+<anchor xml:id="__culling_handler_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00175"/>00175 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00176"/>00176 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00177"/>00177 
+<anchor xml:id="__culling_handler_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.previousActiveCells&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;byte&gt;(this.activeCells);
+<anchor xml:id="__culling_handler_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.activeCells&#32;=&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a63382409c900dc34c2770029b9e07fe1">GetActiveCells</link>(transform.position);
+<anchor xml:id="__culling_handler_8cs_source_1l00180"/>00180 
+<anchor xml:id="__culling_handler_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;If&#32;the&#32;player&#32;leaves&#32;the&#32;area&#32;we&#32;insert&#32;the&#32;whole&#32;area&#32;itself&#32;as&#32;an&#32;active&#32;cell.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;This&#32;can&#32;be&#32;removed&#32;if&#32;it&#32;is&#32;sure&#32;that&#32;the&#32;player&#32;is&#32;not&#32;able&#32;to&#32;leave&#32;the&#32;area.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00183"/>00183 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">while</emphasis>&#32;(this.activeCells.Count&#32;&lt;=&#32;<emphasis role="keyword">this</emphasis>.cullArea.NumberOfSubdivisions)
+<anchor xml:id="__culling_handler_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.activeCells.Add(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>);
+<anchor xml:id="__culling_handler_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00187"/>00187 
+<anchor xml:id="__culling_handler_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.activeCells.Count&#32;!=&#32;<emphasis role="keyword">this</emphasis>.previousActiveCells.Count)
+<anchor xml:id="__culling_handler_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00192"/>00192 
+<anchor xml:id="__culling_handler_8cs_source_1l00193"/>00193 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.activeCells[this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>]&#32;!=&#32;<emphasis role="keyword">this</emphasis>.previousActiveCells[<emphasis role="keyword">this</emphasis>.cullArea.NumberOfSubdivisions])
+<anchor xml:id="__culling_handler_8cs_source_1l00194"/>00194 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00195"/>00195 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00196"/>00196 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00197"/>00197 
+<anchor xml:id="__culling_handler_8cs_source_1l00198"/>00198 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__culling_handler_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00200"/>00200 
+<anchor xml:id="__culling_handler_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;UpdateInterestGroups()
+<anchor xml:id="__culling_handler_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;List&lt;byte&gt;&#32;disable&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;byte&gt;(0);
+<anchor xml:id="__culling_handler_8cs_source_1l00207"/>00207 
+<anchor xml:id="__culling_handler_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(<emphasis role="keywordtype">byte</emphasis>&#32;groupId&#32;<emphasis role="keywordflow">in</emphasis>&#32;this.previousActiveCells)
+<anchor xml:id="__culling_handler_8cs_source_1l00209"/>00209 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00210"/>00210 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.activeCells.Contains(groupId))
+<anchor xml:id="__culling_handler_8cs_source_1l00211"/>00211 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00212"/>00212 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;disable.Add(groupId);
+<anchor xml:id="__culling_handler_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00215"/>00215 
+<anchor xml:id="__culling_handler_8cs_source_1l00216"/>00216 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1aa941f29879694fd0a54f1ae58f8e394a">SetInterestGroups</link>(disable.ToArray(),&#32;<emphasis role="keyword">this</emphasis>.activeCells.ToArray());
+<anchor xml:id="__culling_handler_8cs_source_1l00217"/>00217 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00218"/>00218 
+<anchor xml:id="__culling_handler_8cs_source_1l00219"/>00219 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;IPunObservable&#32;implementation</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00220"/>00220 
+<anchor xml:id="__culling_handler_8cs_source_1l00226"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_culling_handler_1a78a5fa0ac375a00b9e6bbbed1ef9345b">00226</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_culling_handler_1a78a5fa0ac375a00b9e6bbbed1ef9345b">OnPhotonSerializeView</link>(<link linkend="_class_photon_1_1_pun_1_1_photon_stream">PhotonStream</link>&#32;stream,&#32;<link linkend="_struct_photon_1_1_pun_1_1_photon_message_info">PhotonMessageInfo</link>&#32;info)
+<anchor xml:id="__culling_handler_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00228"/>00228 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;If&#32;the&#32;player&#32;leaves&#32;the&#32;area&#32;we&#32;insert&#32;the&#32;whole&#32;area&#32;itself&#32;as&#32;an&#32;active&#32;cell.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;This&#32;can&#32;be&#32;removed&#32;if&#32;it&#32;is&#32;sure&#32;that&#32;the&#32;player&#32;is&#32;not&#32;able&#32;to&#32;leave&#32;the&#32;area.</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">while</emphasis>&#32;(this.activeCells.Count&#32;&lt;=&#32;<emphasis role="keyword">this</emphasis>.cullArea.NumberOfSubdivisions)
+<anchor xml:id="__culling_handler_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00232"/>00232 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.activeCells.Add(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>);
+<anchor xml:id="__culling_handler_8cs_source_1l00233"/>00233 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00234"/>00234 
+<anchor xml:id="__culling_handler_8cs_source_1l00235"/>00235 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>&#32;==&#32;1)
+<anchor xml:id="__culling_handler_8cs_source_1l00236"/>00236 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.orderIndex&#32;=&#32;(++this.orderIndex&#32;%&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aa7c010541fc441ddc7335ac8d1ef820f">SUBDIVISION_FIRST_LEVEL_ORDER</link>.Length);
+<anchor xml:id="__culling_handler_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a449aad3553d332c2b8e4d52e4996ba79">Group</link>&#32;=&#32;this.activeCells[this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aa7c010541fc441ddc7335ac8d1ef820f">SUBDIVISION_FIRST_LEVEL_ORDER</link>[this.orderIndex]];
+<anchor xml:id="__culling_handler_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>&#32;==&#32;2)
+<anchor xml:id="__culling_handler_8cs_source_1l00241"/>00241 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00242"/>00242 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.orderIndex&#32;=&#32;(++this.orderIndex&#32;%&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a607cf1d6e2c0c6dae1b8a4dfc1c7698a">SUBDIVISION_SECOND_LEVEL_ORDER</link>.Length);
+<anchor xml:id="__culling_handler_8cs_source_1l00243"/>00243 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a449aad3553d332c2b8e4d52e4996ba79">Group</link>&#32;=&#32;this.activeCells[this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a607cf1d6e2c0c6dae1b8a4dfc1c7698a">SUBDIVISION_SECOND_LEVEL_ORDER</link>[this.orderIndex]];
+<anchor xml:id="__culling_handler_8cs_source_1l00244"/>00244 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00245"/>00245 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>&#32;==&#32;3)
+<anchor xml:id="__culling_handler_8cs_source_1l00246"/>00246 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__culling_handler_8cs_source_1l00247"/>00247 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.orderIndex&#32;=&#32;(++this.orderIndex&#32;%&#32;this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a370904381dfbbeb43b0375cff6c04736">SUBDIVISION_THIRD_LEVEL_ORDER</link>.Length);
+<anchor xml:id="__culling_handler_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.pView.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a449aad3553d332c2b8e4d52e4996ba79">Group</link>&#32;=&#32;this.activeCells[this.cullArea.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a370904381dfbbeb43b0375cff6c04736">SUBDIVISION_THIRD_LEVEL_ORDER</link>[this.orderIndex]];
+<anchor xml:id="__culling_handler_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00251"/>00251 
+<anchor xml:id="__culling_handler_8cs_source_1l00252"/>00252 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__culling_handler_8cs_source_1l00253"/>00253 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__culling_handler_8cs_source_1l00254"/>00254 }
+</programlisting></section>

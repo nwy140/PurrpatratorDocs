@@ -1,0 +1,566 @@
+\doxysection{Fast\+Bit\+Mask128.\+cs}
+\label{_fast_bit_mask128_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/FastBitMask/FastBitMask128.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/FastBitMask/FastBitMask128.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{struct }FastBitMask128}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{private} ulong seg1, seg2;}
+\DoxyCodeLine{00018         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitcount, seg1bitcount, seg2bitcount;}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} ulong alltrue1, alltrue2;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} ulong Seg1 \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} seg1; \} \}}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} ulong Seg2 \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} seg2; \} \}}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} ulong AllTrue1 \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} alltrue1; \} \}}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} ulong AllTrue2 \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} alltrue2; \} \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{int} BitCount}
+\DoxyCodeLine{00030         \{}
+\DoxyCodeLine{00031             \textcolor{keyword}{get}}
+\DoxyCodeLine{00032             \{}
+\DoxyCodeLine{00033                 \textcolor{keywordflow}{return} bitcount;}
+\DoxyCodeLine{00034             \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036             \textcolor{keyword}{set}}
+\DoxyCodeLine{00037             \{}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00039                 \textcolor{keywordflow}{if} (value > 128)}
+\DoxyCodeLine{00040                 \{}
+\DoxyCodeLine{00041                     Debug.LogError(\textcolor{stringliteral}{"{}Attempting to set "{}} + typeof(FastBitMask128).Name + \textcolor{stringliteral}{"{}.bitcount to "{}} + value + \textcolor{stringliteral}{"{}, but the max allowed is 128."{}});}
+\DoxyCodeLine{00042                     bitcount = 128;}
+\DoxyCodeLine{00043                 \}}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (value < 0)}
+\DoxyCodeLine{00045                 \{}
+\DoxyCodeLine{00046                     Debug.LogError(\textcolor{stringliteral}{"{}Attempting to set "{}} + typeof(FastBitMask128).Name + \textcolor{stringliteral}{"{}.bitcount to "{}} + value + \textcolor{stringliteral}{"{}, but the min allowed is 0."{}});}
+\DoxyCodeLine{00047                     bitcount = 0;}
+\DoxyCodeLine{00048                 \}}
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00050                     bitcount = value;}
+\DoxyCodeLine{00051 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00052                 bitcount = value;}
+\DoxyCodeLine{00053 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055                 this.seg1bitcount = bitcount < 64 ? bitcount : 64;}
+\DoxyCodeLine{00056                 this.seg2bitcount = bitcount > 64 ? bitcount -\/ 64 : 0;}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058                 alltrue1 =}
+\DoxyCodeLine{00059                     (bitcount < 64) ? ((ulong)1 << bitcount) -\/ 1 :}
+\DoxyCodeLine{00060                     ulong.MaxValue;}
+\DoxyCodeLine{00061                 alltrue2 =}
+\DoxyCodeLine{00062                     (bitcount == 128) ? ulong.MaxValue :}
+\DoxyCodeLine{00063                     (bitcount > 64) ? ((ulong)1 << (bitcount -\/ 64)) -\/ 1 :}
+\DoxyCodeLine{00064                     0;}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066                 \textcolor{comment}{// Clear any old bits that are no longer in use -\/ allows for very unchecked testing if we can assume they are all zero}}
+\DoxyCodeLine{00067                 seg1 = seg1 \& alltrue1;}
+\DoxyCodeLine{00068                 seg2 = seg2 \& alltrue2;}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \}}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keyword}{public} FastBitMask128(\textcolor{keywordtype}{int} bitcount)}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00076             \textcolor{keywordflow}{if} (bitcount > 127 || bitcount < 0)}
+\DoxyCodeLine{00077                 RangeError(bitcount);}
+\DoxyCodeLine{00078 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00079             this.seg1 = 0;}
+\DoxyCodeLine{00080             this.seg2 = 0;}
+\DoxyCodeLine{00081             this.bitcount = bitcount;}
+\DoxyCodeLine{00082             this.seg1bitcount = bitcount < 64 ? bitcount : 64;}
+\DoxyCodeLine{00083             this.seg2bitcount = bitcount > 64 ? bitcount -\/ 64 : 0;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             alltrue1 =}
+\DoxyCodeLine{00086                 (bitcount < 64) ? ((ulong)1 << bitcount) -\/ 1 :}
+\DoxyCodeLine{00087                 ulong.MaxValue;}
+\DoxyCodeLine{00088             alltrue2 =}
+\DoxyCodeLine{00089                 (bitcount == 128) ? ulong.MaxValue :}
+\DoxyCodeLine{00090                 (bitcount > 64) ? ((ulong)1 << (bitcount -\/ 64)) -\/ 1 :}
+\DoxyCodeLine{00091                 0;}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} FastBitMask128(FastBitMask128 copyFrom)}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             this.seg1 = copyFrom.seg1;}
+\DoxyCodeLine{00097             this.seg2 = copyFrom.seg2;}
+\DoxyCodeLine{00098             this.bitcount = copyFrom.bitcount;}
+\DoxyCodeLine{00099             this.seg1bitcount = copyFrom.seg1bitcount;}
+\DoxyCodeLine{00100             this.seg2bitcount = copyFrom.seg2bitcount;}
+\DoxyCodeLine{00101             this.alltrue1 = copyFrom.alltrue1;}
+\DoxyCodeLine{00102             this.alltrue2 = copyFrom.alltrue2;}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} \textcolor{keyword}{this}[\textcolor{keywordtype}{int} bit]}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             \textcolor{keyword}{get}}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00110                 \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00111                     RangeError(bit);}
+\DoxyCodeLine{00112 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00114                     \textcolor{keywordflow}{return} (seg1 \& ((ulong)1 << bit)) != 0;}
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00116                     \textcolor{keywordflow}{return} (seg2 \& ((ulong)1 << bit -\/ 64)) != 0;}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keyword}{set}}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00123                     RangeError(bit);}
+\DoxyCodeLine{00124 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00126                 \{}
+\DoxyCodeLine{00127                     \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00128                         seg1 |= ((ulong)1 << bit);}
+\DoxyCodeLine{00129                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00130                         seg2 |= ((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00131                 \}}
+\DoxyCodeLine{00132                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00133                 \{}
+\DoxyCodeLine{00134                     \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00135                         seg1 \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00136                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00137                         seg2 \&= \string~((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00138                 \}}
+\DoxyCodeLine{00139             \}}
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Get(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00146                 RangeError(bit);}
+\DoxyCodeLine{00147 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{return} (seg1 \& ((ulong)1 << bit)) != 0;}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{return} (seg2 \& ((ulong)1 << bit -\/ 64)) != 0;}
+\DoxyCodeLine{00152         \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(\textcolor{keywordtype}{int} bit, \textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00155         \{}
+\DoxyCodeLine{00156 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00158                 RangeError(bit);}
+\DoxyCodeLine{00159 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00161             \{}
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00163                     seg1 |= ((ulong)1 << bit);}
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165                     seg2 |= ((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00166             \}}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00170                     seg1 \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00172                     seg2 \&= \string~((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00173             \}}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTrue(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00180                 RangeError(bit);}
+\DoxyCodeLine{00181 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00183                 seg1 |= ((ulong)1 << bit);}
+\DoxyCodeLine{00184             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00185                 seg2 |= ((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00186         \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetFalse(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00191             \textcolor{keywordflow}{if} (bit > 127 || bit < 0)}
+\DoxyCodeLine{00192                 RangeError(bit);}
+\DoxyCodeLine{00193 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{if} (bit < 64)}
+\DoxyCodeLine{00195                 seg1 \&= \string~((ulong)1 << bit);}
+\DoxyCodeLine{00196             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00197                 seg2 \&= \string~((ulong)1 << (bit -\/ 64));}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetAllTrue()}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             seg1 = alltrue1;}
+\DoxyCodeLine{00203             seg2 = alltrue2;}
+\DoxyCodeLine{00204         \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetAllFalse()}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             seg1 = 0;}
+\DoxyCodeLine{00209             seg2 = 0;}
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00215         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AllAreFalse \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} bitcount != 0 \&\& seg1 == 0 \&\& seg2 == 0; \} \}}
+\DoxyCodeLine{00216         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AllAreTrue \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} bitcount == 0 || seg1 == alltrue1 \&\& seg2 == alltrue2; \} \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OR(FastBitMask128 other)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             seg1 |= other.seg1;}
+\DoxyCodeLine{00221             seg2 |= other.seg2;}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OR(FastBitMask128 other, \textcolor{keywordtype}{int} otherOffset)}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             \textcolor{keywordflow}{if} (otherOffset == 0)}
+\DoxyCodeLine{00228             \{}
+\DoxyCodeLine{00229                 seg1 |= other.seg1;}
+\DoxyCodeLine{00230                 seg2 |= other.seg2;}
+\DoxyCodeLine{00231                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00232             \}}
+\DoxyCodeLine{00233             \textcolor{keywordflow}{if} (otherOffset == 64)}
+\DoxyCodeLine{00234             \{}
+\DoxyCodeLine{00235                 seg2 |= other.seg1;}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (otherOffset >= 128)}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242             \textcolor{keywordflow}{if} (otherOffset > 64)}
+\DoxyCodeLine{00243             \{}
+\DoxyCodeLine{00244                 seg2 |= (seg1 << (otherOffset -\/ 64));}
+\DoxyCodeLine{00245                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             seg1 |= other.seg1 << otherOffset;}
+\DoxyCodeLine{00249             seg2 |= other.seg1 >> (64 -\/ otherOffset);}
+\DoxyCodeLine{00250             seg2 |= other.seg2 << otherOffset;}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252         \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AND(FastBitMask128 other)}
+\DoxyCodeLine{00255         \{}
+\DoxyCodeLine{00256             seg1 \&= other.seg1;}
+\DoxyCodeLine{00257             seg2 \&= other.seg2;}
+\DoxyCodeLine{00258         \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{public} \textcolor{keywordtype}{void} XOR(FastBitMask128 other)}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             seg1 \string^= other.seg1;}
+\DoxyCodeLine{00263             seg2 \string^= other.seg2;}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266         \textcolor{keyword}{public} \textcolor{keyword}{static} FastBitMask128 operator |(FastBitMask128 a, FastBitMask128 b)}
+\DoxyCodeLine{00267         \{}
+\DoxyCodeLine{00268             \textcolor{keywordflow}{return} \textcolor{keyword}{new} FastBitMask128(a) \{ seg1 = a.seg1 | b.seg1, seg2 = a.seg2 | b.seg2 \};}
+\DoxyCodeLine{00269         \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keyword}{static} FastBitMask128 operator \&(FastBitMask128 a, FastBitMask128 b)}
+\DoxyCodeLine{00272         \{}
+\DoxyCodeLine{00273             \textcolor{keywordflow}{return} \textcolor{keyword}{new} FastBitMask128(a) \{ seg1 = a.seg1 \& b.seg1, seg2 = a.seg2 \& b.seg2 \};}
+\DoxyCodeLine{00274         \}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276         \textcolor{keyword}{public} \textcolor{keyword}{static} FastBitMask128 operator \string^(FastBitMask128 a, FastBitMask128 b)}
+\DoxyCodeLine{00277         \{}
+\DoxyCodeLine{00278             \textcolor{keywordflow}{return} \textcolor{keyword}{new} FastBitMask128(a) \{ seg1 = (a.seg1 \string^ b.seg1) \& a.alltrue1, seg2 = (a.seg2 \string^ b.seg2) \& a.alltrue2 \};}
+\DoxyCodeLine{00279         \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281         \textcolor{keyword}{public} \textcolor{keyword}{static} FastBitMask128 operator !(FastBitMask128 a)}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{keywordflow}{return} \textcolor{keyword}{new} FastBitMask128(a) \{ seg1 = (\string~a.seg1) \& a.alltrue1, seg2 = (\string~a.seg2) \& a.alltrue2 \};}
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00290         \textcolor{keyword}{public} FastBitMask128 NOT()}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292             \textcolor{keywordflow}{return} \textcolor{keyword}{new} FastBitMask128(\textcolor{keyword}{this}) \{ seg1 = (\string~seg1 \& alltrue1), seg2 = (\string~seg2 \& alltrue2) \}; }
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295         \textcolor{comment}{//[UnityEditor.InitializeOnLoadMethod]}}
+\DoxyCodeLine{00296         \textcolor{comment}{//public static void Tester()}}
+\DoxyCodeLine{00297         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00298         \textcolor{comment}{//  var test = new FastBitMask128(64) \{ seg1 = ((ulong)1 << 63), seg2 = 2 \};}}
+\DoxyCodeLine{00299         \textcolor{comment}{//  //test.SetAllTrue();}}
+\DoxyCodeLine{00300         \textcolor{comment}{//  Debug.Log(test.seg1 + "{}:"{} + test.seg2 + "{}  TestCNT: "{} + test.CountTrue() + "{} "{} + test.CountFalse());}}
+\DoxyCodeLine{00301         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303         \textcolor{comment}{// TODO: these could be faster}}
+\DoxyCodeLine{00304         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountTrue()}
+\DoxyCodeLine{00305         \{}
+\DoxyCodeLine{00306             \textcolor{keywordtype}{int} truecount;}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308             \textcolor{keywordflow}{if} (seg1 == 0)}
+\DoxyCodeLine{00309                 truecount = 0;}
+\DoxyCodeLine{00310             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (seg1 == alltrue1)}
+\DoxyCodeLine{00311                 truecount = seg1bitcount;}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00313             \{}
+\DoxyCodeLine{00314                 truecount = 0;}
+\DoxyCodeLine{00315                 ulong scratch = seg1;}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317                 \textcolor{keywordflow}{while} (scratch != 0)}
+\DoxyCodeLine{00318                 \{}
+\DoxyCodeLine{00319                     \textcolor{keywordflow}{if} ((scratch \& 1) == 1)}
+\DoxyCodeLine{00320                         truecount++;}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                     scratch = scratch >> 1;}
+\DoxyCodeLine{00323                 \}}
+\DoxyCodeLine{00324             \}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326             \textcolor{keywordflow}{if} (seg2 == 0)}
+\DoxyCodeLine{00327                 \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00328             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (seg2 == alltrue2)}
+\DoxyCodeLine{00329                 \textcolor{keywordflow}{return} truecount + seg2bitcount;}
+\DoxyCodeLine{00330             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00331             \{}
+\DoxyCodeLine{00332                 ulong scratch = seg2;}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00334                 \textcolor{keywordflow}{while} (scratch != 0)}
+\DoxyCodeLine{00335                 \{}
+\DoxyCodeLine{00336                     \textcolor{keywordflow}{if} ((scratch \& 1) == 1)}
+\DoxyCodeLine{00337                         truecount++;}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339                     scratch = scratch >> 1;}
+\DoxyCodeLine{00340                 \}}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342                 \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00343             \}}
+\DoxyCodeLine{00344         \}}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountFalse()}
+\DoxyCodeLine{00347         \{}
+\DoxyCodeLine{00348             \textcolor{keywordtype}{int} truecount;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             \textcolor{keywordflow}{if} (seg1 == 0)}
+\DoxyCodeLine{00351                 truecount = 0;}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (seg1 == alltrue1)}
+\DoxyCodeLine{00353                 truecount = seg1bitcount;}
+\DoxyCodeLine{00354             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00355             \{}
+\DoxyCodeLine{00356                 truecount = 0;}
+\DoxyCodeLine{00357                 ulong scratch = seg1;}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359                 \textcolor{keywordflow}{while} (scratch != 0)}
+\DoxyCodeLine{00360                 \{}
+\DoxyCodeLine{00361                     \textcolor{keywordflow}{if} ((scratch \& 1) == 1)}
+\DoxyCodeLine{00362                         truecount++;}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364                     scratch = scratch >> 1;}
+\DoxyCodeLine{00365                 \}}
+\DoxyCodeLine{00366             \}}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368             \textcolor{keywordflow}{if} (seg2 == 0)}
+\DoxyCodeLine{00369                 \textcolor{keywordflow}{return} bitcount -\/ truecount;}
+\DoxyCodeLine{00370             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (seg2 == alltrue2)}
+\DoxyCodeLine{00371                 \textcolor{keywordflow}{return} bitcount -\/ (truecount + seg2bitcount);}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374                 ulong scratch = seg2;}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376                 \textcolor{keywordflow}{while} (scratch != 0)}
+\DoxyCodeLine{00377                 \{}
+\DoxyCodeLine{00378                     \textcolor{keywordflow}{if} ((scratch \& 1) == 1)}
+\DoxyCodeLine{00379                         truecount++;}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381                     scratch = scratch >> 1;}
+\DoxyCodeLine{00382                 \}}
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00384                 \textcolor{keywordflow}{return} bitcount -\/ truecount;}
+\DoxyCodeLine{00385             \}}
+\DoxyCodeLine{00386         \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00396         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ClearBitsBefore(\textcolor{keywordtype}{int} start, \textcolor{keywordtype}{int} count)}
+\DoxyCodeLine{00397         \{}
+\DoxyCodeLine{00398 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00399             \textcolor{keywordflow}{if} (start > 127 || start < 0)}
+\DoxyCodeLine{00400                 RangeError(start);}
+\DoxyCodeLine{00401 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00402 }
+\DoxyCodeLine{00403             ulong mask = count == 64 ? ulong.MaxValue : ((ulong)1 << count) -\/ 1;}
+\DoxyCodeLine{00404             ulong mask1, mask2;}
+\DoxyCodeLine{00405             \textcolor{keywordtype}{int} offset = start -\/ count;}
+\DoxyCodeLine{00406 }
+\DoxyCodeLine{00407             \textcolor{keywordflow}{if} (bitcount > 64)}
+\DoxyCodeLine{00408             \{}
+\DoxyCodeLine{00409                 \textcolor{keywordflow}{if} (offset >= 0)}
+\DoxyCodeLine{00410                 \{}
+\DoxyCodeLine{00411                     mask1 = mask << offset;}
+\DoxyCodeLine{00412                     mask2 = mask >> (seg2bitcount -\/ offset);}
+\DoxyCodeLine{00413                 \}}
+\DoxyCodeLine{00414                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00415                 \{}
+\DoxyCodeLine{00417                     ulong wrapmask = mask << (bitcount + offset);}
+\DoxyCodeLine{00418                     mask1 = (mask >> -\/offset) | wrapmask;}
+\DoxyCodeLine{00419                     mask2 = mask << (seg2bitcount + offset);}
+\DoxyCodeLine{00420                 \}}
+\DoxyCodeLine{00421 }
+\DoxyCodeLine{00422                 seg1 \&= \string~mask1;}
+\DoxyCodeLine{00423                 seg2 \&= (\string~mask2 \& alltrue2);}
+\DoxyCodeLine{00424             \}}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00427             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00428             \{}
+\DoxyCodeLine{00429                 \textcolor{keywordflow}{if} (offset >= 0)}
+\DoxyCodeLine{00430                 \{}
+\DoxyCodeLine{00431                     mask1 = mask << offset;}
+\DoxyCodeLine{00432                     mask2 = mask >> (seg1bitcount -\/ offset);}
+\DoxyCodeLine{00433                 \}}
+\DoxyCodeLine{00434                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00435                 \{}
+\DoxyCodeLine{00436                     mask1 = mask >> -\/offset;}
+\DoxyCodeLine{00437                     mask2 = mask << (seg1bitcount + offset);}
+\DoxyCodeLine{00438                 \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440                 seg1 \&= \string~mask1 \& \string~mask2 \& alltrue1;}
+\DoxyCodeLine{00441             \}}
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00443         \}}
+\DoxyCodeLine{00447         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountValidRange(\textcolor{keywordtype}{int} start, \textcolor{keywordtype}{int} lookahead)}
+\DoxyCodeLine{00448         \{}
+\DoxyCodeLine{00449 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00450             \textcolor{keywordflow}{if} (start > 127 || start < 0)}
+\DoxyCodeLine{00451                 RangeError(start);}
+\DoxyCodeLine{00452 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00453             \textcolor{keywordtype}{int} len = bitcount;}
+\DoxyCodeLine{00454 }
+\DoxyCodeLine{00456             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = lookahead; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00457             \{}
+\DoxyCodeLine{00458                 \textcolor{keywordtype}{int} b = start + i;}
+\DoxyCodeLine{00459                 \textcolor{keywordflow}{if} (b >= len)}
+\DoxyCodeLine{00460                     b -\/= len;}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462                 \textcolor{keywordflow}{if} (b < 64)}
+\DoxyCodeLine{00463                 \{}
+\DoxyCodeLine{00464                     \textcolor{keywordflow}{if} ((seg1 \& ((ulong)1 << b)) != 0)}
+\DoxyCodeLine{00465                         \textcolor{keywordflow}{return} i + 1;}
+\DoxyCodeLine{00466                 \}}
+\DoxyCodeLine{00467                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00468                 \{}
+\DoxyCodeLine{00469                     \textcolor{keywordflow}{if} ((seg2 \& ((ulong)1 << b -\/ 64)) != 0)}
+\DoxyCodeLine{00470                         \textcolor{keywordflow}{return} i + 1;}
+\DoxyCodeLine{00471                 \}}
+\DoxyCodeLine{00472             \}}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00475         \}}
+\DoxyCodeLine{00476 }
+\DoxyCodeLine{00477         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Copy(FastBitMask128 other)}
+\DoxyCodeLine{00478         \{}
+\DoxyCodeLine{00479             bitcount = other.bitcount;}
+\DoxyCodeLine{00480             seg1bitcount = other.seg1bitcount;}
+\DoxyCodeLine{00481             seg2bitcount = other.seg2bitcount;}
+\DoxyCodeLine{00482             seg1 = other.seg1;}
+\DoxyCodeLine{00483             seg2 = other.seg2;}
+\DoxyCodeLine{00484             alltrue1 = other.alltrue1;}
+\DoxyCodeLine{00485             alltrue2 = other.alltrue2;}
+\DoxyCodeLine{00486         \}}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare(FastBitMask128 other)}
+\DoxyCodeLine{00489         \{}
+\DoxyCodeLine{00490             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00491                 bitcount == other.bitcount \&\&}
+\DoxyCodeLine{00492                 seg1 == other.seg1 \&\&}
+\DoxyCodeLine{00493                 seg2 == other.seg2;}
+\DoxyCodeLine{00494         \}}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00496 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RangeError(\textcolor{keywordtype}{int} bit)}
+\DoxyCodeLine{00499         \{}
+\DoxyCodeLine{00500             Debug.LogError(\textcolor{stringliteral}{"{}Value of "{}} + bit + \textcolor{stringliteral}{"{} is out of the valid index range (0-\/127) for "{}} + typeof(FastBitMask128).Name + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00501         \}}
+\DoxyCodeLine{00502 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00503     \}}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }FastBitMaskExt}
+\DoxyCodeLine{00506     \{}
+\DoxyCodeLine{00507 }
+\DoxyCodeLine{00508 \textcolor{preprocessor}{\#if DEBUG || UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00509 }
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder str = \textcolor{keyword}{new} StringBuilder(512);}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00514         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask128 ba, \textcolor{keywordtype}{int} greenbit = -\/1, \textcolor{keywordtype}{int} redbit = -\/1)}
+\DoxyCodeLine{00515         \{}
+\DoxyCodeLine{00516             str.Length = 0;}
+\DoxyCodeLine{00517             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00518             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00519             \{}
+\DoxyCodeLine{00520 }
+\DoxyCodeLine{00521                 \textcolor{keywordflow}{if} (i == greenbit)}
+\DoxyCodeLine{00522                     str.Append(\textcolor{stringliteral}{"{}<color=green>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00523                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i == redbit)}
+\DoxyCodeLine{00524                     str.Append(\textcolor{stringliteral}{"{}<color=red>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00525                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00526                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00527 }
+\DoxyCodeLine{00528                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00529                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00530                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00531                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00532             \}}
+\DoxyCodeLine{00533 }
+\DoxyCodeLine{00534             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00535         \}}
+\DoxyCodeLine{00536 }
+\DoxyCodeLine{00537         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask128 ba, \textcolor{keywordtype}{int} greenbit = -\/1, \textcolor{keywordtype}{bool}[] redbits = \textcolor{keyword}{null})}
+\DoxyCodeLine{00538         \{}
+\DoxyCodeLine{00539             str.Length = 0;}
+\DoxyCodeLine{00540             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00541             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00542             \{}
+\DoxyCodeLine{00543                 \textcolor{keywordflow}{if} (i == greenbit)}
+\DoxyCodeLine{00544                     str.Append(\textcolor{stringliteral}{"{}<color=green>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00545                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (redbits != \textcolor{keyword}{null} \&\& i < redbits.Length \&\& redbits[i])}
+\DoxyCodeLine{00546                     str.Append(\textcolor{stringliteral}{"{}<color=red>"{}}).Append(ba[i] ? 1 : 0).Append(\textcolor{stringliteral}{"{}</color>"{}});}
+\DoxyCodeLine{00547                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00548                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00551                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00552                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00553                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00554             \}}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00557         \}}
+\DoxyCodeLine{00558 }
+\DoxyCodeLine{00559         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder PrintMask(\textcolor{keyword}{this} FastBitMask128 ba, StringBuilder[] colorbits = \textcolor{keyword}{null})}
+\DoxyCodeLine{00560         \{}
+\DoxyCodeLine{00561             str.Length = 0;}
+\DoxyCodeLine{00562             str.Append(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00563             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = ba.BitCount -\/ 1; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00564             \{}
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00566                 \textcolor{keywordflow}{if} (colorbits != \textcolor{keyword}{null} \&\& i < colorbits.Length \&\& colorbits[i] != \textcolor{keyword}{null} \&\& colorbits[i].ToString() != \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00567                     str.Append(\textcolor{stringliteral}{"{}<b><color="{}} + colorbits[i].ToString() + \textcolor{stringliteral}{"{}>"{}} + (ba[i] ? 1 : 0) + \textcolor{stringliteral}{"{}</color></b>"{}});}
+\DoxyCodeLine{00568                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00569                     str.Append(ba[i] ? \textcolor{stringliteral}{"{}1"{}} : \textcolor{stringliteral}{"{}<color=\#0f0f0f>0</color>"{}});}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00571                 \textcolor{keywordflow}{if} (i \% 32 == 0)}
+\DoxyCodeLine{00572                     str.Append((i == 0) ? \textcolor{stringliteral}{"{}]"{}} : \textcolor{stringliteral}{"{}] ["{}});}
+\DoxyCodeLine{00573                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (i \% 8 == 0 \&\& i != 0)}
+\DoxyCodeLine{00574                     str.Append(\textcolor{stringliteral}{"{}:"{}});}
+\DoxyCodeLine{00575             \}}
+\DoxyCodeLine{00576 }
+\DoxyCodeLine{00577             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00578         \}}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00580 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00581 }
+\DoxyCodeLine{00582     \}}
+\DoxyCodeLine{00583 }
+\DoxyCodeLine{00584 }
+\DoxyCodeLine{00585 \}}
+\DoxyCodeLine{00586 }
+
+\end{DoxyCode}

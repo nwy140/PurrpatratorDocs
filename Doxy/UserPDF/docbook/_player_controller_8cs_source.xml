@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__player_controller_8cs_source" xml:lang="en-US">
+<title>PlayerController.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/_Developers/_Shared/_NetcodePhoton/Scripts/~Samples/SimpleFPSOnline/Scripts/PlayerController.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__player_controller_8cs_source_1l00001"/>00001 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>;
+<anchor xml:id="__player_controller_8cs_source_1l00002"/>00002 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_realtime">Realtime</link>;
+<anchor xml:id="__player_controller_8cs_source_1l00003"/>00003 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_s_int">SInt</link>.<link linkend="_namespace_s_int_1_1_netcode">Netcode</link>.<link linkend="_namespace_s_int_1_1_netcode_1_1_photon_p_u_n">PhotonPUN</link>;
+<anchor xml:id="__player_controller_8cs_source_1l00004"/>00004 <emphasis role="keyword">using</emphasis>&#32;System.Collections;
+<anchor xml:id="__player_controller_8cs_source_1l00005"/>00005 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__player_controller_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__player_controller_8cs_source_1l00007"/>00007 <emphasis role="keyword">using</emphasis>&#32;UnityEngine.UI;
+<anchor xml:id="__player_controller_8cs_source_1l00008"/><link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">00008</link> <emphasis role="keyword">using</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;=&#32;ExitGames.Client.Photon.Hashtable;
+<anchor xml:id="__player_controller_8cs_source_1l00009"/>00009 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online">SInt.Netcode.PhotonPUN.Samples.SimpleFPSOnline</link>
+<anchor xml:id="__player_controller_8cs_source_1l00010"/>00010 {
+<anchor xml:id="__player_controller_8cs_source_1l00011"/><link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller">00011</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller">PlayerController</link>&#32;:&#32;<link linkend="_class_photon_1_1_pun_1_1_mono_behaviour_pun_callbacks">MonoBehaviourPunCallbacks</link>,&#32;<link linkend="_interface_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_i_damageable">IDamageable</link>
+<anchor xml:id="__player_controller_8cs_source_1l00012"/>00012 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00013"/>00013 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;Image&#32;healthbarImage;
+<anchor xml:id="__player_controller_8cs_source_1l00014"/>00014 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;GameObject&#32;ui;
+<anchor xml:id="__player_controller_8cs_source_1l00015"/>00015 
+<anchor xml:id="__player_controller_8cs_source_1l00016"/>00016 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;GameObject&#32;cameraHolder;
+<anchor xml:id="__player_controller_8cs_source_1l00017"/>00017 
+<anchor xml:id="__player_controller_8cs_source_1l00018"/>00018 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;<emphasis role="keywordtype">float</emphasis>&#32;mouseSensitivity,&#32;sprintSpeed,&#32;walkSpeed,&#32;jumpForce,&#32;smoothTime;
+<anchor xml:id="__player_controller_8cs_source_1l00019"/>00019 
+<anchor xml:id="__player_controller_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_item">Item</link>[]&#32;items;
+<anchor xml:id="__player_controller_8cs_source_1l00021"/>00021 
+<anchor xml:id="__player_controller_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;itemIndex;
+<anchor xml:id="__player_controller_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;previousItemIndex&#32;=&#32;-1;
+<anchor xml:id="__player_controller_8cs_source_1l00024"/>00024 
+<anchor xml:id="__player_controller_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;verticalLookRotation;
+<anchor xml:id="__player_controller_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;grounded;
+<anchor xml:id="__player_controller_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;smoothMoveVelocity;
+<anchor xml:id="__player_controller_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;moveAmount;
+<anchor xml:id="__player_controller_8cs_source_1l00029"/>00029 
+<anchor xml:id="__player_controller_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rigidbody&#32;rb;
+<anchor xml:id="__player_controller_8cs_source_1l00031"/>00031 
+<anchor xml:id="__player_controller_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&#32;PV;
+<anchor xml:id="__player_controller_8cs_source_1l00033"/>00033 
+<anchor xml:id="__player_controller_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;maxHealth&#32;=&#32;100f;
+<anchor xml:id="__player_controller_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;currentHealth&#32;=&#32;maxHealth;
+<anchor xml:id="__player_controller_8cs_source_1l00036"/>00036 
+<anchor xml:id="__player_controller_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_player_manager">PlayerManager</link>&#32;playerManager;
+<anchor xml:id="__player_controller_8cs_source_1l00038"/>00038 
+<anchor xml:id="__player_controller_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Awake()
+<anchor xml:id="__player_controller_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb&#32;=&#32;GetComponent&lt;Rigidbody&gt;();
+<anchor xml:id="__player_controller_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PV&#32;=&#32;GetComponent&lt;PhotonView&gt;();
+<anchor xml:id="__player_controller_8cs_source_1l00043"/>00043 
+<anchor xml:id="__player_controller_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;playerManager&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a5cc014c89059912581ce8727427711ef">Find</link>((<emphasis role="keywordtype">int</emphasis>)PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a2eae0514ce7114660a765a8a8e6cfbb7">InstantiationData</link>[0]).GetComponent&lt;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_player_manager">PlayerManager</link>&gt;();
+<anchor xml:id="__player_controller_8cs_source_1l00045"/>00045 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00046"/>00046 
+<anchor xml:id="__player_controller_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Start()
+<anchor xml:id="__player_controller_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(0);
+<anchor xml:id="__player_controller_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__player_controller_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Destroy(GetComponentInChildren&lt;Camera&gt;().gameObject);
+<anchor xml:id="__player_controller_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Destroy(rb);
+<anchor xml:id="__player_controller_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Destroy(ui);
+<anchor xml:id="__player_controller_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00060"/>00060 
+<anchor xml:id="__player_controller_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Update()
+<anchor xml:id="__player_controller_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_controller_8cs_source_1l00065"/>00065 
+<anchor xml:id="__player_controller_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Look();
+<anchor xml:id="__player_controller_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Move();
+<anchor xml:id="__player_controller_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Jump();
+<anchor xml:id="__player_controller_8cs_source_1l00069"/>00069 
+<anchor xml:id="__player_controller_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;items.Length;&#32;i++)
+<anchor xml:id="__player_controller_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(Input.GetKeyDown((i&#32;+&#32;1).ToString()))
+<anchor xml:id="__player_controller_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(i);
+<anchor xml:id="__player_controller_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">break</emphasis>;
+<anchor xml:id="__player_controller_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00078"/>00078 
+<anchor xml:id="__player_controller_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Mouse&#32;ScrollWheel&quot;</emphasis>)&#32;&gt;&#32;0f)
+<anchor xml:id="__player_controller_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(itemIndex&#32;&gt;=&#32;items.Length&#32;-&#32;1)
+<anchor xml:id="__player_controller_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(0);
+<anchor xml:id="__player_controller_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__player_controller_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(itemIndex&#32;+&#32;1);
+<anchor xml:id="__player_controller_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Mouse&#32;ScrollWheel&quot;</emphasis>)&#32;&lt;&#32;0f)
+<anchor xml:id="__player_controller_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(itemIndex&#32;&lt;=&#32;0)
+<anchor xml:id="__player_controller_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(items.Length&#32;-&#32;1);
+<anchor xml:id="__player_controller_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__player_controller_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem(itemIndex&#32;-&#32;1);
+<anchor xml:id="__player_controller_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00101"/>00101 
+<anchor xml:id="__player_controller_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(Input.GetMouseButtonDown(0))
+<anchor xml:id="__player_controller_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;items[itemIndex].<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_item_1aeca9078dc33712b449016a8851d23234">Use</link>();
+<anchor xml:id="__player_controller_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00106"/>00106 
+<anchor xml:id="__player_controller_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(transform.position.y&#32;&lt;&#32;-10f)&#32;<emphasis role="comment">//&#32;Die&#32;if&#32;you&#32;fall&#32;out&#32;of&#32;the&#32;world</emphasis>
+<anchor xml:id="__player_controller_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Die();
+<anchor xml:id="__player_controller_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00112"/>00112 
+<anchor xml:id="__player_controller_8cs_source_1l00113"/>00113 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Look()
+<anchor xml:id="__player_controller_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.Rotate(Vector3.up&#32;*&#32;Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Mouse&#32;X&quot;</emphasis>)&#32;*&#32;mouseSensitivity);
+<anchor xml:id="__player_controller_8cs_source_1l00116"/>00116 
+<anchor xml:id="__player_controller_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;verticalLookRotation&#32;+=&#32;Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Mouse&#32;Y&quot;</emphasis>)&#32;*&#32;mouseSensitivity;
+<anchor xml:id="__player_controller_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;verticalLookRotation&#32;=&#32;Mathf.Clamp(verticalLookRotation,&#32;-90f,&#32;90f);
+<anchor xml:id="__player_controller_8cs_source_1l00119"/>00119 
+<anchor xml:id="__player_controller_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cameraHolder.transform.localEulerAngles&#32;=&#32;Vector3.left&#32;*&#32;verticalLookRotation;
+<anchor xml:id="__player_controller_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00122"/>00122 
+<anchor xml:id="__player_controller_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Move()
+<anchor xml:id="__player_controller_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;moveDir&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Horizontal&quot;</emphasis>),&#32;0,&#32;Input.GetAxisRaw(<emphasis role="stringliteral">&quot;Vertical&quot;</emphasis>)).normalized;
+<anchor xml:id="__player_controller_8cs_source_1l00126"/>00126 
+<anchor xml:id="__player_controller_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;moveAmount&#32;=&#32;Vector3.SmoothDamp(moveAmount,&#32;moveDir&#32;*&#32;(Input.GetKey(KeyCode.LeftShift)&#32;?&#32;sprintSpeed&#32;:&#32;walkSpeed),&#32;ref&#32;smoothMoveVelocity,&#32;smoothTime);
+<anchor xml:id="__player_controller_8cs_source_1l00128"/>00128 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00129"/>00129 
+<anchor xml:id="__player_controller_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Jump()
+<anchor xml:id="__player_controller_8cs_source_1l00131"/>00131 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(Input.GetKeyDown(KeyCode.Space)&#32;&amp;&amp;&#32;grounded)
+<anchor xml:id="__player_controller_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb.AddForce(transform.up&#32;*&#32;jumpForce);
+<anchor xml:id="__player_controller_8cs_source_1l00135"/>00135 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00137"/>00137 
+<anchor xml:id="__player_controller_8cs_source_1l00138"/>00138 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;EquipItem(<emphasis role="keywordtype">int</emphasis>&#32;_index)
+<anchor xml:id="__player_controller_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(_index&#32;==&#32;previousItemIndex)
+<anchor xml:id="__player_controller_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_controller_8cs_source_1l00142"/>00142 
+<anchor xml:id="__player_controller_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;itemIndex&#32;=&#32;_index;
+<anchor xml:id="__player_controller_8cs_source_1l00144"/>00144 
+<anchor xml:id="__player_controller_8cs_source_1l00145"/>00145 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;items[itemIndex].<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_item_1afc8c4b3d34bc920c83d9688aff378bb6">itemGameObject</link>.SetActive(<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__player_controller_8cs_source_1l00146"/>00146 
+<anchor xml:id="__player_controller_8cs_source_1l00147"/>00147 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(previousItemIndex&#32;!=&#32;-1)
+<anchor xml:id="__player_controller_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;items[previousItemIndex].<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_item_1afc8c4b3d34bc920c83d9688aff378bb6">itemGameObject</link>.SetActive(<emphasis role="keyword">false</emphasis>);
+<anchor xml:id="__player_controller_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00151"/>00151 
+<anchor xml:id="__player_controller_8cs_source_1l00152"/>00152 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;previousItemIndex&#32;=&#32;itemIndex;
+<anchor xml:id="__player_controller_8cs_source_1l00153"/>00153 
+<anchor xml:id="__player_controller_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00155"/>00155 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00156"/>00156 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;hash&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>();
+<anchor xml:id="__player_controller_8cs_source_1l00157"/>00157 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;hash.Add(<emphasis role="stringliteral">&quot;itemIndex&quot;</emphasis>,&#32;itemIndex);
+<anchor xml:id="__player_controller_8cs_source_1l00158"/>00158 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a3941fc37f654b2010d53097dae17f724">LocalPlayer</link>.<link linkend="_class_photon_1_1_realtime_1_1_player_1a73de822cb4ab788e9dce94795566a656">SetCustomProperties</link>(hash);
+<anchor xml:id="__player_controller_8cs_source_1l00159"/>00159 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00160"/>00160 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00161"/>00161 
+<anchor xml:id="__player_controller_8cs_source_1l00162"/><link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1a8e6110e30759a01477dfa08ec9610894">00162</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1a8e6110e30759a01477dfa08ec9610894">OnPlayerPropertiesUpdate</link>(<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;targetPlayer,&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;changedProps)
+<anchor xml:id="__player_controller_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>&#32;&amp;&amp;&#32;targetPlayer&#32;==&#32;PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1ab72b5dbbff54e7e4bc8027998ec9d408">Owner</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00165"/>00165 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00166"/>00166 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EquipItem((<emphasis role="keywordtype">int</emphasis>)changedProps[<emphasis role="stringliteral">&quot;itemIndex&quot;</emphasis>]);
+<anchor xml:id="__player_controller_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00169"/>00169 
+<anchor xml:id="__player_controller_8cs_source_1l00170"/><link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1a4af9baf0ddaedd07010fdd6056bdde6e">00170</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1a4af9baf0ddaedd07010fdd6056bdde6e">SetGroundedState</link>(<emphasis role="keywordtype">bool</emphasis>&#32;_grounded)
+<anchor xml:id="__player_controller_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;grounded&#32;=&#32;_grounded;
+<anchor xml:id="__player_controller_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00174"/>00174 
+<anchor xml:id="__player_controller_8cs_source_1l00175"/>00175 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;FixedUpdate()
+<anchor xml:id="__player_controller_8cs_source_1l00176"/>00176 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_controller_8cs_source_1l00179"/>00179 
+<anchor xml:id="__player_controller_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb.MovePosition(rb.position&#32;+&#32;transform.TransformDirection(moveAmount)&#32;*&#32;Time.fixedDeltaTime);
+<anchor xml:id="__player_controller_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00182"/>00182 
+<anchor xml:id="__player_controller_8cs_source_1l00183"/><link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1afddcd9850f9804ca2c13613e55a334dd">00183</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller_1afddcd9850f9804ca2c13613e55a334dd">TakeDamage</link>(<emphasis role="keywordtype">float</emphasis>&#32;damage)
+<anchor xml:id="__player_controller_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a92bc79e36a53f2137e4b45e5162bdd7b">RPC</link>(<emphasis role="stringliteral">&quot;RPC_TakeDamage&quot;</emphasis>,&#32;<link linkend="_group__public_api_1gad59a35d37925dbf12a969adac050714b">RpcTarget</link>.All,&#32;damage);
+<anchor xml:id="__player_controller_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00187"/>00187 
+<anchor xml:id="__player_controller_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[<link linkend="_class_photon_1_1_pun_1_1_pun_r_p_c">PunRPC</link>]
+<anchor xml:id="__player_controller_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;RPC_TakeDamage(<emphasis role="keywordtype">float</emphasis>&#32;damage)
+<anchor xml:id="__player_controller_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1accb0edee64106db0cdf00c49bfe1fd03">IsMine</link>)
+<anchor xml:id="__player_controller_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_controller_8cs_source_1l00193"/>00193 
+<anchor xml:id="__player_controller_8cs_source_1l00194"/>00194 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;currentHealth&#32;-=&#32;damage;
+<anchor xml:id="__player_controller_8cs_source_1l00195"/>00195 
+<anchor xml:id="__player_controller_8cs_source_1l00196"/>00196 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;healthbarImage.fillAmount&#32;=&#32;currentHealth&#32;/&#32;maxHealth;
+<anchor xml:id="__player_controller_8cs_source_1l00197"/>00197 
+<anchor xml:id="__player_controller_8cs_source_1l00198"/>00198 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(currentHealth&#32;&lt;=&#32;0)
+<anchor xml:id="__player_controller_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Die();
+<anchor xml:id="__player_controller_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00203"/>00203 
+<anchor xml:id="__player_controller_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Die()
+<anchor xml:id="__player_controller_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_controller_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;playerManager.<link linkend="_class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_player_manager_1a630aeba759322921e10471e6580cba94">RespawnLocalPlayerInstance</link>();
+<anchor xml:id="__player_controller_8cs_source_1l00207"/>00207 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_controller_8cs_source_1l00209"/>00209 }
+</programlisting></section>

@@ -1,0 +1,187 @@
+\doxysection{Net\+Obj\+Collider\+Ext.\+cs}
+\label{_net_obj_collider_ext_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/Extensions/NetObjColliderExt.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/Extensions/NetObjColliderExt.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Pun.Simple.Internal}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NetObjColliderExt}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} List<Component> reusableComponents = \textcolor{keyword}{new} List<Component>();}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} List<Collider> reusableColliders = \textcolor{keyword}{new} List<Collider>();}
+\DoxyCodeLine{00019         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} List<Collider2D> reusableColliders2D = \textcolor{keyword}{new} List<Collider2D>();}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} IndexColliders(\textcolor{keyword}{this} NetObject netObj)}
+\DoxyCodeLine{00026         \{}
+\DoxyCodeLine{00027             var indexed = netObj.indexedColliders;}
+\DoxyCodeLine{00028             var lookup = netObj.colliderLookup;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030             lookup.Clear();}
+\DoxyCodeLine{00031             indexed.Clear();}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00035             netObj.transform.GetNestedComponentsInChildren<Component, NetObject>(reusableComponents);}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038             \textcolor{keywordtype}{int} compCnt = reusableComponents.Count;}
+\DoxyCodeLine{00039             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} c = 0; c < compCnt; ++c)}
+\DoxyCodeLine{00040             \{}
+\DoxyCodeLine{00041                 Component comp = reusableComponents[c];}
+\DoxyCodeLine{00042                 Collider collider = comp as Collider;}
+\DoxyCodeLine{00043                 \textcolor{keywordflow}{if} (collider)}
+\DoxyCodeLine{00044                 \{}
+\DoxyCodeLine{00045                     indexed.Add(comp);}
+\DoxyCodeLine{00046                 \}}
+\DoxyCodeLine{00047                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00048                 \{}
+\DoxyCodeLine{00049                     Collider2D collider2D = comp as Collider2D;}
+\DoxyCodeLine{00050                     \textcolor{keywordflow}{if} (collider2D)}
+\DoxyCodeLine{00051                         indexed.Add(comp);}
+\DoxyCodeLine{00052                 \}}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = indexed.Count; i < cnt; ++i)}
+\DoxyCodeLine{00057                 lookup.Add(indexed[i], i);}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             netObj.bitsForColliderIndex = (indexed.Count -\/ 1).GetBitsForMaxValue();}
+\DoxyCodeLine{00060         \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GetFirstChildCollider(\textcolor{keyword}{this} Transform transform, ref Component firstFoundCollider, \textcolor{keywordtype}{bool} countTriggers, \textcolor{keywordtype}{bool} countNonTriggers)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             \textcolor{keywordflow}{if} (!countTriggers \&\& !countNonTriggers)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 Debug.LogError(\textcolor{stringliteral}{"{}Counting Colliders, but args indicate to ignore everything. Set one to true."{}});}
+\DoxyCodeLine{00070                 firstFoundCollider = \textcolor{keyword}{null};}
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00075             transform.GetComponentsInChildren(\textcolor{keyword}{true}, reusableColliders);}
+\DoxyCodeLine{00076             \textcolor{keywordtype}{int} cnt = reusableColliders.Count;}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (cnt > 0)}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if} (countTriggers \&\& countNonTriggers)}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081                     firstFoundCollider = reusableColliders[0];}
+\DoxyCodeLine{00082                     \textcolor{keywordflow}{return} cnt;}
+\DoxyCodeLine{00083                 \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085                 \textcolor{keywordtype}{int} foundCount = 0;}
+\DoxyCodeLine{00086                 firstFoundCollider = \textcolor{keyword}{null};}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00089                 \{}
+\DoxyCodeLine{00090                     Collider col = reusableColliders[i];}
+\DoxyCodeLine{00091                     \textcolor{keywordflow}{if} (countTriggers ? col.isTrigger : !col.isTrigger)}
+\DoxyCodeLine{00092                     \{}
+\DoxyCodeLine{00093                         \textcolor{keywordflow}{if} (firstFoundCollider == \textcolor{keyword}{null})}
+\DoxyCodeLine{00094                             firstFoundCollider = col;}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096                         foundCount++;}
+\DoxyCodeLine{00097                     \}}
+\DoxyCodeLine{00098                 \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 \textcolor{keywordflow}{return} foundCount;}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00104             transform.GetComponentsInChildren(\textcolor{keyword}{true}, reusableColliders2D);}
+\DoxyCodeLine{00105             \textcolor{keywordtype}{int} cnt2D = reusableColliders2D.Count;}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (cnt2D > 0)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{if} (countTriggers \&\& countNonTriggers)}
+\DoxyCodeLine{00109                 \{}
+\DoxyCodeLine{00110                     firstFoundCollider = reusableColliders[0];}
+\DoxyCodeLine{00111                     \textcolor{keywordflow}{return} cnt;}
+\DoxyCodeLine{00112                 \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 \textcolor{keywordtype}{int} foundCount = 0;}
+\DoxyCodeLine{00115                 firstFoundCollider = \textcolor{keyword}{null};}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt2D; ++i)}
+\DoxyCodeLine{00118                 \{}
+\DoxyCodeLine{00119                     Collider2D col = reusableColliders2D[i];}
+\DoxyCodeLine{00120                     \textcolor{keywordflow}{if} (countTriggers ? col.isTrigger : !col.isTrigger)}
+\DoxyCodeLine{00121                     \{}
+\DoxyCodeLine{00122                         \textcolor{keywordflow}{if} (firstFoundCollider == \textcolor{keyword}{null})}
+\DoxyCodeLine{00123                             firstFoundCollider = col;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                         foundCount++;}
+\DoxyCodeLine{00126                     \}}
+\DoxyCodeLine{00127                 \}}
+\DoxyCodeLine{00128                 \textcolor{keywordflow}{return} foundCount;}
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00132             firstFoundCollider = \textcolor{keyword}{null};}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00141         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountChildCollider(\textcolor{keyword}{this} Transform transform, \textcolor{keywordtype}{bool} countTriggers, \textcolor{keywordtype}{bool} countNonTriggers)}
+\DoxyCodeLine{00142         \{}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (!countTriggers \&\& !countNonTriggers)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 Debug.LogError(\textcolor{stringliteral}{"{}Counting Colliders, but args indicate to ignore everything. Set one to true."{}});}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00150             transform.GetComponentsInChildren(\textcolor{keyword}{true}, reusableColliders);}
+\DoxyCodeLine{00151             \textcolor{keywordtype}{int} cnt = reusableColliders.Count;}
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (cnt > 0)}
+\DoxyCodeLine{00153             \{}
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{if} (countTriggers \&\& countNonTriggers)}
+\DoxyCodeLine{00155                 \{}
+\DoxyCodeLine{00156                     \textcolor{keywordflow}{return} cnt;}
+\DoxyCodeLine{00157                 \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 \textcolor{keywordtype}{int} foundCount = 0;}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00162                 \{}
+\DoxyCodeLine{00163                     Collider col = reusableColliders[i];}
+\DoxyCodeLine{00164                     \textcolor{keywordflow}{if} (countTriggers ? col.isTrigger : !col.isTrigger)}
+\DoxyCodeLine{00165                     \{}
+\DoxyCodeLine{00166                         foundCount++;}
+\DoxyCodeLine{00167                     \}}
+\DoxyCodeLine{00168                 \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170                 \textcolor{keywordflow}{return} foundCount;}
+\DoxyCodeLine{00171             \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00174             transform.GetComponentsInChildren(\textcolor{keyword}{true}, reusableColliders2D);}
+\DoxyCodeLine{00175             \textcolor{keywordtype}{int} cnt2D = reusableColliders2D.Count;}
+\DoxyCodeLine{00176             \textcolor{keywordflow}{if} (cnt2D > 0)}
+\DoxyCodeLine{00177             \{}
+\DoxyCodeLine{00178                 \textcolor{keywordflow}{if} (countTriggers \&\& countNonTriggers)}
+\DoxyCodeLine{00179                 \{}
+\DoxyCodeLine{00180                     \textcolor{keywordflow}{return} cnt;}
+\DoxyCodeLine{00181                 \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183                 \textcolor{keywordtype}{int} foundCount = 0;}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt2D; ++i)}
+\DoxyCodeLine{00186                 \{}
+\DoxyCodeLine{00187                     Collider2D col = reusableColliders2D[i];}
+\DoxyCodeLine{00188                     \textcolor{keywordflow}{if} (countTriggers ? col.isTrigger : !col.isTrigger)}
+\DoxyCodeLine{00189                     \{}
+\DoxyCodeLine{00190                         foundCount++;}
+\DoxyCodeLine{00191                     \}}
+\DoxyCodeLine{00192                 \}}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{return} foundCount;}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00197             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201     \}}
+\DoxyCodeLine{00202 \}}
+\DoxyCodeLine{00203 }
+
+\end{DoxyCode}

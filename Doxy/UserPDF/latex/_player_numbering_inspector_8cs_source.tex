@@ -1,0 +1,69 @@
+\doxysection{Player\+Numbering\+Inspector.\+cs}
+\label{_player_numbering_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/Editor/PlayerNumberingInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/Editor/PlayerNumberingInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerNumberingInspector.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Custom inspector for PlayerNumbering}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00020 \{}
+\DoxyCodeLine{00021     [CustomEditor(typeof(PlayerNumbering))]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerNumberingInspector : Editor \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keywordtype}{int} localPlayerIndex;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keywordtype}{void} OnEnable () \{}
+\DoxyCodeLine{00027             PlayerNumbering.OnPlayerNumberingChanged += RefreshData;}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keywordtype}{void} OnDisable () \{}
+\DoxyCodeLine{00031             PlayerNumbering.OnPlayerNumberingChanged -\/= RefreshData;}
+\DoxyCodeLine{00032         \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00035         \{}
+\DoxyCodeLine{00036             DrawDefaultInspector();}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038             PlayerNumbering.OnPlayerNumberingChanged += RefreshData;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             \textcolor{keywordflow}{if} (PhotonNetwork.InRoom)}
+\DoxyCodeLine{00041             \{}
+\DoxyCodeLine{00042                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Player Index"{}}, \textcolor{stringliteral}{"{}Player ID"{}});}
+\DoxyCodeLine{00043                 \textcolor{keywordflow}{if} (PlayerNumbering.SortedPlayers != \textcolor{keyword}{null})}
+\DoxyCodeLine{00044                 \{}
+\DoxyCodeLine{00045                     \textcolor{keywordflow}{foreach}(Player punPlayer \textcolor{keywordflow}{in} PlayerNumbering.SortedPlayers)}
+\DoxyCodeLine{00046                     \{}
+\DoxyCodeLine{00047                         GUI.enabled = punPlayer.ActorNumber > 0;}
+\DoxyCodeLine{00048                         EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Player "{}} +punPlayer.GetPlayerNumber() + (punPlayer.IsLocal?\textcolor{stringliteral}{"{} -\/ You -\/"{}}:\textcolor{stringliteral}{"{}"{}}), punPlayer.ActorNumber == 0?\textcolor{stringliteral}{"{}n/a"{}}:punPlayer.ToStringFull());}
+\DoxyCodeLine{00049                         GUI.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00050                     \}}
+\DoxyCodeLine{00051                 \}}
+\DoxyCodeLine{00052             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00053                 GUILayout.Label(\textcolor{stringliteral}{"{}PlayerNumbering only works when localPlayer is inside a room"{}});}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00061         \textcolor{keywordtype}{void} RefreshData()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             Repaint();}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066     \}}
+\DoxyCodeLine{00067 \}}
+
+\end{DoxyCode}

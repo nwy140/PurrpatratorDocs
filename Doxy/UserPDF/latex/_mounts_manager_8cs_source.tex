@@ -1,0 +1,306 @@
+\doxysection{Mounts\+Manager.\+cs}
+\label{_mounts_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Mount/MountsManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Mount/MountsManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     [AddComponentMenu(\textcolor{stringliteral}{"{}"{}})]}
+\DoxyCodeLine{00018     [DisallowMultipleComponent]}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{class }MountsManager : MonoBehaviour}
+\DoxyCodeLine{00021         , IOnAwake}
+\DoxyCodeLine{00022         , IOnPreQuit}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         [System.NonSerialized] \textcolor{keyword}{public} Dictionary<int, Mount> mountIdLookup = \textcolor{keyword}{new} Dictionary<int, Mount>();}
+\DoxyCodeLine{00025         [System.NonSerialized] \textcolor{keyword}{public} List<Mount> indexedMounts = \textcolor{keyword}{new} List<Mount>();}
+\DoxyCodeLine{00026         [System.NonSerialized] \textcolor{keyword}{public} \textcolor{keywordtype}{int} bitsForMountId;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028 \textcolor{preprocessor}{        \#region Startup / Shutdown}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00032         \{}
+\DoxyCodeLine{00033             UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(\textcolor{keyword}{this}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             EstablishMounts(gameObject);}
+\DoxyCodeLine{00036         \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{static} MountsManager EstablishMounts(GameObject go)}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00046             NetObject netObj = go.GetComponent<NetObject>();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (!netObj)}
+\DoxyCodeLine{00049                 netObj = go.GetComponentInParent<NetObject>();}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (!netObj)}
+\DoxyCodeLine{00052                 netObj = go.transform.root.gameObject.AddComponent<NetObject>();}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00055             MountsManager mountsLookup = netObj.transform.GetNestedComponentInChildren<MountsManager, NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00056 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00057             MountsManager mountsLookup = \textcolor{keyword}{null};}
+\DoxyCodeLine{00058 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{if} (mountsLookup \&\& mountsLookup.gameObject != go)}
+\DoxyCodeLine{00061             \{}
+\DoxyCodeLine{00062                 Object.DestroyImmediate(mountsLookup);}
+\DoxyCodeLine{00063             \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (!mountsLookup)}
+\DoxyCodeLine{00067                 mountsLookup = netObj.gameObject.AddComponent<MountsManager>();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00070             var rootMount = netObj.gameObject.GetComponent<Mount>();}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{if} (rootMount == \textcolor{keyword}{null})}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00073                 rootMount = netObj.gameObject.gameObject.AddComponent<Mount>();}
+\DoxyCodeLine{00074                 rootMount.mountType = \textcolor{keyword}{new} MountSelector(0);}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rootMount.mountType.id != 0)}
+\DoxyCodeLine{00077             \{}
+\DoxyCodeLine{00078                 rootMount.mountType.id = 0;}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             mountsLookup.CollectMounts();}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             \textcolor{keywordflow}{return} mountsLookup;}
+\DoxyCodeLine{00084         \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             CollectMounts();}
+\DoxyCodeLine{00091             bitsForMountId = (indexedMounts.Count == 0) ? 0 : (indexedMounts.Count -\/ 1).GetBitsForMaxValue();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPreQuit()}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             UnmountAll();}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} List<Mount> CollectMounts(\textcolor{keywordtype}{bool} force = \textcolor{keyword}{false})}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             indexedMounts.Clear();}
+\DoxyCodeLine{00107             mountIdLookup.Clear();}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00111             transform.GetNestedComponentsInChildren<Mount, NetObject>(indexedMounts);}
+\DoxyCodeLine{00112 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = indexedMounts.Count; i < cnt; ++i)}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 var mount = indexedMounts[i];}
+\DoxyCodeLine{00117                 mount.componentIndex = i;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 \textcolor{keywordtype}{int} mountTypeId = mount.mountType.id;}
+\DoxyCodeLine{00120                 \textcolor{keywordflow}{if} (!mountIdLookup.ContainsKey(mountTypeId))}
+\DoxyCodeLine{00121                     mountIdLookup.Add(mountTypeId, mount);}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordflow}{return} indexedMounts;}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{preprocessor}{        \#endregion Startup/Shutdown}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keyword}{public} Mount GetMount(\textcolor{keywordtype}{int} mountId)}
+\DoxyCodeLine{00130         \{}
+\DoxyCodeLine{00131             Mount mount;}
+\DoxyCodeLine{00132             mountIdLookup.TryGetValue(mountId, out mount);}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{return} mount;}
+\DoxyCodeLine{00134         \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00139         \textcolor{keyword}{public} \textcolor{keywordtype}{void} UnmountAll()}
+\DoxyCodeLine{00140         \{}
+\DoxyCodeLine{00141             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = indexedMounts.Count; i < cnt; i++)}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 indexedMounts[i].DismountAll();}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145         \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle mountlabelstyle;}
+\DoxyCodeLine{00150         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle mountHiliteStyle;}
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle mountNoliteStyle;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureStylesExists()}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156             \textcolor{keywordflow}{if} (mountlabelstyle == \textcolor{keyword}{null})}
+\DoxyCodeLine{00157                 mountlabelstyle = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}Label"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0), alignment = TextAnchor.UpperLeft \};}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161 \textcolor{preprocessor}{\#if UNITY\_2019\_3\_OR\_NEWER}}
+\DoxyCodeLine{00162             GUIStyle basestyle = (GUIStyle)\textcolor{stringliteral}{"{}FoldOutPreDrop"{}};}
+\DoxyCodeLine{00163 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00164             GUIStyle basestyle = (GUIStyle)\textcolor{stringliteral}{"{}WarningOverlay"{}};}
+\DoxyCodeLine{00165 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{if} (ReferenceEquals(mountHiliteStyle, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 mountHiliteStyle = \textcolor{keyword}{new} GUIStyle(basestyle)}
+\DoxyCodeLine{00169                 \{}
+\DoxyCodeLine{00170                     padding = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0),}
+\DoxyCodeLine{00171                     margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0),}
+\DoxyCodeLine{00172                     normal = ((GUIStyle)\textcolor{stringliteral}{"{}PR Ping"{}}).normal}
+\DoxyCodeLine{00173                 \};}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00177             \textcolor{keywordflow}{if} (ReferenceEquals(mountNoliteStyle, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00178             \{}
+\DoxyCodeLine{00179                 mountNoliteStyle = \textcolor{keyword}{new} GUIStyle(basestyle)}
+\DoxyCodeLine{00180                 \{}
+\DoxyCodeLine{00181                     padding = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0),}
+\DoxyCodeLine{00182                     margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0),}
+\DoxyCodeLine{00183                     normal = ((GUIStyle)\textcolor{stringliteral}{"{}Label"{}}).normal}
+\DoxyCodeLine{00184                 \};}
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186         \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawAllMountMappings(Mount thismount, MountsManager mountsLookup)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             EnsureStylesExists();}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{keywordtype}{int} usedmask = 0;}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             \textcolor{keywordtype}{int} cnt = mountsLookup.indexedMounts.Count;}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}All Mounts On NetObject"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00199             \textcolor{keywordflow}{if} (mountsLookup.indexedMounts.Count > MountSettings.mountTypeCount)}
+\DoxyCodeLine{00200                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}NetObject has too many mounts. Mount count is limited to the count value in MountSettings."{}}, MessageType.Error);}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (cnt > 0)}
+\DoxyCodeLine{00203             \{}
+\DoxyCodeLine{00204                 EditorGUILayout.BeginVertical((GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < mountsLookup.indexedMounts.Count; ++i)}
+\DoxyCodeLine{00208                 \{}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                     SerializedObject mount = \textcolor{keyword}{new} SerializedObject(mountsLookup.indexedMounts[i]);}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213                     var mountType = mount.FindProperty(\textcolor{stringliteral}{"{}mountType"{}});}
+\DoxyCodeLine{00214                     var index = mountType.FindPropertyRelative(\textcolor{stringliteral}{"{}id"{}});}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00217                     \textcolor{keywordflow}{if} (i == 0)}
+\DoxyCodeLine{00218                     \{}
+\DoxyCodeLine{00219                         \textcolor{keywordflow}{if} (index.intValue != 0)}
+\DoxyCodeLine{00220                         \{}
+\DoxyCodeLine{00221                             index.intValue = 0;}
+\DoxyCodeLine{00222                             mount.ApplyModifiedProperties();}
+\DoxyCodeLine{00223                         \}}
+\DoxyCodeLine{00224                     \}}
+\DoxyCodeLine{00226                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (index.intValue == 0)}
+\DoxyCodeLine{00227                     \{}
+\DoxyCodeLine{00228                         index.intValue = i;}
+\DoxyCodeLine{00229                         mount.ApplyModifiedProperties();}
+\DoxyCodeLine{00230                         Debug.LogWarning(\textcolor{stringliteral}{"{}Only the first root Mount on a NetOjbect can be set to mountType 'Root'"{}});}
+\DoxyCodeLine{00231                     \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233                     \textcolor{keywordtype}{int} idx = index.intValue;}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00236                     \textcolor{keywordtype}{int} idxmask = 1 << idx;}
+\DoxyCodeLine{00237                     \textcolor{keywordtype}{bool} isAlreadyUsed = (idxmask \& usedmask) != 0;}
+\DoxyCodeLine{00238                     usedmask |= idxmask;}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                     \textcolor{keywordtype}{bool} isthis = (ReferenceEquals(mount.targetObject, thismount));}
+\DoxyCodeLine{00241                     \textcolor{keyword}{const} \textcolor{keywordtype}{int} CNT\_WIDTH = 30;}
+\DoxyCodeLine{00242                     \textcolor{keyword}{const} \textcolor{keywordtype}{int} LABL\_PAD = 2;}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00245                     EditorGUILayout.BeginHorizontal(isthis ? mountHiliteStyle : mountNoliteStyle);}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00248                     Rect indexrect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(CNT\_WIDTH), GUILayout.MinWidth(CNT\_WIDTH));}
+\DoxyCodeLine{00249                     indexrect.xMin += 8;}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00252                     \textcolor{keywordflow}{if} (isAlreadyUsed)}
+\DoxyCodeLine{00253                         EditorGUI.LabelField(\textcolor{keyword}{new} Rect(indexrect) \{ xMin = indexrect.xMin -\/ 3 \}, \textcolor{keyword}{new} GUIContent(EditorGUIUtility.FindTexture(\textcolor{stringliteral}{"{}CollabError"{}}), \textcolor{stringliteral}{"{}More than one Mount has the same compatible mount selection. Only the first will be used."{}}));}
+\DoxyCodeLine{00254                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00255                     \{}
+\DoxyCodeLine{00257                         EditorGUI.BeginDisabledGroup(!isthis);}
+\DoxyCodeLine{00258                         EditorGUI.LabelField(indexrect, i.ToString(), mountlabelstyle);}
+\DoxyCodeLine{00259                         EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00260                     \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00263                     \textcolor{keywordtype}{float} selectorWidth = EditorGUIUtility.labelWidth -\/ (CNT\_WIDTH + LABL\_PAD + 8);}
+\DoxyCodeLine{00264                     EditorGUI.BeginDisabledGroup(i == 0);}
+\DoxyCodeLine{00265                     EditorGUILayout.PropertyField(mountType, GUIContent.none, GUILayout.MaxWidth(selectorWidth), GUILayout.MinWidth(selectorWidth));}
+\DoxyCodeLine{00266                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{if} (isthis)}
+\DoxyCodeLine{00270                     \{}
+\DoxyCodeLine{00272                         Rect thisrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(40));}
+\DoxyCodeLine{00273                         thisrect.xMin += 16;}
+\DoxyCodeLine{00274                         EditorGUI.LabelField(thisrect, \textcolor{stringliteral}{"{}This"{}}, mountlabelstyle);}
+\DoxyCodeLine{00275                     \}}
+\DoxyCodeLine{00276                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00277                     \{}
+\DoxyCodeLine{00278                         EditorGUI.BeginDisabledGroup(!isthis);}
+\DoxyCodeLine{00279                         EditorGUILayout.ObjectField(mountsLookup.indexedMounts[i], typeof(Mount), \textcolor{keyword}{false}\textcolor{comment}{/*, GUILayout.MaxWidth(EditorGUIUtility.labelWidth -\/ cntwidth), GUILayout.MinWidth(EditorGUIUtility.labelWidth -\/ cntwidth)*/});}
+\DoxyCodeLine{00280                         EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00281                     \}}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00284                 \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00287             \}}
+\DoxyCodeLine{00288         \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00291     \}}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295     [CustomEditor(typeof(MountsManager))]}
+\DoxyCodeLine{00296     [CanEditMultipleObjects]}
+\DoxyCodeLine{00297     \textcolor{keyword}{public} \textcolor{keyword}{class }MountsManagerEditor : MountSystemHeaderEditor}
+\DoxyCodeLine{00298     \{}
+\DoxyCodeLine{00299         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} UseThinHeader \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00302         \{}
+\DoxyCodeLine{00303             \textcolor{keyword}{get}}
+\DoxyCodeLine{00304             \{}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Manager/Collection/Lookup for Mounts."{}};}
+\DoxyCodeLine{00306             \}}
+\DoxyCodeLine{00307         \}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} BackTexturePath}
+\DoxyCodeLine{00311         \{}
+\DoxyCodeLine{00312             \textcolor{keyword}{get}}
+\DoxyCodeLine{00313             \{}
+\DoxyCodeLine{00314                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/GreenBack"{}};}
+\DoxyCodeLine{00315             \}}
+\DoxyCodeLine{00316         \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00319         \{}
+\DoxyCodeLine{00320             base.OnEnable();}
+\DoxyCodeLine{00321             var \_target = target as MountsManager;}
+\DoxyCodeLine{00322             \_target.CollectMounts();}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325     \}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00328 \}}
+\DoxyCodeLine{00329 }
+
+\end{DoxyCode}

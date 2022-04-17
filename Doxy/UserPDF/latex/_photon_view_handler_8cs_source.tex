@@ -1,0 +1,194 @@
+\doxysection{Photon\+View\+Handler.\+cs}
+\label{_photon_view_handler_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonViewHandler.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonViewHandler.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonViewHandler.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   This is a Editor script to initialize PhotonView components.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} Realtime;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     [InitializeOnLoad]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonViewHandler : EditorWindow}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{static} PhotonViewHandler()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{comment}{// called once per change (per key-\/press in inspectors) and once after play-\/mode ends.}}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{            \#if (UNITY\_2018 || UNITY\_2018\_1\_OR\_NEWER)}}
+\DoxyCodeLine{00028             EditorApplication.hierarchyChanged += OnHierarchyChanged;}
+\DoxyCodeLine{00029 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00030             EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00032         \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnHierarchyChanged()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{comment}{// set prefabs to viewID 0 if needed}}
+\DoxyCodeLine{00038             \textcolor{comment}{// organize resource PVs in a list per viewID}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             \textcolor{comment}{// process the lists: if more than one photonView is in a list, we have to resolve the clash}}
+\DoxyCodeLine{00041             \textcolor{comment}{// check if only one view had the viewId earlier}}
+\DoxyCodeLine{00042             \textcolor{comment}{// apply a new viewID to the others}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             \textcolor{comment}{// update the cached list of instances and their viewID}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             \textcolor{comment}{//Debug.LogWarning("{}OnHierarchyChanged(). isPlaying: "{} + Application.isPlaying);}}
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (Application.isPlaying)}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             PhotonView[] photonViewResources = Resources.FindObjectsOfTypeAll<PhotonView>();}
+\DoxyCodeLine{00055             List<PhotonView> photonViewInstances = \textcolor{keyword}{new} List<PhotonView>();}
+\DoxyCodeLine{00056             Dictionary<int, List<PhotonView>> viewInstancesPerViewId = \textcolor{keyword}{new} Dictionary<int, List<PhotonView>>();}
+\DoxyCodeLine{00057             List<PhotonView> photonViewsToReassign = \textcolor{keyword}{new} List<PhotonView>();}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewResources)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{if} (PhotonEditorUtils.IsPrefab(view.gameObject))}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     \textcolor{comment}{// prefabs should use 0 as ViewID and sceneViewId}}
+\DoxyCodeLine{00064                     \textcolor{keywordflow}{if} (view.ViewID != 0 || view.sceneViewId != 0)}
+\DoxyCodeLine{00065                     \{}
+\DoxyCodeLine{00066                         view.ViewID = 0;}
+\DoxyCodeLine{00067                         view.sceneViewId = 0;}
+\DoxyCodeLine{00068                         EditorUtility.SetDirty(view);}
+\DoxyCodeLine{00069                     \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                     \textcolor{keywordflow}{continue};   \textcolor{comment}{// skip prefabs in further processing}}
+\DoxyCodeLine{00072                 \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074                 photonViewInstances.Add(view);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 \textcolor{comment}{// assign a new viewID if the viewId is lower than the minimum for this scene}}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{if} (!IsViewIdOkForScene(view))}
+\DoxyCodeLine{00079                 \{}
+\DoxyCodeLine{00080                     photonViewsToReassign.Add(view);}
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{continue};   \textcolor{comment}{// this view definitely gets cleaned up, so it does not count versus duplicates, checked below}}
+\DoxyCodeLine{00082                 \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085                 \textcolor{comment}{// organize the viewInstances into lists per viewID, so we know duplicate usage}}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{if} (!viewInstancesPerViewId.ContainsKey(view.sceneViewId))}
+\DoxyCodeLine{00087                 \{}
+\DoxyCodeLine{00088                     viewInstancesPerViewId[view.sceneViewId] = \textcolor{keyword}{new} List<PhotonView>();}
+\DoxyCodeLine{00089                 \}}
+\DoxyCodeLine{00090                 viewInstancesPerViewId[view.sceneViewId].Add(view);}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             \textcolor{comment}{//Debug.Log("{}PreviousAssignments: "{}+PunSceneViews.Instance.Views.Count);}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{foreach} (List<PhotonView> list \textcolor{keywordflow}{in} viewInstancesPerViewId.Values)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 \textcolor{keywordflow}{if} (list.Count <= 1)}
+\DoxyCodeLine{00098                 \{}
+\DoxyCodeLine{00099                     \textcolor{keywordflow}{continue};   \textcolor{comment}{// skip lists with just one entry (the viewID is unique)}}
+\DoxyCodeLine{00100                 \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103                 PhotonView previousAssignment = \textcolor{keyword}{null};}
+\DoxyCodeLine{00104                 \textcolor{keywordtype}{bool} wasAssigned = PunSceneViews.Instance.Views.TryGetValue(list[0].sceneViewId, out previousAssignment);}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} list)}
+\DoxyCodeLine{00107                 \{}
+\DoxyCodeLine{00108                     \textcolor{keywordflow}{if} (wasAssigned \&\& view.Equals(previousAssignment))}
+\DoxyCodeLine{00109                     \{}
+\DoxyCodeLine{00110                         \textcolor{comment}{// previously, we cached the used viewID as assigned to the current view. we don't change this.}}
+\DoxyCodeLine{00111                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00112                     \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                     \textcolor{comment}{//Debug.LogWarning("{}View to reassign due to viewID: "{}+view, view.gameObject);}}
+\DoxyCodeLine{00115                     photonViewsToReassign.Add(view);}
+\DoxyCodeLine{00116                 \}}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewsToReassign)}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 i = MinSceneViewId(view);}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{while} (viewInstancesPerViewId.ContainsKey(i))}
+\DoxyCodeLine{00124                 \{}
+\DoxyCodeLine{00125                     i++;}
+\DoxyCodeLine{00126                 \}}
+\DoxyCodeLine{00127                 view.sceneViewId = i;}
+\DoxyCodeLine{00128                 viewInstancesPerViewId.Add(i, \textcolor{keyword}{null});    \textcolor{comment}{// we don't need the lists anymore but we care about getting the viewIDs listed}}
+\DoxyCodeLine{00129                 EditorUtility.SetDirty(view);}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{comment}{// update the "{}semi persistent"{} list of viewIDs and their PhotonViews}}
+\DoxyCodeLine{00134             PunSceneViews.Instance.Views.Clear();}
+\DoxyCodeLine{00135             \textcolor{keywordflow}{foreach} (PhotonView view \textcolor{keywordflow}{in} photonViewInstances)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{if} (PunSceneViews.Instance.Views.ContainsKey(view.sceneViewId))}
+\DoxyCodeLine{00138                 \{}
+\DoxyCodeLine{00139                     Debug.LogError(\textcolor{stringliteral}{"{}ViewIDs should no longer have duplicates! "{}}+view.sceneViewId, view);  }
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00141                 \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143                 PunSceneViews.Instance.Views[view.sceneViewId] = view;}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{comment}{//Debug.Log("{}photonViewsToReassign.Count: "{}+photonViewsToReassign.Count + "{} count of viewIDs in use: "{}+viewInstancesPerViewId.Values.Count);}}
+\DoxyCodeLine{00147             \textcolor{comment}{//Debug.Log("{}PreviousAssignments now counts: "{}+PunSceneViews.Instance.Views.Count);}}
+\DoxyCodeLine{00148         \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MinSceneViewId(PhotonView view)}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             \textcolor{keywordtype}{int} result = PunSceneSettings.MinViewIdForScene(view.gameObject.scene.name);}
+\DoxyCodeLine{00154             \textcolor{keywordflow}{return} result;}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsViewIdOkForScene(PhotonView view)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{return} view.sceneViewId >= MinSceneViewId(view);}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161     \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00166     \textcolor{keyword}{public} \textcolor{keyword}{class }PunSceneViews : ScriptableObject}
+\DoxyCodeLine{00167     \{}
+\DoxyCodeLine{00168         [SerializeField]}
+\DoxyCodeLine{00169         \textcolor{keyword}{public} Dictionary<int, PhotonView> Views = \textcolor{keyword}{new} Dictionary<int, PhotonView>();}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keyword}{static} PunSceneViews instanceField;}
+\DoxyCodeLine{00172         \textcolor{keyword}{public} \textcolor{keyword}{static} PunSceneViews Instance}
+\DoxyCodeLine{00173         \{}
+\DoxyCodeLine{00174             \textcolor{keyword}{get}}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{if} (instanceField != \textcolor{keyword}{null})}
+\DoxyCodeLine{00177                 \{}
+\DoxyCodeLine{00178                     \textcolor{keywordflow}{return} instanceField;}
+\DoxyCodeLine{00179                 \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181                 instanceField = GameObject.FindObjectOfType<PunSceneViews>();}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{if} (instanceField == \textcolor{keyword}{null})}
+\DoxyCodeLine{00183                 \{}
+\DoxyCodeLine{00184                     instanceField = ScriptableObject.CreateInstance<PunSceneViews>();}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{return} instanceField;}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190     \}}
+\DoxyCodeLine{00191 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__auto_zoom_8cs_source" xml:lang="en-US">
+<title>AutoZoom.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/Simple/Utilities/Camera/AutoZoom.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__auto_zoom_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&gt;PhotonNetwork&#32;Framework&#32;for&#32;Unity&#32;-&#32;Copyright&#32;(C)&#32;2020&#32;Exit&#32;Games&#32;GmbH&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00005"/>00005 
+<anchor xml:id="__auto_zoom_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__auto_zoom_8cs_source_1l00007"/>00007 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__auto_zoom_8cs_source_1l00008"/>00008 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespaceemotitron">emotitron</link>.<link linkend="_namespaceemotitron_1_1_utilities">Utilities</link>.<link linkend="_namespaceemotitron_1_1_utilities_1_1_g_u_i_utilities">GUIUtilities</link>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00009"/>00009 
+<anchor xml:id="__auto_zoom_8cs_source_1l00010"/>00010 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00011"/>00011 <emphasis role="keyword">using</emphasis>&#32;UnityEditor;
+<anchor xml:id="__auto_zoom_8cs_source_1l00012"/>00012 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00013"/>00013 
+<anchor xml:id="__auto_zoom_8cs_source_1l00014"/>00014 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_simple">Photon.Pun.Simple</link>
+<anchor xml:id="__auto_zoom_8cs_source_1l00015"/>00015 {
+<anchor xml:id="__auto_zoom_8cs_source_1l00016"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom">00016</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom">AutoZoom</link>&#32;:&#32;MonoBehaviour
+<anchor xml:id="__auto_zoom_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00018"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">00018</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;List&lt;Transform&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;Transform&gt;();
+<anchor xml:id="__auto_zoom_8cs_source_1l00019"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a64891fc26cd68b45a5fdc01666fa0f3e">00019</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a64891fc26cd68b45a5fdc01666fa0f3e">MAX_FOV</link>&#32;=&#32;75;
+<anchor xml:id="__auto_zoom_8cs_source_1l00020"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1ae973da0a401d5dc3d5871d61fcfe4c5c">00020</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1ae973da0a401d5dc3d5871d61fcfe4c5c">MIN_FOV</link>&#32;=&#32;15;
+<anchor xml:id="__auto_zoom_8cs_source_1l00021"/>00021 
+<anchor xml:id="__auto_zoom_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[Range(.1f,&#32;.5f)]
+<anchor xml:id="__auto_zoom_8cs_source_1l00023"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a227c5d4c8fb537b9be15479aaa71d43f">00023</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[HideInInspector]&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a227c5d4c8fb537b9be15479aaa71d43f">window</link>&#32;=&#32;.25f;
+<anchor xml:id="__auto_zoom_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[ValueType(<emphasis role="stringliteral">&quot;/sec&quot;</emphasis>)]
+<anchor xml:id="__auto_zoom_8cs_source_1l00025"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a6b752361c5cc11bf22095bb12f3985a6">00025</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[HideInInspector]&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a6b752361c5cc11bf22095bb12f3985a6">panRate</link>&#32;=&#32;20f;
+<anchor xml:id="__auto_zoom_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[ValueType(<emphasis role="stringliteral">&quot;/sec&quot;</emphasis>)]
+<anchor xml:id="__auto_zoom_8cs_source_1l00027"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a9078a0739c95516260c58b592912c6a6">00027</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[HideInInspector]&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a9078a0739c95516260c58b592912c6a6">zoomRate</link>&#32;=&#32;200f;
+<anchor xml:id="__auto_zoom_8cs_source_1l00028"/>00028 
+<anchor xml:id="__auto_zoom_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Cache</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Camera&#32;cam;
+<anchor xml:id="__auto_zoom_8cs_source_1l00031"/>00031 
+<anchor xml:id="__auto_zoom_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Awake()
+<anchor xml:id="__auto_zoom_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cam&#32;=&#32;GetComponent&lt;Camera&gt;();
+<anchor xml:id="__auto_zoom_8cs_source_1l00035"/>00035 
+<anchor xml:id="__auto_zoom_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!cam)
+<anchor xml:id="__auto_zoom_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>.Add(transform);
+<anchor xml:id="__auto_zoom_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00040"/>00040 
+<anchor xml:id="__auto_zoom_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnDestroy()
+<anchor xml:id="__auto_zoom_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>.Contains(transform))
+<anchor xml:id="__auto_zoom_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>.Remove(transform);
+<anchor xml:id="__auto_zoom_8cs_source_1l00045"/>00045 
+<anchor xml:id="__auto_zoom_8cs_source_1l00046"/>00046 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00047"/>00047 
+<anchor xml:id="__auto_zoom_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;LateUpdate()
+<anchor xml:id="__auto_zoom_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!cam&#32;||&#32;!cam.isActiveAndEnabled)
+<anchor xml:id="__auto_zoom_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00052"/>00052 
+<anchor xml:id="__auto_zoom_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Bounds&#32;bounds&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Bounds();
+<anchor xml:id="__auto_zoom_8cs_source_1l00054"/>00054 
+<anchor xml:id="__auto_zoom_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>.Count;&#32;++i)
+<anchor xml:id="__auto_zoom_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector2&#32;screenpoint&#32;=&#32;cam.WorldToViewportPoint(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>[i].position);
+<anchor xml:id="__auto_zoom_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;bounds.Encapsulate(screenpoint&#32;+&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(-0.5f,&#32;-0.5f));
+<anchor xml:id="__auto_zoom_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00060"/>00060 
+<anchor xml:id="__auto_zoom_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a7f53719c44dc73dc6dc43b748a4bd168">watched</link>.Count&#32;&gt;&#32;0)
+<anchor xml:id="__auto_zoom_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cam.transform.Rotate(<emphasis role="keyword">new</emphasis>&#32;Vector3(0,&#32;1,&#32;0),&#32;(bounds.center.x&#32;<emphasis role="comment">/*-&#32;.25f*/</emphasis>)&#32;*&#32;Time.deltaTime&#32;*&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a6b752361c5cc11bf22095bb12f3985a6">panRate</link>);
+<anchor xml:id="__auto_zoom_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;xAngle&#32;=&#32;bounds.extents.x&#32;-&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a227c5d4c8fb537b9be15479aaa71d43f">window</link>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;yAngle&#32;=&#32;bounds.extents.y&#32;-&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a227c5d4c8fb537b9be15479aaa71d43f">window</link>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;angle&#32;=&#32;xAngle&#32;&gt;&#32;yAngle&#32;?&#32;xAngle&#32;:&#32;yAngle;
+<anchor xml:id="__auto_zoom_8cs_source_1l00067"/>00067 
+<anchor xml:id="__auto_zoom_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;fov&#32;=&#32;cam.fieldOfView&#32;+&#32;angle&#32;*&#32;Time.deltaTime&#32;*&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a9078a0739c95516260c58b592912c6a6">zoomRate</link>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00069"/>00069 
+<anchor xml:id="__auto_zoom_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cam.fieldOfView&#32;=&#32;Mathf.Clamp(fov,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1ae973da0a401d5dc3d5871d61fcfe4c5c">MIN_FOV</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_auto_zoom_1a64891fc26cd68b45a5fdc01666fa0f3e">MAX_FOV</link>);
+<anchor xml:id="__auto_zoom_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00073"/>00073 
+<anchor xml:id="__auto_zoom_8cs_source_1l00074"/>00074 
+<anchor xml:id="__auto_zoom_8cs_source_1l00075"/>00075 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00076"/>00076 
+<anchor xml:id="__auto_zoom_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[CustomEditor(typeof(AutoZoom))]
+<anchor xml:id="__auto_zoom_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[CanEditMultipleObjects]
+<anchor xml:id="__auto_zoom_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>AutoZoomEditor&#32;:&#32;AutomationHeaderEditor
+<anchor xml:id="__auto_zoom_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;Instructions
+<anchor xml:id="__auto_zoom_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="stringliteral">&quot;Attach&#32;this&#32;component&#32;to&#32;your&#32;Camera&#32;as&#32;well&#32;as&#32;any&#32;GameObjects&#32;you&#32;would&#32;like&#32;the&#32;keep&#32;in&#32;Camera&#32;view.&#32;Automatically&#32;adjusts&#32;the&#32;FOV&#32;to&#32;ensure&#32;objects&#32;are&#32;visible.&quot;</emphasis>;
+<anchor xml:id="__auto_zoom_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00088"/>00088 
+<anchor xml:id="__auto_zoom_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnInspectorGUIInjectMiddle()
+<anchor xml:id="__auto_zoom_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;base.OnInspectorGUIInjectMiddle();
+<anchor xml:id="__auto_zoom_8cs_source_1l00092"/>00092 
+<anchor xml:id="__auto_zoom_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;sp&#32;=&#32;serializedObject.GetIterator();
+<anchor xml:id="__auto_zoom_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;sp.Next(<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__auto_zoom_8cs_source_1l00095"/>00095 
+<anchor xml:id="__auto_zoom_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((target&#32;as&#32;AutoZoom).GetComponent&lt;Camera&gt;())
+<anchor xml:id="__auto_zoom_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;sp&#32;=&#32;serializedObject.FindProperty(<emphasis role="stringliteral">&quot;window&quot;</emphasis>);
+<anchor xml:id="__auto_zoom_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginChangeCheck();
+<anchor xml:id="__auto_zoom_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">do</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.PropertyField(sp);
+<anchor xml:id="__auto_zoom_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}&#32;<emphasis role="keywordflow">while</emphasis>&#32;(sp.Next(<emphasis role="keyword">false</emphasis>));
+<anchor xml:id="__auto_zoom_8cs_source_1l00105"/>00105 
+<anchor xml:id="__auto_zoom_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(EditorGUI.EndChangeCheck())
+<anchor xml:id="__auto_zoom_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__auto_zoom_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;sp.serializedObject.ApplyModifiedProperties();
+<anchor xml:id="__auto_zoom_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00113"/>00113 
+<anchor xml:id="__auto_zoom_8cs_source_1l00114"/>00114 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__auto_zoom_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__auto_zoom_8cs_source_1l00116"/>00116 }
+<anchor xml:id="__auto_zoom_8cs_source_1l00117"/>00117 
+</programlisting></section>

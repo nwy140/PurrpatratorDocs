@@ -1,0 +1,75 @@
+\doxysection{Validate\+Copied\+Folders\+Integrity.\+cs}
+\label{_validate_copied_folders_integrity_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ValidateCopiedFoldersIntegrity.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ValidateCopiedFoldersIntegrity.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{namespace }ParrelSync}
+\DoxyCodeLine{00002 \{}
+\DoxyCodeLine{00003     \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00004     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00006     \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00007     \textcolor{keyword}{using} System.Security.Cryptography;}
+\DoxyCodeLine{00008     \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00009     \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011     [InitializeOnLoad]}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{class }ValidateCopiedFoldersIntegrity}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014         \textcolor{keyword}{const} \textcolor{keywordtype}{string} SessionStateKey = \textcolor{stringliteral}{"{}ValidateCopiedFoldersIntegrity\_Init"{}};}
+\DoxyCodeLine{00019         \textcolor{keyword}{static} ValidateCopiedFoldersIntegrity()}
+\DoxyCodeLine{00020         \{}
+\DoxyCodeLine{00021             \textcolor{keywordflow}{if} (!SessionState.GetBool(SessionStateKey, \textcolor{keyword}{false}))}
+\DoxyCodeLine{00022             \{}
+\DoxyCodeLine{00023                 SessionState.SetBool(SessionStateKey, \textcolor{keyword}{true});}
+\DoxyCodeLine{00024                 \textcolor{keywordflow}{if} (!ClonesManager.IsClone()) \{ \textcolor{keywordflow}{return}; \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026                 ValidateFolder(ClonesManager.GetCurrentProjectPath(), ClonesManager.GetOriginalProjectPath(), \textcolor{stringliteral}{"{}Packages"{}});}
+\DoxyCodeLine{00027             \}}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ValidateFolder(\textcolor{keywordtype}{string} targetRoot, \textcolor{keywordtype}{string} originalRoot, \textcolor{keywordtype}{string} folderName)}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             var targetFolderPath = Path.Combine(targetRoot, folderName);}
+\DoxyCodeLine{00033             var targetFolderHash = CreateMd5ForFolder(targetFolderPath);}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             var originalFolderPath = Path.Combine(originalRoot, folderName);}
+\DoxyCodeLine{00036             var originalFolderHash = CreateMd5ForFolder(originalFolderPath);}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038             \textcolor{keywordflow}{if} (targetFolderHash != originalFolderHash)}
+\DoxyCodeLine{00039             \{}
+\DoxyCodeLine{00040                 Debug.Log(\textcolor{stringliteral}{"{}ParrelSync: Detected changes in '"{}} + folderName + \textcolor{stringliteral}{"{}' directory. Updating cloned project..."{}});}
+\DoxyCodeLine{00041                 FileUtil.ReplaceDirectory(originalFolderPath, targetFolderPath);}
+\DoxyCodeLine{00042             \}}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{static} \textcolor{keywordtype}{string} CreateMd5ForFolder(\textcolor{keywordtype}{string} path)}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{comment}{// assuming you want to include nested folders}}
+\DoxyCodeLine{00048             var files = Directory.GetFiles(path, \textcolor{stringliteral}{"{}*.*"{}}, SearchOption.AllDirectories)}
+\DoxyCodeLine{00049                                  .OrderBy(p => p).ToList();}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             MD5 md5 = MD5.Create();}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < files.Count; i++)}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 \textcolor{keywordtype}{string} file = files[i];}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057                 \textcolor{comment}{// hash path}}
+\DoxyCodeLine{00058                 \textcolor{keywordtype}{string} relativePath = file.Substring(path.Length + 1);}
+\DoxyCodeLine{00059                 \textcolor{keywordtype}{byte}[] pathBytes = Encoding.UTF8.GetBytes(relativePath.ToLower());}
+\DoxyCodeLine{00060                 md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062                 \textcolor{comment}{// hash contents}}
+\DoxyCodeLine{00063                 \textcolor{keywordtype}{byte}[] contentBytes = File.ReadAllBytes(file);}
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{if} (i == files.Count -\/ 1)}
+\DoxyCodeLine{00065                     md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00067                     md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \textcolor{keywordflow}{return} BitConverter.ToString(md5.Hash).Replace(\textcolor{stringliteral}{"{}-\/"{}}, \textcolor{stringliteral}{"{}"{}}).ToLower();}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072     \}}
+\DoxyCodeLine{00073 \}}
+
+\end{DoxyCode}

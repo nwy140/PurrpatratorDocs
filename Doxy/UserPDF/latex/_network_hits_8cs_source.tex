@@ -1,0 +1,113 @@
+\doxysection{Network\+Hits.\+cs}
+\label{_network_hits_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetworkHits.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetworkHits.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }NetworkHits}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         \textcolor{keyword}{public} readonly List<NetworkHit> hits = \textcolor{keyword}{new} List<NetworkHit>();}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} nearestOnly;}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keywordtype}{int} nearestIndex = -\/1;}
+\DoxyCodeLine{00019         \textcolor{keyword}{public} \textcolor{keywordtype}{int} bitsForContactGroupMask;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} NetworkHits(\textcolor{keywordtype}{bool} nearestOnly, \textcolor{keywordtype}{int} bitsForContactGroupMask)}
+\DoxyCodeLine{00022         \{}
+\DoxyCodeLine{00023             this.nearestOnly = nearestOnly;}
+\DoxyCodeLine{00024             this.bitsForContactGroupMask = bitsForContactGroupMask;}
+\DoxyCodeLine{00025         \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Reset(\textcolor{keywordtype}{bool} nearestOnly, \textcolor{keywordtype}{int} bitsForContactGroupMask)}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             this.nearestOnly = nearestOnly;}
+\DoxyCodeLine{00030             this.bitsForContactGroupMask = bitsForContactGroupMask;}
+\DoxyCodeLine{00031             hits.Clear();}
+\DoxyCodeLine{00032             nearestIndex = -\/1;}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             hits.Clear();}
+\DoxyCodeLine{00038             nearestIndex = -\/1;}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} SerializationFlags Serialize(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bitsForColliderId)}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (nearestOnly)}
+\DoxyCodeLine{00046             \{}
+\DoxyCodeLine{00047                 \textcolor{keywordflow}{if} (nearestIndex != -\/1)}
+\DoxyCodeLine{00048                 \{}
+\DoxyCodeLine{00049                     buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00050                     hits[nearestIndex].Serialize(buffer, ref bitposition, bitsForContactGroupMask, bitsForColliderId);}
+\DoxyCodeLine{00051                     flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00052                 \}}
+\DoxyCodeLine{00053                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00054                     buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = hits.Count; i < hits.Count; ++i)}
+\DoxyCodeLine{00059                 \{}
+\DoxyCodeLine{00060                     buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00061                     hits[i].Serialize(buffer, ref bitposition, bitsForContactGroupMask, bitsForColliderId);}
+\DoxyCodeLine{00062                     flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} SerializationFlags Deserialize(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bitsForColliderId)}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073             hits.Clear();}
+\DoxyCodeLine{00074             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             \textcolor{comment}{//bool nearestOnly = definition.hitscanType.IsCast() \&\& definition.nearestOnly;}}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (nearestOnly)}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081                     hits.Add(NetworkHit.Deserialize(buffer, ref bitposition, bitsForContactGroupMask, bitsForColliderId));}
+\DoxyCodeLine{00082                     flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00083                     nearestIndex = 0;}
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00086                     nearestIndex = -\/1;}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089             \{}
+\DoxyCodeLine{00090                 \textcolor{keywordflow}{while} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00091                 \{}
+\DoxyCodeLine{00092                     hits.Add(NetworkHit.Deserialize(buffer, ref bitposition, bitsForContactGroupMask, bitsForColliderId));}
+\DoxyCodeLine{00093                     flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00094                 \}}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             \textcolor{keywordtype}{string} str = GetType().Name;}
+\DoxyCodeLine{00103             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < hits.Count; ++i)}
+\DoxyCodeLine{00104                 str += \textcolor{stringliteral}{"{}\(\backslash\)nObj:"{}} + hits[i].netObjId + \textcolor{stringliteral}{"{} Mask:"{}} + hits[i].hitMask;}
+\DoxyCodeLine{00105             }
+\DoxyCodeLine{00106             \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108     \}}
+\DoxyCodeLine{00109 \}}
+\DoxyCodeLine{00110 }
+
+\end{DoxyCode}

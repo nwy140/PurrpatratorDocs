@@ -1,0 +1,187 @@
+\doxysection{Player\+List\+View.\+cs}
+\label{_player_list_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/PlayerListView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/PlayerListView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerListView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007  }
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00019 \{}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerListView : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} PlayerDetailsController PlayerDetailManager;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} PlayerListCell CellPrototype;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} Text PlayerCountsText;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Text UpdateStatusText;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         Dictionary<int, PlayerListCell> playerCellList = \textcolor{keyword}{new} Dictionary<int, PlayerListCell>();}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             CellPrototype.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             base.OnEnable();}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             RefreshCount();}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             \textcolor{keywordflow}{foreach} (KeyValuePair<int, Player> \_entry \textcolor{keywordflow}{in} PhotonNetwork.CurrentRoom.Players)}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 \textcolor{keywordflow}{if} (playerCellList.ContainsKey(\_entry.Key))}
+\DoxyCodeLine{00058                 \{}
+\DoxyCodeLine{00059                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00060                 \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062                 \textcolor{comment}{//Debug.Log("{}PlayerListView:adding player "{} + \_entry.Key);}}
+\DoxyCodeLine{00063                 playerCellList[\_entry.Key] = Instantiate(CellPrototype);}
+\DoxyCodeLine{00064                 playerCellList[\_entry.Key].transform.SetParent(CellPrototype.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00065                 playerCellList[\_entry.Key].gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00066                 playerCellList[\_entry.Key].AddToList(\_entry.Value, \textcolor{keyword}{false});}
+\DoxyCodeLine{00067             \}}
+\DoxyCodeLine{00068         \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SelectPlayer(Player player)}
+\DoxyCodeLine{00071         \{}
+\DoxyCodeLine{00072             PlayerDetailManager.SetPlayerTarget(player);}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             \textcolor{comment}{//Debug.Log("{}PlayerListView:OnPlayerEnteredRoom:"{} + newPlayer);}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{comment}{// we create the cell}}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (!playerCellList.ContainsKey(newPlayer.ActorNumber))}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 playerCellList[newPlayer.ActorNumber] = Instantiate(CellPrototype.gameObject).GetComponent<PlayerListCell>();}
+\DoxyCodeLine{00083                 playerCellList[newPlayer.ActorNumber].transform.SetParent(CellPrototype.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00084                 playerCellList[newPlayer.ActorNumber].gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00085                 playerCellList[newPlayer.ActorNumber].AddToList(newPlayer, \textcolor{keyword}{true});}
+\DoxyCodeLine{00086             \}}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{else} \textcolor{comment}{// rejoin}}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 playerCellList[newPlayer.ActorNumber].RefreshInfo(\textcolor{keyword}{null});}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             StartCoroutine(\textcolor{stringliteral}{"{}UpdateUIPing"{}});}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00097         \{}
+\DoxyCodeLine{00098             \textcolor{keywordflow}{foreach} (KeyValuePair<int, Player> \_entry \textcolor{keywordflow}{in} PhotonNetwork.CurrentRoom.Players)}
+\DoxyCodeLine{00099             \{}
+\DoxyCodeLine{00100                 playerCellList[\_entry.Key].RefreshInfo(\textcolor{keyword}{null});}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player target, ExitGames.Client.Photon.Hashtable changedProps)}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (playerCellList.ContainsKey(target.ActorNumber))}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 playerCellList[target.ActorNumber].RefreshInfo(changedProps);}
+\DoxyCodeLine{00109             \}}
+\DoxyCodeLine{00110             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 Debug.LogWarning(\textcolor{stringliteral}{"{}PlayerListView: missing Player Ui Cell for "{}} + target, \textcolor{keyword}{this});}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             StartCoroutine(\textcolor{stringliteral}{"{}UpdateUIPing"{}});}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{comment}{//Debug.Log("{}OnPlayerLeftRoom isinactive "{} + otherPlayer.IsInactive);}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             \textcolor{comment}{//  bool \_remove = false;}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordflow}{if} (!PhotonNetwork.PlayerListOthers.Contains(otherPlayer))}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 playerCellList[otherPlayer.ActorNumber].RemoveFromList();}
+\DoxyCodeLine{00127                 playerCellList.Remove(otherPlayer.ActorNumber);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132                 playerCellList[otherPlayer.ActorNumber].RefreshInfo(\textcolor{keyword}{null});}
+\DoxyCodeLine{00133             \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{comment}{//      \_remove = otherPlayer.IsInactive \&\& playerCellList [otherPlayer.ID].isInactiveCache;}}
+\DoxyCodeLine{00136             \textcolor{comment}{//}}
+\DoxyCodeLine{00137             \textcolor{comment}{//      if (otherPlayer.IsInactive \&\& ! playerCellList [otherPlayer.ID].isInactiveCache) \{}}
+\DoxyCodeLine{00138             \textcolor{comment}{//}}
+\DoxyCodeLine{00139             \textcolor{comment}{//          //playerCellList [otherPlayer.ID].isInactiveCache = true;}}
+\DoxyCodeLine{00140             \textcolor{comment}{//          playerCellList[otherPlayer.ID].RefreshInfo(null);}}
+\DoxyCodeLine{00141             \textcolor{comment}{//      \} }}
+\DoxyCodeLine{00142             \textcolor{comment}{//}}
+\DoxyCodeLine{00143             \textcolor{comment}{//      if (\_remove)}}
+\DoxyCodeLine{00144             \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00145             \textcolor{comment}{//          playerCellList[otherPlayer.ID].RemoveFromList ();}}
+\DoxyCodeLine{00146             \textcolor{comment}{//          playerCellList.Remove (otherPlayer.ID);}}
+\DoxyCodeLine{00147             \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             StartCoroutine(\textcolor{stringliteral}{"{}UpdateUIPing"{}});}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keywordtype}{void} RefreshCount()}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 PlayerCountsText.text = PhotonNetwork.CurrentRoom.PlayerCount.ToString(\textcolor{stringliteral}{"{}00"{}});}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161         IEnumerator UpdateUIPing()}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             UpdateStatusText.text = \textcolor{stringliteral}{"{}Updated"{}};}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(1f);}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetList()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             \textcolor{keywordflow}{foreach} (KeyValuePair<int, PlayerListCell> entry \textcolor{keywordflow}{in} playerCellList)}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{if} (entry.Value != \textcolor{keyword}{null})}
+\DoxyCodeLine{00176                 \{}
+\DoxyCodeLine{00177                     Destroy(entry.Value.gameObject);}
+\DoxyCodeLine{00178                 \}}
+\DoxyCodeLine{00179             \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             playerCellList = \textcolor{keyword}{new} Dictionary<int, PlayerListCell>();}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183     \}}
+\DoxyCodeLine{00184 \}}
+
+\end{DoxyCode}

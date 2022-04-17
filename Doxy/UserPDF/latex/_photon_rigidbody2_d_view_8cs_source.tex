@@ -1,0 +1,117 @@
+\doxysection{Photon\+Rigidbody2\+DView.\+cs}
+\label{_photon_rigidbody2_d_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonRigidbody2DView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonRigidbody2DView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonRigidbody2DView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Component to synchronize 2d rigidbodies via PUN.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     [RequireComponent(typeof(Rigidbody2D))]}
+\DoxyCodeLine{00018     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon Rigidbody 2D View"{}})]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonRigidbody2DView : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Distance;}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Angle;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{private} Rigidbody2D m\_Body;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{private} Vector2 m\_NetworkPosition;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_NetworkRotation;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         [HideInInspector]}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeVelocity = \textcolor{keyword}{true};}
+\DoxyCodeLine{00032         [HideInInspector]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeAngularVelocity = \textcolor{keyword}{false};}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [HideInInspector]}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_TeleportEnabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00037         [HideInInspector]}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{float} m\_TeleportIfDistanceGreaterThan = 3.0f;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             this.m\_Body = GetComponent<Rigidbody2D>();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             this.m\_NetworkPosition = \textcolor{keyword}{new} Vector2();}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if} (!this.photonView.IsMine)}
+\DoxyCodeLine{00050             \{}
+\DoxyCodeLine{00051                 this.m\_Body.position = Vector2.MoveTowards(this.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition, \textcolor{keyword}{this}.m\_Distance * (1.0f / PhotonNetwork.SerializationRate));}
+\DoxyCodeLine{00052                 this.m\_Body.rotation = Mathf.MoveTowards(this.m\_Body.rotation, \textcolor{keyword}{this}.m\_NetworkRotation, \textcolor{keyword}{this}.m\_Angle * (1.0f / PhotonNetwork.SerializationRate));}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00059             \{}
+\DoxyCodeLine{00060                 stream.SendNext(this.m\_Body.position);}
+\DoxyCodeLine{00061                 stream.SendNext(this.m\_Body.rotation);}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{if} (this.m\_SynchronizeVelocity)}
+\DoxyCodeLine{00064                 \{}
+\DoxyCodeLine{00065                     stream.SendNext(this.m\_Body.velocity);}
+\DoxyCodeLine{00066                 \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068                 \textcolor{keywordflow}{if} (this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00069                 \{}
+\DoxyCodeLine{00070                     stream.SendNext(this.m\_Body.angularVelocity);}
+\DoxyCodeLine{00071                 \}}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074             \{}
+\DoxyCodeLine{00075                 this.m\_NetworkPosition = (Vector2)stream.ReceiveNext();}
+\DoxyCodeLine{00076                 this.m\_NetworkRotation = (float)stream.ReceiveNext();}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{if} (this.m\_TeleportEnabled)}
+\DoxyCodeLine{00079                 \{}
+\DoxyCodeLine{00080                     \textcolor{keywordflow}{if} (Vector3.Distance(\textcolor{keyword}{this}.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition) > this.m\_TeleportIfDistanceGreaterThan)}
+\DoxyCodeLine{00081                     \{}
+\DoxyCodeLine{00082                         this.m\_Body.position = this.m\_NetworkPosition;}
+\DoxyCodeLine{00083                     \}}
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{if} (this.m\_SynchronizeVelocity || this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00087                 \{}
+\DoxyCodeLine{00088                     \textcolor{keywordtype}{float} lag = Mathf.Abs((\textcolor{keywordtype}{float})(PhotonNetwork.Time -\/ info.SentServerTime));}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090                     \textcolor{keywordflow}{if} (m\_SynchronizeVelocity)}
+\DoxyCodeLine{00091                     \{}
+\DoxyCodeLine{00092                         this.m\_Body.velocity = (Vector2)stream.ReceiveNext();}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094                         this.m\_NetworkPosition += this.m\_Body.velocity * lag;}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096                         this.m\_Distance = Vector2.Distance(this.m\_Body.position, \textcolor{keyword}{this}.m\_NetworkPosition);}
+\DoxyCodeLine{00097                     \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                     \textcolor{keywordflow}{if} (this.m\_SynchronizeAngularVelocity)}
+\DoxyCodeLine{00100                     \{}
+\DoxyCodeLine{00101                         this.m\_Body.angularVelocity = (float)stream.ReceiveNext();}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103                         this.m\_NetworkRotation += this.m\_Body.angularVelocity * lag;}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105                         this.m\_Angle = Mathf.Abs(this.m\_Body.rotation -\/ \textcolor{keyword}{this}.m\_NetworkRotation);}
+\DoxyCodeLine{00106                     \}}
+\DoxyCodeLine{00107                 \}}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109         \}}
+\DoxyCodeLine{00110     \}}
+\DoxyCodeLine{00111 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,280 @@
+\doxysection{Sync\+Var\+Base\+Attribute.\+cs}
+\label{_sync_var_base_attribute_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncVarBaseAttribute.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncVarBaseAttribute.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [System.Serializable]}
+\DoxyCodeLine{00015     [AttributeUsage(AttributeTargets.Field)]}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SyncVarBaseAttribute : Attribute}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} SyncAs syncAs = SyncAs.Auto;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} KeyRate keyRate;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{string} applyCallback;}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keywordtype}{string} snapshotCallback;}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} SetValueTiming setValueTiming = SetValueTiming.AfterCallback;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} interpolate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00048         \textcolor{comment}{//public float Extrapolation = .5f;}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{int} bitCount = -\/1;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Initialize(Type primitiveType)}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             \textcolor{keywordflow}{if} (bitCount > -\/1)}
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             bitCount = GetDefaultBitCount(primitiveType);}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} GetFieldDeclareCodeGen(Type fieldType, \textcolor{keywordtype}{string} fulltypename, \textcolor{keywordtype}{string} fname)}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             sb.Length = 0;}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (fieldType == typeof(StringBuilder))}
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}public System.Text.StringBuilder "{}}).Append(fname).Append(\textcolor{stringliteral}{"{} = new System.Text.StringBuilder();"{}}).ToString();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{if} (fieldType.IsValueType)}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}public "{}}).Append(fulltypename).Append(\textcolor{stringliteral}{"{} "{}}).Append(fname).Append(\textcolor{stringliteral}{"{};"{}}).ToString();}
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074                     \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}public "{}}).Append(fulltypename).Append(\textcolor{stringliteral}{"{} "{}}).Append(fname).Append(\textcolor{stringliteral}{"{} = new "{}}).Append(fulltypename).Append(\textcolor{stringliteral}{"{}();"{}}).ToString();}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} GetCaptureCodeGen(Type fieldType, \textcolor{keywordtype}{string} fieldName, \textcolor{keywordtype}{string} s, \textcolor{keywordtype}{string} t)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{return} GetCopyCodeGen(fieldType, fieldName, s, t);}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} GetCopyCodeGen(Type fieldType, \textcolor{keywordtype}{string} fieldName, \textcolor{keywordtype}{string} s, \textcolor{keywordtype}{string} t)}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             sb.Length = 0;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (fieldType == typeof(StringBuilder))}
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{return} sb.Append(t).Append(\textcolor{stringliteral}{"{}."{}}).Append(fieldName).Append(\textcolor{stringliteral}{"{}.Length = 0; "{}}).Append(t).Append(\textcolor{stringliteral}{"{}.myString.Append("{}}).Append(s).Append(\textcolor{stringliteral}{"{}."{}}).Append(fieldName).Append(\textcolor{stringliteral}{"{});"{}}).ToString();}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keywordtype}{bool} isList = fieldType.IsGenericType \&\& fieldType.GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));}
+\DoxyCodeLine{00091             \textcolor{comment}{// TODO: This should become unneeded... moved to PacklList}}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{if} (isList)}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{return} t + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}.Clear(); "{}} + t + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}.AddRange("{}} + s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{});"{}};}
+\DoxyCodeLine{00094             \textcolor{comment}{// TODO: Dictionary copy would go here}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             \textcolor{keywordflow}{return} sb.Append(t).Append(\textcolor{stringliteral}{"{}."{}}).Append(fieldName).Append(\textcolor{stringliteral}{"{} = "{}}).Append(s).Append(\textcolor{stringliteral}{"{}."{}}).Append(fieldName).Append(\textcolor{stringliteral}{"{};"{}}).ToString();}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} GetInterpolateCode(Type fieldType, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} s, \textcolor{keywordtype}{string} e, \textcolor{keywordtype}{string} t)}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             \textcolor{keywordflow}{if} (}
+\DoxyCodeLine{00102                 fieldType == typeof(Single) || fieldType == typeof(Double) ||}
+\DoxyCodeLine{00103                 fieldType == typeof(SByte) || fieldType == typeof(Byte) ||}
+\DoxyCodeLine{00104                 fieldType == typeof(Int16) || fieldType == typeof(UInt16) ||}
+\DoxyCodeLine{00105                 fieldType == typeof(Int32) || fieldType == typeof(UInt32) ||}
+\DoxyCodeLine{00106                 fieldType == typeof(Int64) || fieldType == typeof(UInt64)}
+\DoxyCodeLine{00107                 )}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{return} t + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{} = ("{}} + fieldType.FullName + \textcolor{stringliteral}{"{})((("{}} + e + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{} -\/ "{}} + s + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{}) * time) + "{}} + s + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{});"{}};}
+\DoxyCodeLine{00109             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (fieldType == typeof(Vector3))}
+\DoxyCodeLine{00110                 \textcolor{keywordflow}{return} t + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{} = Vector3.LerpUnclamped("{}} + s + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{}, "{}} + e + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{}, time);"{}};}
+\DoxyCodeLine{00111             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (fieldType == typeof(Vector2))}
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{return} t + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{} = Vector2.LerpUnclamped("{}} + s + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{}, "{}} + e + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{}, time);"{}};}
+\DoxyCodeLine{00113             }
+\DoxyCodeLine{00114             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{int} GetDefaultBitCount(Type fieldType)}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{if} (fieldType == typeof(Byte) || fieldType == typeof(SByte))}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{return} 8;}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             \textcolor{keywordflow}{if} (fieldType == typeof(UInt16) || fieldType == typeof(Int16) || fieldType == typeof(Char))}
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{return} 16;}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (fieldType == typeof(UInt32) || fieldType == typeof(Int32) || fieldType == typeof(Single))}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{return} 32;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             \textcolor{keywordflow}{if} (fieldType == typeof(UInt64) || fieldType == typeof(Int64) || fieldType == typeof(Double))}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{return} 64;}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (fieldType == typeof(Boolean))}
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{keywordflow}{if} (fieldType == typeof(Vector3))}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{return} 32;}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{keywordflow}{if} (fieldType == typeof(Vector2))}
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{return} 32;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00142         \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00150         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{int} GetMaxBits(Type fieldType)}
+\DoxyCodeLine{00151         \{}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (fieldType.IsEnum)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 fieldType = Enum.GetUnderlyingType(fieldType);}
+\DoxyCodeLine{00156             \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (fieldType == typeof(Byte) || fieldType == typeof(SByte))}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{return} 8;}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{keywordflow}{if} (fieldType == typeof(UInt16) || fieldType == typeof(Int16) || fieldType == typeof(Char))}
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{return} 16;}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{keywordflow}{if} (fieldType == typeof(UInt32) || fieldType == typeof(Int32) || fieldType == typeof(Single))}
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{return} 32;}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (fieldType == typeof(UInt64) || fieldType == typeof(Int64) || fieldType == typeof(Double))}
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{return} 64;}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170             \textcolor{keywordflow}{if} (fieldType == typeof(Boolean))}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             \textcolor{keywordflow}{if} (fieldType == typeof(Vector3))}
+\DoxyCodeLine{00174                 \textcolor{keywordflow}{return} 96;}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176             \textcolor{keywordflow}{if} (fieldType == typeof(Vector2))}
+\DoxyCodeLine{00177                 \textcolor{keywordflow}{return} 64;}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             \textcolor{keywordtype}{bool} isList = fieldType.IsGenericType \&\& fieldType.GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             \textcolor{keywordflow}{if} (isList)}
+\DoxyCodeLine{00182             \{}
+\DoxyCodeLine{00183                 Debug.LogWarning(\textcolor{stringliteral}{"{}Can't get max bits needed for List<> types, as they are variable. "{}} + fieldType.Name);}
+\DoxyCodeLine{00184                 \textcolor{keywordflow}{return} 256 * 8;}
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             Debug.LogWarning(\textcolor{stringliteral}{"{}Can't get bits needed for unsupported types. "{}} + fieldType.Name);}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{return} 256 * 8;}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsKeyframe(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00194         \{}
+\DoxyCodeLine{00196             \textcolor{keywordflow}{if} ((\textcolor{keywordtype}{int})keyRate == 1)}
+\DoxyCodeLine{00197                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00200             \textcolor{keywordflow}{if} (keyRate == 0)}
+\DoxyCodeLine{00201                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (frameId \% (\textcolor{keywordtype}{int})keyRate == 0)}
+\DoxyCodeLine{00204                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00207         \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209         \textcolor{comment}{//public bool IsForced(int frameId, SerializationFlags writeFlags)}}
+\DoxyCodeLine{00210         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00211         \textcolor{comment}{//    return false;}}
+\DoxyCodeLine{00212         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsForced(\textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             \textcolor{keywordflow}{if} (syncAs == SyncAs.Trigger)}
+\DoxyCodeLine{00217             \{}
+\DoxyCodeLine{00219                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (keyRate == KeyRate.Every)}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00227             \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.Force) != 0)}
+\DoxyCodeLine{00228                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00232             \textcolor{keywordflow}{if} (keyRate == 0)}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.NewConnection) != 0)}
+\DoxyCodeLine{00235                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00236             \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (keyRate != KeyRate.Never \&\& frameId \% (\textcolor{keywordtype}{int})keyRate == 0)}
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00242         \}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsForcedClass<T>(\textcolor{keywordtype}{int} frameId, T value, T prevValue, SerializationFlags writeFlags) where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00246         \{}
+\DoxyCodeLine{00247             \textcolor{keywordflow}{if} (syncAs == SyncAs.Trigger)}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00249                 Debug.LogError(\textcolor{stringliteral}{"{}Reference type "{}} + typeof(T).Name + \textcolor{stringliteral}{"{} cannot be set to SyncAs.Trigger. This PackAttribute setting only applies to structs."{}});}
+\DoxyCodeLine{00251                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00252             \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00255             \textcolor{keywordflow}{if} (keyRate == KeyRate.Every)}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00259             \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.Force) != 0)}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (keyRate == 0)}
+\DoxyCodeLine{00265             \{}
+\DoxyCodeLine{00266                 \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.NewConnection) != 0)}
+\DoxyCodeLine{00267                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00268             \}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             \textcolor{keywordflow}{if} (keyRate != KeyRate.Never \&\& frameId \% (\textcolor{keywordtype}{int})keyRate == 0)}
+\DoxyCodeLine{00271                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (!value.Equals(prevValue))}
+\DoxyCodeLine{00274                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00277         \}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsForced<T>(\textcolor{keywordtype}{int} frameId, T value, T prevValue, SerializationFlags writeFlags) where T : \textcolor{keyword}{struct}}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281             \textcolor{keywordflow}{if} (syncAs == SyncAs.Trigger)}
+\DoxyCodeLine{00282             \{}
+\DoxyCodeLine{00284                 \textcolor{keywordflow}{return} !value.Equals(\textcolor{keyword}{new} T());}
+\DoxyCodeLine{00285             \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00288             \textcolor{keywordflow}{if} (keyRate == KeyRate.Every)}
+\DoxyCodeLine{00289                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00292             \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.Force) != 0)}
+\DoxyCodeLine{00293                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00297             \textcolor{keywordflow}{if} (keyRate == 0)}
+\DoxyCodeLine{00298             \{}
+\DoxyCodeLine{00299                 \textcolor{keywordflow}{if} ((writeFlags \& SerializationFlags.NewConnection) != 0)}
+\DoxyCodeLine{00300                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00301             \}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303             \textcolor{keywordflow}{if} (keyRate != KeyRate.Never \&\& frameId \% (\textcolor{keywordtype}{int})keyRate == 0)}
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306             \textcolor{keywordflow}{if} (!value.Equals(prevValue))}
+\DoxyCodeLine{00307                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00310         \}}
+\DoxyCodeLine{00311     \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,218 @@
+\doxysection{Sync\+List\+Attribute.\+cs}
+\label{_sync_list_attribute_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncListAttribute.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncListAttribute.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Compression.Internal;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncListAttribute : SyncVarBaseAttribute}
+\DoxyCodeLine{00015     , IPackList<Int32>}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017 \textcolor{preprocessor}{        \#region List<Int32>}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         \textcolor{keyword}{public} SerializationFlags Pack(ref List<Int32> value, List<Int32> prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00020         \{}
+\DoxyCodeLine{00021             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00022             \textcolor{keywordtype}{bool} forced = (writeFlags \& (SerializationFlags.Force | SerializationFlags.ForceReliable | SerializationFlags.NewConnection)) != 0;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024             \textcolor{comment}{//bool notforced = !IsForced(frameId, writeFlags);}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00027             \textcolor{keywordtype}{int} holdpos = bitposition;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = value.Count; i < cnt; ++i)}
+\DoxyCodeLine{00030             \{}
+\DoxyCodeLine{00031                 var val = value[i];}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033                 \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00034                 \{}
+\DoxyCodeLine{00035                     \textcolor{keywordflow}{if} (!forced \&\& val == prevValue[i])}
+\DoxyCodeLine{00036                     \{}
+\DoxyCodeLine{00037                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00038                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00039                     \}}
+\DoxyCodeLine{00040                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00041                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00042                 \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044                 buffer.WriteSignedPackedBytes(val, ref bitposition, bitCount);}
+\DoxyCodeLine{00045                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00046             \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (flags == SerializationFlags.None)}
+\DoxyCodeLine{00049                 bitposition = holdpos;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             \textcolor{comment}{//Debug.LogError(cnt + "{} SER "{} + frameId + "{} "{} + value[1] + "{} flgs: "{} + flags);}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} SerializationFlags Unpack(ref List<Int32> value, BitArray isCompleteMask, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             \textcolor{comment}{//bool notforced = !IsForced(frameId, writeFlags);}}
+\DoxyCodeLine{00060             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             var isComplete = SerializationFlags.IsComplete;}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = value.Count; i < cnt; ++i)}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00069                 \{}
+\DoxyCodeLine{00070                     \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00071                     \{}
+\DoxyCodeLine{00072                         isComplete = SerializationFlags.None;}
+\DoxyCodeLine{00073                         isCompleteMask[i] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00074                         \textcolor{comment}{//value[i] = prevValue[i];}}
+\DoxyCodeLine{00075                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00076                     \}}
+\DoxyCodeLine{00077                 \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079                 isCompleteMask[i] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081                 value[i] = buffer.ReadSignedPackedBytes(ref bitposition, bitCount);}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00084             \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             \textcolor{comment}{//Debug.LogError("{}Unpack List DES "{} + frameId + "{} <b>"{} + value[0] +"{}:"{}+ value[1] + "{}:"{} + value[2] + "{}</b> "{} + "{} flgs: "{} + (flags | isComplete));}}
+\DoxyCodeLine{00087             \textcolor{comment}{//if (isComplete == SerializationFlags.IsComplete)}}
+\DoxyCodeLine{00088             \textcolor{comment}{//  Debug.LogError("{}Complete Synclist"{});}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keywordflow}{return} flags | isComplete;}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095 \textcolor{preprocessor}{        \#region List<Int32>}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} SerializationFlags Pack(ref List<UInt32> value, List<UInt32> prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00098         \{}
+\DoxyCodeLine{00099             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00100             \textcolor{keywordtype}{bool} forced = (writeFlags \& (SerializationFlags.Force | SerializationFlags.ForceReliable | SerializationFlags.NewConnection)) != 0;}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102             \textcolor{comment}{//bool notforced = !IsForced(frameId, writeFlags);}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00105             \textcolor{keywordtype}{int} holdpos = bitposition;}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = value.Count; i < cnt; ++i)}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 var val = value[i];}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111                 \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00112                 \{}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{if} (!forced \&\& val == prevValue[i])}
+\DoxyCodeLine{00114                     \{}
+\DoxyCodeLine{00115                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00116                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00117                     \}}
+\DoxyCodeLine{00118                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00119                         buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00120                 \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122                 buffer.WritePackedBytes(val, ref bitposition, bitCount);}
+\DoxyCodeLine{00123                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00124             \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (flags == SerializationFlags.None)}
+\DoxyCodeLine{00127                 bitposition = holdpos;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             \textcolor{comment}{//Debug.LogError(cnt + "{} SER "{} + frameId + "{} "{} + value[1] + "{} flgs: "{} + flags);}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} SerializationFlags Unpack(ref List<UInt32> value, BitArray isCompleteMask, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{comment}{//bool notforced = !IsForced(frameId, writeFlags);}}
+\DoxyCodeLine{00138             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             var isComplete = SerializationFlags.IsComplete;}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = value.Count; i < cnt; ++i)}
+\DoxyCodeLine{00145             \{}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{if} (!isKeyframe)}
+\DoxyCodeLine{00147                 \{}
+\DoxyCodeLine{00148                     \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00149                     \{}
+\DoxyCodeLine{00150                         isComplete = SerializationFlags.None;}
+\DoxyCodeLine{00151                         isCompleteMask[i] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00152                         \textcolor{comment}{//value[i] = prevValue[i];}}
+\DoxyCodeLine{00153                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00154                     \}}
+\DoxyCodeLine{00155                 \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                 isCompleteMask[i] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159                 value[i] = (uint)buffer.ReadPackedBytes(ref bitposition, bitCount);}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161                 flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{comment}{//Debug.LogError("{}Unpack List DES "{} + frameId + "{} <b>"{} + value[0] +"{}:"{}+ value[1] + "{}:"{} + value[2] + "{}</b> "{} + "{} flgs: "{} + (flags | isComplete));}}
+\DoxyCodeLine{00165             \textcolor{comment}{//if (isComplete == SerializationFlags.IsComplete)}}
+\DoxyCodeLine{00166             \textcolor{comment}{//  Debug.LogError("{}Complete Synclist"{});}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168             \textcolor{keywordflow}{return} flags | isComplete;}
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00176         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Copy<T>(List<T> src, List<T> trg, BitArray mask) where T : \textcolor{keyword}{struct}}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = src.Count; i < cnt; ++i)}
+\DoxyCodeLine{00179             \{}
+\DoxyCodeLine{00180                 \textcolor{keywordflow}{if} (mask.Get(i))}
+\DoxyCodeLine{00181                     trg[i] = src[i];}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183         \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Capture<T>(List<T> src, List<T> trg) where T : \textcolor{keyword}{struct}}
+\DoxyCodeLine{00186         \{}
+\DoxyCodeLine{00187             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = src.Count; i < cnt; ++i)}
+\DoxyCodeLine{00188             \{}
+\DoxyCodeLine{00189                 trg[i] = src[i];}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191         \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00194         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} GetFieldDeclareCodeGen(Type fieldType, \textcolor{keywordtype}{string} fulltypename, \textcolor{keywordtype}{string} fname)}
+\DoxyCodeLine{00195         \{}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{return} base.GetFieldDeclareCodeGen(fieldType, fulltypename, fname) + \textcolor{stringliteral}{"{} public BitArray "{}} + fname + \textcolor{stringliteral}{"{}\_mask;"{}};}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} GetCaptureCodeGen(Type fieldType, \textcolor{keywordtype}{string} fieldName, \textcolor{keywordtype}{string} s, \textcolor{keywordtype}{string} t)}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}\{ for (int i = 0, cnt = "{}} + s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}.Count; i < cnt; ++i) \{ "{}} + t +\textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}[i] = "{}} + s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}[i]; \} \}"{}};}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} GetCopyCodeGen(Type fieldType, \textcolor{keywordtype}{string} fieldName, \textcolor{keywordtype}{string} s, \textcolor{keywordtype}{string} t)}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             \textcolor{keywordflow}{return} }
+\DoxyCodeLine{00209                 \textcolor{stringliteral}{"{}\{ for (int i = 0, cnt = "{}} + s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}.Count; i < cnt; ++i) \{ "{}} +}
+\DoxyCodeLine{00210                     \textcolor{stringliteral}{"{}if ("{}}+ s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}\_mask.Get(i)) "{}} + t + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}[i] = "{}} + s + \textcolor{stringliteral}{"{}."{}} + fieldName + \textcolor{stringliteral}{"{}[i]; \} \} "{}};}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214     \}}
+\DoxyCodeLine{00215 \}}
+\DoxyCodeLine{00216 }
+
+\end{DoxyCode}

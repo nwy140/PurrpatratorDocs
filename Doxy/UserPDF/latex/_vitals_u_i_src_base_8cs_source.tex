@@ -1,0 +1,198 @@
+\doxysection{Vitals\+UISrc\+Base.\+cs}
+\label{_vitals_u_i_src_base_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/UI/VitalsUISrcBase.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/UI/VitalsUISrcBase.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }VitalsUISrcBase : MonoBehaviour}
+\DoxyCodeLine{00019         , IOnChangeOwnedVitals}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{enum} MonitorSource \{ Auto, Owned, Self, GameObject \}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         [Tooltip(\textcolor{stringliteral}{"{}Where this VitalUI will look for Vitals data."{}})]}
+\DoxyCodeLine{00025         [HideInInspector] \textcolor{keyword}{public} MonitorSource monitor = MonitorSource.Auto;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         [Tooltip(\textcolor{stringliteral}{"{}Object that this VitalUI will search for an IVitalsSystem vitals data source."{}})]}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [HideInInspector]}
+\DoxyCodeLine{00030         [SerializeField]}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Object vitalsSource;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [System.NonSerialized] \textcolor{keyword}{public} Vitals vitals;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keywordtype}{void} OnChangeOwnedVitals(IVitalsSystem added, IVitalsSystem removed);}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             ApplyVitalsSource(\textcolor{keyword}{null});}
+\DoxyCodeLine{00040         \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00043         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{        \#region VitalsSource inspector field and Property}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{virtual} IVitalsSystem ApplyVitalsSource(Object srcObj)}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             GameObject vitalsSrcGO;}
+\DoxyCodeLine{00054             Component vitalsSrcComp;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (monitor == MonitorSource.Auto)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 \textcolor{keywordflow}{if} (srcObj == \textcolor{keyword}{null})}
+\DoxyCodeLine{00059                 \{}
+\DoxyCodeLine{00060                     srcObj = (Object)GetComponentInParent<IVitalsSystem>();}
+\DoxyCodeLine{00061                     monitor = MonitorSource.Self;}
+\DoxyCodeLine{00062                 \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{if} (srcObj == \textcolor{keyword}{null})}
+\DoxyCodeLine{00065                 \{}
+\DoxyCodeLine{00066                     srcObj = (Object)OwnedIVitals.LastItem;}
+\DoxyCodeLine{00067                     monitor = MonitorSource.Owned;}
+\DoxyCodeLine{00068                 \}}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00072             \textcolor{keywordflow}{if} (monitor == MonitorSource.Owned)}
+\DoxyCodeLine{00073             \{}
+\DoxyCodeLine{00074                 var ownedVitals = OwnedIVitals.LastItem;}
+\DoxyCodeLine{00075                 vitalsSrcComp = ownedVitals as Component;}
+\DoxyCodeLine{00076                 vitalsSrcGO = \textcolor{keyword}{null};}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (monitor == MonitorSource.Self)}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 vitalsSrcGO = gameObject;}
+\DoxyCodeLine{00081                 vitalsSrcComp = \textcolor{keyword}{null};}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083             \textcolor{comment}{// Auto -\/ try self first -\/ if no vitals found fall back to owned}}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 vitalsSource = srcObj;}
+\DoxyCodeLine{00087                 vitalsSrcGO = srcObj as GameObject;}
+\DoxyCodeLine{00088                 vitalsSrcComp = srcObj as Component;}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             IVitalsSystem vs;}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (vitalsSrcGO)}
+\DoxyCodeLine{00095             \{}
+\DoxyCodeLine{00096                 vs = FindIVitalComponentOnGameObj(vitalsSrcGO);}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{if} (vs != \textcolor{keyword}{null})}
+\DoxyCodeLine{00099                     vitalsSource = (vs as Component).gameObject;}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (vitalsSrcComp)}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 vs = vitalsSrcComp as IVitalsSystem;}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{if} (monitor == MonitorSource.GameObject)}
+\DoxyCodeLine{00107                     vitalsSource = vitalsSrcComp.gameObject;}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 vs = \textcolor{keyword}{null};}
+\DoxyCodeLine{00112                 vitalsSource = \textcolor{keyword}{null};}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{keywordflow}{return} vs;}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{private} \textcolor{keyword}{static} IVitalsSystem FindIVitalComponentOnGameObj(GameObject go)}
+\DoxyCodeLine{00122         \{}
+\DoxyCodeLine{00124             \textcolor{keywordflow}{if} (go)}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 IVitalsSystem ivitalcomp = go.GetComponentInParent<IVitalsSystem>();}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{if} (ivitalcomp == \textcolor{keyword}{null})}
+\DoxyCodeLine{00128                     ivitalcomp = go.GetComponentInChildren<IVitalsSystem>();}
+\DoxyCodeLine{00129                 \textcolor{keywordflow}{return} ivitalcomp;}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134     \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138     [CustomEditor(typeof(VitalsUISrcBase))]}
+\DoxyCodeLine{00139     [CanEditMultipleObjects]}
+\DoxyCodeLine{00140     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalsUISrcBaseEditor : ReactorHeaderEditor}
+\DoxyCodeLine{00141     \{}
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder strb = \textcolor{keyword}{new} StringBuilder(64);}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144         \textcolor{keyword}{protected} VitalsUISrcBase \_target;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         SerializedProperty monitor, vitalsSource;}
+\DoxyCodeLine{00147         \textcolor{keywordtype}{bool} vitalSourceExpanded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             base.OnEnable();}
+\DoxyCodeLine{00152             \_target = (VitalsUISrcBase)target;}
+\DoxyCodeLine{00153             \_target.ApplyVitalsSource(\_target.vitalsSource);}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             monitor = serializedObject.FindProperty(\textcolor{stringliteral}{"{}monitor"{}});}
+\DoxyCodeLine{00156             vitalsSource = serializedObject.FindProperty(\textcolor{stringliteral}{"{}vitalsSource"{}});}
+\DoxyCodeLine{00157         \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00160         \{}
+\DoxyCodeLine{00161             base.OnInspectorGUI();}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163             vitalSourceExpanded = EditorGUILayout.Foldout(vitalSourceExpanded, \textcolor{stringliteral}{"{}Vitals Data Source"{}});}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             \textcolor{keywordflow}{if} (vitalSourceExpanded)}
+\DoxyCodeLine{00166             \{}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168                 BeginVerticalBox();}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00171                 EditorGUILayout.PropertyField(monitor);}
+\DoxyCodeLine{00172                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00173                 \{}
+\DoxyCodeLine{00174                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00175                     \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00176                         \_target.ApplyVitalsSource(\_target.vitalsSource);}
+\DoxyCodeLine{00177                 \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00180                 EditorGUILayout.ObjectField(vitalsSource, typeof(Object));}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00182                 \{}
+\DoxyCodeLine{00183                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00184                     \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00185                         \_target.ApplyVitalsSource(\_target.vitalsSource);}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189                 EndVerticalBox();}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194     \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00197 \}}
+\DoxyCodeLine{00198 }
+
+\end{DoxyCode}

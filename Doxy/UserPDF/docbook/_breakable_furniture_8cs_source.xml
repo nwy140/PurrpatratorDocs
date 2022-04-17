@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__breakable_furniture_8cs_source" xml:lang="en-US">
+<title>BreakableFurniture.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/_Developers/Euan/Scripts/BreakableFurniture.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__breakable_furniture_8cs_source_1l00001"/>00001 <emphasis role="keyword">using</emphasis>&#32;System.Collections;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00002"/>00002 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00003"/>00003 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00004"/>00004 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00005"/>00005 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_s_int">SInt</link>.<link linkend="_namespace_s_int_1_1_mission_objectives">MissionObjectives</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00006"/>00006 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00007"/><link linkend="_class_breakable_furniture">00007</link> <emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_breakable_furniture">BreakableFurniture</link>&#32;:&#32;<link linkend="_class_photon_1_1_pun_1_1_mono_behaviour_pun">MonoBehaviourPun</link>,&#32;<link linkend="_interface_photon_1_1_pun_1_1_i_pun_observable">IPunObservable</link>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00008"/>00008 {
+<anchor xml:id="__breakable_furniture_8cs_source_1l00009"/><link linkend="_class_breakable_furniture_1a0111583055f9f594f4f3e3f6bd845004">00009</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_breakable_furniture_1a0111583055f9f594f4f3e3f6bd845004">isBroken</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00010"/><link linkend="_class_breakable_furniture_1a1c3faa1af8347bfda7a348394a00db63">00010</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;GameObject&#32;<link linkend="_class_breakable_furniture_1a1c3faa1af8347bfda7a348394a00db63">destroyedObject</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00011"/>00011 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00012"/>00012 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isBrokenSpawned;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00013"/>00013 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00014"/><link linkend="_class_breakable_furniture_1addab8bb03eebe80b808a6a594dadf3a4">00014</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_breakable_furniture_1addab8bb03eebe80b808a6a594dadf3a4">breakTime</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00015"/>00015 &#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&#32;PV;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00016"/>00016 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;[SerializeField]&#32;<emphasis role="keyword">private</emphasis>&#32;<link linkend="_class_sound_general_dynamics_multiplayer_photon">SoundGeneralDynamicsMultiplayerPhoton</link>&#32;soundHost;&#32;<emphasis role="comment">//15-3-2022&#32;-&#32;Chan&#32;Kwok&#32;Chun</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00018"/>00018 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Start()
+<anchor xml:id="__breakable_furniture_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_breakable_furniture_1a0111583055f9f594f4f3e3f6bd845004">isBroken</link>&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;isBrokenSpawned&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00024"/>00024 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Awake()
+<anchor xml:id="__breakable_furniture_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TryGetComponent(out&#32;PV);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00029"/>00029 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Update()
+<anchor xml:id="__breakable_furniture_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_breakable_furniture_1a0111583055f9f594f4f3e3f6bd845004">isBroken</link>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;isBrokenSpawned&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//rend.sharedMaterial&#32;=&#32;material[1];</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>(isBrokenSpawned&#32;==&#32;<emphasis role="keyword">false</emphasis>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;PV.<link linkend="_class_photon_1_1_pun_1_1_photon_view_1a92bc79e36a53f2137e4b45e5162bdd7b">RPC</link>(nameof(<link linkend="_class_breakable_furniture_1a73b216e5e7bbec290742916a6bd6dfe5">SpawnBrokenVersion</link>),&#32;<link linkend="_group__public_api_1gad59a35d37925dbf12a969adac050714b">RpcTarget</link>.AllBuffered);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00043"/>00043 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;[<link linkend="_class_photon_1_1_pun_1_1_pun_r_p_c">PunRPC</link>]
+<anchor xml:id="__breakable_furniture_8cs_source_1l00045"/><link linkend="_class_breakable_furniture_1a73b216e5e7bbec290742916a6bd6dfe5">00045</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_breakable_furniture_1a73b216e5e7bbec290742916a6bd6dfe5">SpawnBrokenVersion</link>()
+<anchor xml:id="__breakable_furniture_8cs_source_1l00046"/>00046 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isBrokenSpawned&#32;==&#32;<emphasis role="keyword">true</emphasis>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(soundHost&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;soundHost.<link linkend="_class_sound_general_dynamics_multiplayer_photon_1abc60a47d539f01595fcaf5bb5b873925">multiplayerSoundPiece</link>(0);&#32;<emphasis role="comment">//15-3-2022&#32;-&#32;Chan&#32;Kwok&#32;Chun</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00051"/>00051 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;isBrokenSpawned&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a3941fc37f654b2010d53097dae17f724">LocalPlayer</link>.<link linkend="_class_photon_1_1_realtime_1_1_player_1a650042ff3d147ed8cd559b6258ce238d">IsMasterClient</link>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{&#32;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a7e68c3cae2b1b2b7495b545b246192c2">InstantiateRoomObject</link>(<link linkend="_class_breakable_furniture_1a1c3faa1af8347bfda7a348394a00db63">destroyedObject</link>.name,&#32;transform.position,&#32;transform.rotation);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1ada7d7b9bdb306863c66b260dde7c544e">Destroy</link>(PV.gameObject);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00058"/>00058 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Add&#32;Score</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;score&#32;=&#32;<link linkend="_class_score_manager">ScoreManager</link>.<link linkend="_class_score_manager_1a1050e7b781ca7af942b19a8280c7080a">instance</link>.<link linkend="_class_score_manager_1abb90b4e9c5778bfd2e76e598cf426aa2">furniture1</link>;
+<anchor xml:id="__breakable_furniture_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_score_manager">ScoreManager</link>.<link linkend="_class_score_manager_1a1050e7b781ca7af942b19a8280c7080a">instance</link>.<link linkend="_class_score_manager_1a405ff0cba36289ccd35a41a8494556c7">SetBrokenFurnitureScore</link>(score);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Mo&#32;Stands&#32;for&#32;Mission&#32;Objective</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_s_int_1_1_mission_objectives_1_1_mo_manager">MoManager</link>.<link linkend="_class_s_int_1_1_mission_objectives_1_1_mo_manager_1ae159a0c853bf3e78b53426881690d3c1">instance</link>.<link linkend="_class_s_int_1_1_mission_objectives_1_1_mo_manager_1ac44f68bba50cf77b54b6ea2a9e1537ca">TryProgressMoByID</link>(<emphasis role="stringliteral">&quot;C2&quot;</emphasis>);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00065"/>00065 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00066"/>00066 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00067"/><link linkend="_class_breakable_furniture_1a86ac8cb68847f06dad0ff938e8401775">00067</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_breakable_furniture_1a86ac8cb68847f06dad0ff938e8401775">OnPhotonSerializeView</link>(<link linkend="_class_photon_1_1_pun_1_1_photon_stream">PhotonStream</link>&#32;stream,&#32;<link linkend="_struct_photon_1_1_pun_1_1_photon_message_info">PhotonMessageInfo</link>&#32;info)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(stream.<link linkend="_class_photon_1_1_pun_1_1_photon_stream_1afb5b9a03ecf814332d7ea282987e3fdc">IsWriting</link>)
+<anchor xml:id="__breakable_furniture_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;stream.<link linkend="_class_photon_1_1_pun_1_1_photon_stream_1adf067be77d2034b07fd696d97110a57a">SendNext</link>(isBrokenSpawned);
+<anchor xml:id="__breakable_furniture_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__breakable_furniture_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__breakable_furniture_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;isBrokenSpawned&#32;=&#32;(bool)stream.<link linkend="_class_photon_1_1_pun_1_1_photon_stream_1a50038b09fdec1b4d1072c9f8b5a231dc">ReceiveNext</link>();
+<anchor xml:id="__breakable_furniture_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__breakable_furniture_8cs_source_1l00078"/>00078 
+<anchor xml:id="__breakable_furniture_8cs_source_1l00079"/>00079 }
+</programlisting></section>

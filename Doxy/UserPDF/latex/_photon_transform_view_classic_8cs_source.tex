@@ -1,0 +1,514 @@
+\doxysection{Photon\+Transform\+View\+Classic.\+cs}
+\label{_photon_transform_view_classic_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonTransformViewClassic.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonTransformViewClassic.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonTransformViewClassic.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Component to synchronize Transforms via PUN PhotonView.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00026     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon Transform View Classic"{}})]}
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewClassic : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         \textcolor{comment}{//As this component is very complex, we separated it into multiple classes.}}
+\DoxyCodeLine{00030         \textcolor{comment}{//The PositionModel, RotationModel and ScaleMode store the data you are able to}}
+\DoxyCodeLine{00031         \textcolor{comment}{//configure in the inspector while the "{}control"{} objects below are actually moving}}
+\DoxyCodeLine{00032         \textcolor{comment}{//the object and calculating all the inter-\/ and extrapolation}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         [HideInInspector]}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} PhotonTransformViewPositionModel m\_PositionModel = \textcolor{keyword}{new} PhotonTransformViewPositionModel();}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         [HideInInspector]}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} PhotonTransformViewRotationModel m\_RotationModel = \textcolor{keyword}{new} PhotonTransformViewRotationModel();}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [HideInInspector]}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} PhotonTransformViewScaleModel m\_ScaleModel = \textcolor{keyword}{new} PhotonTransformViewScaleModel();}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         PhotonTransformViewPositionControl m\_PositionControl;}
+\DoxyCodeLine{00044         PhotonTransformViewRotationControl m\_RotationControl;}
+\DoxyCodeLine{00045         PhotonTransformViewScaleControl m\_ScaleControl;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         PhotonView m\_PhotonView;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keywordtype}{bool} m\_ReceivedNetworkUpdate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00054         \textcolor{keywordtype}{bool} m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             this.m\_PhotonView = GetComponent<PhotonView>();}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             this.m\_PositionControl = \textcolor{keyword}{new} PhotonTransformViewPositionControl(this.m\_PositionModel);}
+\DoxyCodeLine{00061             this.m\_RotationControl = \textcolor{keyword}{new} PhotonTransformViewRotationControl(this.m\_RotationModel);}
+\DoxyCodeLine{00062             this.m\_ScaleControl = \textcolor{keyword}{new} PhotonTransformViewScaleControl(this.m\_ScaleModel);}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             m\_firstTake = \textcolor{keyword}{true};}
+\DoxyCodeLine{00068         \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00071         \{}
+\DoxyCodeLine{00072             \textcolor{keywordflow}{if} (this.m\_PhotonView == \textcolor{keyword}{null} || this.m\_PhotonView.IsMine == \textcolor{keyword}{true} || PhotonNetwork.IsConnectedAndReady == \textcolor{keyword}{false})}
+\DoxyCodeLine{00073             \{}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             this.UpdatePosition();}
+\DoxyCodeLine{00078             this.UpdateRotation();}
+\DoxyCodeLine{00079             this.UpdateScale();}
+\DoxyCodeLine{00080         \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{keywordtype}{void} UpdatePosition()}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (this.m\_PositionModel.SynchronizeEnabled == \textcolor{keyword}{false} || \textcolor{keyword}{this}.m\_ReceivedNetworkUpdate == \textcolor{keyword}{false})}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             transform.localPosition = this.m\_PositionControl.UpdatePosition(transform.localPosition);}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keywordtype}{void} UpdateRotation()}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (this.m\_RotationModel.SynchronizeEnabled == \textcolor{keyword}{false} || \textcolor{keyword}{this}.m\_ReceivedNetworkUpdate == \textcolor{keyword}{false})}
+\DoxyCodeLine{00095             \{}
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00097             \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             transform.localRotation = this.m\_RotationControl.GetRotation(transform.localRotation);}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keywordtype}{void} UpdateScale()}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (this.m\_ScaleModel.SynchronizeEnabled == \textcolor{keyword}{false} || \textcolor{keyword}{this}.m\_ReceivedNetworkUpdate == \textcolor{keyword}{false})}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             transform.localScale = this.m\_ScaleControl.GetScale(transform.localScale);}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetSynchronizedValues(Vector3 speed, \textcolor{keywordtype}{float} turnSpeed)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             this.m\_PositionControl.SetSynchronizedValues(speed, turnSpeed);}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             this.m\_PositionControl.OnPhotonSerializeView(transform.localPosition, stream, info);}
+\DoxyCodeLine{00129             this.m\_RotationControl.OnPhotonSerializeView(transform.localRotation, stream, info);}
+\DoxyCodeLine{00130             this.m\_ScaleControl.OnPhotonSerializeView(transform.localScale, stream, info);}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (stream.IsReading == \textcolor{keyword}{true})}
+\DoxyCodeLine{00133             \{}
+\DoxyCodeLine{00134                 this.m\_ReceivedNetworkUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136                 \textcolor{comment}{// force latest data to avoid initial drifts when player is instantiated.}}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{if} (m\_firstTake)}
+\DoxyCodeLine{00138                 \{}
+\DoxyCodeLine{00139                     m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141                     \textcolor{keywordflow}{if} (this.m\_PositionModel.SynchronizeEnabled)}
+\DoxyCodeLine{00142                     \{}
+\DoxyCodeLine{00143                         this.transform.localPosition = this.m\_PositionControl.GetNetworkPosition();}
+\DoxyCodeLine{00144                     \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146                     \textcolor{keywordflow}{if} (this.m\_RotationModel.SynchronizeEnabled)}
+\DoxyCodeLine{00147                     \{}
+\DoxyCodeLine{00148                         this.transform.localRotation = this.m\_RotationControl.GetNetworkRotation();}
+\DoxyCodeLine{00149                     \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151                     \textcolor{keywordflow}{if} (this.m\_ScaleModel.SynchronizeEnabled)}
+\DoxyCodeLine{00152                     \{}
+\DoxyCodeLine{00153                         this.transform.localScale = this.m\_ScaleControl.GetNetworkScale();}
+\DoxyCodeLine{00154                     \}}
+\DoxyCodeLine{00155                 \}}
+\DoxyCodeLine{00156             \}}
+\DoxyCodeLine{00157         \}}
+\DoxyCodeLine{00158     \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161     [System.Serializable]}
+\DoxyCodeLine{00162     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewPositionModel}
+\DoxyCodeLine{00163     \{}
+\DoxyCodeLine{00164         \textcolor{keyword}{public} \textcolor{keyword}{enum} InterpolateOptions}
+\DoxyCodeLine{00165         \{}
+\DoxyCodeLine{00166             Disabled,}
+\DoxyCodeLine{00167             FixedSpeed,}
+\DoxyCodeLine{00168             EstimatedSpeed,}
+\DoxyCodeLine{00169             SynchronizeValues,}
+\DoxyCodeLine{00170             Lerp}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174         \textcolor{keyword}{public} \textcolor{keyword}{enum} ExtrapolateOptions}
+\DoxyCodeLine{00175         \{}
+\DoxyCodeLine{00176             Disabled,}
+\DoxyCodeLine{00177             SynchronizeValues,}
+\DoxyCodeLine{00178             EstimateSpeedAndTurn,}
+\DoxyCodeLine{00179             FixedSpeed,}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SynchronizeEnabled;}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TeleportEnabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00186         \textcolor{keyword}{public} \textcolor{keywordtype}{float} TeleportIfDistanceGreaterThan = 3f;}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} InterpolateOptions InterpolateOption = InterpolateOptions.EstimatedSpeed;}
+\DoxyCodeLine{00189         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateMoveTowardsSpeed = 1f;}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateLerpSpeed = 1f;}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{keyword}{public} ExtrapolateOptions ExtrapolateOption = ExtrapolateOptions.Disabled;}
+\DoxyCodeLine{00194         \textcolor{keyword}{public} \textcolor{keywordtype}{float} ExtrapolateSpeed = 1f;}
+\DoxyCodeLine{00195         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ExtrapolateIncludingRoundTripTime = \textcolor{keyword}{true};}
+\DoxyCodeLine{00196         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ExtrapolateNumberOfStoredPositions = 1;}
+\DoxyCodeLine{00197     \}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewPositionControl}
+\DoxyCodeLine{00200     \{}
+\DoxyCodeLine{00201         PhotonTransformViewPositionModel m\_Model;}
+\DoxyCodeLine{00202         \textcolor{keywordtype}{float} m\_CurrentSpeed;}
+\DoxyCodeLine{00203         \textcolor{keywordtype}{double} m\_LastSerializeTime;}
+\DoxyCodeLine{00204         Vector3 m\_SynchronizedSpeed = Vector3.zero;}
+\DoxyCodeLine{00205         \textcolor{keywordtype}{float} m\_SynchronizedTurnSpeed = 0;}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207         Vector3 m\_NetworkPosition;}
+\DoxyCodeLine{00208         Queue<Vector3> m\_OldNetworkPositions = \textcolor{keyword}{new} Queue<Vector3>();}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \textcolor{keywordtype}{bool} m\_UpdatedPositionAfterOnSerialize = \textcolor{keyword}{true};}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keyword}{public} PhotonTransformViewPositionControl(PhotonTransformViewPositionModel model)}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214             m\_Model = model;}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217         Vector3 GetOldestStoredNetworkPosition()}
+\DoxyCodeLine{00218         \{}
+\DoxyCodeLine{00219             Vector3 oldPosition = m\_NetworkPosition;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{keywordflow}{if} (m\_OldNetworkPositions.Count > 0)}
+\DoxyCodeLine{00222             \{}
+\DoxyCodeLine{00223                 oldPosition = m\_OldNetworkPositions.Peek();}
+\DoxyCodeLine{00224             \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{return} oldPosition;}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00237         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetSynchronizedValues(Vector3 speed, \textcolor{keywordtype}{float} turnSpeed)}
+\DoxyCodeLine{00238         \{}
+\DoxyCodeLine{00239             m\_SynchronizedSpeed = speed;}
+\DoxyCodeLine{00240             m\_SynchronizedTurnSpeed = turnSpeed;}
+\DoxyCodeLine{00241         \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00248         \textcolor{keyword}{public} Vector3 UpdatePosition(Vector3 currentPosition)}
+\DoxyCodeLine{00249         \{}
+\DoxyCodeLine{00250             Vector3 targetPosition = GetNetworkPosition() + GetExtrapolatedPositionOffset();}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252             \textcolor{keywordflow}{switch} (m\_Model.InterpolateOption)}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.Disabled:}
+\DoxyCodeLine{00255                     \textcolor{keywordflow}{if} (m\_UpdatedPositionAfterOnSerialize == \textcolor{keyword}{false})}
+\DoxyCodeLine{00256                     \{}
+\DoxyCodeLine{00257                         currentPosition = targetPosition;}
+\DoxyCodeLine{00258                         m\_UpdatedPositionAfterOnSerialize = \textcolor{keyword}{true};}
+\DoxyCodeLine{00259                     \}}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.FixedSpeed:}
+\DoxyCodeLine{00264                     currentPosition = Vector3.MoveTowards(currentPosition, targetPosition, Time.deltaTime * m\_Model.InterpolateMoveTowardsSpeed);}
+\DoxyCodeLine{00265                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.EstimatedSpeed:}
+\DoxyCodeLine{00268                     \textcolor{keywordflow}{if} (m\_OldNetworkPositions.Count == 0)}
+\DoxyCodeLine{00269                     \{}
+\DoxyCodeLine{00270                         \textcolor{comment}{// special case: we have no previous updates in memory, so we can't guess a speed!}}
+\DoxyCodeLine{00271                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00272                     \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                     \textcolor{comment}{// knowing the last (incoming) position and the one before, we can guess a speed.}}
+\DoxyCodeLine{00275                     \textcolor{comment}{// note that the speed is times sendRateOnSerialize! we send X updates/sec, so our estimate has to factor that in.}}
+\DoxyCodeLine{00276                     \textcolor{keywordtype}{float} estimatedSpeed = (Vector3.Distance(m\_NetworkPosition, GetOldestStoredNetworkPosition()) / m\_OldNetworkPositions.Count) * PhotonNetwork.SerializationRate;}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278                     \textcolor{comment}{// move towards the targetPosition (including estimates, if that's active) with the speed calculated from the last updates.}}
+\DoxyCodeLine{00279                     currentPosition = Vector3.MoveTowards(currentPosition, targetPosition, Time.deltaTime * estimatedSpeed);}
+\DoxyCodeLine{00280                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.SynchronizeValues:}
+\DoxyCodeLine{00283                     \textcolor{keywordflow}{if} (m\_SynchronizedSpeed.magnitude == 0)}
+\DoxyCodeLine{00284                     \{}
+\DoxyCodeLine{00285                         currentPosition = targetPosition;}
+\DoxyCodeLine{00286                     \}}
+\DoxyCodeLine{00287                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00288                     \{}
+\DoxyCodeLine{00289                         currentPosition = Vector3.MoveTowards(currentPosition, targetPosition, Time.deltaTime * m\_SynchronizedSpeed.magnitude);}
+\DoxyCodeLine{00290                     \}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00295                     currentPosition = Vector3.Lerp(currentPosition, targetPosition, Time.deltaTime * m\_Model.InterpolateLerpSpeed);}
+\DoxyCodeLine{00296                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00297             \}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (m\_Model.TeleportEnabled == \textcolor{keyword}{true})}
+\DoxyCodeLine{00300             \{}
+\DoxyCodeLine{00301                 \textcolor{keywordflow}{if} (Vector3.Distance(currentPosition, GetNetworkPosition()) > m\_Model.TeleportIfDistanceGreaterThan)}
+\DoxyCodeLine{00302                 \{}
+\DoxyCodeLine{00303                     currentPosition = GetNetworkPosition();}
+\DoxyCodeLine{00304                 \}}
+\DoxyCodeLine{00305             \}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307             \textcolor{keywordflow}{return} currentPosition;}
+\DoxyCodeLine{00308         \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00314         \textcolor{keyword}{public} Vector3 GetNetworkPosition()}
+\DoxyCodeLine{00315         \{}
+\DoxyCodeLine{00316             \textcolor{keywordflow}{return} m\_NetworkPosition;}
+\DoxyCodeLine{00317         \}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00324         \textcolor{keyword}{public} Vector3 GetExtrapolatedPositionOffset()}
+\DoxyCodeLine{00325         \{}
+\DoxyCodeLine{00326             \textcolor{keywordtype}{float} timePassed = (float)(PhotonNetwork.Time -\/ m\_LastSerializeTime);}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328             \textcolor{keywordflow}{if} (m\_Model.ExtrapolateIncludingRoundTripTime == \textcolor{keyword}{true})}
+\DoxyCodeLine{00329             \{}
+\DoxyCodeLine{00330                 timePassed += (float)PhotonNetwork.GetPing() / 1000f;}
+\DoxyCodeLine{00331             \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333             Vector3 extrapolatePosition = Vector3.zero;}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335             \textcolor{keywordflow}{switch} (m\_Model.ExtrapolateOption)}
+\DoxyCodeLine{00336             \{}
+\DoxyCodeLine{00337                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.ExtrapolateOptions.SynchronizeValues:}
+\DoxyCodeLine{00338                     Quaternion turnRotation = Quaternion.Euler(0, m\_SynchronizedTurnSpeed * timePassed, 0);}
+\DoxyCodeLine{00339                     extrapolatePosition = turnRotation * (m\_SynchronizedSpeed * timePassed);}
+\DoxyCodeLine{00340                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00341                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.ExtrapolateOptions.FixedSpeed:}
+\DoxyCodeLine{00342                     Vector3 moveDirection = (m\_NetworkPosition -\/ GetOldestStoredNetworkPosition()).normalized;}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344                     extrapolatePosition = moveDirection * m\_Model.ExtrapolateSpeed * timePassed;}
+\DoxyCodeLine{00345                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00346                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.ExtrapolateOptions.EstimateSpeedAndTurn:}
+\DoxyCodeLine{00347                     Vector3 moveDelta = (m\_NetworkPosition -\/ GetOldestStoredNetworkPosition()) * PhotonNetwork.SerializationRate;}
+\DoxyCodeLine{00348                     extrapolatePosition = moveDelta * timePassed;}
+\DoxyCodeLine{00349                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00350             \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352             \textcolor{keywordflow}{return} extrapolatePosition;}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(Vector3 currentPosition, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00356         \{}
+\DoxyCodeLine{00357             \textcolor{keywordflow}{if} (m\_Model.SynchronizeEnabled == \textcolor{keyword}{false})}
+\DoxyCodeLine{00358             \{}
+\DoxyCodeLine{00359                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00360             \}}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             \textcolor{keywordflow}{if} (stream.IsWriting == \textcolor{keyword}{true})}
+\DoxyCodeLine{00363             \{}
+\DoxyCodeLine{00364                 SerializeData(currentPosition, stream, info);}
+\DoxyCodeLine{00365             \}}
+\DoxyCodeLine{00366             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00367             \{}
+\DoxyCodeLine{00368                 DeserializeData(stream, info);}
+\DoxyCodeLine{00369             \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371             m\_LastSerializeTime = PhotonNetwork.Time;}
+\DoxyCodeLine{00372             m\_UpdatedPositionAfterOnSerialize = \textcolor{keyword}{false};}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375         \textcolor{keywordtype}{void} SerializeData(Vector3 currentPosition, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00376         \{}
+\DoxyCodeLine{00377             stream.SendNext(currentPosition);}
+\DoxyCodeLine{00378             m\_NetworkPosition = currentPosition;}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380             \textcolor{keywordflow}{if} (m\_Model.ExtrapolateOption == PhotonTransformViewPositionModel.ExtrapolateOptions.SynchronizeValues ||}
+\DoxyCodeLine{00381                 m\_Model.InterpolateOption == PhotonTransformViewPositionModel.InterpolateOptions.SynchronizeValues)}
+\DoxyCodeLine{00382             \{}
+\DoxyCodeLine{00383                 stream.SendNext(m\_SynchronizedSpeed);}
+\DoxyCodeLine{00384                 stream.SendNext(m\_SynchronizedTurnSpeed);}
+\DoxyCodeLine{00385             \}}
+\DoxyCodeLine{00386         \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388         \textcolor{keywordtype}{void} DeserializeData(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00389         \{}
+\DoxyCodeLine{00390             Vector3 readPosition = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00391             \textcolor{keywordflow}{if} (m\_Model.ExtrapolateOption == PhotonTransformViewPositionModel.ExtrapolateOptions.SynchronizeValues ||}
+\DoxyCodeLine{00392                 m\_Model.InterpolateOption == PhotonTransformViewPositionModel.InterpolateOptions.SynchronizeValues)}
+\DoxyCodeLine{00393             \{}
+\DoxyCodeLine{00394                 m\_SynchronizedSpeed = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00395                 m\_SynchronizedTurnSpeed = (float)stream.ReceiveNext();}
+\DoxyCodeLine{00396             \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398             \textcolor{keywordflow}{if} (m\_OldNetworkPositions.Count == 0)}
+\DoxyCodeLine{00399             \{}
+\DoxyCodeLine{00400                 \textcolor{comment}{// if we don't have old positions yet, this is the very first update this client reads. let's use this as current AND old position.}}
+\DoxyCodeLine{00401                 m\_NetworkPosition = readPosition;}
+\DoxyCodeLine{00402             \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404             \textcolor{comment}{// the previously received position becomes the old(er) one and queued. the new one is the m\_NetworkPosition}}
+\DoxyCodeLine{00405             m\_OldNetworkPositions.Enqueue(m\_NetworkPosition);}
+\DoxyCodeLine{00406             m\_NetworkPosition = readPosition;}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408             \textcolor{comment}{// reduce items in queue to defined number of stored positions.}}
+\DoxyCodeLine{00409             \textcolor{keywordflow}{while} (m\_OldNetworkPositions.Count > m\_Model.ExtrapolateNumberOfStoredPositions)}
+\DoxyCodeLine{00410             \{}
+\DoxyCodeLine{00411                 m\_OldNetworkPositions.Dequeue();}
+\DoxyCodeLine{00412             \}}
+\DoxyCodeLine{00413         \}}
+\DoxyCodeLine{00414     \}}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417     [System.Serializable]}
+\DoxyCodeLine{00418     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewRotationModel}
+\DoxyCodeLine{00419     \{}
+\DoxyCodeLine{00420         \textcolor{keyword}{public} \textcolor{keyword}{enum} InterpolateOptions}
+\DoxyCodeLine{00421         \{}
+\DoxyCodeLine{00422             Disabled,}
+\DoxyCodeLine{00423             RotateTowards,}
+\DoxyCodeLine{00424             Lerp,}
+\DoxyCodeLine{00425         \}}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SynchronizeEnabled;}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430         \textcolor{keyword}{public} InterpolateOptions InterpolateOption = InterpolateOptions.RotateTowards;}
+\DoxyCodeLine{00431         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateRotateTowardsSpeed = 180;}
+\DoxyCodeLine{00432         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateLerpSpeed = 5;}
+\DoxyCodeLine{00433     \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewRotationControl}
+\DoxyCodeLine{00436     \{}
+\DoxyCodeLine{00437         PhotonTransformViewRotationModel m\_Model;}
+\DoxyCodeLine{00438         Quaternion m\_NetworkRotation;}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440         \textcolor{keyword}{public} PhotonTransformViewRotationControl(PhotonTransformViewRotationModel model)}
+\DoxyCodeLine{00441         \{}
+\DoxyCodeLine{00442             m\_Model = model;}
+\DoxyCodeLine{00443         \}}
+\DoxyCodeLine{00444 }
+\DoxyCodeLine{00449         \textcolor{keyword}{public} Quaternion GetNetworkRotation()}
+\DoxyCodeLine{00450         \{}
+\DoxyCodeLine{00451             \textcolor{keywordflow}{return} m\_NetworkRotation;}
+\DoxyCodeLine{00452         \}}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454         \textcolor{keyword}{public} Quaternion GetRotation(Quaternion currentRotation)}
+\DoxyCodeLine{00455         \{}
+\DoxyCodeLine{00456             \textcolor{keywordflow}{switch} (m\_Model.InterpolateOption)}
+\DoxyCodeLine{00457             \{}
+\DoxyCodeLine{00458                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00459                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.Disabled:}
+\DoxyCodeLine{00460                     \textcolor{keywordflow}{return} m\_NetworkRotation;}
+\DoxyCodeLine{00461                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.RotateTowards:}
+\DoxyCodeLine{00462                     \textcolor{keywordflow}{return} Quaternion.RotateTowards(currentRotation, m\_NetworkRotation, m\_Model.InterpolateRotateTowardsSpeed * Time.deltaTime);}
+\DoxyCodeLine{00463                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00464                     \textcolor{keywordflow}{return} Quaternion.Lerp(currentRotation, m\_NetworkRotation, m\_Model.InterpolateLerpSpeed * Time.deltaTime);}
+\DoxyCodeLine{00465             \}}
+\DoxyCodeLine{00466         \}}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(Quaternion currentRotation, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00469         \{}
+\DoxyCodeLine{00470             \textcolor{keywordflow}{if} (m\_Model.SynchronizeEnabled == \textcolor{keyword}{false})}
+\DoxyCodeLine{00471             \{}
+\DoxyCodeLine{00472                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00473             \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475             \textcolor{keywordflow}{if} (stream.IsWriting == \textcolor{keyword}{true})}
+\DoxyCodeLine{00476             \{}
+\DoxyCodeLine{00477                 stream.SendNext(currentRotation);}
+\DoxyCodeLine{00478                 m\_NetworkRotation = currentRotation;}
+\DoxyCodeLine{00479             \}}
+\DoxyCodeLine{00480             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00481             \{}
+\DoxyCodeLine{00482                 m\_NetworkRotation = (Quaternion)stream.ReceiveNext();}
+\DoxyCodeLine{00483             \}}
+\DoxyCodeLine{00484         \}}
+\DoxyCodeLine{00485     \}}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488     [System.Serializable]}
+\DoxyCodeLine{00489     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewScaleModel}
+\DoxyCodeLine{00490     \{}
+\DoxyCodeLine{00491         \textcolor{keyword}{public} \textcolor{keyword}{enum} InterpolateOptions}
+\DoxyCodeLine{00492         \{}
+\DoxyCodeLine{00493             Disabled,}
+\DoxyCodeLine{00494             MoveTowards,}
+\DoxyCodeLine{00495             Lerp,}
+\DoxyCodeLine{00496         \}}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498 }
+\DoxyCodeLine{00499         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SynchronizeEnabled;}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501         \textcolor{keyword}{public} InterpolateOptions InterpolateOption = InterpolateOptions.Disabled;}
+\DoxyCodeLine{00502         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateMoveTowardsSpeed = 1f;}
+\DoxyCodeLine{00503         \textcolor{keyword}{public} \textcolor{keywordtype}{float} InterpolateLerpSpeed;}
+\DoxyCodeLine{00504     \}}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewScaleControl}
+\DoxyCodeLine{00507     \{}
+\DoxyCodeLine{00508         PhotonTransformViewScaleModel m\_Model;}
+\DoxyCodeLine{00509         Vector3 m\_NetworkScale = Vector3.one;}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511         \textcolor{keyword}{public} PhotonTransformViewScaleControl(PhotonTransformViewScaleModel model)}
+\DoxyCodeLine{00512         \{}
+\DoxyCodeLine{00513             m\_Model = model;}
+\DoxyCodeLine{00514         \}}
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00520         \textcolor{keyword}{public} Vector3 GetNetworkScale()}
+\DoxyCodeLine{00521         \{}
+\DoxyCodeLine{00522             \textcolor{keywordflow}{return} m\_NetworkScale;}
+\DoxyCodeLine{00523         \}}
+\DoxyCodeLine{00524 }
+\DoxyCodeLine{00525         \textcolor{keyword}{public} Vector3 GetScale(Vector3 currentScale)}
+\DoxyCodeLine{00526         \{}
+\DoxyCodeLine{00527             \textcolor{keywordflow}{switch} (m\_Model.InterpolateOption)}
+\DoxyCodeLine{00528             \{}
+\DoxyCodeLine{00529                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00530                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.Disabled:}
+\DoxyCodeLine{00531                     \textcolor{keywordflow}{return} m\_NetworkScale;}
+\DoxyCodeLine{00532                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.MoveTowards:}
+\DoxyCodeLine{00533                     \textcolor{keywordflow}{return} Vector3.MoveTowards(currentScale, m\_NetworkScale, m\_Model.InterpolateMoveTowardsSpeed * Time.deltaTime);}
+\DoxyCodeLine{00534                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00535                     \textcolor{keywordflow}{return} Vector3.Lerp(currentScale, m\_NetworkScale, m\_Model.InterpolateLerpSpeed * Time.deltaTime);}
+\DoxyCodeLine{00536             \}}
+\DoxyCodeLine{00537         \}}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(Vector3 currentScale, PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00540         \{}
+\DoxyCodeLine{00541             \textcolor{keywordflow}{if} (m\_Model.SynchronizeEnabled == \textcolor{keyword}{false})}
+\DoxyCodeLine{00542             \{}
+\DoxyCodeLine{00543                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00544             \}}
+\DoxyCodeLine{00545 }
+\DoxyCodeLine{00546             \textcolor{keywordflow}{if} (stream.IsWriting == \textcolor{keyword}{true})}
+\DoxyCodeLine{00547             \{}
+\DoxyCodeLine{00548                 stream.SendNext(currentScale);}
+\DoxyCodeLine{00549                 m\_NetworkScale = currentScale;}
+\DoxyCodeLine{00550             \}}
+\DoxyCodeLine{00551             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00552             \{}
+\DoxyCodeLine{00553                 m\_NetworkScale = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00554             \}}
+\DoxyCodeLine{00555         \}}
+\DoxyCodeLine{00556     \}}
+\DoxyCodeLine{00557 \}}
+
+\end{DoxyCode}

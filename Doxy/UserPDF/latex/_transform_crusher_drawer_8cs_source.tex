@@ -1,0 +1,158 @@
+\doxysection{Transform\+Crusher\+Drawer.\+cs}
+\label{_transform_crusher_drawer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/TransformCrusherDrawer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/TransformCrusherDrawer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     [CustomPropertyDrawer(typeof(TransformCrusher))]}
+\DoxyCodeLine{00016     [CanEditMultipleObjects]}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }TransformCrusherDrawer : CrusherDrawer}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} TITL\_HGHT = 18f;}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} SET\_PAD = 0;}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} BOUNDING\_PADDING = 4f;}
+\DoxyCodeLine{00023         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} currentline;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{comment}{//bool haschanged;}}
+\DoxyCodeLine{00026         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent gc = \textcolor{keyword}{new} GUIContent();}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent reusableGC = \textcolor{keyword}{new} GUIContent();}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly System.Text.StringBuilder sb = \textcolor{keyword}{new} System.Text.StringBuilder();}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             gc.text = label.text;}
+\DoxyCodeLine{00033             gc.tooltip = label.tooltip;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             \textcolor{comment}{//EditorGUI.BeginProperty(r, label, property);}}
+\DoxyCodeLine{00036             base.OnGUI(r, property, label);}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             \textcolor{comment}{//property.serializedObject.ApplyModifiedProperties();}}
+\DoxyCodeLine{00041             \textcolor{comment}{//property.serializedObject.Update();}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{comment}{//haschanged = true;}}
+\DoxyCodeLine{00044             \textcolor{comment}{// Hacky way to get the real object}}
+\DoxyCodeLine{00045             TransformCrusher target = (TransformCrusher)DrawerUtils.GetParent(property.FindPropertyRelative(\textcolor{stringliteral}{"{}posCrusher"{}}));}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             currentline = r.yMin;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             SerializedProperty pos = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}posCrusher"{}});}
+\DoxyCodeLine{00050             SerializedProperty rot = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}rotCrusher"{}});}
+\DoxyCodeLine{00051             SerializedProperty scl = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}sclCrusher"{}});}
+\DoxyCodeLine{00052             SerializedProperty isExpanded = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}isExpanded"{}});}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{keywordtype}{float} ph = EditorGUI.GetPropertyHeight(pos);}
+\DoxyCodeLine{00055             \textcolor{keywordtype}{float} rh = EditorGUI.GetPropertyHeight(rot);}
+\DoxyCodeLine{00056             \textcolor{keywordtype}{float} sh = EditorGUI.GetPropertyHeight(scl);}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00059             \textcolor{comment}{//bool \_isExpanded = GUI.Toggle(new Rect(r.xMin/* -\/ 12*/, currentline, r.width, TITL\_HGHT), isExpanded.boolValue, GUIContent.none, (GUIStyle)"{}Foldout"{});}}
+\DoxyCodeLine{00060             \textcolor{keywordtype}{bool} \_isExpanded = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(r.xMin\textcolor{comment}{/* -\/ 12*/}, currentline, r.width, TITL\_HGHT), GUIContent.none, isExpanded.boolValue, (GUIStyle)\textcolor{stringliteral}{"{}Foldout"{}});}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (isExpanded.boolValue != \_isExpanded)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 isExpanded.boolValue = \_isExpanded;}
+\DoxyCodeLine{00064                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r.xMin + 12, currentline, r.width -\/ 64, TITL\_HGHT), gc);\textcolor{comment}{// property.displayName /*new GUIContent("{}Transform Crusher "{} + label)*//*, (GUIStyle)"{}BoldLabel"{}*/);}}
+\DoxyCodeLine{00068             \textcolor{comment}{//GUI.Label(new Rect(r.xMin + 12, currentline, r.width -\/ 64, TITL\_HGHT), gc);// property.displayName /*new GUIContent("{}Transform Crusher "{} + label)*//*, (GUIStyle)"{}BoldLabel"{}*/);}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \textcolor{keywordtype}{int} totalbits = target.TallyBits();}
+\DoxyCodeLine{00071             \textcolor{keywordtype}{int} frag0bits = Mathf.Clamp(totalbits, 0, 64);}
+\DoxyCodeLine{00072             \textcolor{keywordtype}{int} frag1bits = Mathf.Clamp(totalbits -\/ 64, 0, 64);}
+\DoxyCodeLine{00073             \textcolor{keywordtype}{int} frag2bits = Mathf.Clamp(totalbits -\/ 128, 0, 64);}
+\DoxyCodeLine{00074             \textcolor{keywordtype}{int} frag3bits = Mathf.Clamp(totalbits -\/ 192, 0, 64);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             reusableGC.tooltip = \textcolor{stringliteral}{"{}Total Bits : "{}} + totalbits;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             sb.Length = 0;}
+\DoxyCodeLine{00079             sb.Append(frag0bits.ToString());}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (frag1bits > 0)}
+\DoxyCodeLine{00081                 sb.Append(\textcolor{stringliteral}{"{}|"{}}).Append(frag1bits);}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (frag2bits > 0)}
+\DoxyCodeLine{00083                 sb.Append(\textcolor{stringliteral}{"{}|"{}}).Append(frag2bits);}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (frag3bits > 0)}
+\DoxyCodeLine{00085                 sb.Append(\textcolor{stringliteral}{"{}|"{}}).Append(frag3bits);}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             sb.Append(\textcolor{stringliteral}{"{} bits"{}});}
+\DoxyCodeLine{00088             reusableGC.text = sb.ToString();}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(paddedleft, currentline, paddedwidth, 16), reusableGC, miniLabelRight);}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \textcolor{keywordflow}{if} (isExpanded.boolValue)}
+\DoxyCodeLine{00093             \{}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095                 Rect ir = r; \textcolor{comment}{// EditorGUI.IndentedRect(r);;}}
+\DoxyCodeLine{00096                 ir.yMin = ir.yMin + HEADR\_HGHT + 2;}
+\DoxyCodeLine{00097                 ir.xMin -\/= BOUNDING\_PADDING;}
+\DoxyCodeLine{00098                 ir.xMax += BOUNDING\_PADDING;}
+\DoxyCodeLine{00099                 ir.yMax -\/= 6;}
+\DoxyCodeLine{00100                 currentline += BOUNDING\_PADDING;}
+\DoxyCodeLine{00101                 \textcolor{comment}{//EditorGUI.LabelField(ir, GUIContent.none, /*(GUIStyle)"{}RectangleToolVBar"{});// */(GUIStyle)"{}HelpBox"{});}}
+\DoxyCodeLine{00102                 ir = EditorGUI.IndentedRect(ir);}
+\DoxyCodeLine{00103                 \textcolor{comment}{//ir.xMin += 1; ir.xMax -\/= 1;}}
+\DoxyCodeLine{00104                 \textcolor{comment}{//ir.yMin += 1; ir.yMax -\/= 1;}}
+\DoxyCodeLine{00105                 SolidTextures.DrawTexture(ir, SolidTextures.darken202D);}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00108                 currentline += TITL\_HGHT;}
+\DoxyCodeLine{00109                 \textcolor{comment}{//float leftConnectorY = currentline;}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 DrawSet(r, currentline, ph, pos);}
+\DoxyCodeLine{00113                 currentline += ph + SET\_PAD;}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 DrawSet(r, currentline, rh, rot);}
+\DoxyCodeLine{00116                 currentline += rh + SET\_PAD;}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118                 DrawSet(r, currentline, sh, scl);}
+\DoxyCodeLine{00119                 currentline += sh \textcolor{comment}{/*+ SET\_PAD*/};}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00122                 \textcolor{comment}{//SolidTextures.DrawTexture(new Rect(4, leftConnectorY + 4, 4, currentline -\/ leftConnectorY), SolidTextures.lowcontrast2D);}}
+\DoxyCodeLine{00123                 \textcolor{comment}{//EditorGUI.LabelField(new Rect(0, leftConnectorY + 4, 4, currentline -\/ leftConnectorY -\/ 12), GUIContent.none, (GUIStyle)"{}MiniSliderVertical"{});}}
+\DoxyCodeLine{00124             \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00127                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             \textcolor{comment}{//EditorGUI.EndProperty();}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSet(Rect r, \textcolor{keywordtype}{float} currentline, \textcolor{keywordtype}{float} h, SerializedProperty prop)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{comment}{//SolidTextures.DrawTexture(new Rect(4, currentline + 4, r.width, h -\/ 12), SolidTextures.lowcontrast2D);}}
+\DoxyCodeLine{00137             \textcolor{comment}{//EditorGUI.LabelField(new Rect(2, currentline + 4, 4, h -\/ 12), GUIContent.none, (GUIStyle)"{}MiniSliderVertical"{});}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(r.xMin, currentline, r.width, h), prop);}
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144             \textcolor{keywordtype}{float} ph = EditorGUI.GetPropertyHeight(property.FindPropertyRelative(\textcolor{stringliteral}{"{}posCrusher"{}}));}
+\DoxyCodeLine{00145             \textcolor{keywordtype}{float} rh = EditorGUI.GetPropertyHeight(property.FindPropertyRelative(\textcolor{stringliteral}{"{}rotCrusher"{}}));}
+\DoxyCodeLine{00146             \textcolor{keywordtype}{float} sh = EditorGUI.GetPropertyHeight(property.FindPropertyRelative(\textcolor{stringliteral}{"{}sclCrusher"{}}));}
+\DoxyCodeLine{00147             SerializedProperty isExpanded = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}isExpanded"{}});}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             \textcolor{keywordtype}{float} body = SPACING + (isExpanded.boolValue ? (ph + rh + sh + SET\_PAD * 2) + BOUNDING\_PADDING * 2 : 0);}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{return} TITL\_HGHT + body\textcolor{comment}{/* + BTTM\_MARGIN*/};}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152     \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154 \}}
+\DoxyCodeLine{00155 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

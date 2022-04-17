@@ -1,0 +1,102 @@
+\doxysection{Auto\+Disable\+Oculus\+Objects.\+cs}
+\label{_auto_disable_oculus_objects_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncOculus/AutoDisableOculusObjects.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncOculus/AutoDisableOculusObjects.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if OCULUS}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }AutoDisableOculusObjects : NetComponent}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017         \textcolor{keyword}{protected} List<Camera> cams = \textcolor{keyword}{new} List<Camera>();}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         \textcolor{keyword}{protected} List<Behaviour> behaviours = \textcolor{keyword}{new} List<Behaviour>();}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{protected} \textcolor{keyword}{static} List<Behaviour> temp = \textcolor{keyword}{new} List<Behaviour>();}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00024         \{}
+\DoxyCodeLine{00025             base.OnAwake();}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027             transform.GetNestedComponentsInChildren<Camera>(cams);}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029             transform.GetNestedComponentsInChildren<Behaviour>(temp);}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             System.Type teleportSupportType = System.Type.GetType(\textcolor{stringliteral}{"{}TeleportSupport"{}});}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             \textcolor{keywordflow}{foreach} (var comp \textcolor{keywordflow}{in} temp)}
+\DoxyCodeLine{00034             \{}
+\DoxyCodeLine{00035                 var nspace = comp.GetType().Namespace;}
+\DoxyCodeLine{00036                 var n = comp.GetType().Name;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038                 \textcolor{keywordflow}{if} (teleportSupportType.IsAssignableFrom(comp.GetType()))}
+\DoxyCodeLine{00039                 \{}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041                 \}}
+\DoxyCodeLine{00042                 \textcolor{comment}{//else if (comp is Camera)}}
+\DoxyCodeLine{00043                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00046                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (nspace != \textcolor{keyword}{null} \&\& nspace.StartsWith(\textcolor{stringliteral}{"{}OVR"{}}))}
+\DoxyCodeLine{00047                 \{}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049                 \}}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (comp.GetType().Name.StartsWith(\textcolor{stringliteral}{"{}OVR"{}}))}
+\DoxyCodeLine{00051                 \{}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053                 \}}
+\DoxyCodeLine{00054                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056                 behaviours.Add(comp);}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             base.OnJoinedRoom();}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00066             \{}
+\DoxyCodeLine{00067                 Debug.Log(\textcolor{stringliteral}{"{}Disabling Join"{}});}
+\DoxyCodeLine{00068                 \textcolor{keywordflow}{foreach} (Camera cam \textcolor{keywordflow}{in} cams)}
+\DoxyCodeLine{00069                     cam.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{foreach} (var obj \textcolor{keywordflow}{in} behaviours)}
+\DoxyCodeLine{00072                     obj.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074         \}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} asServer)}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             base.OnAuthorityChanged(isMine, asServer);}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (!isMine)}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 Debug.Log(\textcolor{stringliteral}{"{}Disabling Authority"{}});}
+\DoxyCodeLine{00083                 \textcolor{keywordflow}{foreach} (Camera cam \textcolor{keywordflow}{in} cams)}
+\DoxyCodeLine{00084                     cam.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{foreach} (var obj \textcolor{keywordflow}{in} behaviours)}
+\DoxyCodeLine{00087                     obj.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00088             \}}
+\DoxyCodeLine{00089         \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091     }
+\DoxyCodeLine{00092     \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,186 @@
+\doxysection{Launcher.\+cs}
+\label{_photon_2_photon_unity_networking_2_demos_2_pun_basics-_tutorial_2_scripts_2_launcher_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/Launcher.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/Launcher.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Launcher.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Used in "{}PUN Basic tutorial"{} to connect, and join/create room automatically}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Demo.PunBasics}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{    \#pragma warning disable 649}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }Launcher : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026 \textcolor{preprocessor}{        \#region Private Serializable Fields}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         [Tooltip(\textcolor{stringliteral}{"{}The Ui Panel to let the user enter name, connect and play"{}})]}
+\DoxyCodeLine{00029         [SerializeField]}
+\DoxyCodeLine{00030         \textcolor{keyword}{private} GameObject controlPanel;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [Tooltip(\textcolor{stringliteral}{"{}The Ui Text to inform the user about the connection progress"{}})]}
+\DoxyCodeLine{00033         [SerializeField]}
+\DoxyCodeLine{00034         \textcolor{keyword}{private} Text feedbackText;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         [Tooltip(\textcolor{stringliteral}{"{}The maximum number of players per room"{}})]}
+\DoxyCodeLine{00037         [SerializeField]}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} \textcolor{keywordtype}{byte} maxPlayersPerRoom = 4;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [Tooltip(\textcolor{stringliteral}{"{}The UI Loader Anime"{}})]}
+\DoxyCodeLine{00041         [SerializeField]}
+\DoxyCodeLine{00042         \textcolor{keyword}{private} LoaderAnime loaderAnime;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 \textcolor{preprocessor}{        \#region Private Fields}}
+\DoxyCodeLine{00052         \textcolor{keywordtype}{bool} isConnecting;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00057         \textcolor{keywordtype}{string} gameVersion = \textcolor{stringliteral}{"{}1"{}};}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061 \textcolor{preprocessor}{        \#region MonoBehaviour CallBacks}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00066         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (loaderAnime==\textcolor{keyword}{null})}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 Debug.LogError(\textcolor{stringliteral}{"{}<Color=Red><b>Missing</b></Color> loaderAnime Reference."{}},\textcolor{keyword}{this});}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             \textcolor{comment}{// \#Critical}}
+\DoxyCodeLine{00074             \textcolor{comment}{// this makes sure we can use PhotonNetwork.LoadLevel() on the master client and all clients in the same room sync their level automatically}}
+\DoxyCodeLine{00075             PhotonNetwork.AutomaticallySyncScene = \textcolor{keyword}{true};}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082 \textcolor{preprocessor}{        \#region Public Methods}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Connect()}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             \textcolor{comment}{// we want to make sure the log is clear everytime we connect, we might have several failed attempted if connection failed.}}
+\DoxyCodeLine{00092             feedbackText.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             \textcolor{comment}{// keep track of the will to join a room, because when we come back from the game we will get a callback that we are connected, so we need to know what to do then}}
+\DoxyCodeLine{00095             isConnecting = \textcolor{keyword}{true};}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{comment}{// hide the Play button for visual consistency}}
+\DoxyCodeLine{00098             controlPanel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{comment}{// start the loader animation for visual effect.}}
+\DoxyCodeLine{00101             \textcolor{keywordflow}{if} (loaderAnime!=\textcolor{keyword}{null})}
+\DoxyCodeLine{00102             \{}
+\DoxyCodeLine{00103                 loaderAnime.StartLoaderAnimation();}
+\DoxyCodeLine{00104             \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{comment}{// we check if we are connected or not, we join if we are , else we initiate the connection to the server.}}
+\DoxyCodeLine{00107             \textcolor{keywordflow}{if} (PhotonNetwork.IsConnected)}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 LogFeedback(\textcolor{stringliteral}{"{}Joining Room..."{}});}
+\DoxyCodeLine{00110                 \textcolor{comment}{// \#Critical we need at this point to attempt joining a Random Room. If it fails, we'll get notified in OnJoinRandomFailed() and we'll create one.}}
+\DoxyCodeLine{00111                 PhotonNetwork.JoinRandomRoom();}
+\DoxyCodeLine{00112             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 LogFeedback(\textcolor{stringliteral}{"{}Connecting..."{}});}
+\DoxyCodeLine{00115                 }
+\DoxyCodeLine{00116                 \textcolor{comment}{// \#Critical, we must first and foremost connect to Photon Online Server.}}
+\DoxyCodeLine{00117                 PhotonNetwork.ConnectUsingSettings();}
+\DoxyCodeLine{00118                 PhotonNetwork.GameVersion = this.gameVersion;}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120         \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00126         \textcolor{keywordtype}{void} LogFeedback(\textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             \textcolor{comment}{// we do not assume there is a feedbackText defined.}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{if} (feedbackText == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{comment}{// add new messages as a new line and at the bottom of the log.}}
+\DoxyCodeLine{00134             feedbackText.text += System.Environment.NewLine+message;}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140 \textcolor{preprocessor}{        \#region MonoBehaviourPunCallbacks CallBacks}}
+\DoxyCodeLine{00141         \textcolor{comment}{// below, we implement some callbacks of PUN}}
+\DoxyCodeLine{00142         \textcolor{comment}{// you can find PUN's callbacks in the class MonoBehaviourPunCallbacks}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00148         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnConnectedToMaster()}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             \textcolor{comment}{// we don't want to do anything if we are not attempting to join a room. }}
+\DoxyCodeLine{00151             \textcolor{comment}{// this case where isConnecting is false is typically when you lost or quit the game, when this level is loaded, OnConnectedToMaster will be called, in that case}}
+\DoxyCodeLine{00152             \textcolor{comment}{// we don't want to do anything.}}
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (isConnecting)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 LogFeedback(\textcolor{stringliteral}{"{}OnConnectedToMaster: Next -\/> try to Join Random Room"{}});}
+\DoxyCodeLine{00156                 Debug.Log(\textcolor{stringliteral}{"{}PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN. Now this client is connected and could join a room.\(\backslash\)n Calling: PhotonNetwork.JoinRandomRoom(); Operation will fail if no room found"{}});}
+\DoxyCodeLine{00157         }
+\DoxyCodeLine{00158                 \textcolor{comment}{// \#Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()}}
+\DoxyCodeLine{00159                 PhotonNetwork.JoinRandomRoom();}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171             LogFeedback(\textcolor{stringliteral}{"{}<Color=Red>OnJoinRandomFailed</Color>: Next -\/> Create a new Room"{}});}
+\DoxyCodeLine{00172             Debug.Log(\textcolor{stringliteral}{"{}PUN Basics Tutorial/Launcher:OnJoinRandomFailed() was called by PUN. No random room available, so we create one.\(\backslash\)nCalling: PhotonNetwork.CreateRoom"{}});}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{comment}{// \#Critical: we failed to join a random room, maybe none exists or they are all full. No worries, we create a new room.}}
+\DoxyCodeLine{00175             PhotonNetwork.CreateRoom(\textcolor{keyword}{null}, \textcolor{keyword}{new} RoomOptions \{ MaxPlayers = this.maxPlayersPerRoom\});}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisconnected(DisconnectCause cause)}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             LogFeedback(\textcolor{stringliteral}{"{}<Color=Red>OnDisconnected</Color> "{}}+cause);}
+\DoxyCodeLine{00185             Debug.LogError(\textcolor{stringliteral}{"{}PUN Basics Tutorial/Launcher:Disconnected"{}});}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             \textcolor{comment}{// \#Critical: we failed to connect or got disconnected. There is not much we can do. Typically, a UI system should be in place to let the user attemp to connect again.}}
+\DoxyCodeLine{00188             loaderAnime.StopLoaderAnimation();}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             isConnecting = \textcolor{keyword}{false};}
+\DoxyCodeLine{00191             controlPanel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00206         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             LogFeedback(\textcolor{stringliteral}{"{}<Color=Green>OnJoinedRoom</Color> with "{}}+PhotonNetwork.CurrentRoom.PlayerCount+\textcolor{stringliteral}{"{} Player(s)"{}});}
+\DoxyCodeLine{00209             Debug.Log(\textcolor{stringliteral}{"{}PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.\(\backslash\)nFrom here on, your game would be running."{}});}
+\DoxyCodeLine{00210         }
+\DoxyCodeLine{00211             \textcolor{comment}{// \#Critical: We only load if we are the first player, else we rely on  PhotonNetwork.AutomaticallySyncScene to sync our instance scene.}}
+\DoxyCodeLine{00212             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom.PlayerCount == 1)}
+\DoxyCodeLine{00213             \{}
+\DoxyCodeLine{00214                 Debug.Log(\textcolor{stringliteral}{"{}We load the 'Room for 1' "{}});}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216                 \textcolor{comment}{// \#Critical}}
+\DoxyCodeLine{00217                 \textcolor{comment}{// Load the Room Level. }}
+\DoxyCodeLine{00218                 PhotonNetwork.LoadLevel(\textcolor{stringliteral}{"{}PunBasics-\/Room for 1"{}});}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221         \}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00224         }
+\DoxyCodeLine{00225     \}}
+\DoxyCodeLine{00226 \}}
+
+\end{DoxyCode}

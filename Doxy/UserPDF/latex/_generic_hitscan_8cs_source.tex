@@ -1,0 +1,544 @@
+\doxysection{Generic\+Hitscan.\+cs}
+\label{_generic_hitscan_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/GenericHitscan/GenericHitscan.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/GenericHitscan/GenericHitscan.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun.Simple.Pooling;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if GHOST\_WORLD}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} Photon.Pun.Simple.GhostWorlds;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{enum} HitscanType \{ Raycast, SphereCast, CapsuleCast, BoxCast, OverlapSphere, OverlapCapsule, OverlapBox \}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }HitscanTypeExt}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsCast(\textcolor{keyword}{this} HitscanType hitscanType)}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{keywordflow}{return} ((\textcolor{keywordtype}{int})hitscanType < 4);}
+\DoxyCodeLine{00027         \}}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsOverlap(\textcolor{keyword}{this} HitscanType hitscanType)}
+\DoxyCodeLine{00029         \{}
+\DoxyCodeLine{00030             \textcolor{keywordflow}{return} ((\textcolor{keywordtype}{int})hitscanType > 3);}
+\DoxyCodeLine{00031         \}}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} UsesRadius(\textcolor{keyword}{this} HitscanType hitscanType)}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             \textcolor{keywordflow}{return} hitscanType == HitscanType.SphereCast || hitscanType == HitscanType.CapsuleCast || hitscanType == HitscanType.OverlapSphere || hitscanType == HitscanType.OverlapCapsule;}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsBox(\textcolor{keyword}{this} HitscanType hitscanType)}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             \textcolor{keywordflow}{return} (hitscanType == HitscanType.BoxCast) || (hitscanType == HitscanType.OverlapBox);}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsCapsule(\textcolor{keyword}{this} HitscanType hitscanType)}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             \textcolor{keywordflow}{return} (hitscanType == HitscanType.CapsuleCast) || (hitscanType == HitscanType.OverlapCapsule);}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044     \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00049     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }GenericHitscanExt}
+\DoxyCodeLine{00050     \{}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{static} Collider[] reusableColliderArray = \textcolor{keyword}{new} Collider[64];}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{static} RaycastHit[] reusableRayHitArray = \textcolor{keyword}{new} RaycastHit[64];}
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{static} List<NetworkHit> reusableHitscanHitList = \textcolor{keyword}{new} List<NetworkHit>();}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{static} List<NetObject> reusableNetObjectsList = \textcolor{keyword}{new} List<NetObject>();}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{        \#region Visualizers}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         \textcolor{comment}{//\#if (UNITY\_EDITOR || DEVELOPMENT\_BUILD)}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject DebugSpherePrefab;}
+\DoxyCodeLine{00061         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject DebugCylinderPrefab;}
+\DoxyCodeLine{00062         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject DebugCubePrefab;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject SetUpDebugPrimitive(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{string} name, \textcolor{keywordtype}{bool} createCylinderChild = \textcolor{keyword}{false})}
+\DoxyCodeLine{00065         \{}
+\DoxyCodeLine{00066             go.name = name;}
+\DoxyCodeLine{00067             go.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;}
+\DoxyCodeLine{00068             Object.DontDestroyOnLoad(go);}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             Collider collider;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{keywordflow}{if} (createCylinderChild)}
+\DoxyCodeLine{00073             \{}
+\DoxyCodeLine{00074                 var child = GameObject.CreatePrimitive(PrimitiveType.Cylinder);}
+\DoxyCodeLine{00075                 child.GetComponent<Renderer>().material.color = Color.yellow;}
+\DoxyCodeLine{00076                 child.transform.parent = go.transform;}
+\DoxyCodeLine{00077                 child.transform.eulerAngles = \textcolor{keyword}{new} Vector3(90, 0, 0);}
+\DoxyCodeLine{00078                 collider = child.GetComponent<Collider>();}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 collider = go.GetComponent<Collider>();}
+\DoxyCodeLine{00083             \}}
+\DoxyCodeLine{00084             Object.DestroyImmediate(collider);}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             var rend = go.GetComponent<Renderer>();}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (rend)}
+\DoxyCodeLine{00088                 rend.material.color = Color.yellow;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keywordflow}{return} go;}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{comment}{//[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}}
+\DoxyCodeLine{00094         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateDebugPrimitives()}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             DebugSpherePrefab = GameObject.CreatePrimitive(PrimitiveType.Sphere).SetUpDebugPrimitive(\textcolor{stringliteral}{"{}DebugSpherePrefab"{}});}
+\DoxyCodeLine{00097             Pool.AddPrefabToPool(DebugSpherePrefab.gameObject, 2, 2, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             DebugCubePrefab = GameObject.CreatePrimitive(PrimitiveType.Cube).SetUpDebugPrimitive(\textcolor{stringliteral}{"{}DebugCubePrefab"{}});}
+\DoxyCodeLine{00100             Pool.AddPrefabToPool(DebugCubePrefab.gameObject, 2, 2, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102             DebugCylinderPrefab = \textcolor{keyword}{new} GameObject().SetUpDebugPrimitive(\textcolor{stringliteral}{"{}DebugCylinderPrefab"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00103             Pool.AddPrefabToPool(DebugCylinderPrefab.gameObject, 4, 4, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} VisualizeHitscan(\textcolor{keyword}{this} HitscanDefinition hd, Transform origin, \textcolor{keywordtype}{float} duration = .5f)}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (DebugSpherePrefab == \textcolor{keyword}{null})}
+\DoxyCodeLine{00109                 CreateDebugPrimitives();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             \textcolor{comment}{//Transform tr = hd.sourceObject.transform;}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{switch} (hd.hitscanType)}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{case} HitscanType.Raycast:}
+\DoxyCodeLine{00116                     \{}
+\DoxyCodeLine{00117                         Vector3 pos = hd.useOffset ?}
+\DoxyCodeLine{00118                              origin.position + origin.TransformDirection(hd.offset1) + (origin.forward * hd.distance * .5f) :}
+\DoxyCodeLine{00119                              origin.position + (origin.forward * hd.distance * .5f);}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121                         Pool.Spawn(DebugCylinderPrefab, pos, origin.rotation, \textcolor{keyword}{new} Vector3(.1f, .1f, hd.distance * .5f), duration);}
+\DoxyCodeLine{00122                     \}}
+\DoxyCodeLine{00123                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{case} HitscanType.BoxCast:}
+\DoxyCodeLine{00126                     \{}
+\DoxyCodeLine{00127                         Vector3 pos = (hd.useOffset) ?}
+\DoxyCodeLine{00128                             origin.position + origin.TransformDirection(hd.offset1) :}
+\DoxyCodeLine{00129                             origin.position;}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131                         Vector3 pos2 = hd.useOffset ?}
+\DoxyCodeLine{00132                             origin.position + origin.TransformDirection(hd.offset1) + (origin.forward * hd.distance) :}
+\DoxyCodeLine{00133                             origin.position + (origin.forward * hd.distance);}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135                         Vector3 midpos = pos + (pos2 -\/ pos) * .5f;}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137                         var rot = Quaternion.Euler(origin.eulerAngles + hd.orientation);}
+\DoxyCodeLine{00138                         Vector3 scl = hd.halfExtents * 2;}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                         Pool.Spawn(DebugCubePrefab, pos2, rot, scl, duration);}
+\DoxyCodeLine{00141                         \textcolor{comment}{//DebugCylinder.Set(midpos, Quaternion.LookRotation(Vector3.up, tr.forward), new Vector3(.1f, cd.distance * .5f, .1f), duration);}}
+\DoxyCodeLine{00142                         Pool.Spawn(DebugCylinderPrefab, midpos, Quaternion.LookRotation(pos2 -\/ pos, Vector3.up), \textcolor{keyword}{new} Vector3(.1f, .1f, hd.distance * .5f), duration);}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144                     \}}
+\DoxyCodeLine{00145                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{case} HitscanType.SphereCast:}
+\DoxyCodeLine{00148                     \{}
+\DoxyCodeLine{00149                         Vector3 spos = hd.useOffset ?}
+\DoxyCodeLine{00150                             origin.position + origin.TransformDirection(hd.offset1) :}
+\DoxyCodeLine{00151                             origin.position;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                         Vector3 mpos = hd.useOffset ?}
+\DoxyCodeLine{00154                             origin.position + origin.TransformDirection(hd.offset1) + (origin.forward * hd.distance * .5f) :}
+\DoxyCodeLine{00155                             origin.position + (origin.forward * hd.distance * .5f);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                         Vector3 epos = hd.useOffset ?}
+\DoxyCodeLine{00158                             origin.position + origin.TransformDirection(hd.offset1) + (origin.forward * hd.distance) :}
+\DoxyCodeLine{00159                             origin.position + (origin.forward * hd.distance);}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161                         \textcolor{comment}{//Vector3 dir = (epos -\/ spos);}}
+\DoxyCodeLine{00162                         \textcolor{keywordtype}{float} scl = hd.radius * 2;}
+\DoxyCodeLine{00163                         Pool.Spawn(DebugSpherePrefab, spos, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00164                         Pool.Spawn(DebugSpherePrefab, epos, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00165                         Pool.Spawn(DebugCylinderPrefab, mpos, origin.rotation, \textcolor{keyword}{new} Vector3(scl, scl, hd.distance * .5f), duration);}
+\DoxyCodeLine{00166                     \}}
+\DoxyCodeLine{00167                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{case} HitscanType.CapsuleCast:}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         Vector3 spos1 = origin.position + origin.TransformDirection(hd.offset1);}
+\DoxyCodeLine{00172                         Vector3 spos2 = origin.position + origin.TransformDirection(hd.offset2);}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174                         var originFwd = origin.forward * hd.distance;}
+\DoxyCodeLine{00175                         var halfOriginFwd = originFwd * .5f;}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177                         Vector3 mpos1 = spos1 + halfOriginFwd;}
+\DoxyCodeLine{00178                         Vector3 mpos2 = spos2 + halfOriginFwd;}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181                         Vector3 epos1 = spos1 + originFwd;}
+\DoxyCodeLine{00182                         Vector3 epos2 = spos2 + originFwd;}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184                         Vector3 mposStr = spos1 + (spos2 -\/ spos1) * .5f;}
+\DoxyCodeLine{00185                         Vector3 mposEnd = epos1 + (epos2 -\/ epos1) * .5f;}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                         \textcolor{keywordtype}{float} scl = hd.radius * 2;}
+\DoxyCodeLine{00188                         Pool.Spawn(DebugSpherePrefab, spos1, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00189                         Pool.Spawn(DebugSpherePrefab, epos1, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00190                         Pool.Spawn(DebugSpherePrefab, spos2, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00191                         Pool.Spawn(DebugSpherePrefab, epos2, Quaternion.identity, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00192                         Pool.Spawn(DebugCylinderPrefab, mpos1, origin.rotation, \textcolor{keyword}{new} Vector3(scl, scl, hd.distance * .5f), duration);}
+\DoxyCodeLine{00193                         Pool.Spawn(DebugCylinderPrefab, mpos2, origin.rotation, \textcolor{keyword}{new} Vector3(scl, scl, hd.distance * .5f), duration);}
+\DoxyCodeLine{00194                         \textcolor{keywordtype}{float} mag = Vector3.Magnitude(spos2 -\/ spos1) * .5f;}
+\DoxyCodeLine{00195                         Pool.Spawn(DebugCylinderPrefab, mposStr, Quaternion.LookRotation(spos2 -\/ spos1, Vector3.up), \textcolor{keyword}{new} Vector3(scl, scl, mag), duration);}
+\DoxyCodeLine{00196                         Pool.Spawn(DebugCylinderPrefab, mposEnd, Quaternion.LookRotation(epos2 -\/ epos1, Vector3.up), \textcolor{keyword}{new} Vector3(scl, scl, mag), duration);}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198                     \}}
+\DoxyCodeLine{00199                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201                 \textcolor{keywordflow}{case} HitscanType.OverlapSphere:}
+\DoxyCodeLine{00202                     \{}
+\DoxyCodeLine{00203                         Vector3 pos = (hd.useOffset) ? origin.position + hd.offset1 : origin.position;}
+\DoxyCodeLine{00204                         Quaternion rot = origin.rotation;}
+\DoxyCodeLine{00205                         \textcolor{keywordtype}{float} scl = hd.radius * 2;}
+\DoxyCodeLine{00206                         Pool.Spawn(DebugSpherePrefab, pos, rot, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00207                     \}}
+\DoxyCodeLine{00208                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{case} HitscanType.OverlapBox:}
+\DoxyCodeLine{00211                     \{}
+\DoxyCodeLine{00212                         Vector3 pos = (hd.useOffset) ? origin.position + hd.offset1 : origin.position;}
+\DoxyCodeLine{00213                         var rot = Quaternion.Euler(origin.eulerAngles + hd.orientation);}
+\DoxyCodeLine{00214                         Vector3 scl = hd.halfExtents * 2;}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216                         Pool.Spawn(DebugCubePrefab, pos, rot, scl, duration);}
+\DoxyCodeLine{00217                     \}}
+\DoxyCodeLine{00218                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220                 \textcolor{keywordflow}{case} HitscanType.OverlapCapsule:}
+\DoxyCodeLine{00221                     \{}
+\DoxyCodeLine{00222                         Quaternion rot = origin.rotation;}
+\DoxyCodeLine{00223                         \textcolor{keywordtype}{float} scl = hd.radius * 2;}
+\DoxyCodeLine{00224                         Vector3 pos1 = origin.TransformPoint(hd.offset1);}
+\DoxyCodeLine{00225                         Vector3 pos2 = origin.TransformPoint(hd.offset2);}
+\DoxyCodeLine{00226                         Vector3 dir = pos2 -\/ pos1;}
+\DoxyCodeLine{00227                         Vector3 mid = pos1 + dir * .5f;}
+\DoxyCodeLine{00228                         Pool.Spawn(DebugSpherePrefab, pos1, rot, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00229                         Pool.Spawn(DebugSpherePrefab, pos2, rot, \textcolor{keyword}{new} Vector3(scl, scl, scl), duration);}
+\DoxyCodeLine{00230                         Pool.Spawn(DebugCylinderPrefab, mid, Quaternion.LookRotation(dir, Vector3.up), \textcolor{keyword}{new} Vector3(scl, scl, dir.magnitude * .5f), duration);}
+\DoxyCodeLine{00231                     \}}
+\DoxyCodeLine{00232                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235         \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00236 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Dictionary<int, int> reusableGameObjIntDict = \textcolor{keyword}{new} Dictionary<int, int>();}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GenericHitscanNonAlloc(\textcolor{keyword}{this} HitscanDefinition hd, Transform origin, out RaycastHit[] rayhits, out Collider[] hits, ref \textcolor{keywordtype}{int} nearestIndex, \textcolor{keywordtype}{bool} showDebugWidgets = \textcolor{keyword}{false}, \textcolor{keywordtype}{bool} useSecondaryRealm = \textcolor{keyword}{false})}
+\DoxyCodeLine{00241         \{}
+\DoxyCodeLine{00242             hits = reusableColliderArray;}
+\DoxyCodeLine{00243             rayhits = reusableRayHitArray;}
+\DoxyCodeLine{00244             \textcolor{keywordflow}{return} GenericHitscanNonAlloc(hd, origin, ref reusableColliderArray, ref reusableRayHitArray, ref nearestIndex, showDebugWidgets, useSecondaryRealm);}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GenericHitscanNonAlloc(\textcolor{keyword}{this} HitscanDefinition hd, Transform origin, NetObject ownerNetObj, ref List<NetworkHit> hitscanHits, ref \textcolor{keywordtype}{int} nearestIndex, \textcolor{keywordtype}{bool} showDebugWidgets = \textcolor{keyword}{false}, \textcolor{keywordtype}{bool} useSecondaryRealm = \textcolor{keyword}{false})}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249             \textcolor{keywordflow}{if} (hitscanHits == \textcolor{keyword}{null})}
+\DoxyCodeLine{00250                 hitscanHits = reusableHitscanHitList;}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252             \textcolor{keywordtype}{int} nearestRayHit = -\/1;}
+\DoxyCodeLine{00253             nearestIndex = -\/1;}
+\DoxyCodeLine{00254             \textcolor{keywordtype}{int} count = GenericHitscanNonAlloc(hd, origin, ref reusableColliderArray, ref reusableRayHitArray, ref nearestRayHit, showDebugWidgets, useSecondaryRealm);}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256             reusableGameObjIntDict.Clear();}
+\DoxyCodeLine{00257             hitscanHits.Clear();}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{keywordflow}{if} (count > 0)}
+\DoxyCodeLine{00260             \{}
+\DoxyCodeLine{00262                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < count; ++i)}
+\DoxyCodeLine{00263                 \{}
+\DoxyCodeLine{00264                     var hit = reusableColliderArray[i];}
+\DoxyCodeLine{00265                     var netObjs = reusableNetObjectsList;}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00270                     hit.transform.GetNestedComponentsInParents(netObjs);}
+\DoxyCodeLine{00271 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00274                     \textcolor{keywordtype}{int} noCount = netObjs.Count;}
+\DoxyCodeLine{00275                     \textcolor{keywordflow}{if} (noCount == 0)}
+\DoxyCodeLine{00276                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00279                     \textcolor{keywordtype}{bool} selfHit = \textcolor{keyword}{false};}
+\DoxyCodeLine{00280                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} c = 0; c < noCount; ++c)}
+\DoxyCodeLine{00281                     \{}
+\DoxyCodeLine{00282                         \textcolor{keywordflow}{if} (ReferenceEquals(netObjs[c], ownerNetObj))}
+\DoxyCodeLine{00283                         \{}
+\DoxyCodeLine{00284                             selfHit = \textcolor{keyword}{true};}
+\DoxyCodeLine{00285                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00286                         \}}
+\DoxyCodeLine{00287                     \}}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290                     \textcolor{keywordflow}{if} (selfHit)}
+\DoxyCodeLine{00291                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                     var netObj = netObjs[0];}
+\DoxyCodeLine{00294                     var viewID = netObj.ViewID;}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296                     var contactGroupassign = hit.GetComponent<IContactGroupsAssign>();}
+\DoxyCodeLine{00297                     var mask = (ReferenceEquals(contactGroupassign, \textcolor{keyword}{null})) ? 0 : contactGroupassign.Mask;}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299                     \textcolor{keywordtype}{int} existingIndex;}
+\DoxyCodeLine{00300                     \textcolor{keywordtype}{bool} exists = reusableGameObjIntDict.TryGetValue(viewID, out existingIndex);}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302                     \textcolor{keywordtype}{int} colliderId = netObj.colliderLookup[hit];}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304                     \textcolor{keywordflow}{if} (exists)}
+\DoxyCodeLine{00305                     \{}
+\DoxyCodeLine{00306                         var hitscanHit = hitscanHits[existingIndex];}
+\DoxyCodeLine{00307                         \textcolor{comment}{//Debug.Log("{}EXIST Hitscan hit on "{} + origin.name + "{}/"{} + hit.name + "{} m: "{} + mask + "{}-\/>"{} + (hitscanHit.hitMask | mask));}}
+\DoxyCodeLine{00308                         hitscanHits[existingIndex] = \textcolor{keyword}{new} NetworkHit(hitscanHit.netObjId, hitscanHit.hitMask | mask, colliderId);}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00311                         \textcolor{keywordflow}{if} (i == nearestRayHit)}
+\DoxyCodeLine{00312                             nearestIndex = existingIndex;}
+\DoxyCodeLine{00313                     \}}
+\DoxyCodeLine{00314                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00315                     \{}
+\DoxyCodeLine{00316                         \textcolor{comment}{//Debug.Log("{}NEW Hitscan hit on "{} + rootGO.name + "{}/"{} + hit.name + "{} "{} + mask);}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00319                         \textcolor{keywordflow}{if} (i == nearestRayHit)}
+\DoxyCodeLine{00320                             nearestIndex = hitscanHits.Count;}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                         hitscanHits.Add(\textcolor{keyword}{new} NetworkHit(viewID, mask, colliderId));}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324                         reusableGameObjIntDict.Add(viewID, hitscanHits.Count -\/ 1);}
+\DoxyCodeLine{00325                     \}}
+\DoxyCodeLine{00326                 \}}
+\DoxyCodeLine{00327             \}}
+\DoxyCodeLine{00328             \textcolor{keywordflow}{return} reusableGameObjIntDict.Count;}
+\DoxyCodeLine{00329         \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00336         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GenericHitscanNonAlloc(\textcolor{keyword}{this} HitscanDefinition hd, Transform origin, ref Collider[] hits, ref RaycastHit[] rayhits, ref \textcolor{keywordtype}{int} nearestIndex, \textcolor{keywordtype}{bool} showDebugWidgets = \textcolor{keyword}{false}, \textcolor{keywordtype}{bool} useSecondaryRealm = \textcolor{keyword}{false})}
+\DoxyCodeLine{00337         \{}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339             \textcolor{comment}{//\#if (UNITY\_EDITOR || DEVELOPMENT\_BUILD)}}
+\DoxyCodeLine{00340             \textcolor{keywordflow}{if} (showDebugWidgets)}
+\DoxyCodeLine{00341                 VisualizeHitscan(hd, origin, 0.5f);}
+\DoxyCodeLine{00342             \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344             \textcolor{keywordflow}{if} (ReferenceEquals(hits, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00345                 hits = reusableColliderArray;}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347             \textcolor{keywordflow}{if} (ReferenceEquals(rayhits, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00348                 rayhits = reusableRayHitArray;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             var hitscanType = hd.hitscanType;}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352             \textcolor{keywordtype}{int} hitcount;}
+\DoxyCodeLine{00353             Vector3 srcPos = (hd.useOffset) ? origin.TransformPoint(hd.offset1) : origin.position;}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355 \textcolor{preprocessor}{\#if !UNITY\_2019\_1\_OR\_NEWER}}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357 \textcolor{preprocessor}{\#if GHOST\_WORLD}}
+\DoxyCodeLine{00358             LayerMask layerMask = (useSecondaryRealm) ?}
+\DoxyCodeLine{00359                 (LayerMask)(GhostWorld.GHOST\_WORLD\_LAYERMASK) :}
+\DoxyCodeLine{00360                 (LayerMask)(hd.layerMask \& \string~GhostWorld.GHOST\_WORLD\_LAYERMASK);}
+\DoxyCodeLine{00361 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00362             LayerMask layerMask = hd.layerMask;}
+\DoxyCodeLine{00363 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00364             \textcolor{keywordflow}{switch} (hitscanType)}
+\DoxyCodeLine{00365             \{}
+\DoxyCodeLine{00366                 \textcolor{keywordflow}{case} HitscanType.Raycast:}
+\DoxyCodeLine{00367                     hitcount = Physics.RaycastNonAlloc(\textcolor{comment}{/*srcPos*/} origin.position, origin.forward, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00368                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370                 \textcolor{keywordflow}{case} HitscanType.SphereCast:}
+\DoxyCodeLine{00371                     hitcount = Physics.SphereCastNonAlloc(\textcolor{keyword}{new} Ray(srcPos, origin.forward), hd.radius, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00372                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374                 \textcolor{keywordflow}{case} HitscanType.BoxCast:}
+\DoxyCodeLine{00375                     hitcount = Physics.BoxCastNonAlloc(srcPos, hd.halfExtents, origin.forward, rayhits, Quaternion.Euler(origin.eulerAngles + hd.orientation), hd.distance, layerMask);}
+\DoxyCodeLine{00376                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378                 \textcolor{keywordflow}{case} HitscanType.CapsuleCast:}
+\DoxyCodeLine{00379                     hitcount = Physics.CapsuleCastNonAlloc(origin.TransformPoint(hd.offset1), origin.TransformPoint(hd.offset2), hd.radius, origin.forward, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00380                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382                 \textcolor{keywordflow}{case} HitscanType.OverlapSphere:}
+\DoxyCodeLine{00383                     hitcount = Physics.OverlapSphereNonAlloc(srcPos, hd.radius, hits, layerMask);}
+\DoxyCodeLine{00384                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386                 \textcolor{keywordflow}{case} HitscanType.OverlapBox:}
+\DoxyCodeLine{00387                     hitcount = Physics.OverlapBoxNonAlloc(srcPos, hd.halfExtents, hits, Quaternion.Euler(origin.eulerAngles + hd.orientation), layerMask);}
+\DoxyCodeLine{00388                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390                 \textcolor{keywordflow}{case} HitscanType.OverlapCapsule:}
+\DoxyCodeLine{00391                     hitcount = Physics.OverlapCapsuleNonAlloc(origin.TransformPoint(hd.offset1), origin.TransformPoint(hd.offset2), hd.radius, hits, layerMask);}
+\DoxyCodeLine{00392                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00395                     hitcount = 0;}
+\DoxyCodeLine{00396                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00397             \}}
+\DoxyCodeLine{00398 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00399     }
+\DoxyCodeLine{00400 \textcolor{preprocessor}{\#if GHOST\_WORLD}}
+\DoxyCodeLine{00401             var phys = (realm == Realm.Primary) ? Physics.defaultPhysicsScene : GhostWorld.ghostPhysics;}
+\DoxyCodeLine{00402 \#\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00403             var phys = Physics.defaultPhysicsScene;}
+\DoxyCodeLine{00404 \#endif}
+\DoxyCodeLine{00405             LayerMask layerMask = hd.layerMask;}
+\DoxyCodeLine{00406 }
+\DoxyCodeLine{00407             switch (hitscanType)}
+\DoxyCodeLine{00408             \{}
+\DoxyCodeLine{00409                 \textcolor{keywordflow}{case} HitscanType.Raycast:}
+\DoxyCodeLine{00410                     hitcount = phys.Raycast(srcPos, origin.forward, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00411                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413                 \textcolor{keywordflow}{case} HitscanType.SphereCast:}
+\DoxyCodeLine{00414                     hitcount = phys.SphereCast(srcPos, hd.radius, origin.forward, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00415                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417                 \textcolor{keywordflow}{case} HitscanType.BoxCast:}
+\DoxyCodeLine{00418                     hitcount = phys.BoxCast(srcPos, hd.halfExtents, origin.forward, rayhits, Quaternion.Euler(origin.eulerAngles + hd.orientation), hd.distance, layerMask);}
+\DoxyCodeLine{00419                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00420 }
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{case} HitscanType.CapsuleCast:}
+\DoxyCodeLine{00422                     hitcount = phys.CapsuleCast(origin.TransformPoint(hd.offset1), origin.TransformPoint(hd.offset2), hd.radius, origin.forward, rayhits, hd.distance, layerMask);}
+\DoxyCodeLine{00423                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00424 }
+\DoxyCodeLine{00425                 \textcolor{keywordflow}{case} HitscanType.OverlapSphere:}
+\DoxyCodeLine{00426                     hitcount = phys.OverlapSphere(srcPos, hd.radius, hits, layerMask, QueryTriggerInteraction.UseGlobal);}
+\DoxyCodeLine{00427                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429                 \textcolor{keywordflow}{case} HitscanType.OverlapBox:}
+\DoxyCodeLine{00430                     hitcount = phys.OverlapBox(srcPos, hd.halfExtents, hits, Quaternion.Euler(origin.eulerAngles + hd.orientation), layerMask);}
+\DoxyCodeLine{00431                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433                 \textcolor{keywordflow}{case} HitscanType.OverlapCapsule:}
+\DoxyCodeLine{00434                     hitcount = phys.OverlapCapsule(origin.TransformPoint(hd.offset1), origin.TransformPoint(hd.offset2), hd.radius, hits, layerMask);}
+\DoxyCodeLine{00435                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00436 }
+\DoxyCodeLine{00437                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00438                     hitcount = 0;}
+\DoxyCodeLine{00439                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00440             \}}
+\DoxyCodeLine{00441 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00442             nearestIndex = -\/1;}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00444             \textcolor{keywordflow}{if} (hitcount == 0)}
+\DoxyCodeLine{00445                 \textcolor{keywordflow}{return} hitcount;}
+\DoxyCodeLine{00446 }
+\DoxyCodeLine{00447             \textcolor{keywordtype}{bool} nearestOnly = hd.nearestOnly;}
+\DoxyCodeLine{00448             \textcolor{keywordtype}{float} distToNearest = \textcolor{keywordtype}{float}.PositiveInfinity;}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00452             \textcolor{keywordflow}{if} (hitscanType.IsOverlap())}
+\DoxyCodeLine{00453             \{}
+\DoxyCodeLine{00454                 nearestIndex = -\/1;}
+\DoxyCodeLine{00455                 \textcolor{keywordflow}{return} hitcount;}
+\DoxyCodeLine{00456             \}}
+\DoxyCodeLine{00458             \textcolor{keywordflow}{if} (nearestOnly)}
+\DoxyCodeLine{00459             \{}
+\DoxyCodeLine{00460                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < hitcount; i++)}
+\DoxyCodeLine{00461                 \{}
+\DoxyCodeLine{00462                     RaycastHit rayhit = rayhits[i];}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00465                     \textcolor{keywordtype}{float} dist = rayhit.distance;}
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00467                     \textcolor{keywordflow}{if} (dist < distToNearest)}
+\DoxyCodeLine{00468                     \{}
+\DoxyCodeLine{00469                         distToNearest = dist;}
+\DoxyCodeLine{00470                         nearestIndex = i;}
+\DoxyCodeLine{00471                     \}}
+\DoxyCodeLine{00472                 \}}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474                 hits[0] = rayhits[nearestIndex].collider;}
+\DoxyCodeLine{00475                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00476             \}}
+\DoxyCodeLine{00478             \textcolor{comment}{// Convert the raycasthits to colliders[] if this was a cast and not an overlap}}
+\DoxyCodeLine{00479             \textcolor{keywordflow}{else} \textcolor{comment}{/*if (hitscanType.IsCast())*/}}
+\DoxyCodeLine{00480             \{}
+\DoxyCodeLine{00481                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < hitcount; i++)}
+\DoxyCodeLine{00482                 \{}
+\DoxyCodeLine{00483                     RaycastHit rayhit = rayhits[i];}
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00486                     \textcolor{keywordtype}{float} dist = rayhit.distance;}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488                     \textcolor{keywordflow}{if} (dist < distToNearest)}
+\DoxyCodeLine{00489                     \{}
+\DoxyCodeLine{00490                         distToNearest = dist;}
+\DoxyCodeLine{00491                         nearestIndex = i;}
+\DoxyCodeLine{00492                     \}}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494                     \textcolor{keywordflow}{if} (!nearestOnly)}
+\DoxyCodeLine{00495                         hits[i] = rayhits[i].collider;}
+\DoxyCodeLine{00496                 \}}
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{if} (nearestOnly)}
+\DoxyCodeLine{00498                 \{}
+\DoxyCodeLine{00499                     hits[0] = rayhits[nearestIndex].collider;}
+\DoxyCodeLine{00500                     \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00501                 \}}
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{return} hitcount;}
+\DoxyCodeLine{00503             \}}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505         \}}
+\DoxyCodeLine{00506 }
+\DoxyCodeLine{00507         [System.Obsolete(\textcolor{stringliteral}{"{}Haven't reworked this for new physx yet."{}})]}
+\DoxyCodeLine{00508         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GenericCastNonAlloc(\textcolor{keyword}{this} Transform srcT, Collider[] hits, RaycastHit[] rayhits, \textcolor{keywordtype}{float} distance, \textcolor{keywordtype}{float} radius, \textcolor{keywordtype}{int} mask, Quaternion orientation, \textcolor{keywordtype}{bool} useOffset, Vector3 offset1, Vector3 offset2, HitscanType hitscanType)}
+\DoxyCodeLine{00509         \{}
+\DoxyCodeLine{00510             \textcolor{keywordtype}{int} hitcount;}
+\DoxyCodeLine{00511             Vector3 srcPos = (useOffset) ? (srcT.position + srcT.TransformDirection(offset1)) : srcT.position;}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513             switch (hitscanType)}
+\DoxyCodeLine{00514             \{}
+\DoxyCodeLine{00515                 \textcolor{keywordflow}{case} HitscanType.Raycast:}
+\DoxyCodeLine{00516                     hitcount = Physics.RaycastNonAlloc(\textcolor{keyword}{new} Ray(srcPos, srcT.forward), rayhits, distance, mask);}
+\DoxyCodeLine{00517                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519                 \textcolor{keywordflow}{case} HitscanType.SphereCast:}
+\DoxyCodeLine{00520                     hitcount = Physics.SphereCastNonAlloc(\textcolor{keyword}{new} Ray(srcPos, srcT.forward), radius, rayhits, distance, mask);}
+\DoxyCodeLine{00521                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00522 }
+\DoxyCodeLine{00523                 \textcolor{keywordflow}{case} HitscanType.BoxCast:}
+\DoxyCodeLine{00524                     hitcount = Physics.BoxCastNonAlloc(srcPos, offset2, srcT.forward, rayhits, orientation, distance, mask);}
+\DoxyCodeLine{00525                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527                 \textcolor{keywordflow}{case} HitscanType.CapsuleCast:}
+\DoxyCodeLine{00528                     hitcount = Physics.CapsuleCastNonAlloc(srcT.TransformPoint(offset1), srcT.TransformPoint(offset2), radius, srcT.forward, rayhits, distance, mask);}
+\DoxyCodeLine{00529                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00530 }
+\DoxyCodeLine{00531                 \textcolor{keywordflow}{case} HitscanType.OverlapSphere:}
+\DoxyCodeLine{00532                     hitcount = Physics.OverlapSphereNonAlloc(srcPos, radius, hits, mask);}
+\DoxyCodeLine{00533                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00534 }
+\DoxyCodeLine{00535                 \textcolor{keywordflow}{case} HitscanType.OverlapBox:}
+\DoxyCodeLine{00536                     hitcount = Physics.OverlapBoxNonAlloc(srcPos, offset2, hits, orientation, mask);}
+\DoxyCodeLine{00537                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539                 \textcolor{keywordflow}{case} HitscanType.OverlapCapsule:}
+\DoxyCodeLine{00540                     hitcount = Physics.OverlapCapsuleNonAlloc(srcT.TransformPoint(offset1), srcT.TransformPoint(offset2), radius, hits, mask);}
+\DoxyCodeLine{00541                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00542 }
+\DoxyCodeLine{00543                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00544                     hitcount = 0;}
+\DoxyCodeLine{00545                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00546             \}}
+\DoxyCodeLine{00547 }
+\DoxyCodeLine{00548             \textcolor{comment}{// Convert the raycasthits to colliders[] if this was a cast and not an overlap}}
+\DoxyCodeLine{00549             \textcolor{keywordflow}{if} (hitscanType.IsCast())}
+\DoxyCodeLine{00550                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < hitcount; i++)}
+\DoxyCodeLine{00551                     hits[i] = rayhits[i].collider;}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00553             \textcolor{keywordflow}{return} hitcount;}
+\DoxyCodeLine{00554         \}}
+\DoxyCodeLine{00555     \}}
+\DoxyCodeLine{00556 \}}
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558 }
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560 }
+
+\end{DoxyCode}

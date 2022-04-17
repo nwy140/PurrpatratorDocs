@@ -1,0 +1,418 @@
+\doxysection{Photon\+Transform\+View\+Classic\+Editor.\+cs}
+\label{_photon_transform_view_classic_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/Views/PhotonTransformViewClassicEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/Views/PhotonTransformViewClassicEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonTransformViewClassicEditor.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   This is a custom editor for the TransformView component.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     [CustomEditor(typeof(PhotonTransformViewClassic))]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformViewClassicEditor : MonoBehaviourPunEditor}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{comment}{//private PhotonTransformViewClassic m\_Target;}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{private} SerializedProperty m\_SynchronizePositionProperty;}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} SerializedProperty m\_SynchronizeRotationProperty;}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} SerializedProperty m\_SynchronizeScaleProperty;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_InterpolateHelpOpen;}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_ExtrapolateHelpOpen;}
+\DoxyCodeLine{00029         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_InterpolateRotationHelpOpen;}
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_InterpolateScaleHelpOpen;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} EDITOR\_LINE\_HEIGHT = 20;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} INTERPOLATE\_TOOLTIP =}
+\DoxyCodeLine{00035             \textcolor{stringliteral}{"{}Choose between synchronizing the value directly (by disabling interpolation) or smoothly move it towards the newest update."{}};}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} INTERPOLATE\_HELP =}
+\DoxyCodeLine{00038             \textcolor{stringliteral}{"{}You can use interpolation to smoothly move your GameObject towards a new position that is received via the network. "{}}}
+\DoxyCodeLine{00039             + \textcolor{stringliteral}{"{}This helps to reduce the stuttering movement that results because the network updates only arrive 10 times per second.\(\backslash\)n"{}}}
+\DoxyCodeLine{00040             + \textcolor{stringliteral}{"{}As a side effect, the GameObject is always lagging behind the actual position a little bit. This can be addressed with extrapolation."{}};}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} EXTRAPOLATE\_TOOLTIP = \textcolor{stringliteral}{"{}Extrapolation is used to predict where the GameObject actually is"{}};}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} EXTRAPOLATE\_HELP =}
+\DoxyCodeLine{00045             \textcolor{stringliteral}{"{}Whenever you deal with network values, all values you receive will be a little bit out of date since that data needs "{}}}
+\DoxyCodeLine{00046             + \textcolor{stringliteral}{"{}to reach you first. You can use extrapolation to try to predict where the player actually is, based on the movement data you have received.\(\backslash\)n"{}}}
+\DoxyCodeLine{00047             +}
+\DoxyCodeLine{00048             \textcolor{stringliteral}{"{}This has to be tweaked carefully for each specific game in order to insure the optimal prediction. Sometimes it is very easy to extrapolate states, because "{}}}
+\DoxyCodeLine{00049             +}
+\DoxyCodeLine{00050             \textcolor{stringliteral}{"{}the GameObject behaves very predictable (for example for vehicles). Other times it can be very hard because the user input is translated directly to the game "{}}}
+\DoxyCodeLine{00051             + \textcolor{stringliteral}{"{}and you cannot really predict what the user is going to do (for example in fighting games)"{}};}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} INTERPOLATE\_HELP\_URL = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/current/demos-\/and-\/tutorials/package-\/demos/rpg-\/movement\#interpolate\_options"{}};}
+\DoxyCodeLine{00054         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} EXTRAPOLATE\_HELP\_URL = \textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/current/demos-\/and-\/tutorials/package-\/demos/rpg-\/movement\#extrapolate\_options"{}};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             SetupSerializedProperties();}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             serializedObject.Update();}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             base.OnInspectorGUI();}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             \textcolor{comment}{//this.m\_Target = (PhotonTransformViewClassic) target;}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             DrawIsPlayingWarning();}
+\DoxyCodeLine{00070             GUI.enabled = !Application.isPlaying;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             DrawSynchronizePositionHeader();}
+\DoxyCodeLine{00073             DrawSynchronizePositionData();}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             GUI.enabled = !Application.isPlaying;}
+\DoxyCodeLine{00076             DrawSynchronizeRotationHeader();}
+\DoxyCodeLine{00077             DrawSynchronizeRotationData();}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             GUI.enabled = !Application.isPlaying;}
+\DoxyCodeLine{00080             DrawSynchronizeScaleHeader();}
+\DoxyCodeLine{00081             DrawSynchronizeScaleData();}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             GUI.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawIsPlayingWarning()}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (Application.isPlaying == \textcolor{keyword}{false})}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             GUILayout.BeginVertical(GUI.skin.box);}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 GUILayout.Label(\textcolor{stringliteral}{"{}Editing is disabled in play mode so the two objects don't go out of sync"{}});}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099             GUILayout.EndVertical();}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SetupSerializedProperties()}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             this.m\_SynchronizePositionProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.SynchronizeEnabled"{}});}
+\DoxyCodeLine{00105             this.m\_SynchronizeRotationProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_RotationModel.SynchronizeEnabled"{}});}
+\DoxyCodeLine{00106             this.m\_SynchronizeScaleProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_ScaleModel.SynchronizeEnabled"{}});}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizePositionHeader()}
+\DoxyCodeLine{00110         \{}
+\DoxyCodeLine{00111             DrawHeader(\textcolor{stringliteral}{"{}Synchronize Position"{}}, this.m\_SynchronizePositionProperty);}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizePositionData()}
+\DoxyCodeLine{00115         \{}
+\DoxyCodeLine{00116             \textcolor{keywordflow}{if} (this.m\_SynchronizePositionProperty == \textcolor{keyword}{null} || this.m\_SynchronizePositionProperty.boolValue == \textcolor{keyword}{false})}
+\DoxyCodeLine{00117             \{}
+\DoxyCodeLine{00118                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             SerializedProperty interpolatePositionProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.InterpolateOption"{}});}
+\DoxyCodeLine{00122             PhotonTransformViewPositionModel.InterpolateOptions interpolateOption = (PhotonTransformViewPositionModel.InterpolateOptions)interpolatePositionProperty.enumValueIndex;}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             SerializedProperty extrapolatePositionProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.ExtrapolateOption"{}});}
+\DoxyCodeLine{00125             PhotonTransformViewPositionModel.ExtrapolateOptions extrapolateOption = (PhotonTransformViewPositionModel.ExtrapolateOptions)extrapolatePositionProperty.enumValueIndex;}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             \textcolor{keywordtype}{float} containerHeight = 155;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             switch (interpolateOption)}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.FixedSpeed:}
+\DoxyCodeLine{00132                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00133                     containerHeight += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00134                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00135                 \textcolor{comment}{/*case PhotonTransformViewPositionModel.InterpolateOptions.MoveTowardsComplex:}}
+\DoxyCodeLine{00136 \textcolor{comment}{                    containerHeight += EDITOR\_LINE\_HEIGHT*3;}}
+\DoxyCodeLine{00137 \textcolor{comment}{                    break;*/}}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordflow}{if} (extrapolateOption != PhotonTransformViewPositionModel.ExtrapolateOptions.Disabled)}
+\DoxyCodeLine{00141             \{}
+\DoxyCodeLine{00142                 containerHeight += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             \textcolor{keywordflow}{switch} (extrapolateOption)}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.ExtrapolateOptions.FixedSpeed:}
+\DoxyCodeLine{00148                     containerHeight += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00149                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (this.m\_InterpolateHelpOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00153             \{}
+\DoxyCodeLine{00154                 containerHeight += GetInterpolateHelpBoxHeight();}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (this.m\_ExtrapolateHelpOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00158             \{}
+\DoxyCodeLine{00159                 containerHeight += GetExtrapolateHelpBoxHeight();}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             \textcolor{comment}{// removed Gizmo Options. -\/3 lines, -\/1 splitter}}
+\DoxyCodeLine{00163             containerHeight -\/= EDITOR\_LINE\_HEIGHT * 3;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             Rect rect = PhotonGUI.ContainerBody(containerHeight);}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             Rect propertyRect = \textcolor{keyword}{new} Rect(rect.xMin + 5, rect.yMin + 2, rect.width -\/ 10, EditorGUIUtility.singleLineHeight);}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             DrawTeleport(ref propertyRect);}
+\DoxyCodeLine{00170             DrawSplitter(ref propertyRect);}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             DrawSynchronizePositionDataInterpolation(ref propertyRect, interpolatePositionProperty, interpolateOption);}
+\DoxyCodeLine{00173             DrawSplitter(ref propertyRect);}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175             DrawSynchronizePositionDataExtrapolation(ref propertyRect, extrapolatePositionProperty, extrapolateOption);}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         \textcolor{keyword}{private} \textcolor{keywordtype}{float} GetInterpolateHelpBoxHeight()}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             \textcolor{keywordflow}{return} PhotonGUI.RichLabel.CalcHeight(\textcolor{keyword}{new} GUIContent(INTERPOLATE\_HELP), Screen.width -\/ 54) + 35;}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{private} \textcolor{keywordtype}{float} GetExtrapolateHelpBoxHeight()}
+\DoxyCodeLine{00184         \{}
+\DoxyCodeLine{00185             \textcolor{keywordflow}{return} PhotonGUI.RichLabel.CalcHeight(\textcolor{keyword}{new} GUIContent(EXTRAPOLATE\_HELP), Screen.width -\/ 54) + 35;}
+\DoxyCodeLine{00186         \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSplitter(ref Rect propertyRect)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             Rect splitterRect = \textcolor{keyword}{new} Rect(propertyRect.xMin -\/ 3, propertyRect.yMin, propertyRect.width + 6, 1);}
+\DoxyCodeLine{00191             PhotonGUI.DrawSplitter(splitterRect);}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             propertyRect.y += 5;}
+\DoxyCodeLine{00194         \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawHelpBox(ref Rect propertyRect, \textcolor{keywordtype}{bool} isOpen, \textcolor{keywordtype}{float} height, \textcolor{keywordtype}{string} helpText, \textcolor{keywordtype}{string} url)}
+\DoxyCodeLine{00197         \{}
+\DoxyCodeLine{00198             \textcolor{keywordflow}{if} (isOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00199             \{}
+\DoxyCodeLine{00200                 Rect helpRect = \textcolor{keyword}{new} Rect(propertyRect.xMin, propertyRect.yMin, propertyRect.width, height -\/ 5);}
+\DoxyCodeLine{00201                 GUI.BeginGroup(helpRect, GUI.skin.box);}
+\DoxyCodeLine{00202                 GUI.Label(\textcolor{keyword}{new} Rect(5, 5, propertyRect.width -\/ 10, height -\/ 30), helpText, PhotonGUI.RichLabel);}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{if} (GUI.Button(\textcolor{keyword}{new} Rect(5, height -\/ 30, propertyRect.width -\/ 10, 20), \textcolor{stringliteral}{"{}Read more in our documentation"{}}))}
+\DoxyCodeLine{00204                 \{}
+\DoxyCodeLine{00205                     Application.OpenURL(url);}
+\DoxyCodeLine{00206                 \}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208                 GUI.EndGroup();}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                 propertyRect.y += height;}
+\DoxyCodeLine{00211             \}}
+\DoxyCodeLine{00212         \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawPropertyWithHelpIcon(ref Rect propertyRect, ref \textcolor{keywordtype}{bool} isHelpOpen, SerializedProperty property, \textcolor{keywordtype}{string} tooltip)}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             Rect propertyFieldRect = \textcolor{keyword}{new} Rect(propertyRect.xMin, propertyRect.yMin, propertyRect.width -\/ 20, propertyRect.height);}
+\DoxyCodeLine{00217             \textcolor{keywordtype}{string} propertyName = ObjectNames.NicifyVariableName(property.name);}
+\DoxyCodeLine{00218             EditorGUI.PropertyField(propertyFieldRect, property, \textcolor{keyword}{new} GUIContent(propertyName, tooltip));}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             Rect helpIconRect = \textcolor{keyword}{new} Rect(propertyFieldRect.xMax + 5, propertyFieldRect.yMin, 20, propertyFieldRect.height);}
+\DoxyCodeLine{00221             isHelpOpen = GUI.Toggle(helpIconRect, isHelpOpen, PhotonGUI.HelpIcon, GUIStyle.none);}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00224         \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizePositionDataExtrapolation(ref Rect propertyRect, SerializedProperty extrapolatePositionProperty,}
+\DoxyCodeLine{00227                                                               PhotonTransformViewPositionModel.ExtrapolateOptions extrapolateOption)}
+\DoxyCodeLine{00228         \{}
+\DoxyCodeLine{00229             DrawPropertyWithHelpIcon(ref propertyRect, ref this.m\_ExtrapolateHelpOpen, extrapolatePositionProperty, EXTRAPOLATE\_TOOLTIP);}
+\DoxyCodeLine{00230             DrawHelpBox(ref propertyRect, this.m\_ExtrapolateHelpOpen, GetExtrapolateHelpBoxHeight(), EXTRAPOLATE\_HELP, EXTRAPOLATE\_HELP\_URL);}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232             \textcolor{keywordflow}{if} (extrapolateOption != PhotonTransformViewPositionModel.ExtrapolateOptions.Disabled)}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.ExtrapolateIncludingRoundTripTime"{}}));}
+\DoxyCodeLine{00235                 propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00236             \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{switch} (extrapolateOption)}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.ExtrapolateOptions.FixedSpeed:}
+\DoxyCodeLine{00241                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.ExtrapolateSpeed"{}}));}
+\DoxyCodeLine{00242                     propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00243                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawTeleport(ref Rect propertyRect)}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249             EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.TeleportEnabled"{}}),}
+\DoxyCodeLine{00250                                     \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Enable teleport for great distances"{}}));}
+\DoxyCodeLine{00251             propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.TeleportIfDistanceGreaterThan"{}}),}
+\DoxyCodeLine{00254                                     \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Teleport if distance greater than"{}}));}
+\DoxyCodeLine{00255             propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizePositionDataInterpolation(ref Rect propertyRect, SerializedProperty interpolatePositionProperty,}
+\DoxyCodeLine{00259                                                               PhotonTransformViewPositionModel.InterpolateOptions interpolateOption)}
+\DoxyCodeLine{00260         \{}
+\DoxyCodeLine{00261             DrawPropertyWithHelpIcon(ref propertyRect, ref this.m\_InterpolateHelpOpen, interpolatePositionProperty, INTERPOLATE\_TOOLTIP);}
+\DoxyCodeLine{00262             DrawHelpBox(ref propertyRect, this.m\_InterpolateHelpOpen, GetInterpolateHelpBoxHeight(), INTERPOLATE\_HELP, INTERPOLATE\_HELP\_URL);}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264             \textcolor{keywordflow}{switch} (interpolateOption)}
+\DoxyCodeLine{00265             \{}
+\DoxyCodeLine{00266                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.FixedSpeed:}
+\DoxyCodeLine{00267                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.InterpolateMoveTowardsSpeed"{}}),}
+\DoxyCodeLine{00268                                             \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}MoveTowards Speed"{}}));}
+\DoxyCodeLine{00269                     propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00270                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272                 \textcolor{keywordflow}{case} PhotonTransformViewPositionModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00273                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_PositionModel.InterpolateLerpSpeed"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Lerp Speed"{}}));}
+\DoxyCodeLine{00274                     propertyRect.y += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00275                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277                 \textcolor{comment}{/*case PhotonTransformViewPositionModel.InterpolateOptions.MoveTowardsComplex:}}
+\DoxyCodeLine{00278 \textcolor{comment}{                    Rect curveRect = new Rect(propertyRect.xMin, propertyRect.yMin, propertyRect.width -\/ 100, propertyRect.height);}}
+\DoxyCodeLine{00279 \textcolor{comment}{                    EditorGUI.PropertyField(curveRect, serializedObject.FindProperty("{}m\_PositionModel.InterpolateSpeedCurve"{}), new GUIContent("{}MoveTowards Speed Curve"{}));}}
+\DoxyCodeLine{00280 \textcolor{comment}{    }}
+\DoxyCodeLine{00281 \textcolor{comment}{                    Rect labelRect = new Rect(propertyRect.xMax -\/ 95, propertyRect.yMin, 10, propertyRect.height);}}
+\DoxyCodeLine{00282 \textcolor{comment}{                    GUI.Label(labelRect, "{}x"{});}}
+\DoxyCodeLine{00283 \textcolor{comment}{    }}
+\DoxyCodeLine{00284 \textcolor{comment}{                    Rect multiplierRect = new Rect(propertyRect.xMax -\/ 80, propertyRect.yMin, 80, propertyRect.height);}}
+\DoxyCodeLine{00285 \textcolor{comment}{                    EditorGUI.PropertyField(multiplierRect, serializedObject.FindProperty("{}m\_PositionModel.InterpolateMoveTowardsSpeed"{}), GUIContent.none);}}
+\DoxyCodeLine{00286 \textcolor{comment}{                    propertyRect.y += EDITOR\_LINE\_HEIGHT;}}
+\DoxyCodeLine{00287 \textcolor{comment}{    }}
+\DoxyCodeLine{00288 \textcolor{comment}{                    EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty("{}m\_PositionModel.InterpolateMoveTowardsAcceleration"{}),}}
+\DoxyCodeLine{00289 \textcolor{comment}{                        new GUIContent("{}Acceleration"{}));}}
+\DoxyCodeLine{00290 \textcolor{comment}{                    propertyRect.y += EDITOR\_LINE\_HEIGHT;}}
+\DoxyCodeLine{00291 \textcolor{comment}{    }}
+\DoxyCodeLine{00292 \textcolor{comment}{                    EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty("{}m\_PositionModel.InterpolateMoveTowardsDeceleration"{}),}}
+\DoxyCodeLine{00293 \textcolor{comment}{                        new GUIContent("{}Deceleration"{}));}}
+\DoxyCodeLine{00294 \textcolor{comment}{                    propertyRect.y += EDITOR\_LINE\_HEIGHT;}}
+\DoxyCodeLine{00295 \textcolor{comment}{                    break;*/}}
+\DoxyCodeLine{00296             \}}
+\DoxyCodeLine{00297         \}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizeRotationHeader()}
+\DoxyCodeLine{00300         \{}
+\DoxyCodeLine{00301             DrawHeader(\textcolor{stringliteral}{"{}Synchronize Rotation"{}}, this.m\_SynchronizeRotationProperty);}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizeRotationData()}
+\DoxyCodeLine{00305         \{}
+\DoxyCodeLine{00306             \textcolor{keywordflow}{if} (this.m\_SynchronizeRotationProperty == \textcolor{keyword}{null} || this.m\_SynchronizeRotationProperty.boolValue == \textcolor{keyword}{false})}
+\DoxyCodeLine{00307             \{}
+\DoxyCodeLine{00308                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00309             \}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             SerializedProperty interpolateRotationProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_RotationModel.InterpolateOption"{}});}
+\DoxyCodeLine{00312             PhotonTransformViewRotationModel.InterpolateOptions interpolateOption =}
+\DoxyCodeLine{00313                 (PhotonTransformViewRotationModel.InterpolateOptions)interpolateRotationProperty.enumValueIndex;}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315             \textcolor{keywordtype}{float} containerHeight = 20;}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             switch (interpolateOption)}
+\DoxyCodeLine{00318             \{}
+\DoxyCodeLine{00319                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.RotateTowards:}
+\DoxyCodeLine{00320                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00321                     containerHeight += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00322                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00323             \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325             \textcolor{keywordflow}{if} (this.m\_InterpolateRotationHelpOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00326             \{}
+\DoxyCodeLine{00327                 containerHeight += GetInterpolateHelpBoxHeight();}
+\DoxyCodeLine{00328             \}}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330             Rect rect = PhotonGUI.ContainerBody(containerHeight);}
+\DoxyCodeLine{00331             Rect propertyRect = \textcolor{keyword}{new} Rect(rect.xMin + 5, rect.yMin + 2, rect.width -\/ 10, EditorGUIUtility.singleLineHeight);}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333             DrawPropertyWithHelpIcon(ref propertyRect, ref this.m\_InterpolateRotationHelpOpen, interpolateRotationProperty, INTERPOLATE\_TOOLTIP);}
+\DoxyCodeLine{00334             DrawHelpBox(ref propertyRect, this.m\_InterpolateRotationHelpOpen, GetInterpolateHelpBoxHeight(), INTERPOLATE\_HELP, INTERPOLATE\_HELP\_URL);}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336             \textcolor{keywordflow}{switch} (interpolateOption)}
+\DoxyCodeLine{00337             \{}
+\DoxyCodeLine{00338                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.RotateTowards:}
+\DoxyCodeLine{00339                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_RotationModel.InterpolateRotateTowardsSpeed"{}}),}
+\DoxyCodeLine{00340                                             \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}RotateTowards Speed"{}}));}
+\DoxyCodeLine{00341                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00342                 \textcolor{keywordflow}{case} PhotonTransformViewRotationModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00343                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_RotationModel.InterpolateLerpSpeed"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Lerp Speed"{}}));}
+\DoxyCodeLine{00344                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00345             \}}
+\DoxyCodeLine{00346         \}}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizeScaleHeader()}
+\DoxyCodeLine{00349         \{}
+\DoxyCodeLine{00350             DrawHeader(\textcolor{stringliteral}{"{}Synchronize Scale"{}}, this.m\_SynchronizeScaleProperty);}
+\DoxyCodeLine{00351         \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSynchronizeScaleData()}
+\DoxyCodeLine{00354         \{}
+\DoxyCodeLine{00355             \textcolor{keywordflow}{if} (this.m\_SynchronizeScaleProperty == \textcolor{keyword}{null} || this.m\_SynchronizeScaleProperty.boolValue == \textcolor{keyword}{false})}
+\DoxyCodeLine{00356             \{}
+\DoxyCodeLine{00357                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00358             \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360             SerializedProperty interpolateScaleProperty = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_ScaleModel.InterpolateOption"{}});}
+\DoxyCodeLine{00361             PhotonTransformViewScaleModel.InterpolateOptions interpolateOption = (PhotonTransformViewScaleModel.InterpolateOptions)interpolateScaleProperty.enumValueIndex;}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363             \textcolor{keywordtype}{float} containerHeight = EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365             switch (interpolateOption)}
+\DoxyCodeLine{00366             \{}
+\DoxyCodeLine{00367                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.MoveTowards:}
+\DoxyCodeLine{00368                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00369                     containerHeight += EDITOR\_LINE\_HEIGHT;}
+\DoxyCodeLine{00370                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00371             \}}
+\DoxyCodeLine{00372 }
+\DoxyCodeLine{00373             \textcolor{keywordflow}{if} (this.m\_InterpolateScaleHelpOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00374             \{}
+\DoxyCodeLine{00375                 containerHeight += GetInterpolateHelpBoxHeight();}
+\DoxyCodeLine{00376             \}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378             Rect rect = PhotonGUI.ContainerBody(containerHeight);}
+\DoxyCodeLine{00379             Rect propertyRect = \textcolor{keyword}{new} Rect(rect.xMin + 5, rect.yMin + 2, rect.width -\/ 10, EditorGUIUtility.singleLineHeight);}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381             DrawPropertyWithHelpIcon(ref propertyRect, ref this.m\_InterpolateScaleHelpOpen, interpolateScaleProperty, INTERPOLATE\_TOOLTIP);}
+\DoxyCodeLine{00382             DrawHelpBox(ref propertyRect, this.m\_InterpolateScaleHelpOpen, GetInterpolateHelpBoxHeight(), INTERPOLATE\_HELP, INTERPOLATE\_HELP\_URL);}
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00384             \textcolor{keywordflow}{switch} (interpolateOption)}
+\DoxyCodeLine{00385             \{}
+\DoxyCodeLine{00386                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.MoveTowards:}
+\DoxyCodeLine{00387                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_ScaleModel.InterpolateMoveTowardsSpeed"{}}),}
+\DoxyCodeLine{00388                                             \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}MoveTowards Speed"{}}));}
+\DoxyCodeLine{00389                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00390                 \textcolor{keywordflow}{case} PhotonTransformViewScaleModel.InterpolateOptions.Lerp:}
+\DoxyCodeLine{00391                     EditorGUI.PropertyField(propertyRect, serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_ScaleModel.InterpolateLerpSpeed"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Lerp Speed"{}}));}
+\DoxyCodeLine{00392                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00393             \}}
+\DoxyCodeLine{00394         \}}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawHeader(\textcolor{keywordtype}{string} label, SerializedProperty property)}
+\DoxyCodeLine{00397         \{}
+\DoxyCodeLine{00398             \textcolor{keywordflow}{if} (property == \textcolor{keyword}{null})}
+\DoxyCodeLine{00399             \{}
+\DoxyCodeLine{00400                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00401             \}}
+\DoxyCodeLine{00402 }
+\DoxyCodeLine{00403             \textcolor{keywordtype}{bool} newValue = PhotonGUI.ContainerHeaderToggle(label, property.boolValue);}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405             \textcolor{keywordflow}{if} (newValue != property.boolValue)}
+\DoxyCodeLine{00406             \{}
+\DoxyCodeLine{00407                 \textcolor{keyword}{property}.boolValue = newValue;}
+\DoxyCodeLine{00408                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00409             \}}
+\DoxyCodeLine{00410         \}}
+\DoxyCodeLine{00411     \}}
+\DoxyCodeLine{00412 \}}
+
+\end{DoxyCode}

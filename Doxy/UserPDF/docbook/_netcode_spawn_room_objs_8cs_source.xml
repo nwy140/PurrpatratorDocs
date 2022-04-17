@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__netcode_spawn_room_objs_8cs_source" xml:lang="en-US">
+<title>NetcodeSpawnRoomObjs.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/_Developers/_Shared/_NetcodePhoton/Scripts/CustomUtilities/NetcodeSpawnRoomObjs.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00001"/>00001 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_pun">Pun</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00002"/>00002 <emphasis role="keyword">using</emphasis>&#32;System.<link linkend="_namespace_system_1_1_collections">Collections</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00003"/>00003 <emphasis role="keyword">using</emphasis>&#32;System.Linq;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00004"/>00004 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00005"/>00005 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_s_int">SInt</link>.<link linkend="_namespace_s_int_1_1_netcode">Netcode</link>.<link linkend="_namespace_s_int_1_1_netcode_1_1_photon_p_u_n">PhotonPUN</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00007"/>00007 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00008"/><link linkend="_class_netcode_spawn_room_objs">00008</link> <emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_netcode_spawn_room_objs">NetcodeSpawnRoomObjs</link>&#32;:&#32;<link linkend="_class_photon_1_1_pun_1_1_mono_behaviour_pun_callbacks">MonoBehaviourPunCallbacks</link>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00009"/>00009 {
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00010"/>00010 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00011"/>00011 &#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;You&#32;can&apos;t&#32;synchronize&#32;game&#32;objects&#32;in&#32;photon</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00012"/>00012 &#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;You&#32;may&#32;only&#32;synchronize&#32;their&#32;View&#32;IDs</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00013"/>00013 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00014"/>00014 &#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;https://answers.unity.com/questions/700268/send-gameobject-through-photon-rpc.html</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00015"/>00015 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;All&#32;Objs&#32;must&#32;be&#32;in&#32;the&#32;resources&#32;folder&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00016"/>00016 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00017"/><link linkend="_class_netcode_spawn_room_objs_1a787c786c1fdd292b28322753d881eabe">00017</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_obj_instantiation_data">ObjInstantiationData</link>[]&#32;<link linkend="_class_netcode_spawn_room_objs_1a787c786c1fdd292b28322753d881eabe">objsToSpawn</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00018"/>00018 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&#32;PV;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;<emphasis role="comment">//public&#32;ObjectivesManager&#32;objectivesManager;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00021"/>00021 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Runtime&#32;Generation&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00023"/><link linkend="_class_netcode_spawn_room_objs_1aa98ccfc64520d50395644ebc28fc2ed6">00023</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;PhotonView&gt;&#32;<link linkend="_class_netcode_spawn_room_objs_1aa98ccfc64520d50395644ebc28fc2ed6">instantiatedObjects</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00024"/><link linkend="_class_netcode_spawn_room_objs_1aff2ae93c07891fa76df517115fa80465">00024</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;GameObject&gt;&#32;<link linkend="_class_netcode_spawn_room_objs_1aff2ae93c07891fa76df517115fa80465">instantiatedPrefabsSource</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00025"/>00025 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;<emphasis role="comment">//TODO:&#32;Serializable&#32;Class</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00027"/>00027 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Awake()
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TryGetComponent(out&#32;PV);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00032"/>00032 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;<emphasis role="keywordtype">void</emphasis>&#32;Start()
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//SpawnObjects();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00036"/>00036 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1ac00d87d1bbd7d63fa13e6d1823e2f576">IsMasterClient</link>&#32;==&#32;<emphasis role="keyword">true</emphasis>)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;StartCoroutine(waitForReadyInGame());
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00039"/>00039 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00040"/>00040 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00041"/>00041 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;IEnumerator&#32;waitForReadyInGame()
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00044"/>00044 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00045"/>00045 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//var&#32;hash&#32;=&#32;PhotonNetwork.LocalPlayer.CustomProperties;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00047"/>00047 <emphasis role="comment"></emphasis>&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//yield&#32;return&#32;new&#32;WaitUntil(()&#32;=&gt;&#32;hash.ContainsKey(&quot;ReadyInGame&quot;));</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00048"/>00048 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//yield&#32;return&#32;new&#32;WaitUntil(()&#32;=&gt;&#32;(bool)hash[&quot;ReadyInGame&quot;]&#32;==&#32;true);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//yield&#32;return&#32;new&#32;WaitUntil(()&#32;=&gt;&#32;PhotonNetwork.PlayerList.All(n&#32;=&gt;&#32;n.CustomProperties.ContainsKey(&quot;ReadyInGame&quot;)&#32;==&#32;true));</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;yield&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">new</emphasis>&#32;WaitUntil(()&#32;=&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a13cd7f74a3672513b43bf224968eb9de">PlayerList</link>.All(n&#32;=&gt;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a13cd7f74a3672513b43bf224968eb9de">PlayerList</link>.Length&#32;==&#32;2));
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;yield&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00053"/>00053 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1ac00d87d1bbd7d63fa13e6d1823e2f576">IsMasterClient</link>&#32;==&#32;<emphasis role="keyword">true</emphasis>)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Log(<emphasis role="stringliteral">&quot;Finished&#32;Ready&#32;&quot;</emphasis>);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_netcode_spawn_room_objs_1a614b3d19f6717914093011f8beb89051">SpawnObjects</link>();
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00060"/>00060 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00061"/><link linkend="_class_netcode_spawn_room_objs_1a614b3d19f6717914093011f8beb89051">00061</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_netcode_spawn_room_objs_1a614b3d19f6717914093011f8beb89051">SpawnObjects</link>()
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Log(<emphasis role="stringliteral">&quot;Spawn&#32;Human&#32;Props&quot;</emphasis>);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(var&#32;o&#32;<emphasis role="keywordflow">in</emphasis>&#32;<link linkend="_class_netcode_spawn_room_objs_1a787c786c1fdd292b28322753d881eabe">objsToSpawn</link>)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.actualQuantity&#32;=&#32;<link linkend="__linear_motion_8cs_1a832e8f52fca5a678819ec96269dcb532">Random</link>.Range(o.minQuantity,&#32;o.maxQuantity);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;o.actualQuantity;&#32;i++)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00068"/>00068 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;spawnPosOffset&#32;=&#32;Vector3.zero;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(o.isApplyRandomSpawnPosOffset)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;spawnPosOffset&#32;=&#32;transform.position&#32;+&#32;<link linkend="__linear_motion_8cs_1a832e8f52fca5a678819ec96269dcb532">Random</link>.onUnitSphere&#32;*&#32;o.radius;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00072"/>00072 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.actualYRotation&#32;=&#32;<link linkend="__linear_motion_8cs_1a832e8f52fca5a678819ec96269dcb532">Random</link>.Range(o.minYRotation,&#32;o.maxYRotation);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Quaternion&#32;spawnRotOffset&#32;=&#32;Quaternion.Euler(Vector3.up&#32;*&#32;o.actualYRotation);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00075"/>00075 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(o.possibleSpawnPoints.Count&#32;&lt;=&#32;0)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.possibleSpawnPoints.Add(this.transform);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00078"/>00078 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Transform&#32;targetTransform&#32;=&#32;o.possibleSpawnPoints[<link linkend="__linear_motion_8cs_1a832e8f52fca5a678819ec96269dcb532">Random</link>.Range(0,&#32;o.possibleSpawnPoints.Count)];
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(o.possibleObjPrefabs.Length&#32;&gt;&#32;0)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&#32;targetObjPrefab&#32;=&#32;o.possibleObjPrefabs[<link linkend="__linear_motion_8cs_1a832e8f52fca5a678819ec96269dcb532">Random</link>.Range(0,&#32;o.possibleObjPrefabs.Length)];
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00083"/>00083 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>(o.noRepeats&#32;==&#32;<emphasis role="keyword">true</emphasis>)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{&#32;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_class_netcode_spawn_room_objs_1aff2ae93c07891fa76df517115fa80465">instantiatedPrefabsSource</link>.Contains(targetObjPrefab.gameObject))
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;i--;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">continue</emphasis>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_netcode_spawn_room_objs_1aff2ae93c07891fa76df517115fa80465">instantiatedPrefabsSource</link>.Add(targetObjPrefab.gameObject);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;spawnedObj&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_network">PhotonNetwork</link>.<link linkend="_class_photon_1_1_pun_1_1_photon_network_1a7e68c3cae2b1b2b7495b545b246192c2">InstantiateRoomObject</link>(targetObjPrefab.name,&#32;targetTransform.position&#32;+&#32;spawnPosOffset,&#32;targetTransform.rotation&#32;*&#32;spawnRotOffset);
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00094"/>00094 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(spawnedObj&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_netcode_spawn_room_objs_1aa98ccfc64520d50395644ebc28fc2ed6">instantiatedObjects</link>.Add(spawnedObj.GetComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>&gt;());
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//ObjectivesDataHolder&#32;objectiveHolderComp&#32;=&#32;spawnedObj.GetComponent&lt;ObjectivesDataHolder&gt;();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//if&#32;(objectiveHolderComp&#32;!=&#32;null)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00109"/>00109 }
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00110"/>00110 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00111"/>00111 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00112"/>00112 [System.Serializable]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00113"/><link linkend="_class_obj_instantiation_data">00113</link> <emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_obj_instantiation_data">ObjInstantiationData</link>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00114"/>00114 {
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;<emphasis role="comment">//[Header(&quot;Randomly&#32;Select&#32;an&#32;Obj&#32;to&#32;spawn&#32;from&#32;this&#32;list&quot;)]</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;<emphasis role="comment">//public&#32;PhotonView[]&#32;objs;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Random&#32;PrefabsTo&#32;Select&#32;From&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00118"/><link linkend="_class_obj_instantiation_data_1afb8a2114e025c635b1b29baa5c09292a">00118</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_photon_view">PhotonView</link>[]&#32;<link linkend="_class_obj_instantiation_data_1afb8a2114e025c635b1b29baa5c09292a">possibleObjPrefabs</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Random&#32;Transform&#32;Spawn&#32;Points&#32;To&#32;Select&#32;From&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00120"/><link linkend="_class_obj_instantiation_data_1aa5f571bc165d2d9fa30e12aaef04c68c">00120</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;Transform&gt;&#32;<link linkend="_class_obj_instantiation_data_1aa5f571bc165d2d9fa30e12aaef04c68c">possibleSpawnPoints</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Random&#32;Quantity&#32;To&#32;Spawn&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00122"/><link linkend="_class_obj_instantiation_data_1a78f4bd8713bb96e77a16f79ef46a84ba">00122</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1a78f4bd8713bb96e77a16f79ef46a84ba">minQuantity</link>&#32;=&#32;0;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00123"/><link linkend="_class_obj_instantiation_data_1ade51730c137067666c179fcab4c2fbc6">00123</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1ade51730c137067666c179fcab4c2fbc6">maxQuantity</link>&#32;=&#32;1;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00124"/>00124 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;[Tooltip(<emphasis role="stringliteral">&quot;Do&#32;not&#32;spawn&#32;repeated&#32;Objects&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00126"/><link linkend="_class_obj_instantiation_data_1af0a03e23a08028ad840c7dde131dd969">00126</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1af0a03e23a08028ad840c7dde131dd969">noRepeats</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Random&#32;Y&#32;Rotation&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00128"/><link linkend="_class_obj_instantiation_data_1ae21b9d5d50ab6cb4e4cae5bd1d2596cc">00128</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1ae21b9d5d50ab6cb4e4cae5bd1d2596cc">minYRotation</link>&#32;=&#32;0;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00129"/><link linkend="_class_obj_instantiation_data_1a3ab0f7bf3b4f414bfcae453fb6458519">00129</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1a3ab0f7bf3b4f414bfcae453fb6458519">maxYRotation</link>&#32;=&#32;0;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Random&#32;onUnitSphere&#32;Radius&#32;Offset&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00131"/><link linkend="_class_obj_instantiation_data_1a318c5766c739949f04052c72b89eb0da">00131</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1a318c5766c739949f04052c72b89eb0da">isApplyRandomSpawnPosOffset</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00132"/><link linkend="_class_obj_instantiation_data_1ae7c3fe16c37c235e30017b9d0e5d6801">00132</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1ae7c3fe16c37c235e30017b9d0e5d6801">radius</link>&#32;=&#32;2f;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;[Header(<emphasis role="stringliteral">&quot;Actual&#32;Value&#32;after&#32;Random&#32;Range&quot;</emphasis>)]
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00134"/><link linkend="_class_obj_instantiation_data_1a94fe7c4e58c0601e93bef86956d95b5b">00134</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1a94fe7c4e58c0601e93bef86956d95b5b">actualQuantity</link>&#32;=&#32;1;&#32;<emphasis role="comment">//&#32;Actual&#32;Value&#32;after&#32;Random&#32;Range</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00135"/><link linkend="_class_obj_instantiation_data_1a925ef3101999c48b5e86902c75947b43">00135</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_obj_instantiation_data_1a925ef3101999c48b5e86902c75947b43">actualYRotation</link>;
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00136"/>00136 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00137"/>00137 &#32;&#32;&#32;&#32;<emphasis role="comment">//public&#32;PhotonView[]&#32;localRefs;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00138"/>00138 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Read:&#32;https://doc.photonengine.com/en-us/pun/current/gameplay/instantiation</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;<emphasis role="comment">//public&#32;PhotonView&#32;GetRandomObj()</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;<emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00142"/>00142 &#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;return&#32;objs[Random.Range(0,&#32;objs.Length)];</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;<emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00144"/>00144 }
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00145"/>00145 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00146"/>00146 <emphasis role="preprocessor">#region&#32;&#32;Redundant</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00147"/>00147 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00148"/>00148 <emphasis role="comment">//public&#32;void&#32;SpawnObjectsAndSetupTeamHumanObjectives()</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00149"/>00149 <emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00150"/>00150 <emphasis role="comment">//&#32;&#32;&#32;&#32;Debug.Log(&quot;Spawn&#32;Human&#32;Props&quot;);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00151"/>00151 <emphasis role="comment">//&#32;&#32;&#32;&#32;foreach&#32;(var&#32;o&#32;in&#32;objsToSpawn)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00152"/>00152 <emphasis role="comment">//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00153"/>00153 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.actualQuantity&#32;=&#32;Random.Range(o.minQuantity,&#32;o.maxQuantity);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00154"/>00154 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;for&#32;(int&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;o.actualQuantity;&#32;i++)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00155"/>00155 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00156"/>00156 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(o.isUseRandomSpawnPosWithinRadius)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00157"/>00157 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00158"/>00158 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;spawnPos&#32;=&#32;transform.position&#32;+&#32;Random.onUnitSphere&#32;*&#32;o.radius;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00159"/>00159 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00160"/>00160 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;objToSpawn&#32;=&#32;o.GetRandomObj();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00161"/>00161 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;spawnedObj&#32;=&#32;PhotonNetwork.InstantiateRoomObject(objToSpawn.name,&#32;transform.position,&#32;transform.rotation);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00162"/>00162 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00163"/>00163 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(spawnedObj&#32;!=&#32;null)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00164"/>00164 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00165"/>00165 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00166"/>00166 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;instantiatedObjects.Add(spawnedObj.GetComponent&lt;PhotonView&gt;());</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00167"/>00167 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00168"/>00168 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//ObjectivesDataHolder&#32;objectiveHolderComp&#32;=&#32;spawnedObj.GetComponent&lt;ObjectivesDataHolder&gt;();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00169"/>00169 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//if&#32;(objectiveHolderComp&#32;!=&#32;null)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00170"/>00170 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00171"/>00171 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00172"/>00172 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00173"/>00173 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00174"/>00174 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00175"/>00175 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00176"/>00176 <emphasis role="comment">//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00177"/>00177 <emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00178"/>00178 <emphasis role="comment">//public&#32;void&#32;SpawnObjectsAndSetupTeamCatObjectives()</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00179"/>00179 <emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00180"/>00180 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00181"/>00181 <emphasis role="comment">//&#32;&#32;&#32;&#32;Debug.Log(&quot;Spawn&#32;Cat&#32;Props&quot;);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00182"/>00182 <emphasis role="comment">//&#32;&#32;&#32;&#32;foreach&#32;(var&#32;o&#32;in&#32;cat_objsToSpawn)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00183"/>00183 <emphasis role="comment">//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00184"/>00184 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.actualQuantity&#32;=&#32;Random.Range(o.minQuantity,&#32;o.maxQuantity);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00185"/>00185 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;for&#32;(int&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;o.actualQuantity;&#32;i++)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00186"/>00186 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00187"/>00187 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(o.isUseRandomSpawnPosWithinRadius)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00188"/>00188 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00189"/>00189 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;spawnPos&#32;=&#32;transform.position&#32;+&#32;Random.onUnitSphere&#32;*&#32;o.radius;</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00190"/>00190 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00191"/>00191 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;objToSpawn&#32;=&#32;o.GetRandomObj();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00192"/>00192 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;spawnedObj&#32;=&#32;PhotonNetwork.InstantiateRoomObject(objToSpawn.name,&#32;transform.position,&#32;transform.rotation);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00193"/>00193 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00194"/>00194 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(spawnedObj&#32;!=&#32;null)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00195"/>00195 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00196"/>00196 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00197"/>00197 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;instantiatedObjects.Add(spawnedObj.GetComponent&lt;PhotonView&gt;());</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00198"/>00198 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00199"/>00199 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//ObjectivesDataHolder&#32;objectiveHolderComp&#32;=&#32;spawnedObj.GetComponent&lt;ObjectivesDataHolder&gt;();</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00200"/>00200 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//if&#32;(objectiveHolderComp&#32;!=&#32;null)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00201"/>00201 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00202"/>00202 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;objectivesManager.objectives.Add(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00203"/>00203 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;objectivesManager.SetupInitialObjectivesUI(objectiveHolderComp.objectiveData);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00204"/>00204 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00205"/>00205 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00206"/>00206 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00207"/>00207 <emphasis role="comment">//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00208"/>00208 <emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00209"/>00209 <emphasis role="comment">//public&#32;&#32;void&#32;OnEnable()</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00210"/>00210 <emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00211"/>00211 <emphasis role="comment">//&#32;&#32;&#32;&#32;TryGetComponent(out&#32;PV);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00212"/>00212 <emphasis role="comment">//&#32;&#32;&#32;&#32;StartCoroutine(WaitForPlayerJoin());</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00213"/>00213 <emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00214"/>00214 
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00215"/>00215 <emphasis role="comment">//IEnumerator&#32;WaitForPlayerJoin()</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00216"/>00216 <emphasis role="comment">//{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00217"/>00217 <emphasis role="comment">//&#32;&#32;&#32;&#32;yield&#32;return&#32;new&#32;WaitUntil(()&#32;=&gt;&#32;PhotonNetwork.IsConnectedAndReady);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00218"/>00218 <emphasis role="comment">//&#32;&#32;&#32;&#32;if&#32;(PhotonNetwork.IsMasterClient)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00219"/>00219 <emphasis role="comment">//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00220"/>00220 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;foreach&#32;(var&#32;o&#32;in&#32;objsToInstantiate)</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00221"/>00221 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00222"/>00222 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;o.InstantiateRandomObj(transform.position,&#32;transform.rotation);</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00223"/>00223 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00224"/>00224 <emphasis role="comment">//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00225"/>00225 <emphasis role="comment">//}</emphasis>
+<anchor xml:id="__netcode_spawn_room_objs_8cs_source_1l00226"/>00226 <emphasis role="preprocessor">#endregion&#32;Redundant</emphasis>
+</programlisting></section>

@@ -1,0 +1,193 @@
+\doxysection{Pool.\+cs}
+\label{_pool_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Pooling/Pool.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Pooling/Pool.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Pun.Simple.Pooling}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{class }Pool : MonoBehaviour}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{bool} tidyUpInEditorMode = \textcolor{keyword}{true};}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{static} Transform tidyUpParent;}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{struct }PoolItemDef}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             \textcolor{keyword}{public} GameObject prefab;}
+\DoxyCodeLine{00030             \textcolor{keyword}{public} \textcolor{keywordtype}{int} growBy;}
+\DoxyCodeLine{00031             \textcolor{keyword}{public} Type scriptToAdd;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             \textcolor{keyword}{public} PoolItemDef(GameObject prefab, \textcolor{keywordtype}{int} growBy, Type scriptToAdd)}
+\DoxyCodeLine{00034             \{}
+\DoxyCodeLine{00035                 this.prefab = prefab;}
+\DoxyCodeLine{00036                 this.growBy = growBy;}
+\DoxyCodeLine{00037                 this.scriptToAdd = scriptToAdd;}
+\DoxyCodeLine{00038             \}}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 \textcolor{preprocessor}{        \#region Static PoolManager items}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00046         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<GameObject, Stack<Pool>> pools = \textcolor{keyword}{new} Dictionary<GameObject, Stack<Pool>>();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00051         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<GameObject, PoolItemDef> poolItemDefs = \textcolor{keyword}{new} Dictionary<GameObject, PoolItemDef>();}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddPrefabToPool(GameObject \_prefab, \textcolor{keywordtype}{int} startingSize = 8, \textcolor{keywordtype}{int} \_growBy = 8, Type \_scriptToAdd = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} tidyUp = \textcolor{keyword}{false})}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (!\_prefab)}
+\DoxyCodeLine{00064             \{}
+\DoxyCodeLine{00065                 Debug.LogWarning(\textcolor{stringliteral}{"{}Attempt to add null object to the pool."{}});}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{if} (poolItemDefs.ContainsKey(\_prefab))}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             pools.Add(\_prefab, \textcolor{keyword}{new} Stack<Pool>());}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             var poolDef = \textcolor{keyword}{new} PoolItemDef(\_prefab, \_growBy, \_scriptToAdd);}
+\DoxyCodeLine{00075             poolItemDefs.Add(\_prefab, poolDef);}
+\DoxyCodeLine{00076             }
+\DoxyCodeLine{00077             GrowPool(\_prefab, startingSize);}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (tidyUp)}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00082                 \_prefab.transform.parent = tidyUpParent;}
+\DoxyCodeLine{00083 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00084                 \_prefab.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keyword}{static} Pool Spawn(GameObject origPrefab, Transform t, \textcolor{keywordtype}{float} duration = 5f)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{return} Spawn(origPrefab, t.position, t.rotation, duration);}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keyword}{public} \textcolor{keyword}{static} Pool Spawn(GameObject origPrefab, Vector3 pos, Quaternion rot, Vector3 scl, \textcolor{keywordtype}{float} duration = 5f)}
+\DoxyCodeLine{00094         \{}
+\DoxyCodeLine{00095             var pool = Spawn(origPrefab, pos, rot, duration);}
+\DoxyCodeLine{00096             pool.gameObject.transform.localScale = scl;}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{return} pool;}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{static} Pool Spawn(GameObject origPrefab, Vector3 pos, Quaternion rot, \textcolor{keywordtype}{float} duration = 5f)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             \textcolor{comment}{//if (!pools.ContainsKey(origPrefab))}}
+\DoxyCodeLine{00103             \textcolor{comment}{//  AddPrefabToPool(origPrefab);}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (pools[origPrefab].Count == 0)}
+\DoxyCodeLine{00106                 GrowPool(origPrefab);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00109             \textcolor{keywordflow}{if} (!pools[origPrefab].Peek())}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 pools[origPrefab].Clear();}
+\DoxyCodeLine{00112                 GrowPool(origPrefab);}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             Pool p = pools[origPrefab].Pop();}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             p.transform.position = pos;}
+\DoxyCodeLine{00118             p.transform.rotation = rot;}
+\DoxyCodeLine{00119             p.deathClock = duration;}
+\DoxyCodeLine{00120             \textcolor{comment}{// Only enable if we are counting down for expiration.}}
+\DoxyCodeLine{00121             p.enabled = (duration > 0);}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             p.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{keywordflow}{return} p;}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GrowPool(GameObject \_prefab, \textcolor{keywordtype}{int} growAmt = -\/1)}
+\DoxyCodeLine{00129         \{}
+\DoxyCodeLine{00130 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00131             \textcolor{comment}{// put pooled items onto a parent to tidy up in editor mode -\/ completely ignored in release}}
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (tidyUpInEditorMode \&\& !tidyUpParent)}
+\DoxyCodeLine{00133                 tidyUpParent = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Pool Items (Editor Only)"{}}).transform;}
+\DoxyCodeLine{00134 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             PoolItemDef def = poolItemDefs[\_prefab];}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{comment}{// Grow by the amount originally specified if no growAmt is given.}}
+\DoxyCodeLine{00139             \textcolor{keywordtype}{int} growby = (growAmt < 1) ? def.growBy : growAmt;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             for (\textcolor{keywordtype}{int} i = 0; i < growby; i++)}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00145                 \textcolor{comment}{// put pooled items onto a parent to tidy up in editor mode -\/ completely ignored in release}}
+\DoxyCodeLine{00146                 GameObject go = Instantiate(def.prefab, (tidyUpInEditorMode) ? tidyUpParent : \textcolor{keyword}{null});}
+\DoxyCodeLine{00147 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00148                 GameObject go = Instantiate(def.prefab);}
+\DoxyCodeLine{00149 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00150                 AddItemToPool(go, \_prefab, def);}
+\DoxyCodeLine{00151             \}}
+\DoxyCodeLine{00152         \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddItemToPool(GameObject go, GameObject \_prefab, PoolItemDef def)}
+\DoxyCodeLine{00155         \{}
+\DoxyCodeLine{00156             go.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             \textcolor{comment}{//Precache some stuff so this pool get later doesn't require any GetComponent calls.}}
+\DoxyCodeLine{00159             Pool p = go.AddComponent<Pool>();}
+\DoxyCodeLine{00160             p.CacheComponents();}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             \textcolor{comment}{// Add the scrpitToAdd if it doesn't already exist}}
+\DoxyCodeLine{00163             \textcolor{keywordflow}{if} (def.scriptToAdd != \textcolor{keyword}{null} \&\& go.GetComponent(def.scriptToAdd) == \textcolor{keyword}{null})}
+\DoxyCodeLine{00164                 p.extraScript = go.AddComponent(def.scriptToAdd);}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             p.origPrefab = \_prefab;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168             \textcolor{comment}{// Add this new instance to the pool}}
+\DoxyCodeLine{00169             pools[\_prefab].Push(p);}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReturnToPool(Pool p, GameObject \_prefab)}
+\DoxyCodeLine{00173         \{}
+\DoxyCodeLine{00174             pools[\_prefab].Push(p);}
+\DoxyCodeLine{00175         \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179 \textcolor{preprocessor}{        \#region Fields and Methods used by pool items this is attached to.}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{comment}{// The original prefab acts as the dictionary key for this pool.}}
+\DoxyCodeLine{00182         [HideInInspector] \textcolor{keyword}{public} GameObject origPrefab;}
+\DoxyCodeLine{00183         [HideInInspector] \textcolor{keyword}{public} Rigidbody rb;}
+\DoxyCodeLine{00184         [HideInInspector] \textcolor{keyword}{public} Component extraScript;}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186         \textcolor{keyword}{public} \textcolor{keywordtype}{float} deathClock;}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CacheComponents()}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             rb = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00191         \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00194         \{}
+\DoxyCodeLine{00195             deathClock -\/= Time.deltaTime;}
+\DoxyCodeLine{00196             \textcolor{keywordflow}{if} (deathClock < 0)}
+\DoxyCodeLine{00197             \{}
+\DoxyCodeLine{00198                 gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00199             \}}
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204             ReturnToPool(\textcolor{keyword}{this}, origPrefab);}
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00208     \}}
+\DoxyCodeLine{00209 \}}
+
+\end{DoxyCode}

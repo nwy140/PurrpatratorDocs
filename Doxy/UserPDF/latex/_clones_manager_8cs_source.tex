@@ -1,0 +1,518 @@
+\doxysection{Clones\+Manager.\+cs}
+\label{_clones_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ClonesManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/ParrelSync/ParrelSync/Editor/ClonesManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }ParrelSync}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }ClonesManager}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CloneFileName = \textcolor{stringliteral}{"{}.clone"{}};}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CloneNameSuffix = \textcolor{stringliteral}{"{}\_clone"{}};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ProjectName = \textcolor{stringliteral}{"{}ParrelSync"{}};}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MaxCloneProjectCount = 10;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ArgumentFileName = \textcolor{stringliteral}{"{}.parrelsyncarg"{}};}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} DefaultArgument = \textcolor{stringliteral}{"{}client"{}};}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{        \#region Managing clones}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keyword}{static} Project CreateCloneFromCurrent()}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{if} (IsClone())}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 Debug.LogError(\textcolor{stringliteral}{"{}This project is already a clone. Cannot clone it."{}});}
+\DoxyCodeLine{00060                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00061             \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063             \textcolor{keywordtype}{string} currentProjectPath = ClonesManager.GetCurrentProjectPath();}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{return} ClonesManager.CreateCloneFromPath(currentProjectPath);}
+\DoxyCodeLine{00065         \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keyword}{static} Project CreateCloneFromPath(\textcolor{keywordtype}{string} sourceProjectPath)}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             Project sourceProject = \textcolor{keyword}{new} Project(sourceProjectPath);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             \textcolor{keywordtype}{string} cloneProjectPath = \textcolor{keyword}{null};}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \textcolor{comment}{//Find available clone suffix id}}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < MaxCloneProjectCount; i++)}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 \textcolor{keywordtype}{string} originalProjectPath = ClonesManager.GetCurrentProject().projectPath;}
+\DoxyCodeLine{00082                 \textcolor{keywordtype}{string} possibleCloneProjectPath = originalProjectPath + ClonesManager.CloneNameSuffix + \textcolor{stringliteral}{"{}\_"{}} + i;}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (!Directory.Exists(possibleCloneProjectPath))}
+\DoxyCodeLine{00085                 \{}
+\DoxyCodeLine{00086                     cloneProjectPath = possibleCloneProjectPath;}
+\DoxyCodeLine{00087                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(cloneProjectPath))}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 Debug.LogError(\textcolor{stringliteral}{"{}The number of cloned projects has reach its limit. Limit: "{}} + MaxCloneProjectCount);}
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             Project cloneProject = \textcolor{keyword}{new} Project(cloneProjectPath);}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             Debug.Log(\textcolor{stringliteral}{"{}Start cloning project, original project: "{}} + sourceProject + \textcolor{stringliteral}{"{}, clone project: "{}} + cloneProject);}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             ClonesManager.CreateProjectFolder(cloneProject);}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             \textcolor{comment}{//Copy Folders           }}
+\DoxyCodeLine{00104             Debug.Log(\textcolor{stringliteral}{"{}Library copy: "{}} + cloneProject.libraryPath);}
+\DoxyCodeLine{00105             ClonesManager.CopyDirectoryWithProgressBar(sourceProject.libraryPath, cloneProject.libraryPath,}
+\DoxyCodeLine{00106                 \textcolor{stringliteral}{"{}Cloning Project Library '"{}} + sourceProject.name + \textcolor{stringliteral}{"{}'. "{}});}
+\DoxyCodeLine{00107             Debug.Log(\textcolor{stringliteral}{"{}Packages copy: "{}} + cloneProject.libraryPath);}
+\DoxyCodeLine{00108             ClonesManager.CopyDirectoryWithProgressBar(sourceProject.packagesPath, cloneProject.packagesPath,}
+\DoxyCodeLine{00109               \textcolor{stringliteral}{"{}Cloning Project Packages '"{}} + sourceProject.name + \textcolor{stringliteral}{"{}'. "{}});}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             \textcolor{comment}{//Link Folders}}
+\DoxyCodeLine{00113             ClonesManager.LinkFolders(sourceProject.assetPath, cloneProject.assetPath);}
+\DoxyCodeLine{00114             ClonesManager.LinkFolders(sourceProject.projectSettingsPath, cloneProject.projectSettingsPath);}
+\DoxyCodeLine{00115             ClonesManager.LinkFolders(sourceProject.autoBuildPath, cloneProject.autoBuildPath);}
+\DoxyCodeLine{00116             ClonesManager.LinkFolders(sourceProject.localPackages, cloneProject.localPackages);}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118             ClonesManager.RegisterClone(cloneProject);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             \textcolor{keywordflow}{return} cloneProject;}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00127         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterClone(Project cloneProject)}
+\DoxyCodeLine{00128         \{}
+\DoxyCodeLine{00130             \textcolor{keywordtype}{string} identifierFile = Path.Combine(cloneProject.projectPath, ClonesManager.CloneFileName);}
+\DoxyCodeLine{00131             File.Create(identifierFile).Dispose();}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{comment}{//Add argument file with default argument}}
+\DoxyCodeLine{00134             \textcolor{keywordtype}{string} argumentFilePath = Path.Combine(cloneProject.projectPath, ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00135             File.WriteAllText(argumentFilePath, DefaultArgument, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00138             \textcolor{keywordtype}{string} collabignoreFile = Path.Combine(cloneProject.projectPath, \textcolor{stringliteral}{"{}collabignore.txt"{}});}
+\DoxyCodeLine{00139             File.WriteAllText(collabignoreFile, \textcolor{stringliteral}{"{}*"{}}); }
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpenProject(\textcolor{keywordtype}{string} projectPath)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (!Directory.Exists(projectPath))}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 Debug.LogError(\textcolor{stringliteral}{"{}Cannot open the project -\/ provided folder ("{}} + projectPath + \textcolor{stringliteral}{"{}) does not exist."{}});}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00152             \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             \textcolor{keywordflow}{if} (projectPath == ClonesManager.GetCurrentProjectPath())}
+\DoxyCodeLine{00155             \{}
+\DoxyCodeLine{00156                 Debug.LogError(\textcolor{stringliteral}{"{}Cannot open the project -\/ it is already open."{}});}
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160             \textcolor{comment}{//Validate (and update if needed) the "{}Packages"{} folder before opening clone project to ensure the clone project will have the }}
+\DoxyCodeLine{00161             \textcolor{comment}{//same "{}compiling environment"{} as the original project}}
+\DoxyCodeLine{00162             ValidateCopiedFoldersIntegrity.ValidateFolder(projectPath, GetOriginalProjectPath(), \textcolor{stringliteral}{"{}Packages"{}});}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{keywordtype}{string} fileName = GetApplicationPath();}
+\DoxyCodeLine{00165             \textcolor{keywordtype}{string} args = \textcolor{stringliteral}{"{}-\/projectPath \(\backslash\)"{}"{}} + projectPath + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}};}
+\DoxyCodeLine{00166             Debug.Log(\textcolor{stringliteral}{"{}Opening project \(\backslash\)"{}"{}} + fileName + \textcolor{stringliteral}{"{} "{}} + args + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00167             ClonesManager.StartHiddenConsoleProcess(fileName, args);}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GetApplicationPath()}
+\DoxyCodeLine{00171         \{}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{switch} (Application.platform)}
+\DoxyCodeLine{00173             \{}
+\DoxyCodeLine{00174                 \textcolor{keywordflow}{case} RuntimePlatform.WindowsEditor:}
+\DoxyCodeLine{00175                     \textcolor{keywordflow}{return} EditorApplication.applicationPath;}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{case} RuntimePlatform.OSXEditor:}
+\DoxyCodeLine{00177                     \textcolor{keywordflow}{return} EditorApplication.applicationPath + \textcolor{stringliteral}{"{}/Contents/MacOS/Unity"{}};}
+\DoxyCodeLine{00178                 \textcolor{keywordflow}{case} RuntimePlatform.LinuxEditor:}
+\DoxyCodeLine{00179                     \textcolor{keywordflow}{return} EditorApplication.applicationPath;}
+\DoxyCodeLine{00180                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00181                     \textcolor{keywordflow}{throw} \textcolor{keyword}{new} System.NotImplementedException(\textcolor{stringliteral}{"{}Platform has not supported yet ;("{}});}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183         \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00190         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsCloneProjectRunning(\textcolor{keywordtype}{string} projectPath)}
+\DoxyCodeLine{00191         \{}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             \textcolor{comment}{//Determine whether it is opened in another instance by checking the UnityLockFile}}
+\DoxyCodeLine{00194             \textcolor{keywordtype}{string} UnityLockFilePath = \textcolor{keyword}{new} \textcolor{keywordtype}{string}[] \{ projectPath, \textcolor{stringliteral}{"{}Temp"{}}, \textcolor{stringliteral}{"{}UnityLockfile"{}} \}}
+\DoxyCodeLine{00195                 .Aggregate(Path.Combine);}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197             \textcolor{keywordflow}{switch} (Application.platform)}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{case} (RuntimePlatform.WindowsEditor):}
+\DoxyCodeLine{00200                     \textcolor{comment}{//Windows editor will lock "{}UnityLockfile"{} file when project is being opened.}}
+\DoxyCodeLine{00201                     \textcolor{comment}{//Sometime, for instance: windows editor crash, the "{}UnityLockfile"{} will not be deleted even the project}}
+\DoxyCodeLine{00202                     \textcolor{comment}{//isn't being opened, so a check to the "{}UnityLockfile"{} lock status may be necessary.}}
+\DoxyCodeLine{00203                     \textcolor{keywordflow}{if} (Preferences.AlsoCheckUnityLockFileStaPref.Value)}
+\DoxyCodeLine{00204                         \textcolor{keywordflow}{return} File.Exists(UnityLockFilePath) \&\& FileUtilities.IsFileLocked(UnityLockFilePath);}
+\DoxyCodeLine{00205                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00206                         \textcolor{keywordflow}{return} File.Exists(UnityLockFilePath);}
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{case} (RuntimePlatform.OSXEditor):}
+\DoxyCodeLine{00208                     \textcolor{comment}{//Mac editor won't lock "{}UnityLockfile"{} file when project is being opened}}
+\DoxyCodeLine{00209                     \textcolor{keywordflow}{return} File.Exists(UnityLockFilePath);}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{case} (RuntimePlatform.LinuxEditor):}
+\DoxyCodeLine{00211                     \textcolor{keywordflow}{return} File.Exists(UnityLockFilePath);}
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{throw} \textcolor{keyword}{new} System.NotImplementedException(\textcolor{stringliteral}{"{}IsCloneProjectRunning: Unsupport Platfrom: "{}} + Application.platform);}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DeleteClone(\textcolor{keywordtype}{string} cloneProjectPath)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (ClonesManager.IsClone()) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (cloneProjectPath == \textcolor{keywordtype}{string}.Empty) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00227             \textcolor{keywordflow}{if} (cloneProjectPath == ClonesManager.GetOriginalProjectPath()) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{comment}{//Check what OS is}}
+\DoxyCodeLine{00230             \textcolor{keywordtype}{string} identifierFile;}
+\DoxyCodeLine{00231             \textcolor{keywordtype}{string} args;}
+\DoxyCodeLine{00232             \textcolor{keywordflow}{switch} (Application.platform)}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 \textcolor{keywordflow}{case} (RuntimePlatform.WindowsEditor):}
+\DoxyCodeLine{00235                     Debug.Log(\textcolor{stringliteral}{"{}Attempting to delete folder \(\backslash\)"{}"{}} + cloneProjectPath + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237                     \textcolor{comment}{//The argument file will be deleted first at the beginning of the project deletion process }}
+\DoxyCodeLine{00238                     \textcolor{comment}{//to prevent any further reading and writing to it(There's a File.Exist() check at the (file)editor windows.)}}
+\DoxyCodeLine{00239                     \textcolor{comment}{//If there's any file in the directory being write/read during the deletion process, the directory can't be fully removed.}}
+\DoxyCodeLine{00240                     identifierFile = Path.Combine(cloneProjectPath, ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00241                     File.Delete(identifierFile);}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243                     args = \textcolor{stringliteral}{"{}/c "{}} + \textcolor{stringliteral}{@"{}rmdir /s/q "{}} + \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\(\backslash\)"{}\{0\}\(\backslash\)"{}"{}}, cloneProjectPath);}
+\DoxyCodeLine{00244                     StartHiddenConsoleProcess(\textcolor{stringliteral}{"{}cmd.exe"{}}, args);}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{case} (RuntimePlatform.OSXEditor):}
+\DoxyCodeLine{00248                     Debug.Log(\textcolor{stringliteral}{"{}Attempting to delete folder \(\backslash\)"{}"{}} + cloneProjectPath + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250                     \textcolor{comment}{//The argument file will be deleted first at the beginning of the project deletion process }}
+\DoxyCodeLine{00251                     \textcolor{comment}{//to prevent any further reading and writing to it(There's a File.Exist() check at the (file)editor windows.)}}
+\DoxyCodeLine{00252                     \textcolor{comment}{//If there's any file in the directory being write/read during the deletion process, the directory can't be fully removed.}}
+\DoxyCodeLine{00253                     identifierFile = Path.Combine(cloneProjectPath, ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00254                     File.Delete(identifierFile);}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256                     FileUtil.DeleteFileOrDirectory(cloneProjectPath);}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00259                 \textcolor{keywordflow}{case} (RuntimePlatform.LinuxEditor):}
+\DoxyCodeLine{00260                     Debug.Log(\textcolor{stringliteral}{"{}Attempting to delete folder \(\backslash\)"{}"{}} + cloneProjectPath + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00261                     identifierFile = Path.Combine(cloneProjectPath, ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00262                     File.Delete(identifierFile);}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264                     FileUtil.DeleteFileOrDirectory(cloneProjectPath);}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00267                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00268                     Debug.LogWarning(\textcolor{stringliteral}{"{}Not in a known editor. Where are you!?"{}});}
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00270             \}}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275 \textcolor{preprocessor}{        \#region Creating project folders}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00281         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateProjectFolder(Project project)}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{keywordtype}{string} path = project.projectPath;}
+\DoxyCodeLine{00284             Debug.Log(\textcolor{stringliteral}{"{}Creating new empty folder at: "{}} + path);}
+\DoxyCodeLine{00285             Directory.CreateDirectory(path);}
+\DoxyCodeLine{00286         \}}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00293         [System.Obsolete]}
+\DoxyCodeLine{00294         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CopyLibraryFolder(Project sourceProject, Project destinationProject)}
+\DoxyCodeLine{00295         \{}
+\DoxyCodeLine{00296             \textcolor{keywordflow}{if} (Directory.Exists(destinationProject.libraryPath))}
+\DoxyCodeLine{00297             \{}
+\DoxyCodeLine{00298                 Debug.LogWarning(\textcolor{stringliteral}{"{}Library copy: destination path already exists! "{}});}
+\DoxyCodeLine{00299                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00300             \}}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             Debug.Log(\textcolor{stringliteral}{"{}Library copy: "{}} + destinationProject.libraryPath);}
+\DoxyCodeLine{00303             ClonesManager.CopyDirectoryWithProgressBar(sourceProject.libraryPath, destinationProject.libraryPath,}
+\DoxyCodeLine{00304                 \textcolor{stringliteral}{"{}Cloning project '"{}} + sourceProject.name + \textcolor{stringliteral}{"{}'. "{}});}
+\DoxyCodeLine{00305         \}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309 \textcolor{preprocessor}{        \#region Creating symlinks}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00316         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateLinkMac(\textcolor{keywordtype}{string} sourcePath, \textcolor{keywordtype}{string} destinationPath)}
+\DoxyCodeLine{00317         \{}
+\DoxyCodeLine{00318             sourcePath = sourcePath.Replace(\textcolor{stringliteral}{"{} "{}}, \textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\) "{}});}
+\DoxyCodeLine{00319             destinationPath = destinationPath.Replace(\textcolor{stringliteral}{"{} "{}}, \textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\) "{}});}
+\DoxyCodeLine{00320             var command = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}ln -\/s \{0\} \{1\}"{}}, sourcePath, destinationPath);}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             Debug.Log(\textcolor{stringliteral}{"{}Mac hard link "{}} + command);}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324             ClonesManager.ExecuteBashCommand(command);}
+\DoxyCodeLine{00325         \}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00332         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateLinkLinux(\textcolor{keywordtype}{string} sourcePath, \textcolor{keywordtype}{string} destinationPath)}
+\DoxyCodeLine{00333         \{}
+\DoxyCodeLine{00334             sourcePath = sourcePath.Replace(\textcolor{stringliteral}{"{} "{}}, \textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\) "{}});}
+\DoxyCodeLine{00335             destinationPath = destinationPath.Replace(\textcolor{stringliteral}{"{} "{}}, \textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\) "{}});}
+\DoxyCodeLine{00336             var command = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}ln -\/s \{0\} \{1\}"{}}, sourcePath, destinationPath);           }
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338             Debug.Log(\textcolor{stringliteral}{"{}Linux Symlink "{}} + command);}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340             ClonesManager.ExecuteBashCommand(command);}
+\DoxyCodeLine{00341         \}}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00348         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateLinkWin(\textcolor{keywordtype}{string} sourcePath, \textcolor{keywordtype}{string} destinationPath)}
+\DoxyCodeLine{00349         \{}
+\DoxyCodeLine{00350             \textcolor{keywordtype}{string} cmd = \textcolor{stringliteral}{"{}/C mklink /J "{}} + \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\(\backslash\)"{}\{0\}\(\backslash\)"{} \(\backslash\)"{}\{1\}\(\backslash\)"{}"{}}, destinationPath, sourcePath);}
+\DoxyCodeLine{00351             Debug.Log(\textcolor{stringliteral}{"{}Windows junction: "{}} + cmd);}
+\DoxyCodeLine{00352             ClonesManager.StartHiddenConsoleProcess(\textcolor{stringliteral}{"{}cmd.exe"{}}, cmd);}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355         \textcolor{comment}{//TODO(?) avoid terminal calls and use proper api stuff. See below for windows! }}
+\DoxyCodeLine{00357 \textcolor{comment}{}        \textcolor{comment}{//[DllImport("{}kernel32.dll"{}, CharSet = CharSet.Auto, SetLastError = true)]}}
+\DoxyCodeLine{00358         \textcolor{comment}{//private static extern bool DeviceIoControl(System.IntPtr hDevice, uint dwIoControlCode,}}
+\DoxyCodeLine{00359         \textcolor{comment}{//  System.IntPtr InBuffer, int nInBufferSize,}}
+\DoxyCodeLine{00360         \textcolor{comment}{//  System.IntPtr OutBuffer, int nOutBufferSize,}}
+\DoxyCodeLine{00361         \textcolor{comment}{//  out int pBytesReturned, System.IntPtr lpOverlapped);}}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00368         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LinkFolders(\textcolor{keywordtype}{string} sourcePath, \textcolor{keywordtype}{string} destinationPath)}
+\DoxyCodeLine{00369         \{}
+\DoxyCodeLine{00370             \textcolor{keywordflow}{if} ((Directory.Exists(destinationPath) == \textcolor{keyword}{false}) \&\& (Directory.Exists(sourcePath) == \textcolor{keyword}{true}))}
+\DoxyCodeLine{00371             \{}
+\DoxyCodeLine{00372                 \textcolor{keywordflow}{switch} (Application.platform)}
+\DoxyCodeLine{00373                 \{}
+\DoxyCodeLine{00374                     \textcolor{keywordflow}{case} (RuntimePlatform.WindowsEditor):}
+\DoxyCodeLine{00375                         CreateLinkWin(sourcePath, destinationPath);}
+\DoxyCodeLine{00376                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00377                     \textcolor{keywordflow}{case} (RuntimePlatform.OSXEditor):}
+\DoxyCodeLine{00378                         CreateLinkMac(sourcePath, destinationPath);}
+\DoxyCodeLine{00379                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00380                     \textcolor{keywordflow}{case} (RuntimePlatform.LinuxEditor):}
+\DoxyCodeLine{00381                         CreateLinkLinux(sourcePath, destinationPath);}
+\DoxyCodeLine{00382                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00383                     \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00384                         Debug.LogWarning(\textcolor{stringliteral}{"{}Not in a known editor. Application.platform: "{}} + Application.platform);}
+\DoxyCodeLine{00385                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00386                 \}}
+\DoxyCodeLine{00387             \}}
+\DoxyCodeLine{00388             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00389             \{}
+\DoxyCodeLine{00390                 Debug.LogWarning(\textcolor{stringliteral}{"{}Skipping Asset link, it already exists: "{}} + destinationPath);}
+\DoxyCodeLine{00391             \}}
+\DoxyCodeLine{00392         \}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396 \textcolor{preprocessor}{        \#region Utility methods}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool}? isCloneFileExistCache = \textcolor{keyword}{null};}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00404         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsClone()}
+\DoxyCodeLine{00405         \{}
+\DoxyCodeLine{00406             \textcolor{keywordflow}{if} (isCloneFileExistCache == \textcolor{keyword}{null})}
+\DoxyCodeLine{00407             \{}
+\DoxyCodeLine{00409                 \textcolor{keywordtype}{string} cloneFilePath = Path.Combine(ClonesManager.GetCurrentProjectPath(), ClonesManager.CloneFileName);}
+\DoxyCodeLine{00410                 isCloneFileExistCache = File.Exists(cloneFilePath);}
+\DoxyCodeLine{00411             \}}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{bool})isCloneFileExistCache;}
+\DoxyCodeLine{00414         \}}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00420         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GetCurrentProjectPath()}
+\DoxyCodeLine{00421         \{}
+\DoxyCodeLine{00422             \textcolor{keywordflow}{return} Application.dataPath.Replace(\textcolor{stringliteral}{"{}/Assets"{}}, \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00423         \}}
+\DoxyCodeLine{00424 }
+\DoxyCodeLine{00429         \textcolor{keyword}{public} \textcolor{keyword}{static} Project GetCurrentProject()}
+\DoxyCodeLine{00430         \{}
+\DoxyCodeLine{00431             \textcolor{keywordtype}{string} pathString = ClonesManager.GetCurrentProjectPath();}
+\DoxyCodeLine{00432             \textcolor{keywordflow}{return} \textcolor{keyword}{new} Project(pathString);}
+\DoxyCodeLine{00433         \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00440         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GetArgument()}
+\DoxyCodeLine{00441         \{}
+\DoxyCodeLine{00442             \textcolor{keywordtype}{string} argument = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00443             \textcolor{keywordflow}{if} (IsClone())}
+\DoxyCodeLine{00444             \{}
+\DoxyCodeLine{00445                 \textcolor{keywordtype}{string} argumentFilePath = Path.Combine(GetCurrentProjectPath(), ClonesManager.ArgumentFileName);}
+\DoxyCodeLine{00446                 \textcolor{keywordflow}{if} (File.Exists(argumentFilePath))}
+\DoxyCodeLine{00447                 \{}
+\DoxyCodeLine{00448                     argument = File.ReadAllText(argumentFilePath, System.Text.Encoding.UTF8);}
+\DoxyCodeLine{00449                 \}}
+\DoxyCodeLine{00450             \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452             \textcolor{keywordflow}{return} argument;}
+\DoxyCodeLine{00453         \}}
+\DoxyCodeLine{00454 }
+\DoxyCodeLine{00461         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GetOriginalProjectPath()}
+\DoxyCodeLine{00462         \{}
+\DoxyCodeLine{00463             \textcolor{keywordflow}{if} (IsClone())}
+\DoxyCodeLine{00464             \{}
+\DoxyCodeLine{00467                 \textcolor{keywordtype}{string} cloneProjectPath = ClonesManager.GetCurrentProject().projectPath;}
+\DoxyCodeLine{00468 }
+\DoxyCodeLine{00469                 \textcolor{keywordtype}{int} index = cloneProjectPath.LastIndexOf(ClonesManager.CloneNameSuffix);}
+\DoxyCodeLine{00470                 \textcolor{keywordflow}{if} (index > 0)}
+\DoxyCodeLine{00471                 \{}
+\DoxyCodeLine{00472                     \textcolor{keywordtype}{string} originalProjectPath = cloneProjectPath.Substring(0, index);}
+\DoxyCodeLine{00473                     \textcolor{keywordflow}{if} (Directory.Exists(originalProjectPath)) \textcolor{keywordflow}{return} originalProjectPath;}
+\DoxyCodeLine{00474                 \}}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476                 \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00477             \}}
+\DoxyCodeLine{00478             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00479             \{}
+\DoxyCodeLine{00481                 \textcolor{keywordflow}{return} ClonesManager.GetCurrentProjectPath();}
+\DoxyCodeLine{00482             \}}
+\DoxyCodeLine{00483         \}}
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00489         \textcolor{keyword}{public} \textcolor{keyword}{static} List<string> GetCloneProjectsPath()}
+\DoxyCodeLine{00490         \{}
+\DoxyCodeLine{00491             List<string> projectsPath = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00492             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < MaxCloneProjectCount; i++)}
+\DoxyCodeLine{00493             \{}
+\DoxyCodeLine{00494                 \textcolor{keywordtype}{string} originalProjectPath = ClonesManager.GetCurrentProject().projectPath;}
+\DoxyCodeLine{00495                 \textcolor{keywordtype}{string} cloneProjectPath = originalProjectPath + ClonesManager.CloneNameSuffix + \textcolor{stringliteral}{"{}\_"{}} + i;}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{if} (Directory.Exists(cloneProjectPath))}
+\DoxyCodeLine{00498                     projectsPath.Add(cloneProjectPath);}
+\DoxyCodeLine{00499             \}}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501             \textcolor{keywordflow}{return} projectsPath;}
+\DoxyCodeLine{00502         \}}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00510         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CopyDirectoryWithProgressBar(\textcolor{keywordtype}{string} sourcePath, \textcolor{keywordtype}{string} destinationPath,}
+\DoxyCodeLine{00511             \textcolor{keywordtype}{string} progressBarPrefix = \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00512         \{}
+\DoxyCodeLine{00513             var source = \textcolor{keyword}{new} DirectoryInfo(sourcePath);}
+\DoxyCodeLine{00514             var destination = \textcolor{keyword}{new} DirectoryInfo(destinationPath);}
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00516             \textcolor{keywordtype}{long} totalBytes = 0;}
+\DoxyCodeLine{00517             \textcolor{keywordtype}{long} copiedBytes = 0;}
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519             ClonesManager.CopyDirectoryWithProgressBarRecursive(source, destination, ref totalBytes, ref copiedBytes,}
+\DoxyCodeLine{00520                 progressBarPrefix);}
+\DoxyCodeLine{00521             EditorUtility.ClearProgressBar();}
+\DoxyCodeLine{00522         \}}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00533         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CopyDirectoryWithProgressBarRecursive(DirectoryInfo source, DirectoryInfo destination,}
+\DoxyCodeLine{00534             ref \textcolor{keywordtype}{long} totalBytes, ref \textcolor{keywordtype}{long} copiedBytes, \textcolor{keywordtype}{string} progressBarPrefix = \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00535         \{}
+\DoxyCodeLine{00537             \textcolor{keywordflow}{if} (source.FullName.ToLower() == destination.FullName.ToLower())}
+\DoxyCodeLine{00538             \{}
+\DoxyCodeLine{00539                 Debug.LogError(\textcolor{stringliteral}{"{}Cannot copy directory into itself."{}});}
+\DoxyCodeLine{00540                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00541             \}}
+\DoxyCodeLine{00542 }
+\DoxyCodeLine{00544             \textcolor{keywordflow}{if} (totalBytes == 0)}
+\DoxyCodeLine{00545             \{}
+\DoxyCodeLine{00546                 totalBytes = ClonesManager.GetDirectorySize(source, \textcolor{keyword}{true}, progressBarPrefix);}
+\DoxyCodeLine{00547             \}}
+\DoxyCodeLine{00548 }
+\DoxyCodeLine{00550             \textcolor{keywordflow}{if} (!Directory.Exists(destination.FullName))}
+\DoxyCodeLine{00551             \{}
+\DoxyCodeLine{00552                 Directory.CreateDirectory(destination.FullName);}
+\DoxyCodeLine{00553             \}}
+\DoxyCodeLine{00554 }
+\DoxyCodeLine{00556             \textcolor{keywordflow}{foreach} (FileInfo file \textcolor{keywordflow}{in} source.GetFiles())}
+\DoxyCodeLine{00557             \{}
+\DoxyCodeLine{00558                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00559                 \{}
+\DoxyCodeLine{00560                     file.CopyTo(Path.Combine(destination.ToString(), file.Name), \textcolor{keyword}{true});}
+\DoxyCodeLine{00561                 \}}
+\DoxyCodeLine{00562                 \textcolor{keywordflow}{catch} (IOException)}
+\DoxyCodeLine{00563                 \{}
+\DoxyCodeLine{00566                 \}}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00569                 copiedBytes += file.Length;}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00572                 \textcolor{keywordtype}{float} progress = (float)copiedBytes / (\textcolor{keywordtype}{float})totalBytes;}
+\DoxyCodeLine{00573                 \textcolor{keywordtype}{bool} cancelCopy = EditorUtility.DisplayCancelableProgressBar(}
+\DoxyCodeLine{00574                     progressBarPrefix + \textcolor{stringliteral}{"{}Copying '"{}} + source.FullName + \textcolor{stringliteral}{"{}' to '"{}} + destination.FullName + \textcolor{stringliteral}{"{}'..."{}},}
+\DoxyCodeLine{00575                     \textcolor{stringliteral}{"{}("{}} + (progress * 100f).ToString(\textcolor{stringliteral}{"{}F2"{}}) + \textcolor{stringliteral}{"{}\%) Copying file '"{}} + file.Name + \textcolor{stringliteral}{"{}'..."{}},}
+\DoxyCodeLine{00576                     progress);}
+\DoxyCodeLine{00577                 \textcolor{keywordflow}{if} (cancelCopy) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00578             \}}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00581             \textcolor{keywordflow}{foreach} (DirectoryInfo sourceNestedDir \textcolor{keywordflow}{in} source.GetDirectories())}
+\DoxyCodeLine{00582             \{}
+\DoxyCodeLine{00583                 DirectoryInfo nextDestingationNestedDir = destination.CreateSubdirectory(sourceNestedDir.Name);}
+\DoxyCodeLine{00584                 ClonesManager.CopyDirectoryWithProgressBarRecursive(sourceNestedDir, nextDestingationNestedDir,}
+\DoxyCodeLine{00585                     ref totalBytes, ref copiedBytes, progressBarPrefix);}
+\DoxyCodeLine{00586             \}}
+\DoxyCodeLine{00587         \}}
+\DoxyCodeLine{00588 }
+\DoxyCodeLine{00596         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{long} GetDirectorySize(DirectoryInfo directory, \textcolor{keywordtype}{bool} includeNested = \textcolor{keyword}{false},}
+\DoxyCodeLine{00597             \textcolor{keywordtype}{string} progressBarPrefix = \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00598         \{}
+\DoxyCodeLine{00599             EditorUtility.DisplayProgressBar(progressBarPrefix + \textcolor{stringliteral}{"{}Calculating size of directories..."{}},}
+\DoxyCodeLine{00600                 \textcolor{stringliteral}{"{}Scanning '"{}} + directory.FullName + \textcolor{stringliteral}{"{}'..."{}}, 0f);}
+\DoxyCodeLine{00601 }
+\DoxyCodeLine{00603             \textcolor{keywordtype}{long} filesSize = directory.GetFiles().Sum((FileInfo file) => file.Length);}
+\DoxyCodeLine{00604 }
+\DoxyCodeLine{00606             \textcolor{keywordtype}{long} directoriesSize = 0;}
+\DoxyCodeLine{00607             \textcolor{keywordflow}{if} (includeNested)}
+\DoxyCodeLine{00608             \{}
+\DoxyCodeLine{00609                 IEnumerable<DirectoryInfo> nestedDirectories = directory.GetDirectories();}
+\DoxyCodeLine{00610                 \textcolor{keywordflow}{foreach} (DirectoryInfo nestedDir \textcolor{keywordflow}{in} nestedDirectories)}
+\DoxyCodeLine{00611                 \{}
+\DoxyCodeLine{00612                     directoriesSize += ClonesManager.GetDirectorySize(nestedDir, \textcolor{keyword}{true}, progressBarPrefix);}
+\DoxyCodeLine{00613                 \}}
+\DoxyCodeLine{00614             \}}
+\DoxyCodeLine{00615 }
+\DoxyCodeLine{00616             \textcolor{keywordflow}{return} filesSize + directoriesSize;}
+\DoxyCodeLine{00617         \}}
+\DoxyCodeLine{00618 }
+\DoxyCodeLine{00624         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} StartHiddenConsoleProcess(\textcolor{keywordtype}{string} fileName, \textcolor{keywordtype}{string} args)}
+\DoxyCodeLine{00625         \{}
+\DoxyCodeLine{00626             System.Diagnostics.Process.Start(fileName, args);}
+\DoxyCodeLine{00627         \}}
+\DoxyCodeLine{00628 }
+\DoxyCodeLine{00633         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ExecuteBashCommand(\textcolor{keywordtype}{string} command)}
+\DoxyCodeLine{00634         \{}
+\DoxyCodeLine{00635             command = command.Replace(\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}, \textcolor{stringliteral}{"{}\(\backslash\)"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00636 }
+\DoxyCodeLine{00637             var proc = \textcolor{keyword}{new} Process()}
+\DoxyCodeLine{00638             \{}
+\DoxyCodeLine{00639                 StartInfo = \textcolor{keyword}{new} ProcessStartInfo}
+\DoxyCodeLine{00640                 \{}
+\DoxyCodeLine{00641                     FileName = \textcolor{stringliteral}{"{}/bin/bash"{}},}
+\DoxyCodeLine{00642                     Arguments = \textcolor{stringliteral}{"{}-\/c \(\backslash\)"{}"{}} + command + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}},}
+\DoxyCodeLine{00643                     UseShellExecute = \textcolor{keyword}{false},}
+\DoxyCodeLine{00644                     RedirectStandardOutput = \textcolor{keyword}{true},}
+\DoxyCodeLine{00645                     RedirectStandardError = \textcolor{keyword}{true},}
+\DoxyCodeLine{00646                     CreateNoWindow = \textcolor{keyword}{true}}
+\DoxyCodeLine{00647                 \}}
+\DoxyCodeLine{00648             \};}
+\DoxyCodeLine{00649 }
+\DoxyCodeLine{00650             \textcolor{keyword}{using} (proc)}
+\DoxyCodeLine{00651             \{}
+\DoxyCodeLine{00652                 proc.Start();}
+\DoxyCodeLine{00653                 proc.WaitForExit();}
+\DoxyCodeLine{00654 }
+\DoxyCodeLine{00655                 \textcolor{keywordflow}{if} (!proc.StandardError.EndOfStream)}
+\DoxyCodeLine{00656                 \{}
+\DoxyCodeLine{00657                     UnityEngine.Debug.LogError(proc.StandardError.ReadToEnd());}
+\DoxyCodeLine{00658                 \}}
+\DoxyCodeLine{00659             \}}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661 }
+\DoxyCodeLine{00662         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OpenProjectInFileExplorer(\textcolor{keywordtype}{string} path)}
+\DoxyCodeLine{00663         \{}
+\DoxyCodeLine{00664             System.Diagnostics.Process.Start(@path);}
+\DoxyCodeLine{00665         \}}
+\DoxyCodeLine{00666 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00667     \}}
+\DoxyCodeLine{00668 \}}
+
+\end{DoxyCode}

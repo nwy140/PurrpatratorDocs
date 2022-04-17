@@ -1,0 +1,77 @@
+\doxysection{Player\+Overview\+Panel.\+cs}
+\label{_player_overview_panel_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/PlayerOverviewPanel.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/PlayerOverviewPanel.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerNumbering.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Asteroid Demo,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Player Overview Panel}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{namespace }Photon.Pun.Demo.Asteroids}
+\DoxyCodeLine{00021 \{}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerOverviewPanel : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} GameObject PlayerOverviewEntryPrefab;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{private} Dictionary<int, GameObject> playerListEntries;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             playerListEntries = \textcolor{keyword}{new} Dictionary<int, GameObject>();}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034             \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00035             \{}
+\DoxyCodeLine{00036                 GameObject entry = Instantiate(PlayerOverviewEntryPrefab);}
+\DoxyCodeLine{00037                 entry.transform.SetParent(gameObject.transform);}
+\DoxyCodeLine{00038                 entry.transform.localScale = Vector3.one;}
+\DoxyCodeLine{00039                 entry.GetComponent<Text>().color = AsteroidsGame.GetColor(p.GetPlayerNumber());}
+\DoxyCodeLine{00040                 entry.GetComponent<Text>().text = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\(\backslash\)nScore: \{1\}\(\backslash\)nLives: \{2\}"{}}, p.NickName, p.GetScore(), AsteroidsGame.PLAYER\_MAX\_LIVES);}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042                 playerListEntries.Add(p.ActorNumber, entry);}
+\DoxyCodeLine{00043             \}}
+\DoxyCodeLine{00044         \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048 \textcolor{preprocessor}{        \#region PUN CALLBACKS}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             GameObject go = \textcolor{keyword}{null};}
+\DoxyCodeLine{00053             \textcolor{keywordflow}{if} (this.playerListEntries.TryGetValue(otherPlayer.ActorNumber, out go))}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 Destroy(playerListEntries[otherPlayer.ActorNumber]);}
+\DoxyCodeLine{00056                 playerListEntries.Remove(otherPlayer.ActorNumber);}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             GameObject entry;}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (playerListEntries.TryGetValue(targetPlayer.ActorNumber, out entry))}
+\DoxyCodeLine{00064             \{}
+\DoxyCodeLine{00065                 entry.GetComponent<Text>().text = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\(\backslash\)nScore: \{1\}\(\backslash\)nLives: \{2\}"{}}, targetPlayer.NickName, targetPlayer.GetScore(), targetPlayer.CustomProperties[AsteroidsGame.PLAYER\_LIVES]);}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00070     \}}
+\DoxyCodeLine{00071 \}}
+
+\end{DoxyCode}

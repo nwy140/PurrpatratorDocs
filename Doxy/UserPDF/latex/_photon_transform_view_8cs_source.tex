@@ -1,0 +1,200 @@
+\doxysection{Photon\+Transform\+View.\+cs}
+\label{_photon_transform_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonTransformView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonTransformView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonTransformView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Component to synchronize Transforms via PUN PhotonView.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon Transform View"{}})]}
+\DoxyCodeLine{00017     [HelpURL(\textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/v2/gameplay/synchronization-\/and-\/state"{}})]}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonTransformView : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Distance;}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_Angle;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{private} Vector3 m\_Direction;}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} Vector3 m\_NetworkPosition;}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} Vector3 m\_StoredPosition;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{private} Quaternion m\_NetworkRotation;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizePosition = \textcolor{keyword}{true};}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeRotation = \textcolor{keyword}{true};}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_SynchronizeScale = \textcolor{keyword}{false};}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [Tooltip(\textcolor{stringliteral}{"{}Indicates if localPosition and localRotation should be used. Scale ignores this setting, and always uses localScale to avoid issues with lossyScale."{}})]}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} m\_UseLocal;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keywordtype}{bool} m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             m\_StoredPosition = transform.localPosition;}
+\DoxyCodeLine{00041             m\_NetworkPosition = Vector3.zero;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             m\_NetworkRotation = Quaternion.identity;}
+\DoxyCodeLine{00044         \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             \textcolor{comment}{// Only default to true with new instances. useLocal will remain false for old projects that are updating PUN.}}
+\DoxyCodeLine{00049             m\_UseLocal = \textcolor{keyword}{true};}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             m\_firstTake = \textcolor{keyword}{true};}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             var tr = transform;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (!this.photonView.IsMine)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065                 \{}
+\DoxyCodeLine{00066                     tr.localPosition = Vector3.MoveTowards(tr.localPosition, \textcolor{keyword}{this}.m\_NetworkPosition, \textcolor{keyword}{this}.m\_Distance  * Time.deltaTime * PhotonNetwork.SerializationRate);}
+\DoxyCodeLine{00067                     tr.localRotation = Quaternion.RotateTowards(tr.localRotation, \textcolor{keyword}{this}.m\_NetworkRotation, \textcolor{keyword}{this}.m\_Angle * Time.deltaTime * PhotonNetwork.SerializationRate);}
+\DoxyCodeLine{00068                 \}}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070                 \{}
+\DoxyCodeLine{00071                     tr.position = Vector3.MoveTowards(tr.position, \textcolor{keyword}{this}.m\_NetworkPosition, \textcolor{keyword}{this}.m\_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);}
+\DoxyCodeLine{00072                     tr.rotation = Quaternion.RotateTowards(tr.rotation, \textcolor{keyword}{this}.m\_NetworkRotation, \textcolor{keyword}{this}.m\_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);}
+\DoxyCodeLine{00073                 \}}
+\DoxyCodeLine{00074             \}}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             var tr = transform;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             \textcolor{comment}{// Write}}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (this.m\_SynchronizePosition)}
+\DoxyCodeLine{00085                 \{}
+\DoxyCodeLine{00086                     \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00087                     \{}
+\DoxyCodeLine{00088                         this.m\_Direction = tr.localPosition -\/ this.m\_StoredPosition;}
+\DoxyCodeLine{00089                         this.m\_StoredPosition = tr.localPosition;}
+\DoxyCodeLine{00090                         stream.SendNext(tr.localPosition);}
+\DoxyCodeLine{00091                         stream.SendNext(this.m\_Direction);}
+\DoxyCodeLine{00092                     \}}
+\DoxyCodeLine{00093                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00094                     \{}
+\DoxyCodeLine{00095                         this.m\_Direction = tr.position -\/ this.m\_StoredPosition;}
+\DoxyCodeLine{00096                         this.m\_StoredPosition = tr.position;}
+\DoxyCodeLine{00097                         stream.SendNext(tr.position);}
+\DoxyCodeLine{00098                         stream.SendNext(this.m\_Direction);}
+\DoxyCodeLine{00099                     \}}
+\DoxyCodeLine{00100                 \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{if} (this.m\_SynchronizeRotation)}
+\DoxyCodeLine{00103                 \{}
+\DoxyCodeLine{00104                     \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00105                     \{}
+\DoxyCodeLine{00106                         stream.SendNext(tr.localRotation);}
+\DoxyCodeLine{00107                     \}}
+\DoxyCodeLine{00108                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109                     \{}
+\DoxyCodeLine{00110                         stream.SendNext(tr.rotation);}
+\DoxyCodeLine{00111                     \}}
+\DoxyCodeLine{00112                 \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 \textcolor{keywordflow}{if} (this.m\_SynchronizeScale)}
+\DoxyCodeLine{00115                 \{}
+\DoxyCodeLine{00116                     stream.SendNext(tr.localScale);}
+\DoxyCodeLine{00117                 \}}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119             \textcolor{comment}{// Read}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{if} (this.m\_SynchronizePosition)}
+\DoxyCodeLine{00123                 \{}
+\DoxyCodeLine{00124                     this.m\_NetworkPosition = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00125                     this.m\_Direction = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127                     \textcolor{keywordflow}{if} (m\_firstTake)}
+\DoxyCodeLine{00128                     \{}
+\DoxyCodeLine{00129                         \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00130                             tr.localPosition = this.m\_NetworkPosition;}
+\DoxyCodeLine{00131                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00132                             tr.position = this.m\_NetworkPosition;}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                         this.m\_Distance = 0f;}
+\DoxyCodeLine{00135                     \}}
+\DoxyCodeLine{00136                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00137                     \{}
+\DoxyCodeLine{00138                         \textcolor{keywordtype}{float} lag = Mathf.Abs((\textcolor{keywordtype}{float})(PhotonNetwork.Time -\/ info.SentServerTime));}
+\DoxyCodeLine{00139                         this.m\_NetworkPosition += this.m\_Direction * lag;}
+\DoxyCodeLine{00140                         \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00141                         \{}
+\DoxyCodeLine{00142                             this.m\_Distance = Vector3.Distance(tr.localPosition, \textcolor{keyword}{this}.m\_NetworkPosition);}
+\DoxyCodeLine{00143                         \}}
+\DoxyCodeLine{00144                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00145                         \{}
+\DoxyCodeLine{00146                             this.m\_Distance = Vector3.Distance(tr.position, \textcolor{keyword}{this}.m\_NetworkPosition);}
+\DoxyCodeLine{00147                         \}}
+\DoxyCodeLine{00148                     \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150                 \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                 \textcolor{keywordflow}{if} (this.m\_SynchronizeRotation)}
+\DoxyCodeLine{00153                 \{}
+\DoxyCodeLine{00154                     this.m\_NetworkRotation = (Quaternion)stream.ReceiveNext();}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156                     \textcolor{keywordflow}{if} (m\_firstTake)}
+\DoxyCodeLine{00157                     \{}
+\DoxyCodeLine{00158                         this.m\_Angle = 0f;}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                         \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00161                         \{}
+\DoxyCodeLine{00162                             tr.localRotation = this.m\_NetworkRotation;}
+\DoxyCodeLine{00163                         \}}
+\DoxyCodeLine{00164                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165                         \{}
+\DoxyCodeLine{00166                             tr.rotation = this.m\_NetworkRotation;}
+\DoxyCodeLine{00167                         \}}
+\DoxyCodeLine{00168                     \}}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         \textcolor{keywordflow}{if} (m\_UseLocal)}
+\DoxyCodeLine{00172                         \{}
+\DoxyCodeLine{00173                             this.m\_Angle = Quaternion.Angle(tr.localRotation, \textcolor{keyword}{this}.m\_NetworkRotation);}
+\DoxyCodeLine{00174                         \}}
+\DoxyCodeLine{00175                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176                         \{}
+\DoxyCodeLine{00177                             this.m\_Angle = Quaternion.Angle(tr.rotation, \textcolor{keyword}{this}.m\_NetworkRotation);}
+\DoxyCodeLine{00178                         \}}
+\DoxyCodeLine{00179                     \}}
+\DoxyCodeLine{00180                 \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{if} (this.m\_SynchronizeScale)}
+\DoxyCodeLine{00183                 \{}
+\DoxyCodeLine{00184                     tr.localScale = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{if} (m\_firstTake)}
+\DoxyCodeLine{00188                 \{}
+\DoxyCodeLine{00189                     m\_firstTake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00190                 \}}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193     \}}
+\DoxyCodeLine{00194 \}}
+
+\end{DoxyCode}

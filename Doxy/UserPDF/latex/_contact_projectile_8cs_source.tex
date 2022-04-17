@@ -1,0 +1,185 @@
+\doxysection{Contact\+Projectile.\+cs}
+\label{_contact_projectile_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/ContactProjectile.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/ContactProjectile.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{class }ContactProjectile : MonoBehaviour}
+\DoxyCodeLine{00013         , IProjectile}
+\DoxyCodeLine{00014         , IOnPreSimulate}
+\DoxyCodeLine{00015         , IOnPreUpdate}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{protected} IProjectileCannon owner;}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} IProjectileCannon Owner \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} owner; \} \textcolor{keyword}{set} \{ owner = value; \} \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         [System.NonSerialized] \textcolor{keyword}{public} Vector3 velocity;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [System.NonSerialized] \textcolor{keyword}{public} \textcolor{keywordtype}{int} frameId;}
+\DoxyCodeLine{00023         [System.NonSerialized] \textcolor{keyword}{public} \textcolor{keywordtype}{int} subFrameId;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         [SerializeField] [EnumMask] \textcolor{keyword}{protected} RespondTo terminateOn = RespondTo.IContactTrigger | RespondTo.HitNetObj | RespondTo.HitNonNetObj;}
+\DoxyCodeLine{00028         [SerializeField] [EnumMask] \textcolor{keyword}{protected} RespondTo damageOn = RespondTo.IContactTrigger | RespondTo.HitNetObj | RespondTo.HitNonNetObj;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{comment}{// Cache}}
+\DoxyCodeLine{00033         \textcolor{keyword}{protected} Rigidbody rb;}
+\DoxyCodeLine{00034         \textcolor{keyword}{protected} Rigidbody2D rb2d;}
+\DoxyCodeLine{00035         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} \_hasRigidBody;}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} HasRigidbody \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_hasRigidBody; \} \}}
+\DoxyCodeLine{00037         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} needsSnapshot;}
+\DoxyCodeLine{00038         \textcolor{comment}{//protected IContactTrigger ownerContactTrigger;}}
+\DoxyCodeLine{00039         \textcolor{keyword}{protected} IContactTrigger localContactTrigger;}
+\DoxyCodeLine{00040         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} useRbForces, useRb2dForces, useRBGravity;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} VitalNameType VitalNameType \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{new} VitalNameType(VitalType.None); \} \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} List<IOnNetworkHit> onHit = \textcolor{keyword}{new} List<IOnNetworkHit>();}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} List<IOnTerminate> onTerminate = \textcolor{keyword}{new} List<IOnTerminate>();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00051             localContactTrigger = GetComponent<IContactTrigger>();}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{if} (ReferenceEquals(localContactTrigger, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00053                 localContactTrigger = gameObject.AddComponent<ContactTrigger>();}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             rb = GetComponentInParent<Rigidbody>();}
+\DoxyCodeLine{00060             rb2d = GetComponentInParent<Rigidbody2D>();}
+\DoxyCodeLine{00061             \_hasRigidBody = rb || rb2d;}
+\DoxyCodeLine{00062             useRbForces = rb \&\& !rb.isKinematic;}
+\DoxyCodeLine{00063             useRb2dForces = rb2d \&\& !rb2d.isKinematic;}
+\DoxyCodeLine{00064             useRBGravity = (rb \&\& rb.useGravity) || (rb2d \&\& rb.useGravity);}
+\DoxyCodeLine{00065             needsSnapshot = !\_hasRigidBody || (rb \&\& rb.isKinematic) || (rb2d \&\& rb2d.isKinematic);}
+\DoxyCodeLine{00066             localContactTrigger = GetComponent<IContactTrigger>();}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{if} (needsSnapshot)}
+\DoxyCodeLine{00070                 NetMasterCallbacks.RegisterCallbackInterfaces(\textcolor{keyword}{this});}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (\_hasRigidBody)}
+\DoxyCodeLine{00074                 NetMasterCallbacks.onPreUpdates.Remove(\textcolor{keyword}{this});}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00077             GetComponents(onHit);}
+\DoxyCodeLine{00078             GetComponents(onTerminate);}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             NetMasterCallbacks.RegisterCallbackInterfaces(\textcolor{keyword}{this}, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00084         \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} LagCompensate(\textcolor{keywordtype}{float} timeshift)}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             snapPos = transform.position + velocity * timeshift;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (rb \&\& rb.useGravity)}
+\DoxyCodeLine{00096                 velocity += Physics.gravity * timeshift;}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rb2d)}
+\DoxyCodeLine{00098                 velocity += Physics.gravity * timeshift;}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Initialize(IProjectileCannon owner, \textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId, Vector3 localVelocity, RespondTo terminateOn, RespondTo damageOn, \textcolor{keywordtype}{float} timeshift = 0)}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             this.owner = owner;}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{comment}{// Convert velocity from local to global}}
+\DoxyCodeLine{00107             this.velocity = transform.TransformDirection(localVelocity);}
+\DoxyCodeLine{00108             this.terminateOn = terminateOn;}
+\DoxyCodeLine{00109             this.damageOn = damageOn;}
+\DoxyCodeLine{00110             this.frameId = frameId;}
+\DoxyCodeLine{00111             this.subFrameId = subFrameId;}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (timeshift != 0)}
+\DoxyCodeLine{00114                 LagCompensate(timeshift);}
+\DoxyCodeLine{00115             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00116                 snapPos = transform.position;}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118             \textcolor{keywordflow}{if} (useRbForces)}
+\DoxyCodeLine{00119             \{}
+\DoxyCodeLine{00120                 \textcolor{comment}{//rb.position = transform.position;}}
+\DoxyCodeLine{00121                 rb.MovePosition(snapPos);}
+\DoxyCodeLine{00122                 rb.velocity = this.velocity;}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rb2d)}
+\DoxyCodeLine{00126             \{}
+\DoxyCodeLine{00127                 \textcolor{comment}{//rb2d.position = transform.position;}}
+\DoxyCodeLine{00128                 rb2d.MovePosition(snapPos);}
+\DoxyCodeLine{00129                 rb2d.velocity = this.velocity;}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00132             \{}
+\DoxyCodeLine{00133                 transform.position = snapPos;}
+\DoxyCodeLine{00134                 targPos = snapPos + velocity * Time.fixedDeltaTime;}
+\DoxyCodeLine{00135                 transform.position = snapPos;}
+\DoxyCodeLine{00136             \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             localContactTrigger.Proxy = owner.ContactTrigger;}
+\DoxyCodeLine{00139         \}}
+\DoxyCodeLine{00140        }
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         Vector3 snapPos, targPos;}
+\DoxyCodeLine{00143         Quaternion snapRot, targRot;}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPreSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (!useRbForces \&\& !useRb2dForces)}
+\DoxyCodeLine{00149                 SimulateTime(Time.fixedDeltaTime);}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SimulateTime(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00153         \{}
+\DoxyCodeLine{00154             var oldtarget = targPos;}
+\DoxyCodeLine{00155             targPos = oldtarget + velocity * t;}
+\DoxyCodeLine{00156             snapPos = oldtarget;}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (useRb2dForces)}
+\DoxyCodeLine{00159                 velocity += Physics.gravity * rb2d.gravityScale * t;}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00161                 velocity += Physics.gravity * t;}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163             Interpolate(0);}
+\DoxyCodeLine{00164         \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPreUpdate()}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (!useRbForces \&\& !useRb2dForces)}
+\DoxyCodeLine{00170                 Interpolate(NetMaster.NormTimeSinceFixed);}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Interpolate(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00174         \{}
+\DoxyCodeLine{00175             transform.position = Vector3.Lerp(snapPos, targPos, t);}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 \textcolor{preprocessor}{        \#region Hit Triggers}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{protected} \textcolor{keyword}{static} List<NetObject> reusableNetObjects = \textcolor{keyword}{new} List<NetObject>();}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00185         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Terminate()}
+\DoxyCodeLine{00186         \{}
+\DoxyCodeLine{00187             Debug.Log(\textcolor{stringliteral}{"{}Terminate"{}});}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = onTerminate.Count; i < cnt; ++i)}
+\DoxyCodeLine{00189                 onTerminate[i].OnTerminate();}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191             gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00195     \}}
+\DoxyCodeLine{00196 \}}
+
+\end{DoxyCode}

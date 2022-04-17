@@ -1,0 +1,164 @@
+\doxysection{Readme\+Editor.\+cs}
+\label{_tutorial_info_2_scripts_2_editor_2_readme_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 [CustomEditor(typeof(Readme))]}
+\DoxyCodeLine{00010 [InitializeOnLoad]}
+\DoxyCodeLine{00011 \textcolor{keyword}{public} \textcolor{keyword}{class }ReadmeEditor : Editor \{}
+\DoxyCodeLine{00012     }
+\DoxyCodeLine{00013     \textcolor{keyword}{static} \textcolor{keywordtype}{string} kShowedReadmeSessionStateName = \textcolor{stringliteral}{"{}ReadmeEditor.showedReadme"{}};}
+\DoxyCodeLine{00014     }
+\DoxyCodeLine{00015     \textcolor{keyword}{static} \textcolor{keywordtype}{float} kSpace = 16f;}
+\DoxyCodeLine{00016     }
+\DoxyCodeLine{00017     \textcolor{keyword}{static} ReadmeEditor()}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         EditorApplication.delayCall += SelectReadmeAutomatically;}
+\DoxyCodeLine{00020     \}}
+\DoxyCodeLine{00021     }
+\DoxyCodeLine{00022     \textcolor{keyword}{static} \textcolor{keywordtype}{void} SelectReadmeAutomatically()}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keywordflow}{if} (!SessionState.GetBool(kShowedReadmeSessionStateName, \textcolor{keyword}{false} ))}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             var readme = SelectReadme();}
+\DoxyCodeLine{00027             SessionState.SetBool(kShowedReadmeSessionStateName, \textcolor{keyword}{true});}
+\DoxyCodeLine{00028             }
+\DoxyCodeLine{00029             \textcolor{keywordflow}{if} (readme \&\& !readme.loadedLayout)}
+\DoxyCodeLine{00030             \{}
+\DoxyCodeLine{00031                 LoadLayout();}
+\DoxyCodeLine{00032                 readme.loadedLayout = \textcolor{keyword}{true};}
+\DoxyCodeLine{00033             \}}
+\DoxyCodeLine{00034         \} }
+\DoxyCodeLine{00035     \}}
+\DoxyCodeLine{00036     }
+\DoxyCodeLine{00037     \textcolor{keyword}{static} \textcolor{keywordtype}{void} LoadLayout()}
+\DoxyCodeLine{00038     \{}
+\DoxyCodeLine{00039         var assembly = typeof(EditorApplication).Assembly; }
+\DoxyCodeLine{00040         var windowLayoutType = assembly.GetType(\textcolor{stringliteral}{"{}UnityEditor.WindowLayout"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00041         var method = windowLayoutType.GetMethod(\textcolor{stringliteral}{"{}LoadWindowLayout"{}}, BindingFlags.Public | BindingFlags.Static);}
+\DoxyCodeLine{00042         method.Invoke(\textcolor{keyword}{null}, \textcolor{keyword}{new} \textcolor{keywordtype}{object}[]\{Path.Combine(Application.dataPath, \textcolor{stringliteral}{"{}TutorialInfo/Layout.wlt"{}}), \textcolor{keyword}{false}\});}
+\DoxyCodeLine{00043     \}}
+\DoxyCodeLine{00044     }
+\DoxyCodeLine{00045     [MenuItem(\textcolor{stringliteral}{"{}Tutorial/Show Tutorial Instructions"{}})]}
+\DoxyCodeLine{00046     \textcolor{keyword}{static} Readme SelectReadme() }
+\DoxyCodeLine{00047     \{}
+\DoxyCodeLine{00048         var ids = AssetDatabase.FindAssets(\textcolor{stringliteral}{"{}Readme t:Readme"{}});}
+\DoxyCodeLine{00049         \textcolor{keywordflow}{if} (ids.Length == 1)}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             var readmeObject = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(ids[0]));}
+\DoxyCodeLine{00052             }
+\DoxyCodeLine{00053             Selection.objects = \textcolor{keyword}{new} UnityEngine.Object[]\{readmeObject\};}
+\DoxyCodeLine{00054             }
+\DoxyCodeLine{00055             \textcolor{keywordflow}{return} (Readme)readmeObject;}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             Debug.Log(\textcolor{stringliteral}{"{}Couldn't find a readme"{}});}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062     \}}
+\DoxyCodeLine{00063     }
+\DoxyCodeLine{00064     \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnHeaderGUI()}
+\DoxyCodeLine{00065     \{}
+\DoxyCodeLine{00066         var readme = (Readme)target;}
+\DoxyCodeLine{00067         Init();}
+\DoxyCodeLine{00068         }
+\DoxyCodeLine{00069         var iconWidth = Mathf.Min(EditorGUIUtility.currentViewWidth/3f -\/ 20f, 128f);}
+\DoxyCodeLine{00070         }
+\DoxyCodeLine{00071         GUILayout.BeginHorizontal(\textcolor{stringliteral}{"{}In BigTitle"{}});}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073             GUILayout.Label(readme.icon, GUILayout.Width(iconWidth), GUILayout.Height(iconWidth));}
+\DoxyCodeLine{00074             GUILayout.Label(readme.title, TitleStyle);}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076         GUILayout.EndHorizontal();}
+\DoxyCodeLine{00077     \}}
+\DoxyCodeLine{00078     }
+\DoxyCodeLine{00079     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00080     \{}
+\DoxyCodeLine{00081         var readme = (Readme)target;}
+\DoxyCodeLine{00082         Init();}
+\DoxyCodeLine{00083         }
+\DoxyCodeLine{00084         \textcolor{keywordflow}{foreach} (var section \textcolor{keywordflow}{in} readme.sections)}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(section.heading))}
+\DoxyCodeLine{00087             \{}
+\DoxyCodeLine{00088                 GUILayout.Label(section.heading, HeadingStyle);}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(section.text))}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 GUILayout.Label(section.text, BodyStyle);}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(section.linkText))}
+\DoxyCodeLine{00095             \{}
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{if} (LinkLabel(\textcolor{keyword}{new} GUIContent(section.linkText)))}
+\DoxyCodeLine{00097                 \{}
+\DoxyCodeLine{00098                     Application.OpenURL(section.url);}
+\DoxyCodeLine{00099                 \}}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101             GUILayout.Space(kSpace);}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103     \}}
+\DoxyCodeLine{00104     }
+\DoxyCodeLine{00105     }
+\DoxyCodeLine{00106     \textcolor{keywordtype}{bool} m\_Initialized;}
+\DoxyCodeLine{00107     }
+\DoxyCodeLine{00108     GUIStyle LinkStyle \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_LinkStyle; \} \}}
+\DoxyCodeLine{00109     [SerializeField] GUIStyle m\_LinkStyle;}
+\DoxyCodeLine{00110     }
+\DoxyCodeLine{00111     GUIStyle TitleStyle \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_TitleStyle; \} \}}
+\DoxyCodeLine{00112     [SerializeField] GUIStyle m\_TitleStyle;}
+\DoxyCodeLine{00113     }
+\DoxyCodeLine{00114     GUIStyle HeadingStyle \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_HeadingStyle; \} \}}
+\DoxyCodeLine{00115     [SerializeField] GUIStyle m\_HeadingStyle;}
+\DoxyCodeLine{00116     }
+\DoxyCodeLine{00117     GUIStyle BodyStyle \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_BodyStyle; \} \}}
+\DoxyCodeLine{00118     [SerializeField] GUIStyle m\_BodyStyle;}
+\DoxyCodeLine{00119     }
+\DoxyCodeLine{00120     \textcolor{keywordtype}{void} Init()}
+\DoxyCodeLine{00121     \{}
+\DoxyCodeLine{00122         \textcolor{keywordflow}{if} (m\_Initialized)}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00124         m\_BodyStyle = \textcolor{keyword}{new} GUIStyle(EditorStyles.label);}
+\DoxyCodeLine{00125         m\_BodyStyle.wordWrap = \textcolor{keyword}{true};}
+\DoxyCodeLine{00126         m\_BodyStyle.fontSize = 14;}
+\DoxyCodeLine{00127         }
+\DoxyCodeLine{00128         m\_TitleStyle = \textcolor{keyword}{new} GUIStyle(m\_BodyStyle);}
+\DoxyCodeLine{00129         m\_TitleStyle.fontSize = 26;}
+\DoxyCodeLine{00130         }
+\DoxyCodeLine{00131         m\_HeadingStyle = \textcolor{keyword}{new} GUIStyle(m\_BodyStyle);}
+\DoxyCodeLine{00132         m\_HeadingStyle.fontSize = 18 ;}
+\DoxyCodeLine{00133         }
+\DoxyCodeLine{00134         m\_LinkStyle = \textcolor{keyword}{new} GUIStyle(m\_BodyStyle);}
+\DoxyCodeLine{00135         m\_LinkStyle.wordWrap = \textcolor{keyword}{false};}
+\DoxyCodeLine{00136         \textcolor{comment}{// Match selection color which works nicely for both light and dark skins}}
+\DoxyCodeLine{00137         m\_LinkStyle.normal.textColor = \textcolor{keyword}{new} Color (0x00/255f, 0x78/255f, 0xDA/255f, 1f);}
+\DoxyCodeLine{00138         m\_LinkStyle.stretchWidth = \textcolor{keyword}{false};}
+\DoxyCodeLine{00139         }
+\DoxyCodeLine{00140         m\_Initialized = \textcolor{keyword}{true};}
+\DoxyCodeLine{00141     \}}
+\DoxyCodeLine{00142     }
+\DoxyCodeLine{00143     \textcolor{keywordtype}{bool} LinkLabel (GUIContent label, params GUILayoutOption[] options)}
+\DoxyCodeLine{00144     \{}
+\DoxyCodeLine{00145         var position = GUILayoutUtility.GetRect(label, LinkStyle, options);}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147         Handles.BeginGUI ();}
+\DoxyCodeLine{00148         Handles.color = LinkStyle.normal.textColor;}
+\DoxyCodeLine{00149         Handles.DrawLine (\textcolor{keyword}{new} Vector3(position.xMin, position.yMax), \textcolor{keyword}{new} Vector3(position.xMax, position.yMax));}
+\DoxyCodeLine{00150         Handles.color = Color.white;}
+\DoxyCodeLine{00151         Handles.EndGUI ();}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         EditorGUIUtility.AddCursorRect (position, MouseCursor.Link);}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155         \textcolor{keywordflow}{return} GUI.Button (position, label, LinkStyle);}
+\DoxyCodeLine{00156     \}}
+\DoxyCodeLine{00157 \}}
+\DoxyCodeLine{00158 }
+
+\end{DoxyCode}

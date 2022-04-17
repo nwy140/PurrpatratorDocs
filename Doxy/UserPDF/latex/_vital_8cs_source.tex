@@ -1,0 +1,235 @@
+\doxysection{Vital.\+cs}
+\label{_vital_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/Vital.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/Vital.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011     [System.Serializable]}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{class }Vital\textcolor{comment}{/* : IVital*/}}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014         [SerializeField]}
+\DoxyCodeLine{00015         \textcolor{keyword}{private} VitalDefinition vitalDef;}
+\DoxyCodeLine{00016         \textcolor{keyword}{public} VitalDefinition VitalDef \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalDef; \} \}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018         [System.NonSerialized]}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} VitalData vitalData;}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} VitalData VitalData \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalData; \} \textcolor{keyword}{private} \textcolor{keyword}{set} \{ vitalData = value; \} \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keywordtype}{double} Value}
+\DoxyCodeLine{00023         \{}
+\DoxyCodeLine{00024             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalData.Value; \}}
+\DoxyCodeLine{00025             \textcolor{keyword}{set}}
+\DoxyCodeLine{00026             \{}
+\DoxyCodeLine{00027                 \textcolor{keywordflow}{if} (value == \textcolor{keywordtype}{double}.NegativeInfinity)}
+\DoxyCodeLine{00028                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030                 \textcolor{keywordtype}{double} prev = vitalData.Value;}
+\DoxyCodeLine{00031                 \textcolor{keywordtype}{double} clamped = System.Math.Max(System.Math.Min(value, vitalDef.MaxValue), 0);}
+\DoxyCodeLine{00032                 vitalData.Value = clamped;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{if} (prev != clamped)}
+\DoxyCodeLine{00036                 \{}
+\DoxyCodeLine{00037                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < OnValueChangeCallbacks.Count; ++i)}
+\DoxyCodeLine{00038                         OnValueChangeCallbacks[i].OnVitalValueChange(\textcolor{keyword}{this});}
+\DoxyCodeLine{00039                 \}}
+\DoxyCodeLine{00040             \}}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{int} TicksUntilDecay \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalData.ticksUntilDecay; \} \textcolor{keyword}{set} \{ vitalData.ticksUntilDecay = value; \} \}}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keywordtype}{int} TicksUntilRegen \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalData.ticksUntilRegen; \} \textcolor{keyword}{set} \{ vitalData.ticksUntilRegen = value; \} \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} Vital(VitalDefinition vitalDef)}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             this.vitalDef = vitalDef;}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Initialize(\textcolor{keywordtype}{float} tickDuration)}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             vitalDef.Initialize(tickDuration);}
+\DoxyCodeLine{00054             ResetValues();}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetValues()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             vitalData = vitalDef.GetDefaultData();}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < OnValueChangeCallbacks.Count; ++i)}
+\DoxyCodeLine{00063                 OnValueChangeCallbacks[i].OnVitalValueChange(\textcolor{keyword}{this});}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 \textcolor{preprocessor}{        \#region Outgoing OnChange Callbacks}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} List<IOnVitalValueChange> OnValueChangeCallbacks = \textcolor{keyword}{new} List<IOnVitalValueChange>(0);}
+\DoxyCodeLine{00070         \textcolor{keyword}{public} List<IOnVitalParamChange> OnParamChangeCallbacks = \textcolor{keyword}{new} List<IOnVitalParamChange>(0);}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddIOnVitalChange(IOnVitalChange cb)}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             var vc = cb as IOnVitalValueChange;}
+\DoxyCodeLine{00075             \textcolor{keywordflow}{if} (!ReferenceEquals(\textcolor{keyword}{null}, vc))}
+\DoxyCodeLine{00076                 OnValueChangeCallbacks.Add(vc);}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             var pc = cb as IOnVitalParamChange;}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (!ReferenceEquals(\textcolor{keyword}{null}, pc))}
+\DoxyCodeLine{00081                 OnParamChangeCallbacks.Add(pc);}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RemoveIOnVitalChange(IOnVitalChange cb)}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             var vc = cb as IOnVitalValueChange;}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (!ReferenceEquals(\textcolor{keyword}{null}, vc))}
+\DoxyCodeLine{00087                 OnValueChangeCallbacks.Remove(vc);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             var pc = cb as IOnVitalParamChange;}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (!ReferenceEquals(\textcolor{keyword}{null}, pc))}
+\DoxyCodeLine{00091                 OnParamChangeCallbacks.Remove(pc);}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(VitalData vdata)}
+\DoxyCodeLine{00097         \{}
+\DoxyCodeLine{00098             Value = vdata.Value;}
+\DoxyCodeLine{00099             vitalData.ticksUntilDecay = vdata.ticksUntilDecay;}
+\DoxyCodeLine{00100             vitalData.ticksUntilRegen = vdata.ticksUntilRegen;}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyCharges(\textcolor{keywordtype}{double} amt, \textcolor{keywordtype}{bool} allowOverload, \textcolor{keywordtype}{bool} ignoreAbsorbtion)}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             \textcolor{keywordtype}{double} absorbed = ignoreAbsorbtion ? amt : amt * vitalDef.Absorbtion;}
+\DoxyCodeLine{00109             \textcolor{keywordtype}{double} holdval = Value;}
+\DoxyCodeLine{00110             \textcolor{keywordtype}{double} resultVal = holdval + absorbed;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (allowOverload == \textcolor{keyword}{false})}
+\DoxyCodeLine{00113                 resultVal = System.Math.Min(resultVal, vitalDef.FullValue);}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             Value = resultVal;}
+\DoxyCodeLine{00116             \textcolor{keywordtype}{double} consumed = Value -\/ holdval;}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118             \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsFull(\textcolor{keywordtype}{bool} allowOverload)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{return} Value >= ((allowOverload) ? vitalDef.MaxValue : vitalDef.FullValue);}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00134 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyChange(IVitalsContactReactor iVitalsAffector, ContactEvent contectEvent)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{keywordtype}{double} discharge = iVitalsAffector.DischargeValue(contectEvent.contactType);}
+\DoxyCodeLine{00137             \textcolor{keywordflow}{return} ApplyChange(discharge, iVitalsAffector);}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyChange(\textcolor{keywordtype}{double} amount, IVitalsContactReactor reactor = \textcolor{keyword}{null})}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             \textcolor{keywordtype}{double} oldval = vitalData.Value;}
+\DoxyCodeLine{00146             \textcolor{keywordtype}{double} newval = vitalData.Value + amount;}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (!ReferenceEquals(reactor, \textcolor{keyword}{null}) \&\& reactor.AllowOverload)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 \textcolor{keywordtype}{double} maxValue = vitalDef.MaxValue;}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                 \textcolor{keywordflow}{if} (oldval >= maxValue)}
+\DoxyCodeLine{00153                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{if} (newval > maxValue)}
+\DoxyCodeLine{00156                     newval = maxValue;}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 \textcolor{keywordtype}{double} fullValue = vitalDef.FullValue;}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{if} (oldval >= fullValue)}
+\DoxyCodeLine{00163                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{if} (newval > fullValue)}
+\DoxyCodeLine{00166                     newval = fullValue;}
+\DoxyCodeLine{00167             \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             Value = newval;}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             \textcolor{keywordtype}{double} diff = newval -\/ oldval;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00174             \textcolor{comment}{//if (diff > 0)}}
+\DoxyCodeLine{00175             \textcolor{comment}{//    DisruptDecay();}}
+\DoxyCodeLine{00176             \textcolor{comment}{//else if (diff < 0)}}
+\DoxyCodeLine{00177             \textcolor{comment}{//    DisruptRegen();}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             \textcolor{keywordflow}{return} diff;}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DisruptRegen()}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             vitalData.ticksUntilRegen = vitalDef.RegenDelayInTicks;}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DisruptDecay()}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             vitalData.ticksUntilDecay = vitalDef.DecayDelayInTicks;}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         \textcolor{keyword}{public} \textcolor{keywordtype}{double} TestApplyChange(IVitalsContactReactor iVitalsAffector, ContactEvent contactEvent)}
+\DoxyCodeLine{00193         \{}
+\DoxyCodeLine{00194             \textcolor{keywordtype}{double} charge = iVitalsAffector.DischargeValue(contactEvent.contactType);}
+\DoxyCodeLine{00195             \textcolor{keywordflow}{return} TestApplyChange(charge, iVitalsAffector);}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00200         \textcolor{keyword}{public} \textcolor{keywordtype}{double} TestApplyChange(\textcolor{keywordtype}{double} charge, IVitalsContactReactor iVitalsAffector)}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             \textcolor{keywordtype}{double} oldval = vitalData.Value;}
+\DoxyCodeLine{00203             \textcolor{keywordtype}{double} newval = vitalData.Value + charge;}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (!ReferenceEquals(iVitalsAffector, \textcolor{keyword}{null}) \&\& iVitalsAffector.AllowOverload)}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 \textcolor{keywordtype}{double} maxValue = vitalDef.MaxValue;}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{if} (oldval >= maxValue)}
+\DoxyCodeLine{00210                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{if} (newval > maxValue)}
+\DoxyCodeLine{00213                     newval = maxValue;}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 \textcolor{keywordtype}{double} fullValue = vitalDef.MaxValue;}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 \textcolor{keywordflow}{if} (oldval >= fullValue)}
+\DoxyCodeLine{00220                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222                 \textcolor{keywordflow}{if} (newval > fullValue)}
+\DoxyCodeLine{00223                     newval = fullValue;}
+\DoxyCodeLine{00224             \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordtype}{double} diff = newval -\/ oldval;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keywordflow}{return} diff;}
+\DoxyCodeLine{00229         \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00235         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Simulate()}
+\DoxyCodeLine{00236         \{}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (vitalData.ticksUntilRegen > 0)}
+\DoxyCodeLine{00239                 vitalData.ticksUntilRegen-\/-\/;}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (vitalData.Value < vitalDef.FullValue)}
+\DoxyCodeLine{00241                 Value = System.Math.Min(vitalData.Value + vitalDef.RegenPerTick, vitalDef.FullValue);}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00244             \textcolor{keywordflow}{if} (vitalData.ticksUntilDecay > 0)}
+\DoxyCodeLine{00245                 vitalData.ticksUntilDecay-\/-\/;}
+\DoxyCodeLine{00246             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (vitalData.Value > vitalDef.FullValue)}
+\DoxyCodeLine{00247                 Value = System.Math.Max(vitalData.Value -\/ vitalDef.DecayPerTick, vitalDef.FullValue);}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251     \}}
+\DoxyCodeLine{00252 \}}
+\DoxyCodeLine{00253 }
+
+\end{DoxyCode}

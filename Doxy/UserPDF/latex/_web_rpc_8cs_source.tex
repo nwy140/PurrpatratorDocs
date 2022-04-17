@@ -1,0 +1,159 @@
+\doxysection{Web\+Rpc.\+cs}
+\label{_web_rpc_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/WebRpc.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/WebRpc.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}WebRpc.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   This class wraps responses of a Photon WebRPC call, coming from a}}
+\DoxyCodeLine{00007 \textcolor{comment}{//   third party web service.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00025 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00034     \textcolor{keyword}{public} \textcolor{keyword}{class }WebRpcResponse}
+\DoxyCodeLine{00035     \{}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Name \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ResultCode \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00046         [System.Obsolete(\textcolor{stringliteral}{"{}Use ResultCode instead"{}})]}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ReturnCode}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ResultCode; \}}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Message \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00054         [System.Obsolete(\textcolor{stringliteral}{"{}Use Message instead"{}})]}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{string} DebugMessage}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Message; \}}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} Dictionary<string, object> Parameters \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} WebRpcResponse(OperationResponse response)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             \textcolor{keywordtype}{object} value;}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (response.Parameters.TryGetValue(ParameterCode.UriPath, out value))}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 this.Name = value as string;}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             this.ResultCode = -\/1;}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (response.Parameters.TryGetValue(ParameterCode.WebRpcReturnCode, out value))}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 this.ResultCode = (byte)value;}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (response.Parameters.TryGetValue(ParameterCode.WebRpcParameters, out value))}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 this.Parameters = value as Dictionary<string, object>;}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (response.Parameters.TryGetValue(ParameterCode.WebRpcReturnMessage, out value))}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 this.Message = value as string;}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ToStringFull()}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}=\{2\}: \{1\} \(\backslash\)"{}\{3\}\(\backslash\)"{}"{}}, this.Name, SupportClass.DictionaryToString(\textcolor{keyword}{this}.Parameters), \textcolor{keyword}{this}.ResultCode, \textcolor{keyword}{this}.Message);}
+\DoxyCodeLine{00095         \}}
+\DoxyCodeLine{00096     \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00103     \textcolor{keyword}{public} \textcolor{keyword}{class }WebFlags}
+\DoxyCodeLine{00104     \{}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} WebFlags Default = \textcolor{keyword}{new} WebFlags(0);}
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} WebhookFlags;}
+\DoxyCodeLine{00111         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} HttpForward}
+\DoxyCodeLine{00112         \{}
+\DoxyCodeLine{00113             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (WebhookFlags \& HttpForwardConst) != 0; \}}
+\DoxyCodeLine{00114             \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00116                 \{}
+\DoxyCodeLine{00117                     WebhookFlags |= HttpForwardConst;}
+\DoxyCodeLine{00118                 \}}
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00120                 \{}
+\DoxyCodeLine{00121                     WebhookFlags = (byte) (WebhookFlags \& \string~(1 << 0));}
+\DoxyCodeLine{00122                 \}}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124         \}}
+\DoxyCodeLine{00125         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} HttpForwardConst = 0x01;}
+\DoxyCodeLine{00129         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SendAuthCookie}
+\DoxyCodeLine{00130         \{}
+\DoxyCodeLine{00131             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (WebhookFlags \& SendAuthCookieConst) != 0; \}}
+\DoxyCodeLine{00132             \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00134                 \{}
+\DoxyCodeLine{00135                     WebhookFlags |= SendAuthCookieConst;}
+\DoxyCodeLine{00136                 \}}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00138                 \{}
+\DoxyCodeLine{00139                     WebhookFlags = (byte)(WebhookFlags \& \string~(1 << 1));}
+\DoxyCodeLine{00140                 \}}
+\DoxyCodeLine{00141             \}}
+\DoxyCodeLine{00142         \}}
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SendAuthCookieConst = 0x02;}
+\DoxyCodeLine{00147         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SendSync}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (WebhookFlags \& SendSyncConst) != 0; \}}
+\DoxyCodeLine{00150             \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00152                 \{}
+\DoxyCodeLine{00153                     WebhookFlags |= SendSyncConst;}
+\DoxyCodeLine{00154                 \}}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00156                 \{}
+\DoxyCodeLine{00157                     WebhookFlags = (byte)(WebhookFlags \& \string~(1 << 2));}
+\DoxyCodeLine{00158                 \}}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SendSyncConst = 0x04;}
+\DoxyCodeLine{00165         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SendState}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (WebhookFlags \& SendStateConst) != 0; \}}
+\DoxyCodeLine{00168             \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{if} (value)}
+\DoxyCodeLine{00170                 \{}
+\DoxyCodeLine{00171                     WebhookFlags |= SendStateConst;}
+\DoxyCodeLine{00172                 \}}
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00174                 \{}
+\DoxyCodeLine{00175                     WebhookFlags = (byte)(WebhookFlags \& \string~(1 << 3));}
+\DoxyCodeLine{00176                 \}}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SendStateConst = 0x08;}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{keyword}{public} WebFlags(\textcolor{keywordtype}{byte} webhookFlags)}
+\DoxyCodeLine{00182         \{}
+\DoxyCodeLine{00183             WebhookFlags = webhookFlags;}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185     \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187 \}}
+
+\end{DoxyCode}

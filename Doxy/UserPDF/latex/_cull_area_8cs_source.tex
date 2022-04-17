@@ -1,0 +1,373 @@
+\doxysection{Cull\+Area.\+cs}
+\label{_cull_area_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullArea.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullArea.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CullArea.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Represents the cull area used for network culling.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }CullArea : MonoBehaviour}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAX\_NUMBER\_OF\_ALLOWED\_CELLS = 250;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAX\_NUMBER\_OF\_SUBDIVISIONS = 3;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00034         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{byte} FIRST\_GROUP\_ID = 1;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int}[] SUBDIVISION\_FIRST\_LEVEL\_ORDER = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[4] \{ 0, 1, 1, 1 \};}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int}[] SUBDIVISION\_SECOND\_LEVEL\_ORDER = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[8] \{ 0, 2, 1, 2, 0, 2, 1, 2 \};}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int}[] SUBDIVISION\_THIRD\_LEVEL\_ORDER = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[12] \{ 0, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3 \};}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{keyword}{public} Vector2 Center;}
+\DoxyCodeLine{00071         \textcolor{keyword}{public} Vector2 Size = \textcolor{keyword}{new} Vector2(25.0f, 25.0f);}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keyword}{public} Vector2[] Subdivisions = \textcolor{keyword}{new} Vector2[MAX\_NUMBER\_OF\_SUBDIVISIONS];}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{int} NumberOfSubdivisions;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CellCount \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{public} CellTree CellTree \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} Dictionary<int, GameObject> Map \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} YIsUpAxis = \textcolor{keyword}{false};}
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} RecreateCellHierarchy = \textcolor{keyword}{false};}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keywordtype}{byte} idCounter;}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00091         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             this.idCounter = this.FIRST\_GROUP\_ID;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             this.CreateCellHierarchy();}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDrawGizmos()}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             this.idCounter = this.FIRST\_GROUP\_ID;}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (this.RecreateCellHierarchy)}
+\DoxyCodeLine{00106             \{}
+\DoxyCodeLine{00107                 this.CreateCellHierarchy();}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             this.DrawCells();}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00116         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CreateCellHierarchy()}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             \textcolor{keywordflow}{if} (!this.IsCellCountAllowed())}
+\DoxyCodeLine{00119             \{}
+\DoxyCodeLine{00120                 \textcolor{keywordflow}{if} (Debug.isDebugBuild)}
+\DoxyCodeLine{00121                 \{}
+\DoxyCodeLine{00122                     Debug.LogError(\textcolor{stringliteral}{"{}There are too many cells created by your subdivision options. Maximum allowed number of cells is "{}} + (MAX\_NUMBER\_OF\_ALLOWED\_CELLS -\/ this.FIRST\_GROUP\_ID) +}
+\DoxyCodeLine{00123                                    \textcolor{stringliteral}{"{}. Current number of cells is "{}} + this.CellCount + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00124                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00125                 \}}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00127                 \{}
+\DoxyCodeLine{00128                     Application.Quit();}
+\DoxyCodeLine{00129                 \}}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132             CellTreeNode rootNode = \textcolor{keyword}{new} CellTreeNode(this.idCounter++, CellTreeNode.ENodeType.Root, \textcolor{keyword}{null});}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (this.YIsUpAxis)}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 this.Center = \textcolor{keyword}{new} Vector2(transform.position.x, transform.position.y);}
+\DoxyCodeLine{00137                 this.Size = \textcolor{keyword}{new} Vector2(transform.localScale.x, transform.localScale.y);}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                 rootNode.Center = \textcolor{keyword}{new} Vector3(this.Center.x, \textcolor{keyword}{this}.Center.y, 0.0f);}
+\DoxyCodeLine{00140                 rootNode.Size = \textcolor{keyword}{new} Vector3(this.Size.x, \textcolor{keyword}{this}.Size.y, 0.0f);}
+\DoxyCodeLine{00141                 rootNode.TopLeft = \textcolor{keyword}{new} Vector3((this.Center.x -\/ (\textcolor{keyword}{this}.Size.x / 2.0f)), (\textcolor{keyword}{this}.Center.y -\/ (\textcolor{keyword}{this}.Size.y / 2.0f)), 0.0f);}
+\DoxyCodeLine{00142                 rootNode.BottomRight = \textcolor{keyword}{new} Vector3((this.Center.x + (\textcolor{keyword}{this}.Size.x / 2.0f)), (\textcolor{keyword}{this}.Center.y + (\textcolor{keyword}{this}.Size.y / 2.0f)), 0.0f);}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00145             \{}
+\DoxyCodeLine{00146                 this.Center = \textcolor{keyword}{new} Vector2(transform.position.x, transform.position.z);}
+\DoxyCodeLine{00147                 this.Size = \textcolor{keyword}{new} Vector2(transform.localScale.x, transform.localScale.z);}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149                 rootNode.Center = \textcolor{keyword}{new} Vector3(this.Center.x, 0.0f, \textcolor{keyword}{this}.Center.y);}
+\DoxyCodeLine{00150                 rootNode.Size = \textcolor{keyword}{new} Vector3(this.Size.x, 0.0f, \textcolor{keyword}{this}.Size.y);}
+\DoxyCodeLine{00151                 rootNode.TopLeft = \textcolor{keyword}{new} Vector3((this.Center.x -\/ (\textcolor{keyword}{this}.Size.x / 2.0f)), 0.0f, (\textcolor{keyword}{this}.Center.y -\/ (\textcolor{keyword}{this}.Size.y / 2.0f)));}
+\DoxyCodeLine{00152                 rootNode.BottomRight = \textcolor{keyword}{new} Vector3((this.Center.x + (\textcolor{keyword}{this}.Size.x / 2.0f)), 0.0f, (\textcolor{keyword}{this}.Center.y + (\textcolor{keyword}{this}.Size.y / 2.0f)));}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             this.CreateChildCells(rootNode, 1);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             this.CellTree = \textcolor{keyword}{new} CellTree(rootNode);}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             this.RecreateCellHierarchy = \textcolor{keyword}{false};}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00167         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CreateChildCells(CellTreeNode parent, \textcolor{keywordtype}{int} cellLevelInHierarchy)}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (cellLevelInHierarchy > this.NumberOfSubdivisions)}
+\DoxyCodeLine{00170             \{}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00172             \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordtype}{int} rowCount = (int)this.Subdivisions[(cellLevelInHierarchy -\/ 1)].x;}
+\DoxyCodeLine{00175             \textcolor{keywordtype}{int} columnCount = (int)this.Subdivisions[(cellLevelInHierarchy -\/ 1)].y;}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177             \textcolor{keywordtype}{float} startX = parent.Center.x -\/ (parent.Size.x / 2.0f);}
+\DoxyCodeLine{00178             \textcolor{keywordtype}{float} width = parent.Size.x / rowCount;}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} row = 0; row < rowCount; ++row)}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} column = 0; column < columnCount; ++column)}
+\DoxyCodeLine{00183                 \{}
+\DoxyCodeLine{00184                     \textcolor{keywordtype}{float} xPos = startX + (row * width) + (width / 2.0f);}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186                     CellTreeNode node = \textcolor{keyword}{new} CellTreeNode(this.idCounter++, (this.NumberOfSubdivisions == cellLevelInHierarchy) ? CellTreeNode.ENodeType.Leaf : CellTreeNode.ENodeType.Node, parent);}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188                     \textcolor{keywordflow}{if} (this.YIsUpAxis)}
+\DoxyCodeLine{00189                     \{}
+\DoxyCodeLine{00190                         \textcolor{keywordtype}{float} startY = parent.Center.y -\/ (parent.Size.y / 2.0f);}
+\DoxyCodeLine{00191                         \textcolor{keywordtype}{float} height = parent.Size.y / columnCount;}
+\DoxyCodeLine{00192                         \textcolor{keywordtype}{float} yPos = startY + (column * height) + (height / 2.0f);}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194                         node.Center = \textcolor{keyword}{new} Vector3(xPos, yPos, 0.0f);}
+\DoxyCodeLine{00195                         node.Size = \textcolor{keyword}{new} Vector3(width, height, 0.0f);}
+\DoxyCodeLine{00196                         node.TopLeft = \textcolor{keyword}{new} Vector3(xPos -\/ (width / 2.0f), yPos -\/ (height / 2.0f), 0.0f);}
+\DoxyCodeLine{00197                         node.BottomRight = \textcolor{keyword}{new} Vector3(xPos + (width / 2.0f), yPos + (height / 2.0f), 0.0f);}
+\DoxyCodeLine{00198                     \}}
+\DoxyCodeLine{00199                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00200                     \{}
+\DoxyCodeLine{00201                         \textcolor{keywordtype}{float} startZ = parent.Center.z -\/ (parent.Size.z / 2.0f);}
+\DoxyCodeLine{00202                         \textcolor{keywordtype}{float} depth = parent.Size.z / columnCount;}
+\DoxyCodeLine{00203                         \textcolor{keywordtype}{float} zPos = startZ + (column * depth) + (depth / 2.0f);}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205                         node.Center = \textcolor{keyword}{new} Vector3(xPos, 0.0f, zPos);}
+\DoxyCodeLine{00206                         node.Size = \textcolor{keyword}{new} Vector3(width, 0.0f, depth);}
+\DoxyCodeLine{00207                         node.TopLeft = \textcolor{keyword}{new} Vector3(xPos -\/ (width / 2.0f), 0.0f, zPos -\/ (depth / 2.0f));}
+\DoxyCodeLine{00208                         node.BottomRight = \textcolor{keyword}{new} Vector3(xPos + (width / 2.0f), 0.0f, zPos + (depth / 2.0f));}
+\DoxyCodeLine{00209                     \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                     parent.AddChild(node);}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213                     this.CreateChildCells(node, (cellLevelInHierarchy + 1));}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00215             \}}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00221         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawCells()}
+\DoxyCodeLine{00222         \{}
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} ((this.CellTree != \textcolor{keyword}{null}) \&\& (this.CellTree.RootNode != \textcolor{keyword}{null}))}
+\DoxyCodeLine{00224             \{}
+\DoxyCodeLine{00225                 this.CellTree.RootNode.Draw();}
+\DoxyCodeLine{00226             \}}
+\DoxyCodeLine{00227             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00228             \{}
+\DoxyCodeLine{00229                 this.RecreateCellHierarchy = \textcolor{keyword}{true};}
+\DoxyCodeLine{00230             \}}
+\DoxyCodeLine{00231         \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00237         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} IsCellCountAllowed()}
+\DoxyCodeLine{00238         \{}
+\DoxyCodeLine{00239             \textcolor{keywordtype}{int} horizontalCells = 1;}
+\DoxyCodeLine{00240             \textcolor{keywordtype}{int} verticalCells = 1;}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242             \textcolor{keywordflow}{foreach} (Vector2 v \textcolor{keywordflow}{in} this.Subdivisions)}
+\DoxyCodeLine{00243             \{}
+\DoxyCodeLine{00244                 horizontalCells *= (int)v.x;}
+\DoxyCodeLine{00245                 verticalCells *= (\textcolor{keywordtype}{int})v.y;}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             this.CellCount = horizontalCells * verticalCells;}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             \textcolor{keywordflow}{return} (this.CellCount <= (MAX\_NUMBER\_OF\_ALLOWED\_CELLS -\/ this.FIRST\_GROUP\_ID));}
+\DoxyCodeLine{00251         \}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00258         \textcolor{keyword}{public} List<byte> GetActiveCells(Vector3 position)}
+\DoxyCodeLine{00259         \{}
+\DoxyCodeLine{00260             List<byte> activeCells = \textcolor{keyword}{new} List<byte>(0);}
+\DoxyCodeLine{00261             this.CellTree.RootNode.GetActiveCells(activeCells, this.YIsUpAxis, position);}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263             \textcolor{comment}{// it makes sense to sort the "{}nearby"{} cells. those are in the list in positions after the subdivisions the point is inside. 2 subdivisions result in 3 areas the point is in.}}
+\DoxyCodeLine{00264             \textcolor{keywordtype}{int} cellsActive = this.NumberOfSubdivisions + 1;}
+\DoxyCodeLine{00265             \textcolor{keywordtype}{int} cellsNearby = activeCells.Count -\/ cellsActive;}
+\DoxyCodeLine{00266             \textcolor{keywordflow}{if} (cellsNearby > 0)}
+\DoxyCodeLine{00267             \{}
+\DoxyCodeLine{00268                 activeCells.Sort(cellsActive, cellsNearby, \textcolor{keyword}{new} ByteComparer());}
+\DoxyCodeLine{00269             \}}
+\DoxyCodeLine{00270             \textcolor{keywordflow}{return} activeCells;}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272     \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00277     \textcolor{keyword}{public} \textcolor{keyword}{class }CellTree}
+\DoxyCodeLine{00278     \{}
+\DoxyCodeLine{00282         \textcolor{keyword}{public} CellTreeNode RootNode \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00287         \textcolor{keyword}{public} CellTree()}
+\DoxyCodeLine{00288         \{}
+\DoxyCodeLine{00289         \}}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00295         \textcolor{keyword}{public} CellTree(CellTreeNode root)}
+\DoxyCodeLine{00296         \{}
+\DoxyCodeLine{00297             this.RootNode = root;}
+\DoxyCodeLine{00298         \}}
+\DoxyCodeLine{00299     \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00304     \textcolor{keyword}{public} \textcolor{keyword}{class }CellTreeNode}
+\DoxyCodeLine{00305     \{}
+\DoxyCodeLine{00306         \textcolor{keyword}{public} \textcolor{keyword}{enum} ENodeType : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{00307         \{}
+\DoxyCodeLine{00308             Root = 0,}
+\DoxyCodeLine{00309             Node = 1,}
+\DoxyCodeLine{00310             Leaf = 2}
+\DoxyCodeLine{00311         \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00316         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} Id;}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00322         \textcolor{keyword}{public} Vector3 Center, Size, TopLeft, BottomRight;}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00327         \textcolor{keyword}{public} ENodeType NodeType;}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00332         \textcolor{keyword}{public} CellTreeNode Parent;}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00337         \textcolor{keyword}{public} List<CellTreeNode> Childs;}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00343         \textcolor{keyword}{private} \textcolor{keywordtype}{float} maxDistance;}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00348         \textcolor{keyword}{public} CellTreeNode()}
+\DoxyCodeLine{00349         \{}
+\DoxyCodeLine{00350         \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00358         \textcolor{keyword}{public} CellTreeNode(\textcolor{keywordtype}{byte} \textcolor{keywordtype}{id}, ENodeType nodeType, CellTreeNode parent)}
+\DoxyCodeLine{00359         \{}
+\DoxyCodeLine{00360             this.Id = id;}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             this.NodeType = nodeType;}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364             this.Parent = parent;}
+\DoxyCodeLine{00365         \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00371         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddChild(CellTreeNode child)}
+\DoxyCodeLine{00372         \{}
+\DoxyCodeLine{00373             \textcolor{keywordflow}{if} (this.Childs == \textcolor{keyword}{null})}
+\DoxyCodeLine{00374             \{}
+\DoxyCodeLine{00375                 this.Childs = \textcolor{keyword}{new} List<CellTreeNode>(1);}
+\DoxyCodeLine{00376             \}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378             this.Childs.Add(child);}
+\DoxyCodeLine{00379         \}}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00384         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Draw()}
+\DoxyCodeLine{00385         \{}
+\DoxyCodeLine{00386 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00387         \textcolor{keywordflow}{if} (this.Childs != \textcolor{keyword}{null})}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             \textcolor{keywordflow}{foreach} (CellTreeNode node \textcolor{keywordflow}{in} this.Childs)}
+\DoxyCodeLine{00390             \{}
+\DoxyCodeLine{00391                 node.Draw();}
+\DoxyCodeLine{00392             \}}
+\DoxyCodeLine{00393         \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395         Gizmos.color = \textcolor{keyword}{new} Color((this.NodeType == ENodeType.Root) ? 1 : 0, (\textcolor{keyword}{this}.NodeType == ENodeType.Node) ? 1 : 0, (\textcolor{keyword}{this}.NodeType == ENodeType.Leaf) ? 1 : 0);}
+\DoxyCodeLine{00396         Gizmos.DrawWireCube(this.Center, this.Size);}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398         \textcolor{keywordtype}{byte} offset = (byte)this.NodeType;}
+\DoxyCodeLine{00399         GUIStyle gs = \textcolor{keyword}{new} GUIStyle() \{ fontStyle = FontStyle.Bold \};}
+\DoxyCodeLine{00400         gs.normal.textColor = Gizmos.color;}
+\DoxyCodeLine{00401         UnityEditor.Handles.Label(this.Center+(Vector3.forward*offset*1f), \textcolor{keyword}{this}.Id.ToString(), gs);}
+\DoxyCodeLine{00402 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00403         \}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00411         \textcolor{keyword}{public} \textcolor{keywordtype}{void} GetActiveCells(List<byte> activeCells, \textcolor{keywordtype}{bool} yIsUpAxis, Vector3 position)}
+\DoxyCodeLine{00412         \{}
+\DoxyCodeLine{00413             \textcolor{keywordflow}{if} (this.NodeType != ENodeType.Leaf)}
+\DoxyCodeLine{00414             \{}
+\DoxyCodeLine{00415                 \textcolor{keywordflow}{foreach} (CellTreeNode node \textcolor{keywordflow}{in} this.Childs)}
+\DoxyCodeLine{00416                 \{}
+\DoxyCodeLine{00417                     node.GetActiveCells(activeCells, yIsUpAxis, position);}
+\DoxyCodeLine{00418                 \}}
+\DoxyCodeLine{00419             \}}
+\DoxyCodeLine{00420             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00421             \{}
+\DoxyCodeLine{00422                 \textcolor{keywordflow}{if} (this.IsPointNearCell(yIsUpAxis, position))}
+\DoxyCodeLine{00423                 \{}
+\DoxyCodeLine{00424                     \textcolor{keywordflow}{if} (this.IsPointInsideCell(yIsUpAxis, position))}
+\DoxyCodeLine{00425                     \{}
+\DoxyCodeLine{00426                         activeCells.Insert(0, this.Id);}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428                         CellTreeNode p = this.Parent;}
+\DoxyCodeLine{00429                         \textcolor{keywordflow}{while} (p != \textcolor{keyword}{null})}
+\DoxyCodeLine{00430                         \{}
+\DoxyCodeLine{00431                             activeCells.Insert(0, p.Id);}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433                             p = p.Parent;}
+\DoxyCodeLine{00434                         \}}
+\DoxyCodeLine{00435                     \}}
+\DoxyCodeLine{00436                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00437                     \{}
+\DoxyCodeLine{00438                         activeCells.Add(this.Id);}
+\DoxyCodeLine{00439                     \}}
+\DoxyCodeLine{00440                 \}}
+\DoxyCodeLine{00441             \}}
+\DoxyCodeLine{00442         \}}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00450         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsPointInsideCell(\textcolor{keywordtype}{bool} yIsUpAxis, Vector3 point)}
+\DoxyCodeLine{00451         \{}
+\DoxyCodeLine{00452             \textcolor{keywordflow}{if} ((point.x < \textcolor{keyword}{this}.TopLeft.x) || (point.x > \textcolor{keyword}{this}.BottomRight.x))}
+\DoxyCodeLine{00453             \{}
+\DoxyCodeLine{00454                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00455             \}}
+\DoxyCodeLine{00456 }
+\DoxyCodeLine{00457             \textcolor{keywordflow}{if} (yIsUpAxis)}
+\DoxyCodeLine{00458             \{}
+\DoxyCodeLine{00459                 \textcolor{keywordflow}{if} ((point.y >= \textcolor{keyword}{this}.TopLeft.y) \&\& (point.y <= \textcolor{keyword}{this}.BottomRight.y))}
+\DoxyCodeLine{00460                 \{}
+\DoxyCodeLine{00461                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00462                 \}}
+\DoxyCodeLine{00463             \}}
+\DoxyCodeLine{00464             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00465             \{}
+\DoxyCodeLine{00466                 \textcolor{keywordflow}{if} ((point.z >= \textcolor{keyword}{this}.TopLeft.z) \&\& (point.z <= \textcolor{keyword}{this}.BottomRight.z))}
+\DoxyCodeLine{00467                 \{}
+\DoxyCodeLine{00468                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00469                 \}}
+\DoxyCodeLine{00470             \}}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00481         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsPointNearCell(\textcolor{keywordtype}{bool} yIsUpAxis, Vector3 point)}
+\DoxyCodeLine{00482         \{}
+\DoxyCodeLine{00483             \textcolor{keywordflow}{if} (this.maxDistance == 0.0f)}
+\DoxyCodeLine{00484             \{}
+\DoxyCodeLine{00485                 this.maxDistance = (this.Size.x + this.Size.y + this.Size.z) / 2.0f;}
+\DoxyCodeLine{00486             \}}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488             \textcolor{keywordflow}{return} ((point -\/ this.Center).sqrMagnitude <= (this.maxDistance * this.maxDistance));}
+\DoxyCodeLine{00489         \}}
+\DoxyCodeLine{00490     \}}
+\DoxyCodeLine{00491 }
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493     \textcolor{keyword}{public} \textcolor{keyword}{class }ByteComparer : IComparer<byte>}
+\DoxyCodeLine{00494     \{}
+\DoxyCodeLine{00496         \textcolor{keyword}{public} \textcolor{keywordtype}{int} Compare(\textcolor{keywordtype}{byte} x, \textcolor{keywordtype}{byte} y)}
+\DoxyCodeLine{00497         \{}
+\DoxyCodeLine{00498             \textcolor{keywordflow}{return} x == y ? 0 : x < y ? -\/1 : 1;}
+\DoxyCodeLine{00499         \}}
+\DoxyCodeLine{00500     \}}
+\DoxyCodeLine{00501 \}}
+
+\end{DoxyCode}

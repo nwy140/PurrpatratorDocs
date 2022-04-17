@@ -1,0 +1,532 @@
+\doxysection{Vitals\+Contact\+Reactor.\+cs}
+\label{_vitals_contact_reactor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsContactReactor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsContactReactor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Pun.Simple.Assists;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalsContactReactor : ContactReactorBase}
+\DoxyCodeLine{00018         , IOnContactEvent}
+\DoxyCodeLine{00019         , IVitalsContactReactor}
+\DoxyCodeLine{00020         , IOnStateChange}
+\DoxyCodeLine{00021     \textcolor{comment}{//, IOnContact}}
+\DoxyCodeLine{00022     \textcolor{comment}{// , IOnPickup}}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{preprocessor}{        \#region Presets}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00028         \textcolor{comment}{//public Enum Preset \{ HealthPickup, DamageZone, WeaponMelee, WeaponCannon, WeaponScan \}}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} VitalsContactReactor UsePreset(Preset preset)}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             \textcolor{keywordflow}{switch} (preset)}
+\DoxyCodeLine{00033             \{}
+\DoxyCodeLine{00034                 \textcolor{keywordflow}{case} Preset.HealthPickup:}
+\DoxyCodeLine{00035                     \{}
+\DoxyCodeLine{00036                         PresetPickup();}
+\DoxyCodeLine{00037                         triggerOn = ContactType.Enter | ContactType.Hitscan;}
+\DoxyCodeLine{00038                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00039                     \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041                 \textcolor{keywordflow}{case} Preset.RechargeZone:}
+\DoxyCodeLine{00042                     \{}
+\DoxyCodeLine{00043                         PresetRechargeZone();}
+\DoxyCodeLine{00044                         triggerOn = ContactType.Enter | ContactType.Stay;}
+\DoxyCodeLine{00045                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00046                     \}}
+\DoxyCodeLine{00047                 \textcolor{keywordflow}{case} Preset.DamageZone:}
+\DoxyCodeLine{00048                     \{}
+\DoxyCodeLine{00049                         PresetDamageZone();}
+\DoxyCodeLine{00050                         triggerOn = ContactType.Enter | ContactType.Stay;}
+\DoxyCodeLine{00051                         consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00052                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00053                     \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{case} Preset.WeaponMelee:}
+\DoxyCodeLine{00056                     \{}
+\DoxyCodeLine{00057                         PresetWeapon();}
+\DoxyCodeLine{00058                         triggerOn = ContactType.Enter | ContactType.Stay;}
+\DoxyCodeLine{00059                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00060                     \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062                 \textcolor{keywordflow}{case} Preset.WeaponCannon:}
+\DoxyCodeLine{00063                     \{}
+\DoxyCodeLine{00064                         PresetWeapon();}
+\DoxyCodeLine{00065                         triggerOn = ContactType.Enter;}
+\DoxyCodeLine{00066                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00067                     \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{case} Preset.WeaponScan:}
+\DoxyCodeLine{00070                     \{}
+\DoxyCodeLine{00071                         PresetWeapon();}
+\DoxyCodeLine{00072                         triggerOn = ContactType.Hitscan;}
+\DoxyCodeLine{00073                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00074                     \}}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076             \textcolor{keywordflow}{return} \textcolor{keyword}{this};}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{private} \textcolor{keywordtype}{void} PresetWeapon()}
+\DoxyCodeLine{00080         \{}
+\DoxyCodeLine{00081             vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.None);}
+\DoxyCodeLine{00082             allowOverload = \textcolor{keyword}{false};}
+\DoxyCodeLine{00083             dischargeOnEnter = -\/20;}
+\DoxyCodeLine{00084             dischargePerSec = -\/20;}
+\DoxyCodeLine{00085             dischargeOnExit = -\/20;}
+\DoxyCodeLine{00086             dischargeOnScan = -\/20;}
+\DoxyCodeLine{00087             propagate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00088             useCharges = \textcolor{keyword}{false};}
+\DoxyCodeLine{00089             isPickup = \textcolor{keyword}{false};}
+\DoxyCodeLine{00090             consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keyword}{private} \textcolor{keywordtype}{void} PresetRechargeZone()}
+\DoxyCodeLine{00094         \{}
+\DoxyCodeLine{00095             vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.Health);}
+\DoxyCodeLine{00096             allowOverload = \textcolor{keyword}{true};}
+\DoxyCodeLine{00097             dischargeOnEnter = 20;}
+\DoxyCodeLine{00098             dischargePerSec = 20;}
+\DoxyCodeLine{00099             dischargeOnExit = 20;}
+\DoxyCodeLine{00100             dischargeOnScan = 20;}
+\DoxyCodeLine{00101             useCharges = \textcolor{keyword}{false};}
+\DoxyCodeLine{00102             isPickup = \textcolor{keyword}{false};}
+\DoxyCodeLine{00103             consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{private} \textcolor{keywordtype}{void} PresetDamageZone()}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.None);}
+\DoxyCodeLine{00109             allowOverload = \textcolor{keyword}{false};}
+\DoxyCodeLine{00110             dischargeOnEnter = -\/20;}
+\DoxyCodeLine{00111             dischargePerSec = -\/20;}
+\DoxyCodeLine{00112             dischargeOnExit = -\/20;}
+\DoxyCodeLine{00113             dischargeOnScan = -\/20;}
+\DoxyCodeLine{00114             propagate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00115             useCharges = \textcolor{keyword}{false};}
+\DoxyCodeLine{00116             isPickup = \textcolor{keyword}{false};}
+\DoxyCodeLine{00117             consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{private} \textcolor{keywordtype}{void} PresetPickup()}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.Health);}
+\DoxyCodeLine{00123             allowOverload = \textcolor{keyword}{true};}
+\DoxyCodeLine{00124             dischargeOnEnter = 20;}
+\DoxyCodeLine{00125             dischargePerSec = 20;}
+\DoxyCodeLine{00126             dischargeOnExit = 20;}
+\DoxyCodeLine{00127             dischargeOnScan = 20;}
+\DoxyCodeLine{00128             initialCharges = 100;}
+\DoxyCodeLine{00129             useCharges = \textcolor{keyword}{false};}
+\DoxyCodeLine{00130             isPickup = \textcolor{keyword}{true};}
+\DoxyCodeLine{00131             consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{private} \textcolor{keywordtype}{void} PresetWell()}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.Health);}
+\DoxyCodeLine{00137             allowOverload = \textcolor{keyword}{false};}
+\DoxyCodeLine{00138             dischargeOnEnter = 20;}
+\DoxyCodeLine{00139             dischargePerSec = 20;}
+\DoxyCodeLine{00140             dischargeOnExit = 20;}
+\DoxyCodeLine{00141             dischargeOnScan = 20;}
+\DoxyCodeLine{00142             useCharges = \textcolor{keyword}{true};}
+\DoxyCodeLine{00143             isPickup = \textcolor{keyword}{false};}
+\DoxyCodeLine{00144             consumeDespawn = Consumption.All;}
+\DoxyCodeLine{00145         \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00148 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152         [SerializeField]}
+\DoxyCodeLine{00153         [HideInInspector]}
+\DoxyCodeLine{00154         \textcolor{keyword}{protected} VitalNameType vitalNameType = \textcolor{keyword}{new} VitalNameType(VitalType.Health);}
+\DoxyCodeLine{00155         \textcolor{keyword}{virtual} \textcolor{keyword}{public} VitalNameType VitalNameType \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{new} VitalNameType(VitalType.None); \} \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         \textcolor{comment}{//[HideInInspector] public ContactType triggerOn = ContactType.Enter | ContactType.Stay | ContactType.Exit | ContactType.Hitscan;}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{double} dischargeOnEnter = 20;}
+\DoxyCodeLine{00160         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{double} dischargeOnExit = 20;}
+\DoxyCodeLine{00161         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{double} dischargeOnScan = 20;}
+\DoxyCodeLine{00162         [SerializeField]}
+\DoxyCodeLine{00163         [HideInInspector] \textcolor{keyword}{protected} \textcolor{keywordtype}{double} dischargePerSec = 20;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         \textcolor{keyword}{public} \textcolor{keywordtype}{double} DischargePerSec}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             \textcolor{keyword}{get}}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{return} dischargePerSec;}
+\DoxyCodeLine{00170             \}}
+\DoxyCodeLine{00171             \textcolor{keyword}{internal} \textcolor{keyword}{set}}
+\DoxyCodeLine{00172             \{}
+\DoxyCodeLine{00173                 valuePerFixed = value * Time.fixedDeltaTime;}
+\DoxyCodeLine{00174                 dischargePerSec = value;}
+\DoxyCodeLine{00175             \}}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         \textcolor{comment}{// TODO: make this an enum, and allow it to propagate up or down the stack.}}
+\DoxyCodeLine{00179         [Tooltip(\textcolor{stringliteral}{"{}Unconsumed values (remainders) should be passed through to the next vital in the stack of vitals."{}})]}
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} propagate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00181         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} Propagate}
+\DoxyCodeLine{00182         \{}
+\DoxyCodeLine{00183             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} propagate; \}}
+\DoxyCodeLine{00184             \textcolor{keyword}{set} \{ propagate = value; \}}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} allowOverload = \textcolor{keyword}{false};}
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AllowOverload}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} allowOverload; \}}
+\DoxyCodeLine{00191             \textcolor{keyword}{set} \{ allowOverload = value; \}}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194         [SerializeField]}
+\DoxyCodeLine{00195         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} isPickup = \textcolor{keyword}{true};}
+\DoxyCodeLine{00196         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} IsPickup \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} isPickup; \} \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198 \textcolor{preprocessor}{        \#region Charges}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00201         [Internal.HideNextX(2, \textcolor{keyword}{false})]}
+\DoxyCodeLine{00202         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} useCharges;}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         [Utilities.DisableField]}
+\DoxyCodeLine{00205         \textcolor{keyword}{public} \textcolor{keywordtype}{double} \_charges = 50;}
+\DoxyCodeLine{00206 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00207         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} useCharges;}
+\DoxyCodeLine{00208         \textcolor{keyword}{public} \textcolor{keywordtype}{double} \_charges = 50;}
+\DoxyCodeLine{00209 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         [Tooltip(\textcolor{stringliteral}{"{}The Charges value that will be set on initialization, and whenever this object respawns."{}})]}
+\DoxyCodeLine{00212         [SerializeField] \textcolor{keyword}{protected} \textcolor{keywordtype}{double} initialCharges = 50;}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{double} Charges}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_charges; \}}
+\DoxyCodeLine{00217             \textcolor{comment}{//set}}
+\DoxyCodeLine{00218             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00219             \textcolor{comment}{//    if (\_charges == value)}}
+\DoxyCodeLine{00220             \textcolor{comment}{//        return;}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{comment}{//    // Clamp incoming value to zero}}
+\DoxyCodeLine{00223             \textcolor{comment}{//    var clamped = (initialCharges >= 0) ? System.Math.Max(value, 0) : System.Math.Min(value, 0);}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             \textcolor{comment}{//    \_charges = clamped;}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             \textcolor{comment}{//    if (useCharges \&\& clamped != initialCharges)}}
+\DoxyCodeLine{00228             \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00229             \textcolor{comment}{//        Consumption consumed = (clamped == 0) ? Consumption.All : Consumption.Partial;}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             \textcolor{comment}{//        Consume(consumed);}}
+\DoxyCodeLine{00232             \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00233             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236         \textcolor{keyword}{public} \textcolor{keyword}{virtual} Consumption ConsumeCharges(\textcolor{keywordtype}{double} amount)}
+\DoxyCodeLine{00237         \{}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (amount == 0)}
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{comment}{// Clamp incoming value to zero}}
+\DoxyCodeLine{00242             \textcolor{keywordtype}{double} unclamped = \_charges -\/ amount;}
+\DoxyCodeLine{00243             var clamped = ((initialCharges >= 0) ? System.Math.Max(unclamped, 0) : System.Math.Min(unclamped, 0));}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245             \_charges = clamped;}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordflow}{if} (\textcolor{comment}{/*useCharges \&\& */}clamped != initialCharges)}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00249                 \textcolor{keywordflow}{return} (clamped == 0) ? Consumption.All : Consumption.Partial;}
+\DoxyCodeLine{00250             \}}
+\DoxyCodeLine{00251             \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00252         \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Consume(Consumption consumed)}
+\DoxyCodeLine{00255         \{}
+\DoxyCodeLine{00256             \textcolor{keywordflow}{if} (consumed == Consumption.None)}
+\DoxyCodeLine{00257                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{comment}{// Despawn if we have consumed enough to trigger consumeDespawn}}
+\DoxyCodeLine{00260             \textcolor{keywordflow}{if} (consumeDespawn != Consumption.None \&\& syncState != \textcolor{keyword}{null})}
+\DoxyCodeLine{00261             \{}
+\DoxyCodeLine{00262                 \textcolor{comment}{// If all was consumed, trigger despawn in both cases}}
+\DoxyCodeLine{00263                 \textcolor{keywordflow}{if} (consumed == Consumption.All)}
+\DoxyCodeLine{00264                     syncState.Despawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266                 \textcolor{comment}{// consumed == partial -\/ despawn if consumeDespawn also is set to partial.}}
+\DoxyCodeLine{00267                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (consumeDespawn == Consumption.Partial)}
+\DoxyCodeLine{00268                 \{}
+\DoxyCodeLine{00269                     syncState.Despawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00270                 \}}
+\DoxyCodeLine{00271             \}}
+\DoxyCodeLine{00272         \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276         \textcolor{keyword}{public} Consumption consumeDespawn = Consumption.None;}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{comment}{// cached}}
+\DoxyCodeLine{00281         \textcolor{keyword}{protected} \textcolor{keywordtype}{double} valuePerFixed;}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwakeInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00284         \{}
+\DoxyCodeLine{00285             base.OnAwakeInitialize(isNetObject);}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             valuePerFixed = dischargePerSec * Time.fixedDeltaTime;}
+\DoxyCodeLine{00288         \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290         \textcolor{keyword}{protected} \textcolor{keyword}{override} Consumption ProcessContactEvent(ContactEvent contactEvent)}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292             \textcolor{comment}{//Debug.Log("{}Process "{} + contactEvent + "{} -\/-\/  "{} + (contactEvent.contactSystem as IVitalsSystem));}}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294             \textcolor{comment}{//double consumed;}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296             var system = (contactEvent.contactSystem as IVitalsSystem);}
+\DoxyCodeLine{00297             \textcolor{keywordflow}{if} (system == \textcolor{keyword}{null})}
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300             \textcolor{keywordtype}{double} value = GetValueForTriggerType(contactEvent.contactType);}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             \textcolor{comment}{//if (vitalNameType.type == VitalType.None)}}
+\DoxyCodeLine{00303             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00304             \textcolor{comment}{//    consumed = system.Vitals.ApplyCharges(vitalNameType, value, allowOverload, propagate);}}
+\DoxyCodeLine{00305             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00306             \textcolor{comment}{//else}}
+\DoxyCodeLine{00307             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00308             \textcolor{comment}{//    Vital vital = system.Vitals.GetVital(vitalNameType);}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310             \textcolor{comment}{//    if (ReferenceEquals(vital, null))}}
+\DoxyCodeLine{00311             \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00312             \textcolor{comment}{//        Debug.LogWarning("{}No matching Vital found."{});}}
+\DoxyCodeLine{00313             \textcolor{comment}{//        return Consumption.None;}}
+\DoxyCodeLine{00314             \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316             \textcolor{comment}{//    //consumed = vital.ApplyChange(value, this);}}
+\DoxyCodeLine{00317             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319             \textcolor{keywordtype}{double} consumed = system.Vitals.ApplyCharges(vitalNameType, value, allowOverload, propagate);}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321             Consumption consumption;}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             \textcolor{keywordflow}{if} (useCharges)}
+\DoxyCodeLine{00324             \{}
+\DoxyCodeLine{00325                 consumption = ConsumeCharges(consumed);}
+\DoxyCodeLine{00326             \}}
+\DoxyCodeLine{00327             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (consumed != 0)}
+\DoxyCodeLine{00328             \{}
+\DoxyCodeLine{00329                 \textcolor{keywordflow}{if} (consumed == value)}
+\DoxyCodeLine{00330                 \{}
+\DoxyCodeLine{00331                     consumption = Consumption.All;}
+\DoxyCodeLine{00332                 \}}
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00334                 \{}
+\DoxyCodeLine{00335                     consumption = Consumption.Partial;}
+\DoxyCodeLine{00336                 \}}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338                 Consume(consumption);}
+\DoxyCodeLine{00339             \}}
+\DoxyCodeLine{00340             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00341             \{}
+\DoxyCodeLine{00342                 \textcolor{comment}{//Debug.LogWarning("{}Reactor not consumed."{});}}
+\DoxyCodeLine{00343                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00344             \}}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00348             \textcolor{comment}{//var onContact = transform.GetComponent<IOnPickup>();}}
+\DoxyCodeLine{00349             \textcolor{comment}{//Debug.Log("{}POST 2 "{} + (onContact != null));}}
+\DoxyCodeLine{00350 }
+\DoxyCodeLine{00351             \textcolor{comment}{//if (onContact != null)}}
+\DoxyCodeLine{00352             \textcolor{comment}{//    syncState.HardMount(onContact.OnPickup(contactEvent));}}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354             \textcolor{keywordflow}{if} (isPickup \&\& consumption != Consumption.None)}
+\DoxyCodeLine{00355             \{}
+\DoxyCodeLine{00356                 Mount mount = system.TryPickup(\textcolor{keyword}{this}, contactEvent);}
+\DoxyCodeLine{00357                 \textcolor{keywordflow}{if} (mount)}
+\DoxyCodeLine{00358                     syncState.HardMount(mount);}
+\DoxyCodeLine{00359             \}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361             \textcolor{keywordflow}{return} consumption;}
+\DoxyCodeLine{00362         \}}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStateChange(ObjState newState, ObjState previousState, Transform attachmentTransform, Mount attachTo = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} isReady = \textcolor{keyword}{true})}
+\DoxyCodeLine{00365         \{}
+\DoxyCodeLine{00366             \textcolor{keywordflow}{if} (previousState == ObjState.Despawned \&\& (newState \& ObjState.Visible) != 0)}
+\DoxyCodeLine{00367                 \_charges = initialCharges;}
+\DoxyCodeLine{00368         \}}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371         \textcolor{keyword}{public} \textcolor{keywordtype}{double} DischargeValue(ContactType contactType = ContactType.Undefined)}
+\DoxyCodeLine{00372         \{}
+\DoxyCodeLine{00373             \textcolor{keywordtype}{double} discharge;}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375             \textcolor{keywordflow}{switch} (contactType)}
+\DoxyCodeLine{00376             \{}
+\DoxyCodeLine{00377                 \textcolor{keywordflow}{case} ContactType.Enter:}
+\DoxyCodeLine{00378                     discharge = dischargeOnEnter;}
+\DoxyCodeLine{00379                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381                 \textcolor{keywordflow}{case} ContactType.Stay:}
+\DoxyCodeLine{00382                     discharge = dischargePerSec;}
+\DoxyCodeLine{00383                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385                 \textcolor{keywordflow}{case} ContactType.Exit:}
+\DoxyCodeLine{00386                     discharge = dischargeOnExit;}
+\DoxyCodeLine{00387                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389                 \textcolor{keywordflow}{case} ContactType.Hitscan:}
+\DoxyCodeLine{00390                     discharge = dischargeOnScan;}
+\DoxyCodeLine{00391                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00392 }
+\DoxyCodeLine{00393                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00394                     discharge = 0;}
+\DoxyCodeLine{00395                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00396             \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398             \textcolor{keywordflow}{if} (useCharges)}
+\DoxyCodeLine{00399             \{}
+\DoxyCodeLine{00400                 \textcolor{keywordflow}{if} (discharge >= 0)}
+\DoxyCodeLine{00401                     \textcolor{keywordflow}{return} System.Math.Min(discharge, \_charges);}
+\DoxyCodeLine{00402                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00403                     \textcolor{keywordflow}{return} System.Math.Max(discharge, \_charges);}
+\DoxyCodeLine{00404             \}}
+\DoxyCodeLine{00405 }
+\DoxyCodeLine{00406             \textcolor{keywordflow}{return} discharge;}
+\DoxyCodeLine{00407         \}}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keyword}{protected} \textcolor{keywordtype}{double} GetValueForTriggerType(ContactType collideType)}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412             \textcolor{keywordtype}{double} value;}
+\DoxyCodeLine{00413             \textcolor{keywordflow}{switch} (collideType)}
+\DoxyCodeLine{00414             \{}
+\DoxyCodeLine{00415                 \textcolor{keywordflow}{case} ContactType.Enter:}
+\DoxyCodeLine{00416                     value = dischargeOnEnter; \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418                 \textcolor{keywordflow}{case} ContactType.Stay:}
+\DoxyCodeLine{00419                     value = valuePerFixed; \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00420 }
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{case} ContactType.Exit:}
+\DoxyCodeLine{00422                     value = dischargeOnExit; \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424                 \textcolor{keywordflow}{case} ContactType.Hitscan:}
+\DoxyCodeLine{00425                     value = dischargeOnScan; \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00427                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00428                     value = 0; \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00429             \}}
+\DoxyCodeLine{00430             \textcolor{keywordflow}{return} value;}
+\DoxyCodeLine{00431         \}}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433 }
+\DoxyCodeLine{00434     \}}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438     [CustomEditor(typeof(VitalsContactReactor))]}
+\DoxyCodeLine{00439     [CanEditMultipleObjects]}
+\DoxyCodeLine{00440     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalsContactReactorEditor : ContactReactorsBaseEditor}
+\DoxyCodeLine{00441     \{}
+\DoxyCodeLine{00442         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00443         \{}
+\DoxyCodeLine{00444             \textcolor{keyword}{get}}
+\DoxyCodeLine{00445             \{}
+\DoxyCodeLine{00446                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Responds to "{}} + typeof(IOnContactEvent).Name + \textcolor{stringliteral}{"{} callbacks, and applies value change to indicated Vital."{}};}
+\DoxyCodeLine{00447             \}}
+\DoxyCodeLine{00448         \}}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SUBSYS\_PATH  + \textcolor{stringliteral}{"{}\#vitalscontactreactor\_component"{}}; \} \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00453         \{}
+\DoxyCodeLine{00454             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/VitalsReactorText"{}}; \}}
+\DoxyCodeLine{00455         \}}
+\DoxyCodeLine{00456 }
+\DoxyCodeLine{00457         \textcolor{keyword}{const} \textcolor{keywordtype}{int} PAD = 4;}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUIInjectMiddle()}
+\DoxyCodeLine{00460         \{}
+\DoxyCodeLine{00461             base.OnInspectorGUIInjectMiddle();}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463             var \_target = target as VitalsContactReactor;}
+\DoxyCodeLine{00464 }
+\DoxyCodeLine{00465             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00467             EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}vitalNameType"{}}));}
+\DoxyCodeLine{00468 }
+\DoxyCodeLine{00469             ContactType oldTriggerOn = \_target.triggerOn;}
+\DoxyCodeLine{00470             ContactType newTriggerOn = ContactType.Undefined;}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472             EditorGUILayout.BeginVertical(\textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}OL EntryBackEven"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(0, PAD, PAD, PAD), margin = \textcolor{keyword}{new} RectOffset(0, 0, 4, 4) \});}
+\DoxyCodeLine{00473             \{}
+\DoxyCodeLine{00474                 newTriggerOn |= DrawTrigger(\textcolor{stringliteral}{"{}dischargeOnEnter"{}}, \textcolor{stringliteral}{"{}On Enter"{}}, oldTriggerOn, ContactType.Enter);}
+\DoxyCodeLine{00475                 newTriggerOn |= DrawTrigger(\textcolor{stringliteral}{"{}dischargePerSec"{}}, \textcolor{stringliteral}{"{}On Stay"{}}, oldTriggerOn, ContactType.Stay);}
+\DoxyCodeLine{00476                 newTriggerOn |= DrawTrigger(\textcolor{stringliteral}{"{}dischargeOnExit"{}}, \textcolor{stringliteral}{"{}On Exit"{}}, oldTriggerOn, ContactType.Exit);}
+\DoxyCodeLine{00477                 newTriggerOn |= DrawTrigger(\textcolor{stringliteral}{"{}dischargeOnScan"{}}, \textcolor{stringliteral}{"{}On Scan"{}}, oldTriggerOn, ContactType.Hitscan);}
+\DoxyCodeLine{00478             \}}
+\DoxyCodeLine{00479             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00480 }
+\DoxyCodeLine{00481             \_target.triggerOn = newTriggerOn;}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00485             \{}
+\DoxyCodeLine{00486                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00487             \}}
+\DoxyCodeLine{00488         \}}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490         \textcolor{keyword}{private} ContactType DrawTrigger(\textcolor{keywordtype}{string} fieldname, \textcolor{keywordtype}{string} label, ContactType triggerOn, ContactType type)}
+\DoxyCodeLine{00491         \{}
+\DoxyCodeLine{00492             var sp = serializedObject.FindProperty(fieldname);}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494             \textcolor{keywordtype}{bool} wasEnabled = (triggerOn \& type) != 0;}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00496             var r = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498             \textcolor{keywordtype}{bool} nowEnabled = EditorGUI.ToggleLeft(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + PAD, xMax = EditorGUIUtility.labelWidth \}, \textcolor{stringliteral}{"{} "{}}, wasEnabled);}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500             EditorGUI.BeginDisabledGroup(!nowEnabled);}
+\DoxyCodeLine{00501             \{}
+\DoxyCodeLine{00502                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + 20 + PAD, xMax = EditorGUIUtility.labelWidth \}, label);}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00504                 r.xMin += EditorGUIUtility.labelWidth;}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506                 \textcolor{keywordflow}{if} (nowEnabled)}
+\DoxyCodeLine{00507                     EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin -\/ 2 \}, sp, GUIContent.none);}
+\DoxyCodeLine{00508             \}}
+\DoxyCodeLine{00509             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             \textcolor{keywordflow}{if} (wasEnabled != nowEnabled)}
+\DoxyCodeLine{00512             \{}
+\DoxyCodeLine{00513                 Undo.RecordObject(target, \textcolor{stringliteral}{"{}Change "{}} + label + \textcolor{stringliteral}{"{} Toggle"{}});}
+\DoxyCodeLine{00514             \}}
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00516             \textcolor{keywordflow}{return} nowEnabled ? type : ContactType.Undefined;}
+\DoxyCodeLine{00517         \}}
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} SyncStateWarnings()}
+\DoxyCodeLine{00520         \{}
+\DoxyCodeLine{00521             \textcolor{keywordflow}{if} ((target as VitalsContactReactor).IsPickup)}
+\DoxyCodeLine{00522                 base.SyncStateWarnings();}
+\DoxyCodeLine{00523         \}}
+\DoxyCodeLine{00524     \}}
+\DoxyCodeLine{00525 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527 \}}
+
+\end{DoxyCode}

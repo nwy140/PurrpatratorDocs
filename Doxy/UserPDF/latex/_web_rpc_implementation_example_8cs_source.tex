@@ -1,0 +1,111 @@
+\doxysection{Web\+Rpc\+Implementation\+Example.\+cs}
+\label{_web_rpc_implementation_example_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/WebRpcImplementationExample.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/WebRpcImplementationExample.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}WebRpcImplementationExample.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Sample of best practices when implementing \& handling WebRPCs.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Demo}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }WebRpcImplementationExample : MonoBehaviour, IWebRpcCallback}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} GetGameListWebRpcMethodName = \textcolor{stringliteral}{"{}GetGameList"{}};}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnWebRpcResponse(OperationResponse response)}
+\DoxyCodeLine{00029         \{}
+\DoxyCodeLine{00030             Debug.LogFormat(\textcolor{stringliteral}{"{}WebRPC operation response \{0\}"{}}, response.ToStringFull());}
+\DoxyCodeLine{00031             \textcolor{keywordflow}{switch} (response.ReturnCode)}
+\DoxyCodeLine{00032             \{}
+\DoxyCodeLine{00033                 \textcolor{keywordflow}{case} ErrorCode.Ok:}
+\DoxyCodeLine{00034                     WebRpcResponse webRpcResponse = \textcolor{keyword}{new} WebRpcResponse(response);}
+\DoxyCodeLine{00035                     Debug.LogFormat(\textcolor{stringliteral}{"{}Parsed WebRPC response \{0\}"{}}, response.ToStringFull());}
+\DoxyCodeLine{00036                     \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(webRpcResponse.Name))}
+\DoxyCodeLine{00037                     \{}
+\DoxyCodeLine{00038                         Debug.LogError(\textcolor{stringliteral}{"{}Unexpected: WebRPC response did not contain WebRPC method name"{}});}
+\DoxyCodeLine{00039                     \}}
+\DoxyCodeLine{00040                     \textcolor{keywordflow}{if} (webRpcResponse.ResultCode == 0) \textcolor{comment}{// success}}
+\DoxyCodeLine{00041                     \{}
+\DoxyCodeLine{00042                         \textcolor{keywordflow}{switch} (webRpcResponse.Name)}
+\DoxyCodeLine{00043                         \{}
+\DoxyCodeLine{00044                             \textcolor{comment}{// todo: add your code here}}
+\DoxyCodeLine{00045                             \textcolor{keywordflow}{case} GetGameListWebRpcMethodName: \textcolor{comment}{// example}}
+\DoxyCodeLine{00046                                 \textcolor{comment}{// ... }}
+\DoxyCodeLine{00047                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00048                         \}}
+\DoxyCodeLine{00049                     \}}
+\DoxyCodeLine{00050                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (webRpcResponse.ResultCode == -\/1)}
+\DoxyCodeLine{00051                     \{}
+\DoxyCodeLine{00052                         Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Web server did not return ResultCode for WebRPC method=\(\backslash\)"{}\{0\}\(\backslash\)"{}, Message=\{1\}"{}}, webRpcResponse.Name, webRpcResponse.Message);}
+\DoxyCodeLine{00053                     \}}
+\DoxyCodeLine{00054                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00055                     \{}
+\DoxyCodeLine{00056                         Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Web server returned ResultCode=\{0\} for WebRPC method=\(\backslash\)"{}\{1\}\(\backslash\)"{}, Message=\{2\}"{}}, webRpcResponse.ResultCode, webRpcResponse.Name, webRpcResponse.Message);}
+\DoxyCodeLine{00057                     \}}
+\DoxyCodeLine{00058                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{case} ErrorCode.ExternalHttpCallFailed: \textcolor{comment}{// web service unreachable}}
+\DoxyCodeLine{00060                     Debug.LogErrorFormat(\textcolor{stringliteral}{"{}WebRPC call failed as request could not be sent to the server. \{0\}"{}}, response.DebugMessage);}
+\DoxyCodeLine{00061                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00062                 \textcolor{keywordflow}{case} ErrorCode.HttpLimitReached: \textcolor{comment}{// too many WebRPCs in a short period of time}}
+\DoxyCodeLine{00063                                                  \textcolor{comment}{// the debug message should contain the limit exceeded}}
+\DoxyCodeLine{00064                     Debug.LogErrorFormat(\textcolor{stringliteral}{"{}WebRPCs rate limit exceeded: \{0\}"{}}, response.DebugMessage);}
+\DoxyCodeLine{00065                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{case} ErrorCode.InvalidOperation: \textcolor{comment}{// WebRPC not configured at all OR not configured properly OR trying to send on name server}}
+\DoxyCodeLine{00067                     \textcolor{keywordflow}{if} (PhotonNetwork.Server == ServerConnection.NameServer)}
+\DoxyCodeLine{00068                     \{}
+\DoxyCodeLine{00069                         Debug.LogErrorFormat(\textcolor{stringliteral}{"{}WebRPC not supported on NameServer. \{0\}"{}}, response.DebugMessage);}
+\DoxyCodeLine{00070                     \}}
+\DoxyCodeLine{00071                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00072                     \{}
+\DoxyCodeLine{00073                         Debug.LogErrorFormat(\textcolor{stringliteral}{"{}WebRPC not properly configured or not configured at all. \{0\}"{}}, response.DebugMessage);}
+\DoxyCodeLine{00074                     \}}
+\DoxyCodeLine{00075                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00076                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00077                     \textcolor{comment}{// other unknown error, unexpected}}
+\DoxyCodeLine{00078                     Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Unexpected error, \{0\} \{1\}"{}}, response.ReturnCode, response.DebugMessage);}
+\DoxyCodeLine{00079                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keywordtype}{void} WebRpcExampleCall()}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             WebRpcCall(GetGameListWebRpcMethodName);}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WebRpcCall(\textcolor{keywordtype}{string} methodName, \textcolor{keywordtype}{object} parameters = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} sendAuthCookieIfAny = \textcolor{keyword}{false})}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(methodName))}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 Debug.LogError(\textcolor{stringliteral}{"{}WebRpc method name must not be null nor empty"{}});}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (!PhotonNetwork.WebRpc(methodName, parameters, sendAuthCookieIfAny))}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 Debug.LogErrorFormat(\textcolor{stringliteral}{"{}Error sending WebRPC \(\backslash\)"{}\{0\}\(\backslash\)"{} (\(\backslash\)"{}\{1\}\(\backslash\)"{}) request, check the previous error logs for more details"{}}, methodName, parameters);}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             PhotonNetwork.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             PhotonNetwork.RemoveCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00109         \}}
+\DoxyCodeLine{00110     \}}
+\DoxyCodeLine{00111 \}}
+
+\end{DoxyCode}

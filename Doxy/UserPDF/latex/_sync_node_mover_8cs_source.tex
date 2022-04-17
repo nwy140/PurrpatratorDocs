@@ -1,0 +1,822 @@
+\doxysection{Sync\+Node\+Mover.\+cs}
+\label{_sync_node_mover_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncMover/SyncNodeMover.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncMover/SyncNodeMover.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncNodeMover : SyncMoverBase<SyncNodeMover.TRSDefinition, SyncNodeMover.Frame>}
+\DoxyCodeLine{00022         , IOnPreUpdate}
+\DoxyCodeLine{00023         , IOnPreSimulate}
+\DoxyCodeLine{00024         , IOnCaptureState}
+\DoxyCodeLine{00025         , IOnNetSerialize}
+\DoxyCodeLine{00026         , IOnSnapshot}
+\DoxyCodeLine{00027         , IOnInterpolate}
+\DoxyCodeLine{00028         , IReadyable}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{enum} Movement \{ Oscillate, Trigger \}}
+\DoxyCodeLine{00031         \textcolor{comment}{//public enum MovementRelation \{ Absolute, Relative \}}}
+\DoxyCodeLine{00032         \textcolor{comment}{//public enum TType \{ Position, Rotation, Scale \}}}
+\DoxyCodeLine{00033         \textcolor{comment}{//public enum Axis \{ None = 0, X = 1, Y = 2, XY = 3, Z = 4, XZ = 5, YZ = 6, XYZ = 7 \}}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [System.Serializable]}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{class }Node}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             \textcolor{keyword}{public} Vector3[] trs = \textcolor{keyword}{new} Vector3[3] \{ \textcolor{keyword}{new} Vector3(0, 0, 0), \textcolor{keyword}{new} Vector3(0, 0, 0), \textcolor{keyword}{new} Vector3(1, 1, 1) \};}
+\DoxyCodeLine{00039             \textcolor{keyword}{public} Vector3 Pos \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} trs[0]; \} \textcolor{keyword}{set} \{ trs[0] = value; \} \}}
+\DoxyCodeLine{00040             \textcolor{keyword}{public} Vector3 Rot \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} trs[1]; \} \textcolor{keyword}{set} \{ trs[1] = value; \} \}}
+\DoxyCodeLine{00041             \textcolor{keyword}{public} Vector3 Scl \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} trs[2]; \} \textcolor{keyword}{set} \{ trs[2] = value; \} \}}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [System.Serializable]}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{class }TRSDefinition : TRSDefinitionBase}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keyword}{public} AxisMask includeAxes = AxisMask.XYZ;}
+\DoxyCodeLine{00048             \textcolor{keyword}{public} MovementRelation relation = MovementRelation.Relative;}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [Range(0, 2)]}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{float} predictWithRTT = 1f;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         [HideInInspector] \textcolor{keyword}{public} List<Node> nodes = \textcolor{keyword}{new} List<Node>() \{ \textcolor{keyword}{new} Node(), \textcolor{keyword}{new} Node() \};}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} Node StartNode \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} nodes[0]; \} \}}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} Node EndNode \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} nodes[nodes.Count -\/ 1]; \} \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         [HideInInspector] \textcolor{keyword}{public} Movement movement = Movement.Oscillate;}
+\DoxyCodeLine{00061         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} oscillatePeriod = 1;}
+\DoxyCodeLine{00062         [HideInInspector] \textcolor{keyword}{public} AnimationCurve oscillateCurve = \textcolor{keyword}{new} AnimationCurve(\textcolor{keyword}{new} Keyframe(0, 0), \textcolor{keyword}{new} Keyframe(.5f, 1), \textcolor{keyword}{new} Keyframe(1, 0));}
+\DoxyCodeLine{00063         [HideInInspector] \textcolor{keyword}{public} LiteFloatCrusher floatCrusher = \textcolor{keyword}{new} LiteFloatCrusher(LiteFloatCompressType.Bits10, LiteFloatCrusher.Normalization.Positive);}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{comment}{// AutoSyncTransform Requirements}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{comment}{// State}}
+\DoxyCodeLine{00071         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} currentPhase;}
+\DoxyCodeLine{00072         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} queuedTargetNode;}
+\DoxyCodeLine{00073         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} targetNode;}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075 \textcolor{preprocessor}{        \#region Frame}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             \textcolor{keyword}{public} \textcolor{keywordtype}{int} targetNode;}
+\DoxyCodeLine{00080             \textcolor{keyword}{public} \textcolor{keywordtype}{float} phase;}
+\DoxyCodeLine{00081             \textcolor{keyword}{public} uint cphase;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId) \{ \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00090                 Frame src = sourceFrame as Frame;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092                 this.targetNode = src.targetNode;}
+\DoxyCodeLine{00093                 this.phase = src.phase;}
+\DoxyCodeLine{00094                 this.cphase = src.cphase;}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 base.Clear();}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101                 this.targetNode = -\/1;}
+\DoxyCodeLine{00102                 this.phase = -\/1;}
+\DoxyCodeLine{00103                 this.cphase = 0;}
+\DoxyCodeLine{00104             \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare(Frame otherFrame)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{if} (}
+\DoxyCodeLine{00109                     targetNode != otherFrame.targetNode ||}
+\DoxyCodeLine{00110                     phase != otherFrame.phase ||}
+\DoxyCodeLine{00111                     cphase != otherFrame.cphase}
+\DoxyCodeLine{00112                     )}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00116             \}}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{        \#endregion Frame}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121 \textcolor{preprocessor}{        \#region Startup/Shutdown}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             base.Reset();}
+\DoxyCodeLine{00126             oscillateCurve = \textcolor{keyword}{new} AnimationCurve(\textcolor{keyword}{new} Keyframe(0, 0), \textcolor{keyword}{new} Keyframe(.5f, 1), \textcolor{keyword}{new} Keyframe(1, 0));}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} InitializeTRS(TRSDefinition def, TRS type)}
+\DoxyCodeLine{00131         \{}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (movement != Movement.Oscillate)}
+\DoxyCodeLine{00134                 def.relation = MovementRelation.Relative;}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if} (def.relation == MovementRelation.Relative \&\& movement == Movement.Oscillate || movement == Movement.Trigger)}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138                 Vector3 currentVector;}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 \textcolor{keywordflow}{switch} (type)}
+\DoxyCodeLine{00141                 \{}
+\DoxyCodeLine{00142                     \textcolor{keywordflow}{case} TRS.Position:}
+\DoxyCodeLine{00143                         currentVector = def.local ? transform.localPosition : transform.position;}
+\DoxyCodeLine{00144                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146                     \textcolor{keywordflow}{case} TRS.Rotation:}
+\DoxyCodeLine{00147                         currentVector = def.local ? transform.localEulerAngles : transform.eulerAngles;}
+\DoxyCodeLine{00148                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150                     \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00151                         currentVector = def.local ? transform.localScale : transform.lossyScale;}
+\DoxyCodeLine{00152                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00153                 \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155                 nodes[0].trs[(int)type] += currentVector;}
+\DoxyCodeLine{00156                 nodes[1].trs[(int)type] += currentVector;}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158         \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162 \textcolor{preprocessor}{        \#region Owner Loops}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPreSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId)}
+\DoxyCodeLine{00165         \{}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (!isActiveAndEnabled || (photonView \&\& !photonView.IsMine))}
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00171             OwnerInterpolate();}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPreUpdate()}
+\DoxyCodeLine{00175         \{}
+\DoxyCodeLine{00176             \textcolor{keywordflow}{if} (!isActiveAndEnabled || (photonView \&\& !photonView.IsMine))}
+\DoxyCodeLine{00177                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             OwnerInterpolate();}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{keyword}{protected} \textcolor{keywordtype}{double} timeoffset;}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OwnerInterpolate()}
+\DoxyCodeLine{00185         \{}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{if} (timeoffset == 0)}
+\DoxyCodeLine{00187                 timeoffset = DoubleTime.fixedTime;}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00190             \textcolor{keywordflow}{if} (movement == Movement.Oscillate)}
+\DoxyCodeLine{00191             \{}
+\DoxyCodeLine{00192                 currentPhase = TimeToPhase(DoubleTime.time -\/ timeoffset);}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194                 \textcolor{keywordtype}{float} t = OscillatePhaseToLerpT(currentPhase);}
+\DoxyCodeLine{00195                 Oscillate(t);}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197         \}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 \textcolor{preprocessor}{        \#endregion Owner Loops}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201 \textcolor{preprocessor}{        \#region Trigger Handling}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Trigger(\textcolor{keywordtype}{int} targetNode)}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205             queuedTargetNode = targetNode;}
+\DoxyCodeLine{00206         \}}
+\DoxyCodeLine{00207         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TriggerMin()}
+\DoxyCodeLine{00208         \{}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TriggerMax()}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TriggerLerp() \{ \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00224         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Oscillate(\textcolor{keywordtype}{float} lerpT)}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226             var start = nodes[0];}
+\DoxyCodeLine{00227             var end = nodes[1];}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             var posLerped = (posDef.includeAxes == 0) ? \textcolor{keyword}{new} Vector3(0, 0, 0) : Vector3.Lerp(start.trs[0], end.trs[0], lerpT);\textcolor{comment}{//  currentLerpT * position.oscillateRange + position.oscillateStart;}}
+\DoxyCodeLine{00230             var rotLerped = (rotDef.includeAxes == 0) ? \textcolor{keyword}{new} Vector3(0, 0, 0) : Vector3.Lerp(start.trs[1], end.trs[1], lerpT); \textcolor{comment}{//currentLerpT * rotation.oscillateRange + rotation.oscillateStart;}}
+\DoxyCodeLine{00231             var sclLerped = (sclDef.includeAxes == 0) ? \textcolor{keyword}{new} Vector3(1, 1, 1) : Vector3.Lerp(start.trs[2], end.trs[2], lerpT); \textcolor{comment}{//currentLerpT * scale.oscillateRange + scale.oscillateStart;}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             ApplyOscillate(posLerped, rotLerped, sclLerped);}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236 \textcolor{preprocessor}{        \#region Networking Loops}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00239         \{}
+\DoxyCodeLine{00240             var frame = frames[frameId];}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242             frame.targetNode = targetNode;}
+\DoxyCodeLine{00243             frame.phase = currentPhase;}
+\DoxyCodeLine{00244             frame.cphase = (uint)floatCrusher.Encode(currentPhase);}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             var frame = frames[frameId];}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if} (movement == Movement.Oscillate)}
+\DoxyCodeLine{00253                 floatCrusher.WriteValue(frame.phase, buffer, ref bitposition);}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00259         \{}
+\DoxyCodeLine{00260             var frame = frames[originFrameId];}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262             \textcolor{comment}{//frame.phase = floatCrusher.ReadValue(buffer, ref bitposition);}}
+\DoxyCodeLine{00263             frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (movement == Movement.Oscillate)}
+\DoxyCodeLine{00265             \{}
+\DoxyCodeLine{00266                 frame.cphase = (uint)floatCrusher.ReadCValue(buffer, ref bitposition);}
+\DoxyCodeLine{00267                 frame.phase = floatCrusher.Decode(frame.cphase);}
+\DoxyCodeLine{00268             \}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             \textcolor{keywordflow}{return} SerializationFlags.HasContent;}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} snapPhase, targPhase;}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsVaid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00276         \{}
+\DoxyCodeLine{00277             \textcolor{keywordflow}{if} (snapIsVaid \&\& snapframe.content == FrameContents.Complete)}
+\DoxyCodeLine{00278             \{}
+\DoxyCodeLine{00279                 \textcolor{keywordflow}{if} (movement == Movement.Oscillate)}
+\DoxyCodeLine{00280                 \{}
+\DoxyCodeLine{00281                     \textcolor{keywordflow}{if} (predictWithRTT != 0)}
+\DoxyCodeLine{00282                     \{}
+\DoxyCodeLine{00283                         \textcolor{comment}{//snapPhase = targPhase;}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285                         \textcolor{keywordtype}{float} nudge = (NetMaster.RTT + TickEngineSettings.targetBufferInterval) * predictWithRTT;}
+\DoxyCodeLine{00286                         \textcolor{keywordtype}{float} nudgedSnapTime = snapframe.phase * oscillatePeriod + nudge;}
+\DoxyCodeLine{00287                         \textcolor{keywordtype}{float} nudgedTargtime = targframe.phase * oscillatePeriod + nudge;}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289                         \textcolor{comment}{//Debug.Log(nudge + "{} time: "{} + targPhase * oscillatePeriod +}}
+\DoxyCodeLine{00290                         \textcolor{comment}{//  "{} nudged: "{} + nudgedTargtime + "{} origphase: "{} + targPhase + "{} newphase: "{} + TimeToPhase(nudgedTargtime));}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292                         snapPhase = TimeToPhase(nudgedSnapTime);}
+\DoxyCodeLine{00293                         targPhase = TimeToPhase(nudgedTargtime);}
+\DoxyCodeLine{00294                     \}}
+\DoxyCodeLine{00295                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00296                     \{}
+\DoxyCodeLine{00297                         snapPhase = snapframe.phase;}
+\DoxyCodeLine{00298                         targPhase = targframe.phase;}
+\DoxyCodeLine{00299                     \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301                     \textcolor{keywordtype}{float} lerpT = (float)OscillatePhaseToLerpT(snapPhase);}
+\DoxyCodeLine{00302                     Oscillate(lerpT);}
+\DoxyCodeLine{00303                 \}}
+\DoxyCodeLine{00304             \}}
+\DoxyCodeLine{00305         \}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} OnInterpolate(\textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00309         \{}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (!base.OnInterpolate(snapFrameId, targFrameId, t))}
+\DoxyCodeLine{00312                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314             \textcolor{keywordflow}{switch} (movement)}
+\DoxyCodeLine{00315             \{}
+\DoxyCodeLine{00316                 \textcolor{keywordflow}{case} Movement.Oscillate:}
+\DoxyCodeLine{00317                     \{}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319                         \textcolor{keywordflow}{if} (targPhase < snapPhase)}
+\DoxyCodeLine{00320                             targPhase += 1;}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                         \textcolor{keywordtype}{float} phase = Mathf.Lerp(snapPhase, targPhase, t);}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324                         \textcolor{keywordflow}{if} (phase >= 1)}
+\DoxyCodeLine{00325                             phase -\/= 1;}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327                         var lerpT = (float)OscillatePhaseToLerpT(phase);}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329                         Oscillate(lerpT);}
+\DoxyCodeLine{00330                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00331                     \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{case} Movement.Trigger:}
+\DoxyCodeLine{00334                     \{}
+\DoxyCodeLine{00335                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00336                     \}}
+\DoxyCodeLine{00337                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00338                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00339             \}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} accumulatedTime;}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ConstructMissingFrame(Frame prevFrame, Frame snapframe, Frame targframe)}
+\DoxyCodeLine{00348         \{}
+\DoxyCodeLine{00349             \textcolor{comment}{//base.ConstructMissingFrame(frameId);}}
+\DoxyCodeLine{00350             \textcolor{keywordflow}{switch} (movement)}
+\DoxyCodeLine{00351             \{}
+\DoxyCodeLine{00352                 \textcolor{comment}{// Oscilate is deterministic in nature. So for missing frames we can turn the previous t back into a moduls time value, }}
+\DoxyCodeLine{00353                 \textcolor{comment}{// and accurately predict t by adding a tick worth of time to that.}}
+\DoxyCodeLine{00354                 \textcolor{keywordflow}{case} Movement.Oscillate:}
+\DoxyCodeLine{00355                     \{}
+\DoxyCodeLine{00356                         \textcolor{keywordflow}{if} (snapframe.content == FrameContents.Complete)}
+\DoxyCodeLine{00357                         \{}
+\DoxyCodeLine{00358                             \textcolor{keywordtype}{float} restoredTime = snapframe.phase * oscillatePeriod;}
+\DoxyCodeLine{00359                             \textcolor{keywordtype}{float} extrapTime = restoredTime + TickEngineSettings.netTickInterval;}
+\DoxyCodeLine{00360                             targframe.phase = TimeToPhase(extrapTime);}
+\DoxyCodeLine{00361                             targframe.content = FrameContents.Complete;}
+\DoxyCodeLine{00362                             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00363                         \}}
+\DoxyCodeLine{00364                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00365                     \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00368                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00369             \}}
+\DoxyCodeLine{00370         \}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00377         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} OscillatePhaseToLerpT(\textcolor{keywordtype}{float} phase)}
+\DoxyCodeLine{00378         \{}
+\DoxyCodeLine{00379             \textcolor{keywordflow}{return} oscillateCurve.Evaluate(phase);}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} TimeToPhase(\textcolor{keywordtype}{double} time)}
+\DoxyCodeLine{00383         \{}
+\DoxyCodeLine{00384             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{float})((time \% oscillatePeriod)) / oscillatePeriod;}
+\DoxyCodeLine{00385         \}}
+\DoxyCodeLine{00386 }
+\DoxyCodeLine{00387         \textcolor{comment}{//protected float PhaseToTime(float phase)}}
+\DoxyCodeLine{00388         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00389         \textcolor{comment}{//  return phase * oscillatePeriod;}}
+\DoxyCodeLine{00390         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392 \textcolor{preprocessor}{        \#endregion Networking Loops}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00398         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyOscillate(Vector3 pos, Vector3 rot, Vector3 scl)}
+\DoxyCodeLine{00399         \{}
+\DoxyCodeLine{00400             var posIncludeAxes = posDef.includeAxes;}
+\DoxyCodeLine{00401             var rotIncludeAxes = rotDef.includeAxes;}
+\DoxyCodeLine{00402             var sclIncludeAxes = sclDef.includeAxes;}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405             \textcolor{comment}{// Scale}}
+\DoxyCodeLine{00406             \textcolor{keywordflow}{if} (sclIncludeAxes != AxisMask.None)}
+\DoxyCodeLine{00407             \{}
+\DoxyCodeLine{00408                 transform.localScale = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00409                     ((sclIncludeAxes \& AxisMask.X) != 0) ? scl.x : transform.localScale.x,}
+\DoxyCodeLine{00410                     ((sclIncludeAxes \& AxisMask.Y) != 0) ? scl.y : transform.localScale.y,}
+\DoxyCodeLine{00411                     ((sclIncludeAxes \& AxisMask.Z) != 0) ? scl.z : transform.localScale.z);}
+\DoxyCodeLine{00412             \}}
+\DoxyCodeLine{00413 }
+\DoxyCodeLine{00414             \textcolor{comment}{// Rotation}}
+\DoxyCodeLine{00415             \textcolor{keywordflow}{if} (rotIncludeAxes != AxisMask.None)}
+\DoxyCodeLine{00416             \{}
+\DoxyCodeLine{00417                 \textcolor{keywordflow}{if} (rotDef.local)}
+\DoxyCodeLine{00418                 \{}
+\DoxyCodeLine{00419                     transform.localEulerAngles = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00420                         ((rotIncludeAxes \& AxisMask.X) != 0) ? rot.x : transform.localEulerAngles.x,}
+\DoxyCodeLine{00421                         ((rotIncludeAxes \& AxisMask.Y) != 0) ? rot.y : transform.localEulerAngles.y,}
+\DoxyCodeLine{00422                         ((rotIncludeAxes \& AxisMask.Z) != 0) ? rot.z : transform.localEulerAngles.z);}
+\DoxyCodeLine{00423                 \}}
+\DoxyCodeLine{00424                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00425                 \{}
+\DoxyCodeLine{00426                     transform.eulerAngles = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00427                         ((rotIncludeAxes \& AxisMask.X) != 0) ? rot.x : transform.eulerAngles.x,}
+\DoxyCodeLine{00428                         ((rotIncludeAxes \& AxisMask.Y) != 0) ? rot.y : transform.eulerAngles.y,}
+\DoxyCodeLine{00429                         ((rotIncludeAxes \& AxisMask.Z) != 0) ? rot.z : transform.eulerAngles.z);}
+\DoxyCodeLine{00430                 \}}
+\DoxyCodeLine{00431             \}}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433             \textcolor{comment}{// Position}}
+\DoxyCodeLine{00434             \textcolor{keywordflow}{if} (posIncludeAxes != AxisMask.None)}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 \textcolor{keywordflow}{if} (posDef.local)}
+\DoxyCodeLine{00437                 \{}
+\DoxyCodeLine{00438                     transform.localPosition = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00439                         ((posIncludeAxes \& AxisMask.X) != 0) ? pos.x : transform.localPosition.x,}
+\DoxyCodeLine{00440                         ((posIncludeAxes \& AxisMask.Y) != 0) ? pos.y : transform.localPosition.y,}
+\DoxyCodeLine{00441                         ((posIncludeAxes \& AxisMask.Z) != 0) ? pos.z : transform.localPosition.z);}
+\DoxyCodeLine{00442                 \}}
+\DoxyCodeLine{00443                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00444                 \{}
+\DoxyCodeLine{00445                     transform.position = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00446                         ((posIncludeAxes \& AxisMask.X) != 0) ? pos.x : transform.position.x,}
+\DoxyCodeLine{00447                         ((posIncludeAxes \& AxisMask.Y) != 0) ? pos.y : transform.position.y,}
+\DoxyCodeLine{00448                         ((posIncludeAxes \& AxisMask.Z) != 0) ? pos.z : transform.position.z);}
+\DoxyCodeLine{00449                 \}}
+\DoxyCodeLine{00450             \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452         \}}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454     \}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458     [CustomEditor(typeof(SyncNodeMover))]}
+\DoxyCodeLine{00459     [CanEditMultipleObjects]}
+\DoxyCodeLine{00460     \textcolor{keyword}{public} \textcolor{keyword}{class }SimpleNodeMoverEditor : SyncMoverBaseEditor \textcolor{comment}{// HeaderEditorBase}}
+\DoxyCodeLine{00461     \{}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463         SerializedProperty}
+\DoxyCodeLine{00464             floatCrusher,}
+\DoxyCodeLine{00465             nodes,}
+\DoxyCodeLine{00466             movement,}
+\DoxyCodeLine{00467             oscillateCurve,}
+\DoxyCodeLine{00468             oscillatePeriod;}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470         \textcolor{keyword}{protected} \textcolor{keyword}{class }TRS\_SP}
+\DoxyCodeLine{00471         \{}
+\DoxyCodeLine{00472             \textcolor{keyword}{public} SerializedProperty}
+\DoxyCodeLine{00473             relation,}
+\DoxyCodeLine{00474             includeAxes,}
+\DoxyCodeLine{00475             local;}
+\DoxyCodeLine{00476         \}}
+\DoxyCodeLine{00477 }
+\DoxyCodeLine{00478         TRS\_SP posSPs = \textcolor{keyword}{new} TRS\_SP();}
+\DoxyCodeLine{00479         TRS\_SP rotSPs = \textcolor{keyword}{new} TRS\_SP();}
+\DoxyCodeLine{00480         TRS\_SP sclSPs = \textcolor{keyword}{new} TRS\_SP();}
+\DoxyCodeLine{00481 }
+\DoxyCodeLine{00482         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00483         \{}
+\DoxyCodeLine{00484             base.OnEnable();}
+\DoxyCodeLine{00485 }
+\DoxyCodeLine{00486             nodes = serializedObject.FindProperty(\textcolor{stringliteral}{"{}nodes"{}});}
+\DoxyCodeLine{00487             movement = serializedObject.FindProperty(\textcolor{stringliteral}{"{}movement"{}});}
+\DoxyCodeLine{00488             floatCrusher = serializedObject.FindProperty(\textcolor{stringliteral}{"{}floatCrusher"{}});}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490 }
+\DoxyCodeLine{00491             oscillatePeriod = serializedObject.FindProperty(\textcolor{stringliteral}{"{}oscillatePeriod"{}});}
+\DoxyCodeLine{00492             oscillateCurve = serializedObject.FindProperty(\textcolor{stringliteral}{"{}oscillateCurve"{}});}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494             InitSP(posDef, posSPs);}
+\DoxyCodeLine{00495             InitSP(rotDef, rotSPs);}
+\DoxyCodeLine{00496             InitSP(sclDef, sclSPs);}
+\DoxyCodeLine{00497         \}}
+\DoxyCodeLine{00498 }
+\DoxyCodeLine{00499         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} InitSP(SerializedProperty trs, TRS\_SP trsSP)}
+\DoxyCodeLine{00500         \{}
+\DoxyCodeLine{00501             trsSP.relation = trs.FindPropertyRelative(\textcolor{stringliteral}{"{}relation"{}});}
+\DoxyCodeLine{00502             trsSP.includeAxes = trs.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}});}
+\DoxyCodeLine{00503             trsSP.local = trs.FindPropertyRelative(\textcolor{stringliteral}{"{}local"{}});}
+\DoxyCodeLine{00504         \}}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00507         \{}
+\DoxyCodeLine{00508 }
+\DoxyCodeLine{00509             base.OnInspectorGUI();}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             serializedObject.Update();}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00514 }
+\DoxyCodeLine{00516             EditorGUILayout.PropertyField(movement);}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518             \textcolor{keywordflow}{if} (movement.intValue == (\textcolor{keywordtype}{int})SyncNodeMover.Movement.Oscillate)}
+\DoxyCodeLine{00519             \{}
+\DoxyCodeLine{00520                 EditorGUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00522                 EditorGUILayout.BeginHorizontal(\textcolor{comment}{/*GUILayout.Width(100), GUILayout.MinWidth(75)*/});}
+\DoxyCodeLine{00523                 EditorGUILayout.PropertyField(oscillatePeriod);}
+\DoxyCodeLine{00524                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} sec(s)"{}}, GUILayout.MaxWidth(48));}
+\DoxyCodeLine{00525                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00528                 EditorGUILayout.PropertyField(oscillateCurve);}
+\DoxyCodeLine{00529 }
+\DoxyCodeLine{00531                 EditorGUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00532                 EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(floatCrusher.displayName, \textcolor{stringliteral}{"{}The compressor used to serialize the normalized lerp T value"{}}));}
+\DoxyCodeLine{00533                 EditorGUILayout.PropertyField(floatCrusher);}
+\DoxyCodeLine{00534                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00537             \}}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539 }
+\DoxyCodeLine{00540 }
+\DoxyCodeLine{00541             DrawWarningBoxes();}
+\DoxyCodeLine{00542             DrawVerticalTRSs();}
+\DoxyCodeLine{00543 }
+\DoxyCodeLine{00544             \textcolor{comment}{//EditorGUILayout.BeginVertical("{}HelpBox"{});}}
+\DoxyCodeLine{00545             \textcolor{comment}{//DrawTRS(posSPs, TRS.Position, "{}Pos"{});}}
+\DoxyCodeLine{00546             \textcolor{comment}{//DrawTRS(rotSPs, TRS.Rotation, "{}Rot"{});}}
+\DoxyCodeLine{00547             \textcolor{comment}{//DrawTRS(sclSPs, TRS.Scale, "{}Scl"{});}}
+\DoxyCodeLine{00548             \textcolor{comment}{//EditorGUILayout.EndVertical();}}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Nodes:"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00551             \textcolor{comment}{//DrawNode(0);}}
+\DoxyCodeLine{00552             \textcolor{comment}{//DrawNode(1);}}
+\DoxyCodeLine{00553 }
+\DoxyCodeLine{00554             DrawHorizontalNodes();}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556 }
+\DoxyCodeLine{00557             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00558                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560         \}}
+\DoxyCodeLine{00561 }
+\DoxyCodeLine{00562         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawVerticalTRSs()}
+\DoxyCodeLine{00563         \{}
+\DoxyCodeLine{00564             EditorGUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00566             DrawTRSElementHeader();}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00569             DrawTRSElementRow(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Axes"{}}, \textcolor{stringliteral}{"{}Axes that will be affected. Unselected axes will not have values applied to them."{}}), \textcolor{stringliteral}{"{}includeAxes"{}});}
+\DoxyCodeLine{00570             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00571 }
+\DoxyCodeLine{00572             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00573             DrawTRSElementRow(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Relation"{}}, \textcolor{stringliteral}{"{}"{}}), \textcolor{stringliteral}{"{}relation"{}});}
+\DoxyCodeLine{00574             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00575 }
+\DoxyCodeLine{00576             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00577             DrawTRSElementRow(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Local"{}}, \textcolor{stringliteral}{"{}"{}}), \textcolor{stringliteral}{"{}local"{}});}
+\DoxyCodeLine{00578             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00582         \}}
+\DoxyCodeLine{00583 }
+\DoxyCodeLine{00584         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawHorizontalTRS(TRS\_SP trsSP, TRS type, \textcolor{keywordtype}{string} label)}
+\DoxyCodeLine{00585         \{}
+\DoxyCodeLine{00586 }
+\DoxyCodeLine{00587             EditorGUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00588 }
+\DoxyCodeLine{00589             \{}
+\DoxyCodeLine{00591                 EditorGUILayout.PropertyField(trsSP.includeAxes, \textcolor{keyword}{new} GUIContent(label + \textcolor{stringliteral}{"{} Axes"{}}));}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{00593                 \textcolor{keywordflow}{if} (trsSP.includeAxes.intValue != 0)}
+\DoxyCodeLine{00594                 \{}
+\DoxyCodeLine{00596                     EditorGUILayout.PropertyField(trsSP.relation);}
+\DoxyCodeLine{00597 }
+\DoxyCodeLine{00599                     EditorGUI.BeginDisabledGroup(type == TRS.Scale);}
+\DoxyCodeLine{00600                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00601                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Local"{}}, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00602                     EditorGUILayout.GetControlRect(GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00603                     EditorGUILayout.PropertyField(trsSP.local, GUIContent.none);}
+\DoxyCodeLine{00604                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00605                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00606                 \}}
+\DoxyCodeLine{00607             \}}
+\DoxyCodeLine{00608             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00609         \}}
+\DoxyCodeLine{00610 }
+\DoxyCodeLine{00611         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawHorizontalNodes()}
+\DoxyCodeLine{00612         \{}
+\DoxyCodeLine{00613             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < nodes.arraySize; ++i)}
+\DoxyCodeLine{00614             \{}
+\DoxyCodeLine{00615                 EditorGUILayout.BeginVertical(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00617                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Node ["{}} + i + \textcolor{stringliteral}{"{}]"{}});}
+\DoxyCodeLine{00618 }
+\DoxyCodeLine{00619                 var node = nodes.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00620 }
+\DoxyCodeLine{00621                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00622 }
+\DoxyCodeLine{00623                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Pos"{}}, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00624                 DrawAxes(node.FindPropertyRelative(\textcolor{stringliteral}{"{}trs"{}}).GetArrayElementAtIndex(0), (AxisMask)posDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue);}
+\DoxyCodeLine{00625                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00626 }
+\DoxyCodeLine{00627                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00628                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Rot"{}}, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00629                 DrawAxes(node.FindPropertyRelative(\textcolor{stringliteral}{"{}trs"{}}).GetArrayElementAtIndex(1), (AxisMask)rotDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue);}
+\DoxyCodeLine{00630                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00631 }
+\DoxyCodeLine{00632                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00633                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Scl"{}}, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00634                 DrawAxes(node.FindPropertyRelative(\textcolor{stringliteral}{"{}trs"{}}).GetArrayElementAtIndex(2), (AxisMask)sclDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue);}
+\DoxyCodeLine{00635                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00636 }
+\DoxyCodeLine{00637                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00638             \}}
+\DoxyCodeLine{00639         \}}
+\DoxyCodeLine{00640 }
+\DoxyCodeLine{00641         \textcolor{comment}{//protected void DrawNode(int node, TRS type, AxisMask mask)}}
+\DoxyCodeLine{00642         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00643         \textcolor{comment}{//  /// Start}}
+\DoxyCodeLine{00644         \textcolor{comment}{//  EditorGUILayout.BeginHorizontal();}}
+\DoxyCodeLine{00645         \textcolor{comment}{//  EditorGUILayout.LabelField("{}Node "{} + node, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}}
+\DoxyCodeLine{00646         \textcolor{comment}{//  DrawAxes(nodes.GetArrayElementAtIndex(0).FindPropertyRelative("{}trs"{}).GetArrayElementAtIndex((int)type), mask);}}
+\DoxyCodeLine{00647         \textcolor{comment}{//  EditorGUILayout.EndHorizontal();}}
+\DoxyCodeLine{00648         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00649 }
+\DoxyCodeLine{00650         \textcolor{keyword}{const} \textcolor{keywordtype}{float} FLOAT\_WIDTH = 10f;}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652         \textcolor{keyword}{protected} GUIStyle vertV3Style;}
+\DoxyCodeLine{00653         \textcolor{keyword}{protected} GUIStyle vertV3StyleBlank;}
+\DoxyCodeLine{00654 }
+\DoxyCodeLine{00655         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawVerticalNode(\textcolor{keywordtype}{int} nodeId)}
+\DoxyCodeLine{00656         \{}
+\DoxyCodeLine{00657             \textcolor{keywordflow}{if} (vertV3Style == \textcolor{keyword}{null})}
+\DoxyCodeLine{00658                 vertV3Style = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(8, 8, 8, 8) \};}
+\DoxyCodeLine{00659 }
+\DoxyCodeLine{00660             \textcolor{keywordflow}{if} (vertV3StyleBlank == \textcolor{keyword}{null})}
+\DoxyCodeLine{00661                 vertV3StyleBlank = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(8, 8, 8, 8), normal = ((GUIStyle)\textcolor{stringliteral}{"{}Label"{}}).normal \};}
+\DoxyCodeLine{00662 }
+\DoxyCodeLine{00663             var node = nodes.GetArrayElementAtIndex(nodeId);}
+\DoxyCodeLine{00664 }
+\DoxyCodeLine{00665             \textcolor{keywordtype}{float} px, rx, sx;}
+\DoxyCodeLine{00666             \textcolor{keywordtype}{float} py, ry, sy;}
+\DoxyCodeLine{00667             \textcolor{keywordtype}{float} pz, rz, sz;}
+\DoxyCodeLine{00668 }
+\DoxyCodeLine{00669             var posmask = (AxisMask)posDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue;}
+\DoxyCodeLine{00670             var rotmask = (AxisMask)rotDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue;}
+\DoxyCodeLine{00671             var sclmask = (AxisMask)sclDef.FindPropertyRelative(\textcolor{stringliteral}{"{}includeAxes"{}}).intValue;}
+\DoxyCodeLine{00672 }
+\DoxyCodeLine{00673             var trs = node.FindPropertyRelative(\textcolor{stringliteral}{"{}trs"{}});}
+\DoxyCodeLine{00674             var pos = trs.GetArrayElementAtIndex(0);}
+\DoxyCodeLine{00675             var rot = trs.GetArrayElementAtIndex(1);}
+\DoxyCodeLine{00676             var scl = trs.GetArrayElementAtIndex(2);}
+\DoxyCodeLine{00677 }
+\DoxyCodeLine{00678 }
+\DoxyCodeLine{00679             EditorGUILayout.BeginHorizontal(\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00680 }
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00682             EditorGUILayout.BeginVertical(GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00683             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}["{}} + nodeId + \textcolor{stringliteral}{"{}]"{}}, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00684             EditorGUILayout.BeginVertical(vertV3StyleBlank, GUILayout.MinWidth(16));}
+\DoxyCodeLine{00685             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}X:"{}}, labelright, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00686             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Y:"{}}, labelright, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00687             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Z:"{}}, labelright, GUILayout.MaxWidth(RANGE\_LABEL\_WIDTH));}
+\DoxyCodeLine{00688             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00689             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00690 }
+\DoxyCodeLine{00691             \textcolor{comment}{// Position}}
+\DoxyCodeLine{00692             EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00693             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} Pos"{}}, GUILayout.MinWidth(16));}
+\DoxyCodeLine{00694             EditorGUILayout.BeginVertical(posmask != 0 ? vertV3Style : vertV3StyleBlank);}
+\DoxyCodeLine{00695             \textcolor{keywordflow}{if} (posmask != 0)}
+\DoxyCodeLine{00696             \{}
+\DoxyCodeLine{00697                 px = DrawVerticalAxis(pos, 0, posmask);}
+\DoxyCodeLine{00698                 py = DrawVerticalAxis(pos, 1, posmask);}
+\DoxyCodeLine{00699                 pz = DrawVerticalAxis(pos, 2, posmask);}
+\DoxyCodeLine{00700 }
+\DoxyCodeLine{00701                 var newpos = \textcolor{keyword}{new} Vector3(px, py, pz);}
+\DoxyCodeLine{00702                 \textcolor{keywordflow}{if} (newpos != pos.vector3Value)}
+\DoxyCodeLine{00703                     pos.vector3Value = newpos;}
+\DoxyCodeLine{00704             \}}
+\DoxyCodeLine{00705             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00706                 DrawEmptyTRS();}
+\DoxyCodeLine{00707             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00708             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00709 }
+\DoxyCodeLine{00710             \textcolor{comment}{// Rotation}}
+\DoxyCodeLine{00711             EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00712             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} Rot"{}}, GUILayout.MinWidth(16));}
+\DoxyCodeLine{00713             EditorGUILayout.BeginVertical(rotmask != 0 ? vertV3Style : vertV3StyleBlank);}
+\DoxyCodeLine{00714             \textcolor{keywordflow}{if} (rotmask != 0)}
+\DoxyCodeLine{00715             \{}
+\DoxyCodeLine{00716                 rx = DrawVerticalAxis(rot, 0, rotmask);}
+\DoxyCodeLine{00717                 ry = DrawVerticalAxis(rot, 1, rotmask);}
+\DoxyCodeLine{00718                 rz = DrawVerticalAxis(rot, 2, rotmask);}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720 }
+\DoxyCodeLine{00721                 var newrot = \textcolor{keyword}{new} Vector3(rx, ry, rz);}
+\DoxyCodeLine{00722                 \textcolor{keywordflow}{if} (newrot != rot.vector3Value)}
+\DoxyCodeLine{00723                     rot.vector3Value = newrot;}
+\DoxyCodeLine{00724             \}}
+\DoxyCodeLine{00725             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00726                 DrawEmptyTRS();}
+\DoxyCodeLine{00727             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00728             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00729 }
+\DoxyCodeLine{00730             \textcolor{comment}{// Scale}}
+\DoxyCodeLine{00731             EditorGUILayout.BeginVertical();}
+\DoxyCodeLine{00732             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} Scl"{}}, GUILayout.MinWidth(16));}
+\DoxyCodeLine{00733             EditorGUILayout.BeginVertical(sclmask != 0 ? vertV3Style : vertV3StyleBlank);}
+\DoxyCodeLine{00734             \textcolor{keywordflow}{if} (sclmask != 0)}
+\DoxyCodeLine{00735             \{}
+\DoxyCodeLine{00736                 sx = DrawVerticalAxis(scl, 0, sclmask);}
+\DoxyCodeLine{00737                 sy = DrawVerticalAxis(scl, 1, sclmask);}
+\DoxyCodeLine{00738                 sz = DrawVerticalAxis(scl, 2, sclmask);}
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00740                 var newscl = \textcolor{keyword}{new} Vector3(sx, sy, sz);}
+\DoxyCodeLine{00741                 \textcolor{keywordflow}{if} (newscl != scl.vector3Value)}
+\DoxyCodeLine{00742                     scl.vector3Value = newscl;}
+\DoxyCodeLine{00743             \}}
+\DoxyCodeLine{00744             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00745                 DrawEmptyTRS();}
+\DoxyCodeLine{00746             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00747             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00748 }
+\DoxyCodeLine{00749             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00750 }
+\DoxyCodeLine{00751 }
+\DoxyCodeLine{00752 }
+\DoxyCodeLine{00753 }
+\DoxyCodeLine{00754 }
+\DoxyCodeLine{00755 }
+\DoxyCodeLine{00756         \}}
+\DoxyCodeLine{00757 }
+\DoxyCodeLine{00758         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} DrawVerticalAxis(SerializedProperty element, \textcolor{keywordtype}{int} axis, AxisMask mask)}
+\DoxyCodeLine{00759         \{}
+\DoxyCodeLine{00760             \textcolor{comment}{//EditorGUILayout.BeginHorizontal();}}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762             \textcolor{keywordtype}{bool} use = ((int)mask \& (1 << axis)) != 0;}
+\DoxyCodeLine{00763             \textcolor{keywordtype}{float} oldval = element.vector3Value[axis];}
+\DoxyCodeLine{00764             EditorGUI.BeginDisabledGroup(!use);}
+\DoxyCodeLine{00765             \textcolor{comment}{//EditorGUILayout.LabelField("{} ?"{}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}}
+\DoxyCodeLine{00766             \textcolor{keywordtype}{float} newval = EditorGUILayout.DelayedFloatField(oldval, GUILayout.MinWidth(FLOAT\_WIDTH));}
+\DoxyCodeLine{00767             newval = (use) ? newval : 0;}
+\DoxyCodeLine{00768             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00769 }
+\DoxyCodeLine{00770             \textcolor{comment}{//EditorGUILayout.EndHorizontal();}}
+\DoxyCodeLine{00771 }
+\DoxyCodeLine{00772             \textcolor{keywordflow}{return} newval;}
+\DoxyCodeLine{00773         \}}
+\DoxyCodeLine{00774 }
+\DoxyCodeLine{00775         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawEmptyTRS()}
+\DoxyCodeLine{00776         \{}
+\DoxyCodeLine{00777             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00778             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00779             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00780         \}}
+\DoxyCodeLine{00781 }
+\DoxyCodeLine{00782 }
+\DoxyCodeLine{00783         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawAxes(SerializedProperty v3, AxisMask axis)}
+\DoxyCodeLine{00784         \{}
+\DoxyCodeLine{00785             \textcolor{keyword}{const} \textcolor{keywordtype}{float} FLOAT\_WIDTH = 10f;}
+\DoxyCodeLine{00786             var oldval = v3.vector3Value;}
+\DoxyCodeLine{00787 }
+\DoxyCodeLine{00788             \textcolor{keywordtype}{float} x, y, z;}
+\DoxyCodeLine{00789 }
+\DoxyCodeLine{00790             \textcolor{keywordtype}{bool} usex = (axis \& AxisMask.X) != 0;}
+\DoxyCodeLine{00791             \textcolor{keywordtype}{bool} usey = (axis \& AxisMask.Y) != 0;}
+\DoxyCodeLine{00792             \textcolor{keywordtype}{bool} usez = (axis \& AxisMask.Z) != 0;}
+\DoxyCodeLine{00793 }
+\DoxyCodeLine{00795             EditorGUI.BeginDisabledGroup(!usex);}
+\DoxyCodeLine{00796             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} x"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00797             \textcolor{keywordtype}{float} newx = EditorGUILayout.DelayedFloatField(oldval.x, GUILayout.MinWidth(FLOAT\_WIDTH));}
+\DoxyCodeLine{00798             x = (usex) ? newx : 0;}
+\DoxyCodeLine{00799             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00800 }
+\DoxyCodeLine{00802             EditorGUI.BeginDisabledGroup(!usey);}
+\DoxyCodeLine{00803             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} y"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00804             \textcolor{keywordtype}{float} newy = EditorGUILayout.DelayedFloatField(oldval.y, GUILayout.MinWidth(FLOAT\_WIDTH));}
+\DoxyCodeLine{00805             y = (usey) ? newy : 0;}
+\DoxyCodeLine{00806             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00807 }
+\DoxyCodeLine{00808 }
+\DoxyCodeLine{00810             EditorGUI.BeginDisabledGroup(!usez);}
+\DoxyCodeLine{00811             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{} z"{}}, GUILayout.MaxWidth(AXIS\_LAB\_WID));}
+\DoxyCodeLine{00812             \textcolor{keywordtype}{float} newz = EditorGUILayout.DelayedFloatField(oldval.z, GUILayout.MinWidth(FLOAT\_WIDTH));}
+\DoxyCodeLine{00813             z = (usez) ? newz : 0;}
+\DoxyCodeLine{00814             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00815 }
+\DoxyCodeLine{00816             var newval = \textcolor{keyword}{new} Vector3(x, y, z);}
+\DoxyCodeLine{00817             \textcolor{keywordflow}{if} (v3.vector3Value != newval)}
+\DoxyCodeLine{00818                 v3.vector3Value = newval;}
+\DoxyCodeLine{00819         \}}
+\DoxyCodeLine{00820 }
+\DoxyCodeLine{00821         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawWarningBoxes()}
+\DoxyCodeLine{00822         \{}
+\DoxyCodeLine{00823             var \_target = target as SyncNodeMover;}
+\DoxyCodeLine{00824 }
+\DoxyCodeLine{00825 \textcolor{preprocessor}{            \#region Warning Boxes}}
+\DoxyCodeLine{00826 }
+\DoxyCodeLine{00827             \_target.GetOrAddNetObj();}
+\DoxyCodeLine{00828 }
+\DoxyCodeLine{00829             \textcolor{keywordflow}{if} (!\_target.NetObj)}
+\DoxyCodeLine{00830             \{}
+\DoxyCodeLine{00831                 EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00832                     \textcolor{stringliteral}{"{}This GameObject does not have a "{}} + typeof(NetObject).Name + \textcolor{stringliteral}{"{}. Motion will be applied locally without networking."{}}, MessageType.Info);}
+\DoxyCodeLine{00833             \}}
+\DoxyCodeLine{00834 }
+\DoxyCodeLine{00835 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00836         \}}
+\DoxyCodeLine{00837 }
+\DoxyCodeLine{00838     \}}
+\DoxyCodeLine{00839 }
+\DoxyCodeLine{00840 }
+\DoxyCodeLine{00841 }
+\DoxyCodeLine{00842 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00843 \}}
+\DoxyCodeLine{00844 }
+
+\end{DoxyCode}

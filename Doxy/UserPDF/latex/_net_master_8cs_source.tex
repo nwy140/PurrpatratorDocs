@@ -1,0 +1,517 @@
+\doxysection{Net\+Master.\+cs}
+\label{_net_master_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/NetMaster/NetMaster.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/NetMaster/NetMaster.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018     [HelpURL(SimpleDocsURLS.OVERVIEW\_PATH)]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }NetMaster : MonoBehaviour}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022        }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{static} NetMaster single;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} isShuttingDown;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00033         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{float} lastSentTickTime;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{        \#region Properties}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} \_currFrameId, \_currSubFrameId, \_prevFrameId, \_prevSubFrameId;}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CurrentFrameId \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_currFrameId; \} \}}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CurrentSubFrameId \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_currSubFrameId; \} \}}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} PreviousFrameId \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_prevFrameId; \} \}}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} PreviousSubFrameId \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_prevSubFrameId; \} \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} NormTimeSinceFixed \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{float} rtt;}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} RTT \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} rtt; \} \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00058         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureExistsInScene()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (!TickEngineSettings.Single.enableTickEngine)}
+\DoxyCodeLine{00062                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00065             GameObject go = \textcolor{keyword}{null};}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             \textcolor{keywordflow}{if} (single)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 go = single.gameObject;}
+\DoxyCodeLine{00070             \}}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{if} (NetMasterLate.single)}
+\DoxyCodeLine{00075                     go = NetMasterLate.single.gameObject;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 single = FindObjectOfType<NetMaster>();}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{if} (single)}
+\DoxyCodeLine{00079                 \{}
+\DoxyCodeLine{00080                     go = single.gameObject;}
+\DoxyCodeLine{00081                 \}}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00083                 \{}
+\DoxyCodeLine{00084                     \textcolor{comment}{// No singletons exist... make a new GO}}
+\DoxyCodeLine{00085                     \textcolor{keywordflow}{if} (!go)}
+\DoxyCodeLine{00086                         go = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Net Master"{}});}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                     single = go.AddComponent<NetMaster>();}
+\DoxyCodeLine{00089                 \}}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \textcolor{comment}{// Enforce singleton for NetMasterLate}}
+\DoxyCodeLine{00093             \textcolor{keywordflow}{if} (!NetMasterLate.single)}
+\DoxyCodeLine{00094             \{}
+\DoxyCodeLine{00095                 NetMasterLate.single = FindObjectOfType<NetMasterLate>();}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097                 \textcolor{keywordflow}{if} (!NetMasterLate.single)}
+\DoxyCodeLine{00098                     NetMasterLate.single = go.AddComponent<NetMasterLate>();}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             NetMsgCallbacks.RegisterCallback(ReceiveMessage);}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             \textcolor{keywordflow}{if} (single \&\& single != \textcolor{keyword}{this})}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00110                 Destroy(single);}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             single = \textcolor{keyword}{this};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             DontDestroyOnLoad(\textcolor{keyword}{this});}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             \_prevFrameId = TickEngineSettings.frameCount -\/ 1;}
+\DoxyCodeLine{00118             \_prevSubFrameId = TickEngineSettings.sendEveryXTick -\/ 1;}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnApplicationQuit()}
+\DoxyCodeLine{00123         \{}
+\DoxyCodeLine{00124             isShuttingDown = \textcolor{keyword}{true};}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             NetMasterCallbacks.OnPreQuitCallbacks();}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} simulationHasRun = \textcolor{keyword}{false};}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{private} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (NetObject.activeControlledNetObjs.Count == 0 \&\& NetObject.activeUncontrolledNetObjs.Count == 0)}
+\DoxyCodeLine{00135                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordflow}{if} (!TickEngineSettings.single.enableTickEngine)}
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00141             \textcolor{keywordtype}{bool} readyToSend = NetMsgSends.ReadyToSend;}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (!readyToSend)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 DoubleTime.SnapFixed();}
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00146             \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (simulationHasRun)}
+\DoxyCodeLine{00149                 PostSimulate();}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             DoubleTime.SnapFixed();}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00158             \textcolor{keywordtype}{bool} doDispatch = \textcolor{keyword}{true};}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160             \textcolor{keywordflow}{while} (PhotonNetwork.InRoom \&\& PhotonNetwork.IsMessageQueueRunning \&\& doDispatch)}
+\DoxyCodeLine{00161             \{}
+\DoxyCodeLine{00162                 \textcolor{comment}{// DispatchIncomingCommands() returns true of it found any command to dispatch (event, result or state change)}}
+\DoxyCodeLine{00163                 doDispatch = PhotonNetwork.NetworkingClient.LoadBalancingPeer.DispatchIncomingCommands();}
+\DoxyCodeLine{00164             \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             rtt = PhotonNetwork.GetPing() * .001f;}
+\DoxyCodeLine{00167 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             simulationHasRun = \textcolor{keyword}{true};}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172         \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00173         \{}
+\DoxyCodeLine{00175             \textcolor{keywordflow}{if} (NetObject.activeControlledNetObjs.Count == 0 \&\& NetObject.activeUncontrolledNetObjs.Count == 0)}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             \textcolor{keywordflow}{if} (!TickEngineSettings.single.enableTickEngine)}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             \textcolor{keywordflow}{if} (simulationHasRun)}
+\DoxyCodeLine{00182                 PostSimulate();}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             DoubleTime.SnapUpdate();}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             NormTimeSinceFixed = (Time.time -\/ Time.fixedTime) / Time.fixedDeltaTime;}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             NetMasterCallbacks.OnPreUpdateCallbacks();}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             \textcolor{keywordtype}{float} t = (Time.time -\/ lastSentTickTime) / (TickEngineSettings.netTickInterval);}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{comment}{// Interpolate NetObjects}}
+\DoxyCodeLine{00193             NetObject.NetObjDictsLocked = \textcolor{keyword}{true};}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{foreach} (var no \textcolor{keywordflow}{in} NetObject.activeUncontrolledNetObjs.Values)}
+\DoxyCodeLine{00195                 no.OnInterpolate(\_prevFrameId, \_currFrameId, t);}
+\DoxyCodeLine{00196             NetObject.NetObjDictsLocked = \textcolor{keyword}{false};}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \textcolor{comment}{// Interpolate Others}}
+\DoxyCodeLine{00199             NetMasterCallbacks.OnInterpolateCallbacks(\_prevFrameId, \_currFrameId, t);}
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keyword}{private} \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204             NetMasterCallbacks.OnPreLateUpdateCallbacks();}
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00212         \textcolor{keywordtype}{void} PostSimulate()}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214             \textcolor{keywordtype}{bool} isNetTick = \_currSubFrameId == TickEngineSettings.sendEveryXTick -\/ 1;}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             NetMasterCallbacks.OnPostSimulateCallbacks(\_currFrameId, \_currSubFrameId, isNetTick);}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             \textcolor{keywordflow}{if} (isNetTick)}
+\DoxyCodeLine{00219                 SerializeAllAndSend();}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             IncrementFrameId();}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             simulationHasRun = \textcolor{keyword}{false};}
+\DoxyCodeLine{00224         \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00230         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} IncrementFrameId()}
+\DoxyCodeLine{00231         \{}
+\DoxyCodeLine{00232             \_prevSubFrameId = \_currSubFrameId;}
+\DoxyCodeLine{00233             \_currSubFrameId++;}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keywordflow}{if} (\_currSubFrameId >= TickEngineSettings.sendEveryXTick)}
+\DoxyCodeLine{00236             \{}
+\DoxyCodeLine{00237                 \_currSubFrameId = 0;}
+\DoxyCodeLine{00238                 \_prevFrameId = \_currFrameId;}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                 \_currFrameId++;}
+\DoxyCodeLine{00241                 \textcolor{keywordflow}{if} (\_currFrameId >= TickEngineSettings.frameCount)}
+\DoxyCodeLine{00242                     \_currFrameId = 0;}
+\DoxyCodeLine{00243             \}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245             NetMasterCallbacks.OnIncrementFrameCallbacks(\_currFrameId, \_currSubFrameId, \_prevFrameId, \_prevSubFrameId);}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordflow}{if} (\_currSubFrameId == 0)}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00250                 TickManager.PreSnapshot(\_currFrameId);}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 \textcolor{comment}{// Snapshot NetObjects}}
+\DoxyCodeLine{00253                 NetObject.NetObjDictsLocked = \textcolor{keyword}{true};}
+\DoxyCodeLine{00254                 \textcolor{keywordflow}{foreach} (var no \textcolor{keywordflow}{in} NetObject.activeUncontrolledNetObjs.Values)}
+\DoxyCodeLine{00255                     no.OnSnapshot(\_currFrameId);}
+\DoxyCodeLine{00256                 NetObject.NetObjDictsLocked = \textcolor{keyword}{false};}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                 \textcolor{comment}{// Snapshot Others}}
+\DoxyCodeLine{00259                 NetMasterCallbacks.OnSnapshotCallbacks(\_currFrameId);}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261                 TickManager.PostSnapshot(\_currFrameId);}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263                 lastSentTickTime = Time.fixedTime;}
+\DoxyCodeLine{00264             \}}
+\DoxyCodeLine{00265         \}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} BITS\_FOR\_NETOBJ\_SIZE = 16;}
+\DoxyCodeLine{00269         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SerializeAllAndSend()}
+\DoxyCodeLine{00270         \{}
+\DoxyCodeLine{00271             \textcolor{keywordtype}{byte}[] buffer = NetMsgSends.reusableBuffer;}
+\DoxyCodeLine{00272             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274             SerializationFlags writeFlags;}
+\DoxyCodeLine{00275             SerializationFlags flags;}
+\DoxyCodeLine{00276             \textcolor{keywordflow}{if} (TickManager.needToSendInitialForNewConn)}
+\DoxyCodeLine{00277             \{}
+\DoxyCodeLine{00278                 writeFlags = SerializationFlags.NewConnection | SerializationFlags.ForceReliable | SerializationFlags.Force;}
+\DoxyCodeLine{00279                 flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00280                 TickManager.needToSendInitialForNewConn = \textcolor{keyword}{false};}
+\DoxyCodeLine{00281             \}}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00283             \{}
+\DoxyCodeLine{00284                 writeFlags = SerializationFlags.None;}
+\DoxyCodeLine{00285                 flags = SerializationFlags.None;}
+\DoxyCodeLine{00286             \}}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00289             buffer.Write((uint)\_currFrameId, ref bitposition, TickEngineSettings.frameCountBits);}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291             NetMasterCallbacks.OnPreSerializeTickCallbacks(\_currFrameId, buffer, ref bitposition);}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293 \textcolor{preprocessor}{            \#region NetObject Serialization}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00296             NetObject.NetObjDictsLocked = \textcolor{keyword}{true};}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             NonAllocDictionary<int, NetObject> controlledObjs = NetObject.activeControlledNetObjs;}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300             SerializeNetObjDict(controlledObjs, buffer, ref bitposition, ref flags, writeFlags);}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             \textcolor{comment}{//NonAllocDictionary<int, NetObject> ownedButNotControlledObjs = NetObject.activeOwnedNetObjs;}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304             \textcolor{comment}{//if (ownedButNotControlledObjs.Count > 0)}}
+\DoxyCodeLine{00305             \textcolor{comment}{//    Debug.Log("{}LIMBO COUNT "{} + ownedButNotControlledObjs.Count);}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307             \textcolor{comment}{//SerializeNetObjDict(ownedButNotControlledObjs, buffer, ref bitposition, ref flags, writeFlags);}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{comment}{//foreach (var no in ownedObjs)}}
+\DoxyCodeLine{00310             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312             \textcolor{comment}{//    /// Not end of netobjs write bool}}
+\DoxyCodeLine{00313             \textcolor{comment}{//    int holdStartPos = bitposition;}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315             \textcolor{comment}{//    /// Write viewID}}
+\DoxyCodeLine{00316             \textcolor{comment}{//    buffer.WritePackedBytes((uint)no.ViewID, ref bitposition, 32);}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318             \textcolor{comment}{//    /// Write hadData bool}}
+\DoxyCodeLine{00319             \textcolor{comment}{//    int holdHasDataPos = bitposition;}}
+\DoxyCodeLine{00320             \textcolor{comment}{//    buffer.WriteBool(true, ref bitposition);}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             \textcolor{comment}{//    /// Log the data size write position and write a placeholder.}}
+\DoxyCodeLine{00323             \textcolor{comment}{//    int holdDataSizePos = bitposition;}}
+\DoxyCodeLine{00324             \textcolor{comment}{//    bitposition += BITS\_FOR\_NETOBJ\_SIZE;}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326             \textcolor{comment}{//    var objflags = no.OnNetSerialize(\_currFrameId, buffer, ref bitposition, writeFlags);}}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328             \textcolor{comment}{//    /// Skip netobjs if they had nothing to say}}
+\DoxyCodeLine{00329             \textcolor{comment}{//    if (objflags == SerializationFlags.None)}}
+\DoxyCodeLine{00330             \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00331             \textcolor{comment}{//        /// Rewind if this is a no-\/data write.}}
+\DoxyCodeLine{00332             \textcolor{comment}{//        if (no.SkipWhenEmpty)}}
+\DoxyCodeLine{00333             \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00334             \textcolor{comment}{//            bitposition = holdStartPos;}}
+\DoxyCodeLine{00335             \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00336             \textcolor{comment}{//        else}}
+\DoxyCodeLine{00337             \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00338             \textcolor{comment}{//            bitposition = holdHasDataPos;}}
+\DoxyCodeLine{00339             \textcolor{comment}{//            buffer.WriteBool(false, ref bitposition);}}
+\DoxyCodeLine{00340             \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00341             \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00342             \textcolor{comment}{//    else}}
+\DoxyCodeLine{00343             \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00344             \textcolor{comment}{//        /// Revise the data size now that we know it.}}
+\DoxyCodeLine{00345             \textcolor{comment}{//        flags |= objflags;}}
+\DoxyCodeLine{00346             \textcolor{comment}{//        int bitcount = bitposition -\/ holdDataSizePos;}}
+\DoxyCodeLine{00347             \textcolor{comment}{//        buffer.Write((uint)bitcount, ref holdDataSizePos, BITS\_FOR\_NETOBJ\_SIZE);}}
+\DoxyCodeLine{00348             \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             \textcolor{comment}{//    //Debug.Log(objflags + "{} / flg: "{} + (onNetSerialize[i]  as Component).name + "{} "{} + flags);}}
+\DoxyCodeLine{00351             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353             NetObject.NetObjDictsLocked = \textcolor{keyword}{false};}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357             \textcolor{comment}{// Any deferrered Ownership changes from SyncState happen here}}
+\DoxyCodeLine{00358             \textcolor{keywordflow}{while} (NetMasterCallbacks.postSerializationActions.Count > 0)}
+\DoxyCodeLine{00359                 NetMasterCallbacks.postSerializationActions.Dequeue().Invoke();}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361             \textcolor{keywordflow}{if} (flags == SerializationFlags.None)}
+\DoxyCodeLine{00362                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00365             buffer.WritePackedBytes(0, ref bitposition, 32);}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367             NetMsgSends.Send(buffer, bitposition, \textcolor{keyword}{null}, flags, \textcolor{keyword}{true});}
+\DoxyCodeLine{00368         \}}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SerializeNetObjDict(NonAllocDictionary<int, NetObject> dict, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, ref SerializationFlags flags, SerializationFlags writeFlags)}
+\DoxyCodeLine{00371         \{}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{foreach} (var no \textcolor{keywordflow}{in} dict.Values)}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00376                 \textcolor{keywordtype}{int} holdStartPos = bitposition;}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00379                 buffer.WritePackedBytes((uint)no.ViewID, ref bitposition, 32);}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00382                 \textcolor{keywordtype}{int} holdHasDataPos = bitposition;}
+\DoxyCodeLine{00383                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00386                 \textcolor{keywordtype}{int} holdDataSizePos = bitposition;}
+\DoxyCodeLine{00387                 bitposition += BITS\_FOR\_NETOBJ\_SIZE;}
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389                 var objflags = no.OnNetSerialize(\_currFrameId, buffer, ref bitposition, writeFlags);}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00392                 \textcolor{keywordflow}{if} (objflags == SerializationFlags.None)}
+\DoxyCodeLine{00393                 \{}
+\DoxyCodeLine{00395                     \textcolor{keywordflow}{if} (no.SkipWhenEmpty)}
+\DoxyCodeLine{00396                     \{}
+\DoxyCodeLine{00397                         bitposition = holdStartPos;}
+\DoxyCodeLine{00398                     \}}
+\DoxyCodeLine{00399                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00400                     \{}
+\DoxyCodeLine{00401                         bitposition = holdHasDataPos;}
+\DoxyCodeLine{00402                         buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00403                     \}}
+\DoxyCodeLine{00404                 \}}
+\DoxyCodeLine{00405                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00406                 \{}
+\DoxyCodeLine{00408                     flags |= objflags;}
+\DoxyCodeLine{00409                     \textcolor{keywordtype}{int} bitcount = bitposition -\/ holdDataSizePos;}
+\DoxyCodeLine{00410                     buffer.Write((uint)bitcount, ref holdDataSizePos, BITS\_FOR\_NETOBJ\_SIZE);}
+\DoxyCodeLine{00411                 \}}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413                 \textcolor{comment}{//Debug.Log(objflags + "{} / flg: "{} + (onNetSerialize[i]  as Component).name + "{} "{} + flags);}}
+\DoxyCodeLine{00414             \}}
+\DoxyCodeLine{00415         \}}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00421         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReceiveMessage(\textcolor{keywordtype}{object} conn, \textcolor{keywordtype}{int} connId, \textcolor{keywordtype}{byte}[] buffer)}
+\DoxyCodeLine{00422         \{}
+\DoxyCodeLine{00423             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00424             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00428             \textcolor{keywordtype}{int} originFrameId = (int)buffer.Read(ref bitposition, TickEngineSettings.frameCountBits);}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430             \textcolor{comment}{//Debug.Log("{}in "{} + originFrameId);}}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00432 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00433             \textcolor{keywordflow}{if} (originFrameId < 0 || originFrameId >= frameCount)}
+\DoxyCodeLine{00434                 Debug.LogError(\textcolor{stringliteral}{"{}INVALID FRAME ID "{}} + originFrameId + \textcolor{stringliteral}{"{} CORRUPT STREAM LIKELY DUE TO READ/WRITE DISAGREEMENT."{}});}
+\DoxyCodeLine{00435 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00436             FrameArrival arrival;}
+\DoxyCodeLine{00437             \textcolor{comment}{/*var offsets = */}}
+\DoxyCodeLine{00438             TickManager.LogIncomingFrame(connId, originFrameId, out arrival);}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00441             \textcolor{comment}{//NetMasterCallbacks.OnPreDeserializeTickCallbacks(localFrameId, buffer, ref bitposition);}}
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00444             \textcolor{keywordflow}{while} (\textcolor{keyword}{true})}
+\DoxyCodeLine{00445             \{}
+\DoxyCodeLine{00447                 \textcolor{keywordtype}{int} viewid = (int)buffer.ReadPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449                 \textcolor{keywordflow}{if} (viewid == 0)}
+\DoxyCodeLine{00450                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00453                 \textcolor{keywordtype}{bool} hasData = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00454 }
+\DoxyCodeLine{00456                 \textcolor{keywordflow}{if} (!hasData)}
+\DoxyCodeLine{00457                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00460                 \textcolor{keywordtype}{int} holdDataSizePos = bitposition;}
+\DoxyCodeLine{00461                 \textcolor{keywordtype}{int} bitcount = (int)buffer.Read(ref bitposition, BITS\_FOR\_NETOBJ\_SIZE);}
+\DoxyCodeLine{00462                 \textcolor{keywordtype}{int} expectedBitPosition = holdDataSizePos + bitcount;}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464                 var pv = PhotonNetwork.GetPhotonView(viewid);}
+\DoxyCodeLine{00465                 var netobj = pv ? pv.GetComponent<NetObject>() : \textcolor{keyword}{null};}
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00468                 \textcolor{keywordflow}{if} (ReferenceEquals(netobj, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00469                 \{}
+\DoxyCodeLine{00470                     bitposition = expectedBitPosition;}
+\DoxyCodeLine{00471                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00472                 \}}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00475                 \textcolor{keywordflow}{if} (netobj.IgnoreNonControllerUpdates)}
+\DoxyCodeLine{00476                 \{}
+\DoxyCodeLine{00477                     \textcolor{keywordtype}{int} controllerActorNr = pv.ControllerActorNr;}
+\DoxyCodeLine{00478                     \textcolor{keywordtype}{int} ownerActorNr = pv.OwnerActorNr;}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480                     \textcolor{keywordflow}{if} (controllerActorNr == -\/1)}
+\DoxyCodeLine{00481                     \{}
+\DoxyCodeLine{00482 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00483                         Debug.Log(pv.name + \textcolor{stringliteral}{"{}:"{}} + pv.ViewID + \textcolor{stringliteral}{"{} OwnershipUpdate has not yet arrived from master, so owner is still unknown. Accepting update from Actor "{}} + connId + \textcolor{stringliteral}{"{} as temporary controller until OwnershipUpdate arrives and sets the Owner/Controller."{}});}
+\DoxyCodeLine{00484 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00485                         pv.ControllerActorNr = connId;}
+\DoxyCodeLine{00486                     \}}
+\DoxyCodeLine{00487                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (controllerActorNr != connId \&\& ownerActorNr != connId)}
+\DoxyCodeLine{00488                     \{}
+\DoxyCodeLine{00489                         \{}
+\DoxyCodeLine{00490 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00491                             Debug.LogError(\textcolor{stringliteral}{"{}fid: "{}} + originFrameId + \textcolor{stringliteral}{"{}Update from ActorId: "{}} + connId + \textcolor{stringliteral}{"{} for object "{}} + netobj.name + \textcolor{stringliteral}{"{}:"{}} + pv.ViewID + \textcolor{stringliteral}{"{} , but that conn does not have controller authority. Current cowner:controller is "{}}}
+\DoxyCodeLine{00492                                 + pv.OwnerActorNr + \textcolor{stringliteral}{"{}:"{}} + controllerActorNr);}
+\DoxyCodeLine{00493 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00494                             bitposition = expectedBitPosition;}
+\DoxyCodeLine{00495                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00496                         \}}
+\DoxyCodeLine{00497                     \}}
+\DoxyCodeLine{00498                 \}}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501 }
+\DoxyCodeLine{00502                 netobj.OnDeserialize(connId, originFrameId, buffer, ref bitposition, hasData, arrival);}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00506                 \textcolor{keywordflow}{if} (bitposition != expectedBitPosition)}
+\DoxyCodeLine{00507                     Debug.LogWarning(\textcolor{stringliteral}{"{}Deserialization mismatch for object "{}} + netobj.name + \textcolor{stringliteral}{"{} viewId: "{}} + netobj.ViewID + \textcolor{stringliteral}{"{} owned by: "{}} + netobj.photonView.OwnerActorNr +}
+\DoxyCodeLine{00508                         \textcolor{stringliteral}{"{}. Bitposition off by: "{}} + (expectedBitPosition -\/ bitposition) + \textcolor{stringliteral}{"{} bits."{}});}
+\DoxyCodeLine{00509 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00511                 bitposition = expectedBitPosition;}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513             \}}
+\DoxyCodeLine{00514         \}}
+\DoxyCodeLine{00515 }
+\DoxyCodeLine{00516         \textcolor{keyword}{public} \textcolor{keyword}{static} FrameArrival CheckFrameArrival(\textcolor{keywordtype}{int} incomingFrame)}
+\DoxyCodeLine{00517         \{}
+\DoxyCodeLine{00518             \textcolor{keywordtype}{int} delta = incomingFrame -\/ \_prevFrameId;}
+\DoxyCodeLine{00519 }
+\DoxyCodeLine{00520             \textcolor{keywordflow}{if} (delta == 0)}
+\DoxyCodeLine{00521                 \textcolor{keywordflow}{return} FrameArrival.IsSnap;}
+\DoxyCodeLine{00522 }
+\DoxyCodeLine{00523             \textcolor{comment}{// change negative values into positive to check for wrap around.}}
+\DoxyCodeLine{00524             \textcolor{keywordflow}{if} (delta < 0)}
+\DoxyCodeLine{00525                 delta += TickEngineSettings.frameCount;}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527             \textcolor{keywordflow}{if} (delta == 1)}
+\DoxyCodeLine{00528                 \textcolor{keywordflow}{return} FrameArrival.IsTarget;}
+\DoxyCodeLine{00529 }
+\DoxyCodeLine{00530             \textcolor{keywordflow}{if} (delta >= TickEngineSettings.halfFrameCount)}
+\DoxyCodeLine{00531                 \textcolor{keywordflow}{return} FrameArrival.IsLate;}
+\DoxyCodeLine{00532 }
+\DoxyCodeLine{00533             \textcolor{keywordflow}{return} FrameArrival.IsFuture;}
+\DoxyCodeLine{00534 }
+\DoxyCodeLine{00535         \}}
+\DoxyCodeLine{00536     \}}
+\DoxyCodeLine{00537 }
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00540     [CustomEditor(typeof(NetMaster))]}
+\DoxyCodeLine{00541     \textcolor{keyword}{public} \textcolor{keyword}{class }NetMasterEditor : NetCoreHeaderEditor}
+\DoxyCodeLine{00542     \{}
+\DoxyCodeLine{00543         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00544         \{}
+\DoxyCodeLine{00545             \textcolor{keyword}{get}}
+\DoxyCodeLine{00546             \{}
+\DoxyCodeLine{00547                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/NetMasterText"{}};}
+\DoxyCodeLine{00548             \}}
+\DoxyCodeLine{00549         \}}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00552         \{}
+\DoxyCodeLine{00553             base.OnInspectorGUI();}
+\DoxyCodeLine{00554 }
+\DoxyCodeLine{00555             \textcolor{keyword}{const} \textcolor{keywordtype}{string} desc = \textcolor{stringliteral}{"{}Early timing singleton used by all Simple components. "{}} +}
+\DoxyCodeLine{00556             \textcolor{stringliteral}{"{}Effectively a lightweight networking specific Update Manager with timing segments specifically useful for networking. "{}} +}
+\DoxyCodeLine{00557             \textcolor{stringliteral}{"{}This component will be added automatically at runtime if one does not exist in your scene. "{}} +}
+\DoxyCodeLine{00558             \textcolor{stringliteral}{"{}NetMaster is set to execute on the earliest Script Execution timing, "{}} +}
+\DoxyCodeLine{00559             \textcolor{stringliteral}{"{}ensuring its Fixed/Late/Update callbacks occur before all other scene components."{}};}
+\DoxyCodeLine{00560 }
+\DoxyCodeLine{00561             EditorGUILayout.LabelField(desc, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ wordWrap = \textcolor{keyword}{true}, alignment = TextAnchor.UpperLeft \});}
+\DoxyCodeLine{00562         \}}
+\DoxyCodeLine{00563     \}}
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00566 \}}
+\DoxyCodeLine{00567 }
+
+\end{DoxyCode}

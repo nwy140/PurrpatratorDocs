@@ -1,0 +1,446 @@
+\doxysection{Nested\+Component\+Utilities.\+cs}
+\label{_nested_component_utilities_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Utilities/NestedComponentUtilities.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Utilities/NestedComponentUtilities.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00006 \{}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NestedComponentUtilities}
+\DoxyCodeLine{00009     \{}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011         \textcolor{keyword}{public} \textcolor{keyword}{static} T EnsureRootComponentExists<T, NestedT>(\textcolor{keyword}{this} Transform transform)}
+\DoxyCodeLine{00012             where T : Component}
+\DoxyCodeLine{00013             where NestedT : Component}
+\DoxyCodeLine{00014         \{}
+\DoxyCodeLine{00015             var root = GetParentComponent<NestedT>(transform);}
+\DoxyCodeLine{00016             \textcolor{keywordflow}{if} (root)}
+\DoxyCodeLine{00017             \{}
+\DoxyCodeLine{00018                 var comp = root.GetComponent<T>();}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020                 \textcolor{keywordflow}{if} (comp)}
+\DoxyCodeLine{00021                     \textcolor{keywordflow}{return} comp;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023                 \textcolor{keywordflow}{return} root.gameObject.AddComponent<T>();}
+\DoxyCodeLine{00024             \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00027         \}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{        \#region GetComponent Replacements}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{comment}{// Recycled collections}}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{static} Queue<Transform> nodesQueue = \textcolor{keyword}{new} Queue<Transform>();}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<System.Type, ICollection> searchLists = \textcolor{keyword}{new} Dictionary<System.Type, ICollection>();}
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keyword}{static} Stack<Transform> nodeStack = \textcolor{keyword}{new} Stack<Transform>();}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetParentComponent<T>(\textcolor{keyword}{this} Transform t)}
+\DoxyCodeLine{00040             where T : Component}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             T found = t.GetComponent<T>();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             \textcolor{keywordflow}{if} (found)}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             var par = t.parent;}
+\DoxyCodeLine{00048             \textcolor{keywordflow}{while} (par)}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 found = par.GetComponent<T>();}
+\DoxyCodeLine{00051                 \textcolor{keywordflow}{if} (found)}
+\DoxyCodeLine{00052                     \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00053                 par = par.parent;}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00064         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetNestedComponentsInParents<T>(\textcolor{keyword}{this} Transform t, List<T> list)}
+\DoxyCodeLine{00065             where T : Component}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             list.Clear();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{while} (t != \textcolor{keyword}{null})}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 T obj = t.GetComponent<T>();}
+\DoxyCodeLine{00072                 \textcolor{keywordflow}{if} (obj)}
+\DoxyCodeLine{00073                     list.Add(obj);}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075                 t = t.parent;}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetNestedComponentInChildren<T, NestedT>(\textcolor{keyword}{this} Transform t, \textcolor{keywordtype}{bool} includeInactive)}
+\DoxyCodeLine{00080             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00081             where NestedT : \textcolor{keyword}{class}}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             \textcolor{comment}{// Look for the most obvious check first on the root.}}
+\DoxyCodeLine{00084             var found = t.GetComponent<T>();}
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (!ReferenceEquals(found, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             \textcolor{comment}{// No root found, start testing layer by layer -\/ root is the first layer. Add to queue.}}
+\DoxyCodeLine{00089             nodesQueue.Clear();}
+\DoxyCodeLine{00090             nodesQueue.Enqueue(t);}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \textcolor{keywordflow}{while} (nodesQueue.Count > 0)}
+\DoxyCodeLine{00093             \{}
+\DoxyCodeLine{00094                 var node = nodesQueue.Dequeue();}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} c = 0, ccnt = node.childCount; c < ccnt; ++c)}
+\DoxyCodeLine{00097                 \{}
+\DoxyCodeLine{00098                     var child = node.GetChild(c);}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                     \textcolor{comment}{// Ignore branches that are not active}}
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00102                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104                     \textcolor{comment}{// Hit a nested node -\/ don't search this node}}
+\DoxyCodeLine{00105                     \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00106                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108                     \textcolor{comment}{// see if what we are looking for is on this node}}
+\DoxyCodeLine{00109                     found = child.GetComponent<T>();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111                     \textcolor{comment}{// Return if we found what we are looking for}}
+\DoxyCodeLine{00112                     \textcolor{keywordflow}{if} (!ReferenceEquals(found, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00113                         \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                     \textcolor{comment}{// Add node to queue for next depth pass since nothing was found on this layer.}}
+\DoxyCodeLine{00116                     nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00117                 \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00130         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetNestedComponentInParent<T, NestedT>(\textcolor{keyword}{this} Transform t)}
+\DoxyCodeLine{00131             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00132             where NestedT : \textcolor{keyword}{class}}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             T found = \textcolor{keyword}{null};}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             Transform node = t;}
+\DoxyCodeLine{00137             \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00138             \{}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 found = node.GetComponent<T>();}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{if} (!ReferenceEquals(found, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00143                     \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 \textcolor{comment}{// stop search on node with PV}}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{if} (!ReferenceEquals(node.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00147                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149                 node = node.parent;}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{while} (!ReferenceEquals(node, \textcolor{keyword}{null}));}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00163         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetNestedComponentInParents<T, NestedT>(\textcolor{keyword}{this} Transform t)}
+\DoxyCodeLine{00164             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00165             where NestedT : \textcolor{keyword}{class}}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             \textcolor{comment}{// First try root}}
+\DoxyCodeLine{00168             var found = t.GetComponent<T>();}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170             \textcolor{keywordflow}{if} (!ReferenceEquals(found, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00174             var par = t.parent;}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176             \textcolor{keywordflow}{while} (!ReferenceEquals(par, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00177             \{}
+\DoxyCodeLine{00178                 found = par.GetComponent<T>();}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{if} (!ReferenceEquals(found, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00180                     \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{if} (!ReferenceEquals(par.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00184                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186                 par = par.parent;}
+\DoxyCodeLine{00187             \};}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetNestedComponentsInParents<T, NestedT>(\textcolor{keyword}{this} Transform t, List<T> list)}
+\DoxyCodeLine{00202             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00203             where NestedT : \textcolor{keyword}{class}}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             \textcolor{comment}{// Get components on the starting node -\/ this is a given.}}
+\DoxyCodeLine{00207             t.GetComponents(list);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{comment}{// If the starting node has the stop component, we are done.}}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{if} (!ReferenceEquals(t.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             var tnode = t.parent;}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215             \textcolor{comment}{// If there is no parent, we are done.}}
+\DoxyCodeLine{00216             \textcolor{keywordflow}{if} (ReferenceEquals(tnode, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00217                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             nodeStack.Clear();}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{keywordflow}{while} (\textcolor{keyword}{true})}
+\DoxyCodeLine{00222             \{}
+\DoxyCodeLine{00223                 \textcolor{comment}{// add new parent to stack}}
+\DoxyCodeLine{00224                 nodeStack.Push(tnode);}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226                 \textcolor{comment}{// if this node has the Stop, we are done recursing up.}}
+\DoxyCodeLine{00227                 \textcolor{keywordflow}{if} (!ReferenceEquals(tnode.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00228                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230                 \textcolor{comment}{// Get the next parent node and add it to the stack}}
+\DoxyCodeLine{00231                 tnode = tnode.parent;}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233                 \textcolor{comment}{// Stop recursing up if the parent is null}}
+\DoxyCodeLine{00234                 \textcolor{keywordflow}{if} (ReferenceEquals(tnode, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00235                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00236             \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (nodeStack.Count == 0)}
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             System.Type type = typeof(T);}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{comment}{// Acquire the right searchlist from our pool}}
+\DoxyCodeLine{00244             List<T> searchList;}
+\DoxyCodeLine{00245             \textcolor{keywordflow}{if} (!searchLists.ContainsKey(type))}
+\DoxyCodeLine{00246             \{}
+\DoxyCodeLine{00247                 searchList = \textcolor{keyword}{new} List<T>();}
+\DoxyCodeLine{00248                 searchLists.Add(type, searchList);}
+\DoxyCodeLine{00249             \}}
+\DoxyCodeLine{00250             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00251             \{}
+\DoxyCodeLine{00252                 searchList = searchLists[type] as List<T>;}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{comment}{// Reverse iterate the nodes found. This produces a GetComponentInParent that starts from the parent Stop down to the provided transform}}
+\DoxyCodeLine{00256             \textcolor{keywordflow}{while} (nodeStack.Count > 0)}
+\DoxyCodeLine{00257             \{}
+\DoxyCodeLine{00258                 var node = nodeStack.Pop();}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260                 node.GetComponents(searchList);}
+\DoxyCodeLine{00261                 list.AddRange(searchList);}
+\DoxyCodeLine{00262             \}}
+\DoxyCodeLine{00263         \}}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00272         \textcolor{keyword}{public} \textcolor{keyword}{static} List<T> GetNestedComponentsInChildren<T, NestedT>(\textcolor{keyword}{this} Transform t, List<T> list, \textcolor{keywordtype}{bool} includeInactive = \textcolor{keyword}{true})}
+\DoxyCodeLine{00273             where T : class}
+\DoxyCodeLine{00274             where NestedT : class}
+\DoxyCodeLine{00275         \{}
+\DoxyCodeLine{00276             System.Type type = typeof(T);}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278             \textcolor{comment}{// Temp lists are also recycled. Get/Create a reusable List of this type.}}
+\DoxyCodeLine{00279             List<T> searchList;}
+\DoxyCodeLine{00280             \textcolor{keywordflow}{if} (!searchLists.ContainsKey(type))}
+\DoxyCodeLine{00281                 searchLists.Add(type, searchList = \textcolor{keyword}{new} List<T>());}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00283                 searchList = searchLists[type] as List<T>;}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285             nodesQueue.Clear();}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             \textcolor{keywordflow}{if} (list == \textcolor{keyword}{null})}
+\DoxyCodeLine{00288                 list = \textcolor{keyword}{new} List<T>();}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             \textcolor{comment}{// Get components on starting transform -\/ no exceptions}}
+\DoxyCodeLine{00291             t.GetComponents(list);}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293             \textcolor{comment}{// Add first layer of children to the queue for next layer processing.}}
+\DoxyCodeLine{00294             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = t.childCount; i < cnt; ++i)}
+\DoxyCodeLine{00295             \{}
+\DoxyCodeLine{00296                 var child = t.GetChild(i);}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                 \textcolor{comment}{// Ignore inactive nodes (optional)}}
+\DoxyCodeLine{00299                 \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00300                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302                 \textcolor{comment}{// ignore nested DontRecurseOnT}}
+\DoxyCodeLine{00303                 \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00304                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306                 nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{comment}{// Recurse node layers}}
+\DoxyCodeLine{00310             \textcolor{keywordflow}{while} (nodesQueue.Count > 0)}
+\DoxyCodeLine{00311             \{}
+\DoxyCodeLine{00312                 var node = nodesQueue.Dequeue();}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314                 \textcolor{comment}{// Add found components on this gameobject node}}
+\DoxyCodeLine{00315                 node.GetComponents(searchList);}
+\DoxyCodeLine{00316                 list.AddRange(searchList);}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318                 \textcolor{comment}{// Add children to the queue for next layer processing.}}
+\DoxyCodeLine{00319                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = node.childCount; i < cnt; ++i)}
+\DoxyCodeLine{00320                 \{}
+\DoxyCodeLine{00321                     var child = node.GetChild(i);}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323                     \textcolor{comment}{// Ignore inactive nodes (optional)}}
+\DoxyCodeLine{00324                     \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00325                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327                     \textcolor{comment}{// ignore nested NestedT}}
+\DoxyCodeLine{00328                     \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00329                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331                     nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00332                 \}}
+\DoxyCodeLine{00333             \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335             \textcolor{keywordflow}{return} list;}
+\DoxyCodeLine{00336         \}}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00344         \textcolor{keyword}{public} \textcolor{keyword}{static} List<T> GetNestedComponentsInChildren<T>(\textcolor{keyword}{this} Transform t, List<T> list, \textcolor{keywordtype}{bool} includeInactive = \textcolor{keyword}{true}, params System.Type[] stopOn)}
+\DoxyCodeLine{00345             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             System.Type type = typeof(T);}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             \textcolor{comment}{// Temp lists are also recycled. Get/Create a reusable List of this type.}}
+\DoxyCodeLine{00350             List<T> searchList;}
+\DoxyCodeLine{00351             \textcolor{keywordflow}{if} (!searchLists.ContainsKey(type))}
+\DoxyCodeLine{00352                 searchLists.Add(type, searchList = \textcolor{keyword}{new} List<T>());}
+\DoxyCodeLine{00353             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00354                 searchList = searchLists[type] as List<T>;}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356             nodesQueue.Clear();}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358             \textcolor{comment}{// Get components on starting transform -\/ no exceptions}}
+\DoxyCodeLine{00359             t.GetComponents(list);}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361             \textcolor{comment}{// Add first layer of children to the queue for next layer processing.}}
+\DoxyCodeLine{00362             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = t.childCount; i < cnt; ++i)}
+\DoxyCodeLine{00363             \{}
+\DoxyCodeLine{00364                 var child = t.GetChild(i);}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366                 \textcolor{comment}{// Ignore inactive nodes (optional)}}
+\DoxyCodeLine{00367                 \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00368                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370                 \textcolor{comment}{// ignore nested DontRecurseOnT}}
+\DoxyCodeLine{00371                 \textcolor{keywordtype}{bool} stopRecurse = \textcolor{keyword}{false};}
+\DoxyCodeLine{00372                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} s = 0, scnt = stopOn.Length; s < scnt; ++s)}
+\DoxyCodeLine{00373                 \{}
+\DoxyCodeLine{00374                     \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent(stopOn[s]), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00375                     \{}
+\DoxyCodeLine{00376                         stopRecurse = \textcolor{keyword}{true};}
+\DoxyCodeLine{00377                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00378                     \}}
+\DoxyCodeLine{00379                 \}}
+\DoxyCodeLine{00380                 \textcolor{keywordflow}{if} (stopRecurse)}
+\DoxyCodeLine{00381                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383                 nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00384             \}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386             \textcolor{comment}{// Recurse node layers}}
+\DoxyCodeLine{00387             \textcolor{keywordflow}{while} (nodesQueue.Count > 0)}
+\DoxyCodeLine{00388             \{}
+\DoxyCodeLine{00389                 var node = nodesQueue.Dequeue();}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391                 \textcolor{comment}{// Add found components on this gameobject node}}
+\DoxyCodeLine{00392                 node.GetComponents(searchList);}
+\DoxyCodeLine{00393                 list.AddRange(searchList);}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395                 \textcolor{comment}{// Add children to the queue for next layer processing.}}
+\DoxyCodeLine{00396                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = node.childCount; i < cnt; ++i)}
+\DoxyCodeLine{00397                 \{}
+\DoxyCodeLine{00398                     var child = node.GetChild(i);}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400                     \textcolor{comment}{// Ignore inactive nodes (optional)}}
+\DoxyCodeLine{00401                     \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00402                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404                     \textcolor{comment}{// ignore nested NestedT}}
+\DoxyCodeLine{00405                     \textcolor{keywordtype}{bool} stopRecurse = \textcolor{keyword}{false};}
+\DoxyCodeLine{00406                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} s = 0, scnt = stopOn.Length; s < scnt; ++s)}
+\DoxyCodeLine{00407                     \{}
+\DoxyCodeLine{00408                         \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent(stopOn[s]), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00409                         \{}
+\DoxyCodeLine{00410                             stopRecurse = \textcolor{keyword}{true};}
+\DoxyCodeLine{00411                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00412                         \}}
+\DoxyCodeLine{00413                     \}}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00415                     \textcolor{keywordflow}{if} (stopRecurse)}
+\DoxyCodeLine{00416                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418                     nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00419                 \}}
+\DoxyCodeLine{00420             \}}
+\DoxyCodeLine{00421 }
+\DoxyCodeLine{00422             \textcolor{keywordflow}{return} list;}
+\DoxyCodeLine{00423         \}}
+\DoxyCodeLine{00424 }
+\DoxyCodeLine{00435         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetNestedComponentsInChildren<T, SearchT, NestedT>(\textcolor{keyword}{this} Transform t, \textcolor{keywordtype}{bool} includeInactive, List<T> list)}
+\DoxyCodeLine{00436             where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00437             where SearchT : \textcolor{keyword}{class}}
+\DoxyCodeLine{00438         \{}
+\DoxyCodeLine{00439             list.Clear();}
+\DoxyCodeLine{00440 }
+\DoxyCodeLine{00441             \textcolor{comment}{// If this is inactive, nothing will be found. Give up now if we are restricted to active.}}
+\DoxyCodeLine{00442             \textcolor{keywordflow}{if} (!includeInactive \&\& !t.gameObject.activeSelf)}
+\DoxyCodeLine{00443                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00444 }
+\DoxyCodeLine{00445             System.Type searchType = typeof(SearchT);}
+\DoxyCodeLine{00446 }
+\DoxyCodeLine{00447             \textcolor{comment}{// Temp lists are also recycled. Get/Create a reusable List of this type.}}
+\DoxyCodeLine{00448             List<SearchT> searchList;}
+\DoxyCodeLine{00449             \textcolor{keywordflow}{if} (!searchLists.ContainsKey(searchType))}
+\DoxyCodeLine{00450                 searchLists.Add(searchType, searchList = \textcolor{keyword}{new} List<SearchT>());}
+\DoxyCodeLine{00451             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00452                 searchList = searchLists[searchType] as List<SearchT>;}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454             \textcolor{comment}{// Recurse child nodes one layer at a time. Using a Queue allows this to happen without a lot of work.}}
+\DoxyCodeLine{00455             nodesQueue.Clear();}
+\DoxyCodeLine{00456             nodesQueue.Enqueue(t);}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458             \textcolor{keywordflow}{while} (nodesQueue.Count > 0)}
+\DoxyCodeLine{00459             \{}
+\DoxyCodeLine{00460                 var node = nodesQueue.Dequeue();}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462                 \textcolor{comment}{// Add found components on this gameobject node}}
+\DoxyCodeLine{00463                 searchList.Clear();}
+\DoxyCodeLine{00464                 node.GetComponents(searchList);}
+\DoxyCodeLine{00465                 \textcolor{keywordflow}{foreach} (var comp \textcolor{keywordflow}{in} searchList)}
+\DoxyCodeLine{00466                 \{}
+\DoxyCodeLine{00467                     var casted = comp as T;}
+\DoxyCodeLine{00468                     \textcolor{keywordflow}{if} (!ReferenceEquals(casted, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00469                         list.Add(casted);}
+\DoxyCodeLine{00470                 \}}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472                 \textcolor{comment}{// Add children to the queue for next layer processing.}}
+\DoxyCodeLine{00473                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = node.childCount; i < cnt; ++i)}
+\DoxyCodeLine{00474                 \{}
+\DoxyCodeLine{00475                     var child = node.GetChild(i);}
+\DoxyCodeLine{00476 }
+\DoxyCodeLine{00477                     \textcolor{comment}{// Ignore inactive nodes (optional)}}
+\DoxyCodeLine{00478                     \textcolor{keywordflow}{if} (!includeInactive \&\& !child.gameObject.activeSelf)}
+\DoxyCodeLine{00479                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00480 }
+\DoxyCodeLine{00481                     \textcolor{comment}{// ignore nested DontRecurseOnT}}
+\DoxyCodeLine{00482                     \textcolor{keywordflow}{if} (!ReferenceEquals(child.GetComponent<NestedT>(), \textcolor{keyword}{null}))}
+\DoxyCodeLine{00483                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00485                     nodesQueue.Enqueue(child);}
+\DoxyCodeLine{00486                 \}}
+\DoxyCodeLine{00487             \}}
+\DoxyCodeLine{00488 }
+\DoxyCodeLine{00489         \}}
+\DoxyCodeLine{00490 }
+\DoxyCodeLine{00491 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00492     \}}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494 \}}
+
+\end{DoxyCode}

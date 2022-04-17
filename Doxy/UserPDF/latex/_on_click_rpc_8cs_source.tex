@@ -1,0 +1,91 @@
+\doxysection{On\+Click\+Rpc.\+cs}
+\label{_on_click_rpc_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Prototyping/OnClickRpc.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Prototyping/OnClickRpc.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}OnClickInstantiate.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// Part of: Photon Unity Utilities}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>A compact script for prototyping.</summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00007 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} UnityEngine.EventSystems;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }OnClickRpc : MonoBehaviourPun, IPointerClickHandler}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} PointerEventData.InputButton Button;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} KeyCode ModifierKey;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} RpcTarget Target;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keywordtype}{void} IPointerClickHandler.OnPointerClick(PointerEventData eventData)}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             \textcolor{keywordflow}{if} (!PhotonNetwork.InRoom || (\textcolor{keyword}{this}.ModifierKey != KeyCode.None \&\& !Input.GetKey(\textcolor{keyword}{this}.ModifierKey)) || eventData.button != \textcolor{keyword}{this}.Button)}
+\DoxyCodeLine{00033             \{}
+\DoxyCodeLine{00034                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00035             \}}
+\DoxyCodeLine{00036             }
+\DoxyCodeLine{00037             this.photonView.RPC(\textcolor{stringliteral}{"{}ClickRpc"{}}, this.Target);}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 \textcolor{preprocessor}{        \#region RPC Implementation}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{private} Material originalMaterial;}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} Color originalColor;}
+\DoxyCodeLine{00045         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isFlashing;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [PunRPC]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ClickRpc()}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             \textcolor{comment}{//Debug.Log("{}ClickRpc Called"{});}}
+\DoxyCodeLine{00051             this.StartCoroutine(this.ClickFlash());}
+\DoxyCodeLine{00052         \}}
+\DoxyCodeLine{00053         }
+\DoxyCodeLine{00054         \textcolor{keyword}{public} IEnumerator ClickFlash()}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (isFlashing)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 yield \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060             isFlashing = \textcolor{keyword}{true};}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             this.originalMaterial = GetComponent<Renderer>().material;}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (!this.originalMaterial.HasProperty(\textcolor{stringliteral}{"{}\_EmissionColor"{}}))}
+\DoxyCodeLine{00064             \{}
+\DoxyCodeLine{00065                 Debug.LogWarning(\textcolor{stringliteral}{"{}Doesn't have emission, can't flash "{}} + gameObject);}
+\DoxyCodeLine{00066                 yield \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00067             \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordtype}{bool} wasEmissive = this.originalMaterial.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_EMISSION"{}});}
+\DoxyCodeLine{00070             this.originalMaterial.EnableKeyword(\textcolor{stringliteral}{"{}\_EMISSION"{}});}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             this.originalColor = this.originalMaterial.GetColor(\textcolor{stringliteral}{"{}\_EmissionColor"{}});}
+\DoxyCodeLine{00073             this.originalMaterial.SetColor(\textcolor{stringliteral}{"{}\_EmissionColor"{}}, Color.white);}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} f = 0.0f; f <= 1.0f; f += 0.08f)}
+\DoxyCodeLine{00076             \{}
+\DoxyCodeLine{00077                 Color lerped = Color.Lerp(Color.white, \textcolor{keyword}{this}.originalColor, f);}
+\DoxyCodeLine{00078                 this.originalMaterial.SetColor(\textcolor{stringliteral}{"{}\_EmissionColor"{}}, lerped);}
+\DoxyCodeLine{00079                 yield \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             this.originalMaterial.SetColor(\textcolor{stringliteral}{"{}\_EmissionColor"{}}, this.originalColor);}
+\DoxyCodeLine{00083             \textcolor{keywordflow}{if} (!wasEmissive) this.originalMaterial.DisableKeyword(\textcolor{stringliteral}{"{}\_EMISSION"{}});}
+\DoxyCodeLine{00084             isFlashing = \textcolor{keyword}{false};}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00088     \}}
+\DoxyCodeLine{00089 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,114 @@
+\doxysection{Buoyancy.\+cs}
+\label{_buoyancy_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Scripts/Buoyancy.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Scripts/Buoyancy.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{namespace }FlatKit \{}
+\DoxyCodeLine{00004 \textcolor{keyword}{public} \textcolor{keyword}{class }Buoyancy : MonoBehaviour \{}
+\DoxyCodeLine{00005     [Tooltip(\textcolor{stringliteral}{"{}The object that contains a Water material."{}})]}
+\DoxyCodeLine{00006     \textcolor{keyword}{public} Transform water;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008     [Space][Tooltip(\textcolor{stringliteral}{"{}Range of probing wave height for buoyancy rotation."{}})]}
+\DoxyCodeLine{00009     \textcolor{keyword}{public} \textcolor{keywordtype}{float} size = 1f;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011     [Tooltip(\textcolor{stringliteral}{"{}Max height of buoyancy going up and down."{}})]}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keywordtype}{float} amplitude = 1f;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [Space, Tooltip(\textcolor{stringliteral}{"{}Optionally provide a separate material to get the wave parameters."{}})]}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} Material overrideWaterMaterial;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{private} Material \_material;}
+\DoxyCodeLine{00018     \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_speed;}
+\DoxyCodeLine{00019     \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_amplitude;}
+\DoxyCodeLine{00020     \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_frequency;}
+\DoxyCodeLine{00021     \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_direction;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023     \textcolor{keyword}{private} Vector3 \_originalPosition;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start() \{}
+\DoxyCodeLine{00026         var r = water.GetComponent<Renderer>();}
+\DoxyCodeLine{00027         Debug.Assert(r);}
+\DoxyCodeLine{00028         \_material = overrideWaterMaterial != \textcolor{keyword}{null} ? overrideWaterMaterial : r.sharedMaterial;}
+\DoxyCodeLine{00029         Debug.Assert(\_material);}
+\DoxyCodeLine{00030         Debug.Assert(\_material.HasProperty(\textcolor{stringliteral}{"{}\_WaveSpeed"{}}));}
+\DoxyCodeLine{00031         \_speed = \_material.GetFloat(\textcolor{stringliteral}{"{}\_WaveSpeed"{}});}
+\DoxyCodeLine{00032         \_amplitude = \_material.GetFloat(\textcolor{stringliteral}{"{}\_WaveAmplitude"{}});}
+\DoxyCodeLine{00033         \_frequency = \_material.GetFloat(\textcolor{stringliteral}{"{}\_WaveFrequency"{}});}
+\DoxyCodeLine{00034         \_direction = \_material.GetFloat(\textcolor{stringliteral}{"{}\_WaveDirection"{}});}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         var t = transform;}
+\DoxyCodeLine{00037         \_originalPosition = t.position;}
+\DoxyCodeLine{00038     \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update() \{}
+\DoxyCodeLine{00041         var positionWS = transform.position;}
+\DoxyCodeLine{00042         var positionOS = water.InverseTransformPoint(positionWS);}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         positionWS.y = GetHeightOS(positionOS) + \_originalPosition.y;}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         transform.position = positionWS;}
+\DoxyCodeLine{00047         transform.up = GetNormalWS(positionOS);}
+\DoxyCodeLine{00048     \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050     Vector2 GradientNoiseDir(Vector2 p) \{}
+\DoxyCodeLine{00051         p = \textcolor{keyword}{new} Vector2(p.x \% 289, p.y \% 289);}
+\DoxyCodeLine{00052         \textcolor{keywordtype}{float} x = (34 * p.x + 1) * p.x \% 289 + p.y;}
+\DoxyCodeLine{00053         x = (34 * x + 1) * x \% 289;}
+\DoxyCodeLine{00054         x = ((x / 41) \% 1) * 2 -\/ 1;}
+\DoxyCodeLine{00055         \textcolor{keywordflow}{return} (\textcolor{keyword}{new} Vector2(x -\/ Mathf.Floor(x + 0.5f), Mathf.Abs(x) -\/ 0.5f)).normalized;}
+\DoxyCodeLine{00056     \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058     \textcolor{keywordtype}{float} GradientNoise(Vector2 p) \{}
+\DoxyCodeLine{00059         Vector2 ip = \textcolor{keyword}{new} Vector2(Mathf.Floor(p.x), Mathf.Floor(p.y));}
+\DoxyCodeLine{00060         Vector2 fp = \textcolor{keyword}{new} Vector2(p.x \% 1, p.y \% 1);}
+\DoxyCodeLine{00061         \textcolor{keywordtype}{float} d00 = Vector3.Dot(GradientNoiseDir(ip), fp);}
+\DoxyCodeLine{00062         \textcolor{keywordtype}{float} d01 = Vector3.Dot(GradientNoiseDir(ip + Vector2.up), fp -\/ Vector2.up);}
+\DoxyCodeLine{00063         \textcolor{keywordtype}{float} d10 = Vector3.Dot(GradientNoiseDir(ip + Vector2.right), fp -\/ Vector2.right);}
+\DoxyCodeLine{00064         \textcolor{keywordtype}{float} d11 = Vector3.Dot(GradientNoiseDir(ip + Vector2.one), fp -\/ Vector2.one);}
+\DoxyCodeLine{00065         fp = fp * fp * fp * (fp * (fp * 6f -\/ Vector2.one * 15f) + Vector2.one * 10f);}
+\DoxyCodeLine{00066         \textcolor{keywordflow}{return} Mathf.Lerp(Mathf.Lerp(d00, d01, fp.y), Mathf.Lerp(d10, d11, fp.y), fp.x);}
+\DoxyCodeLine{00067     \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069     \textcolor{keyword}{private} Vector3 GetNormalWS(Vector3 positionOS) \{}
+\DoxyCodeLine{00070         Vector3 b = positionOS + Vector3.forward * size;}
+\DoxyCodeLine{00071         b.y = GetHeightOS(b);}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         Vector3 c = positionOS + Vector3.right * size;}
+\DoxyCodeLine{00074         c.y = GetHeightOS(b);}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         Vector3 n = Vector3.Cross(b -\/ positionOS, c -\/ positionOS).normalized;}
+\DoxyCodeLine{00077         \textcolor{keywordflow}{return} water.TransformDirection(n);}
+\DoxyCodeLine{00078     \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080     \textcolor{keyword}{private} \textcolor{keywordtype}{float} SineWave(Vector3 positionOS, \textcolor{keywordtype}{float} offset) \{}
+\DoxyCodeLine{00081         \textcolor{comment}{// Shader:}}
+\DoxyCodeLine{00082         \textcolor{comment}{// sin(offset + \_Time.z * \_WaveSpeed + (pos.x * sin(offset + \_WaveDirection) + pos.z *}}
+\DoxyCodeLine{00083         \textcolor{comment}{//         cos(offset + \_WaveDirection)) * \_WaveFrequency);}}
+\DoxyCodeLine{00084         \textcolor{keywordtype}{float} timez = Time.timeSinceLevelLoad * 2f;}
+\DoxyCodeLine{00085         \textcolor{keywordtype}{float} s = Mathf.Sin(offset + timez * \_speed +}
+\DoxyCodeLine{00086                             (positionOS.x * Mathf.Sin(offset + \_direction) + positionOS.z *}
+\DoxyCodeLine{00087                                 Mathf.Cos(offset + \_direction)) * \_frequency);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keywordflow}{if} (\_material.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_WAVEMODE\_POINTY"{}})) \{}
+\DoxyCodeLine{00090             s = 1.0f -\/ Mathf.Abs(s);}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keywordflow}{return} s * \_amplitude;}
+\DoxyCodeLine{00094     \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096     \textcolor{keyword}{private} \textcolor{keywordtype}{float} GetHeightOS(Vector3 positionOS) \{}
+\DoxyCodeLine{00097         \textcolor{keywordtype}{float} y = SineWave(positionOS, 0.0f);}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keywordflow}{if} (\_material.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_WAVEMODE\_GRID"{}})) \{}
+\DoxyCodeLine{00100             y *= SineWave(positionOS, 1.57f);}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         y *= amplitude;}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keywordflow}{return} y;}
+\DoxyCodeLine{00106     \}}
+\DoxyCodeLine{00107 \}}
+\DoxyCodeLine{00108 \}}
+
+\end{DoxyCode}

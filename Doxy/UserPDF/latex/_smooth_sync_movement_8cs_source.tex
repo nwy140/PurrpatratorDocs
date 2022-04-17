@@ -1,0 +1,75 @@
+\doxysection{Smooth\+Sync\+Movement.\+cs}
+\label{_smooth_sync_movement_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonView/SmoothSyncMovement.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonView/SmoothSyncMovement.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}SmoothSyncMovement.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities, }}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Smoothed out movement for network gameobjects}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>                                                                                             }}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00021     [RequireComponent(typeof(PhotonView))]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }SmoothSyncMovement : Photon.Pun.MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{float} SmoothingDelay = 5;}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00026         \{}
+\DoxyCodeLine{00027             \textcolor{keywordtype}{bool} observed = \textcolor{keyword}{false};}
+\DoxyCodeLine{00028             \textcolor{keywordflow}{foreach} (Component observedComponent \textcolor{keywordflow}{in} this.photonView.ObservedComponents)}
+\DoxyCodeLine{00029             \{}
+\DoxyCodeLine{00030                 \textcolor{keywordflow}{if} (observedComponent == \textcolor{keyword}{this})}
+\DoxyCodeLine{00031                 \{}
+\DoxyCodeLine{00032                     observed = \textcolor{keyword}{true};}
+\DoxyCodeLine{00033                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00034                 \}}
+\DoxyCodeLine{00035             \}}
+\DoxyCodeLine{00036             \textcolor{keywordflow}{if} (!observed)}
+\DoxyCodeLine{00037             \{}
+\DoxyCodeLine{00038                 Debug.LogWarning(\textcolor{keyword}{this} + \textcolor{stringliteral}{"{} is not observed by this object's photonView! OnPhotonSerializeView() in this class won't be used."{}});}
+\DoxyCodeLine{00039             \}}
+\DoxyCodeLine{00040         \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00043         \{}
+\DoxyCodeLine{00044             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00045             \{}
+\DoxyCodeLine{00046                 \textcolor{comment}{//We own this player: send the others our data}}
+\DoxyCodeLine{00047                 stream.SendNext(transform.position);}
+\DoxyCodeLine{00048                 stream.SendNext(transform.rotation);}
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 \textcolor{comment}{//Network player, receive data}}
+\DoxyCodeLine{00053                 correctPlayerPos = (Vector3)stream.ReceiveNext();}
+\DoxyCodeLine{00054                 correctPlayerRot = (Quaternion)stream.ReceiveNext();}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         \textcolor{keyword}{private} Vector3 correctPlayerPos = Vector3.zero; \textcolor{comment}{//We lerp towards this}}
+\DoxyCodeLine{00059         \textcolor{keyword}{private} Quaternion correctPlayerRot = Quaternion.identity; \textcolor{comment}{//We lerp towards this}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (!photonView.IsMine)}
+\DoxyCodeLine{00064             \{}
+\DoxyCodeLine{00065                 \textcolor{comment}{//Update remote player (smooth this, this looks good, at the cost of some accuracy)}}
+\DoxyCodeLine{00066                 transform.position = Vector3.Lerp(transform.position, correctPlayerPos, Time.deltaTime * \textcolor{keyword}{this}.SmoothingDelay);}
+\DoxyCodeLine{00067                 transform.rotation = Quaternion.Lerp(transform.rotation, correctPlayerRot, Time.deltaTime * \textcolor{keyword}{this}.SmoothingDelay);}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071     \}}
+\DoxyCodeLine{00072 \}}
+
+\end{DoxyCode}

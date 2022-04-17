@@ -1,0 +1,89 @@
+\doxysection{Trap\+Mechanic\+Button\+Script.\+cs}
+\label{_trap_mechanic_button_script_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Ainun/Scripts/TrapMechanicButtonScript.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Ainun/Scripts/TrapMechanicButtonScript.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} SInt.MissionObjectives;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{public} \textcolor{keyword}{class }TrapMechanicButtonScript : MonoBehaviour}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00010     [Header(\textcolor{stringliteral}{"{}Gameobject References"{}})]}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} GameObject catPlayer;}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} GameObject trapPrefab;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [Header(\textcolor{stringliteral}{"{}Condition"{}})]}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} trapNow;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{static} TrapMechanicButtonScript instance;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     PhotonView photonView;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023         catPlayer = GameObject.FindGameObjectWithTag(\textcolor{stringliteral}{"{}Player"{}});}
+\DoxyCodeLine{00024     \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028         instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00029         TryGetComponent(out photonView);}
+\DoxyCodeLine{00030         }
+\DoxyCodeLine{00031     \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     \textcolor{keyword}{public} \textcolor{keywordtype}{void} CaptureCat()}
+\DoxyCodeLine{00035     \{}
+\DoxyCodeLine{00036         \textcolor{keywordflow}{if} (TriggeringZone.instance.catInRange == \textcolor{keyword}{true})}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             trapNow = \textcolor{keyword}{true};}
+\DoxyCodeLine{00039             Debug.Log(\textcolor{stringliteral}{"{}Button should work"{}});}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             photonView.RPC(nameof(TrapInstantiate), RpcTarget.AllBuffered);}
+\DoxyCodeLine{00042             Debug.Log(\textcolor{stringliteral}{"{}PHOTON, WORK ALREADY"{}});}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             photonView.RPC(nameof(EnableCatCanvas), RpcTarget.OthersBuffered);}
+\DoxyCodeLine{00045             Debug.Log(\textcolor{stringliteral}{"{}PHOTON, PLZ PLZ PLZ WORK ALREADY"{}});}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             ButtonCoolDown.instance.cooldownStart = \textcolor{keyword}{true};}
+\DoxyCodeLine{00048             ButtonCoolDown.instance.coolDownImage.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00049             ButtonCoolDown.instance.coolDownTimer.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00050             ButtonCoolDown.instance.startCooldown = ButtonCoolDown.instance.coolDown;}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052     \}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054     [PunRPC]}
+\DoxyCodeLine{00055     \textcolor{keyword}{public} \textcolor{keywordtype}{void} TrapInstantiate()}
+\DoxyCodeLine{00056     \{}
+\DoxyCodeLine{00057         \textcolor{keywordflow}{if} (catPlayer == \textcolor{keyword}{null})}
+\DoxyCodeLine{00058             catPlayer = GameObject.FindGameObjectWithTag(\textcolor{stringliteral}{"{}Player"{}});}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         Vector3 spawnLoc = \textcolor{keyword}{new} Vector3(catPlayer.transform.position.x, catPlayer.transform.position.y, catPlayer.transform.position.z);}
+\DoxyCodeLine{00061         Quaternion spawnRotation = Quaternion.Euler(-\/90, 0, 0);}
+\DoxyCodeLine{00062         \textcolor{comment}{// Mo Stands for Mission Objective}}
+\DoxyCodeLine{00063         \textcolor{comment}{//MoManager.instance.TryProgressMoByID("{}H2"{});}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             PhotonNetwork.InstantiateRoomObject(trapPrefab.name, spawnLoc, spawnRotation);}
+\DoxyCodeLine{00068             Debug.Log(\textcolor{stringliteral}{"{}Trap is on cat"{}});}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         CatTrappedScript.instance.trappingCat = \textcolor{keyword}{true};}
+\DoxyCodeLine{00072         \textcolor{comment}{//EscapeSpamScript.instance.startEscaping = true;}}
+\DoxyCodeLine{00073         trapNow = \textcolor{keyword}{false};}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075     \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077     [PunRPC]}
+\DoxyCodeLine{00078     \textcolor{keyword}{public} \textcolor{keywordtype}{void} EnableCatCanvas()}
+\DoxyCodeLine{00079     \{}
+\DoxyCodeLine{00080         EscapeSpamScript.instance.startEscaping = \textcolor{keyword}{true};   }
+\DoxyCodeLine{00081     \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 \}}
+
+\end{DoxyCode}

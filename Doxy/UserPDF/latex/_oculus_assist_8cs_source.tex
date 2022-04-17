@@ -1,0 +1,123 @@
+\doxysection{Oculus\+Assist.\+cs}
+\label{_oculus_assist_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncOculus/Assistants/OculusAssist.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncOculus/Assistants/OculusAssist.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00002 \textcolor{preprocessor}{\#if OCULUS}}
+\DoxyCodeLine{00003 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Pun.Simple.Assists}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }OculusAssist}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017         [MenuItem(AssistHelpers.CONVERT\_TO\_FOLDER + \textcolor{stringliteral}{"{}Oculus"{}}, \textcolor{keyword}{false}, -\/999)]}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ConvertOculus()}
+\DoxyCodeLine{00019         \{}
+\DoxyCodeLine{00020             var selection = NetObjectAssists.ConvertToBasicNetObject(\textcolor{keyword}{null});}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022             \textcolor{keywordflow}{if} (selection == \textcolor{keyword}{null})}
+\DoxyCodeLine{00023                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025             var t = selection.transform;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00028             \textcolor{keywordflow}{if} (HasOculusController(t))}
+\DoxyCodeLine{00029                 selection.transform.Add3dPosOnly().transform.Add3dEulerOnly();}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             selection.EnsureComponentExists<AutoDisableOculusObjects>();}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00034             var trackingSpace = t.RecursiveFind(\textcolor{stringliteral}{"{}TrackingSpace"{}});}
+\DoxyCodeLine{00035             trackingSpace.Add3dEulerOnly();}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00038             var leftHandAnchor = t.RecursiveFind(\textcolor{stringliteral}{"{}LeftHandAnchor"{}});}
+\DoxyCodeLine{00039             var rghtHandAnchor = t.RecursiveFind(\textcolor{stringliteral}{"{}RightHandAnchor"{}});}
+\DoxyCodeLine{00040             leftHandAnchor.Add3DHandsPos().transform.Add3DHandsRot();}
+\DoxyCodeLine{00041             rghtHandAnchor.Add3DHandsPos().transform.Add3DHandsRot();}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00044             var cameraRig = t.RecursiveFind(\textcolor{stringliteral}{"{}OVRCameraRig"{}});}
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (cameraRig)}
+\DoxyCodeLine{00046                 cameraRig.gameObject.EnsureComponentExists<AutoOwnerComponentEnable>();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00049             t.EnsureComponentExists<SyncAnimator, Animator>(\textcolor{keyword}{null}, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             selection.EnsureComponentExists<AutoDestroyUnspawned>();}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{comment}{//Type ovrManagerType = Type.GetType("{}OVRManager"{});}}
+\DoxyCodeLine{00054             \textcolor{comment}{//if (ovrManagerType == null)}}
+\DoxyCodeLine{00055             \textcolor{comment}{//  ovrManagerType = Type.GetType("{}OVRManager, Oculus.VR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"{});}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00058             \textcolor{comment}{//if (ovrManagerType != null)}}
+\DoxyCodeLine{00059             \{}
+\DoxyCodeLine{00060                 var manager = t.GetComponentInChildren<OVRManager>();}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{if} (manager)}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     var founds = UnityEngine.Object.FindObjectsOfType<OVRManager>();}
+\DoxyCodeLine{00064                     UnityEngine.Object existing = \textcolor{keyword}{null};}
+\DoxyCodeLine{00065                     \textcolor{keywordflow}{foreach} (var found \textcolor{keywordflow}{in} founds)}
+\DoxyCodeLine{00066                         \textcolor{keywordflow}{if} (found != manager)}
+\DoxyCodeLine{00067                         \{}
+\DoxyCodeLine{00068                             Debug.Log(\textcolor{stringliteral}{"{}OVRManager exists in scene, removing from '"{}} + selection.name + \textcolor{stringliteral}{"{}'"{}});}
+\DoxyCodeLine{00069                             existing = found;}
+\DoxyCodeLine{00070                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00071                         \}}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{if} (founds == \textcolor{keyword}{null})}
+\DoxyCodeLine{00073                     \{}
+\DoxyCodeLine{00074                         Debug.Log(\textcolor{stringliteral}{"{}OVRManager moved from "{}} + selection.name + \textcolor{stringliteral}{"{}' to scene."{}});}
+\DoxyCodeLine{00075                         manager.ComponentCopy(\textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}OVRManager"{}}));}
+\DoxyCodeLine{00076                         GameObject.DestroyImmediate(manager);}
+\DoxyCodeLine{00077                     \}}
+\DoxyCodeLine{00078                 \}}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             selection.EnsureComponentExists<SimpleOculusAutomation>();}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             Type ovrGrabberType = Type.GetType(\textcolor{stringliteral}{"{}OVRGrabber"{}});}
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (ovrGrabberType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00086                 ovrGrabberType = Type.GetType(\textcolor{stringliteral}{"{}OVRGrabber, Oculus.VR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"{}});}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             var foundGrabbers = selection.transform.GetNestedComponentsInChildren<OVRGrabber, NetObject>(\textcolor{keyword}{null});}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keywordflow}{foreach} (OVRGrabber grabber \textcolor{keywordflow}{in} foundGrabbers)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 \textcolor{comment}{// Oculus was kind enough to make all of these vars protected and private... so we get to do all of this reflection trash.}}
+\DoxyCodeLine{00093                 Type type = grabber.GetType();}
+\DoxyCodeLine{00094                 var gripTransformFieldInfo = type.GetField(\textcolor{stringliteral}{"{}m\_gripTransform"{}}, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096                 Transform grip = (gripTransformFieldInfo.GetValue(grabber) as Transform);}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098                 Mount mount;}
+\DoxyCodeLine{00099                 \textcolor{keywordflow}{if} (grip)}
+\DoxyCodeLine{00100                     mount = grip.gameObject.EnsureComponentExists<Mount>();}
+\DoxyCodeLine{00101                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00102                     mount = grabber.gameObject.EnsureComponentExists<Mount>();}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104                 mount.mountType = MountSettings.GetOrCreate(grabber.name);}
+\DoxyCodeLine{00105             \}}
+\DoxyCodeLine{00106         \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} HasOculusController(Transform t)}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (t.HasComponent(\textcolor{stringliteral}{"{}SimpleCapsuleWithStickMovement"{}}, \textcolor{stringliteral}{"{}SimpleCapsuleWithStickMovement, Assembly-\/CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"{}}))}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119     \}}
+\DoxyCodeLine{00120 \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

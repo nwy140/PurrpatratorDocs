@@ -1,0 +1,157 @@
+\doxysection{Game\+Manager.\+cs}
+\label{_game_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/GameManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/GameManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Launcher.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Used in "{}PUN Basic tutorial"{} to handle typical game management requirements}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Demo.PunBasics}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{    \#pragma warning disable 649}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00026     \textcolor{keyword}{public} \textcolor{keyword}{class }GameManager : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{        \#region Public Fields}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{static} \textcolor{keyword}{public} GameManager Instance;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{        \#region Private Fields}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} GameObject instance;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [Tooltip(\textcolor{stringliteral}{"{}The prefab to use for representing the player"{}})]}
+\DoxyCodeLine{00040         [SerializeField]}
+\DoxyCodeLine{00041         \textcolor{keyword}{private} GameObject playerPrefab;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 \textcolor{preprocessor}{        \#region MonoBehaviour CallBacks}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00050         \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             Instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{comment}{// in case we started this demo with the wrong scene being active, simply load the menu scene}}
+\DoxyCodeLine{00055             \textcolor{keywordflow}{if} (!PhotonNetwork.IsConnected)}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 SceneManager.LoadScene(\textcolor{stringliteral}{"{}PunBasics-\/Launcher"{}});}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (playerPrefab == \textcolor{keyword}{null}) \{ \textcolor{comment}{// \#Tip Never assume public properties of Components are filled up properly, always check and inform the developer of it.}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 Debug.LogError(\textcolor{stringliteral}{"{}<Color=Red><b>Missing</b></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'"{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{00065             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068                 \textcolor{keywordflow}{if} (PlayerManager.LocalPlayerInstance==\textcolor{keyword}{null})}
+\DoxyCodeLine{00069                 \{}
+\DoxyCodeLine{00070                     Debug.LogFormat(\textcolor{stringliteral}{"{}We are Instantiating LocalPlayer from \{0\}"{}}, SceneManagerHelper.ActiveSceneName);}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072                     \textcolor{comment}{// we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate}}
+\DoxyCodeLine{00073                     PhotonNetwork.Instantiate(this.playerPrefab.name, \textcolor{keyword}{new} Vector3(0f,5f,0f), Quaternion.identity, 0);}
+\DoxyCodeLine{00074                 \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076                     Debug.LogFormat(\textcolor{stringliteral}{"{}Ignoring scene load for \{0\}"{}}, SceneManagerHelper.ActiveSceneName);}
+\DoxyCodeLine{00077                 \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00087         \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00088         \{}
+\DoxyCodeLine{00089             \textcolor{comment}{// "{}back"{} button of phone equals "{}Escape"{}. quit app if that's pressed}}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Escape))}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 QuitApplication();}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 \textcolor{preprocessor}{        \#region Photon Callbacks}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00104         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom( Player other  )}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             Debug.Log( \textcolor{stringliteral}{"{}OnPlayerEnteredRoom() "{}} + other.NickName); \textcolor{comment}{// not seen if you're the player connecting}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} ( PhotonNetwork.IsMasterClient )}
+\DoxyCodeLine{00109             \{}
+\DoxyCodeLine{00110                 Debug.LogFormat( \textcolor{stringliteral}{"{}OnPlayerEnteredRoom IsMasterClient \{0\}"{}}, PhotonNetwork.IsMasterClient ); \textcolor{comment}{// called before OnPlayerLeftRoom}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 LoadArena();}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114         \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom( Player other  )}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             Debug.Log( \textcolor{stringliteral}{"{}OnPlayerLeftRoom() "{}} + other.NickName ); \textcolor{comment}{// seen when other disconnects}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordflow}{if} ( PhotonNetwork.IsMasterClient )}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 Debug.LogFormat( \textcolor{stringliteral}{"{}OnPlayerEnteredRoom IsMasterClient \{0\}"{}}, PhotonNetwork.IsMasterClient ); \textcolor{comment}{// called before OnPlayerLeftRoom}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128                 LoadArena(); }
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130         \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00135         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00136         \{}
+\DoxyCodeLine{00137             SceneManager.LoadScene(\textcolor{stringliteral}{"{}PunBasics-\/Launcher"{}});}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142 \textcolor{preprocessor}{        \#region Public Methods}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LeaveRoom()}
+\DoxyCodeLine{00145         \{}
+\DoxyCodeLine{00146             PhotonNetwork.LeaveRoom();}
+\DoxyCodeLine{00147         \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keywordtype}{void} QuitApplication()}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             Application.Quit();}
+\DoxyCodeLine{00152         \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156 \textcolor{preprocessor}{        \#region Private Methods}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{keywordtype}{void} LoadArena()}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{if} ( ! PhotonNetwork.IsMasterClient )}
+\DoxyCodeLine{00161             \{}
+\DoxyCodeLine{00162                 Debug.LogError( \textcolor{stringliteral}{"{}PhotonNetwork : Trying to Load a level but we are not the master Client"{}} );}
+\DoxyCodeLine{00163             \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             Debug.LogFormat( \textcolor{stringliteral}{"{}PhotonNetwork : Loading Level : \{0\}"{}}, PhotonNetwork.CurrentRoom.PlayerCount );}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             PhotonNetwork.LoadLevel(\textcolor{stringliteral}{"{}PunBasics-\/Room for "{}}+PhotonNetwork.CurrentRoom.PlayerCount);}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172     \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174 \}}
+
+\end{DoxyCode}

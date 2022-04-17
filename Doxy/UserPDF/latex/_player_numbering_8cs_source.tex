@@ -1,0 +1,238 @@
+\doxysection{Player\+Numbering.\+cs}
+\label{_player_numbering_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PlayerNumbering.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PlayerNumbering.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerNumbering.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Assign numbers to Players in a room. Uses Room custom Properties}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00021 \{}
+\DoxyCodeLine{00030     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerNumbering : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032         \textcolor{comment}{//TODO: Add a "{}numbers available"{} bool, to allow easy access to this?!}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{        \#region Public Properties}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keyword}{static} PlayerNumbering instance;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{static} Player[] SortedPlayers;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PlayerNumberingChanged();}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{event} PlayerNumberingChanged OnPlayerNumberingChanged;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} RoomPlayerIndexedProp = \textcolor{stringliteral}{"{}pNr"{}};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} dontDestroyOnLoad = \textcolor{keyword}{false};}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 \textcolor{preprocessor}{        \#region MonoBehaviours methods}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00068         \{}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \textcolor{keywordflow}{if} (instance != \textcolor{keyword}{null} \&\& instance != \textcolor{keyword}{this} \&\& instance.gameObject != \textcolor{keyword}{null})}
+\DoxyCodeLine{00071             \{}
+\DoxyCodeLine{00072                 GameObject.DestroyImmediate(instance.gameObject);}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00076             \textcolor{keywordflow}{if} (dontDestroyOnLoad)}
+\DoxyCodeLine{00077             \{ }
+\DoxyCodeLine{00078                 DontDestroyOnLoad(this.gameObject);}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             this.RefreshData();}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087 \textcolor{preprocessor}{        \#region PunBehavior Overrides}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             this.RefreshData();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             PhotonNetwork.LocalPlayer.CustomProperties.Remove(PlayerNumbering.RoomPlayerIndexedProp);}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             this.RefreshData();}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             this.RefreshData();}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00110         \{}
+\DoxyCodeLine{00111             \textcolor{keywordflow}{if} (changedProps != \textcolor{keyword}{null} \&\& changedProps.ContainsKey(PlayerNumbering.RoomPlayerIndexedProp))}
+\DoxyCodeLine{00112             \{}
+\DoxyCodeLine{00113                 this.RefreshData();}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{comment}{// each player can select it's own playernumber in a room, if all "{}older"{} players already selected theirs}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00126        \textcolor{keyword}{public} \textcolor{keywordtype}{void} RefreshData()}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.GetPlayerNumber() >= 0)}
+\DoxyCodeLine{00134             \{}
+\DoxyCodeLine{00135                 SortedPlayers = PhotonNetwork.CurrentRoom.Players.Values.OrderBy((p) => p.GetPlayerNumber()).ToArray();}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{if} (OnPlayerNumberingChanged != \textcolor{keyword}{null})}
+\DoxyCodeLine{00137                 \{}
+\DoxyCodeLine{00138                     OnPlayerNumberingChanged();}
+\DoxyCodeLine{00139                 \}}
+\DoxyCodeLine{00140                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00141             \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             HashSet<int> usedInts = \textcolor{keyword}{new} HashSet<int>();}
+\DoxyCodeLine{00145             Player[] sorted = PhotonNetwork.PlayerList.OrderBy((p) => p.ActorNumber).ToArray();}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{keywordtype}{string} allPlayers = \textcolor{stringliteral}{"{}all players: "{}};}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{foreach} (Player player \textcolor{keywordflow}{in} sorted)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 allPlayers += player.ActorNumber + \textcolor{stringliteral}{"{}=pNr:"{}}+player.GetPlayerNumber()+\textcolor{stringliteral}{"{}, "{}};}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                 \textcolor{keywordtype}{int} number = player.GetPlayerNumber();}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154                 \textcolor{comment}{// if it's this user, select a number and break}}
+\DoxyCodeLine{00155                 \textcolor{comment}{// else:}}
+\DoxyCodeLine{00156                     \textcolor{comment}{// check if that user has a number}}
+\DoxyCodeLine{00157                     \textcolor{comment}{// if not, break!}}
+\DoxyCodeLine{00158                     \textcolor{comment}{// else remember used numbers}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{if} (player.IsLocal)}
+\DoxyCodeLine{00161                 \{}
+\DoxyCodeLine{00162                     Debug.Log (\textcolor{stringliteral}{"{}PhotonNetwork.CurrentRoom.PlayerCount = "{}} + PhotonNetwork.CurrentRoom.PlayerCount);}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164                     \textcolor{comment}{// select a number}}
+\DoxyCodeLine{00165                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < PhotonNetwork.CurrentRoom.PlayerCount; i++)}
+\DoxyCodeLine{00166                     \{}
+\DoxyCodeLine{00167                         \textcolor{keywordflow}{if} (!usedInts.Contains(i))}
+\DoxyCodeLine{00168                         \{}
+\DoxyCodeLine{00169                             player.SetPlayerNumber(i);}
+\DoxyCodeLine{00170                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00171                         \}}
+\DoxyCodeLine{00172                     \}}
+\DoxyCodeLine{00173                     \textcolor{comment}{// then break}}
+\DoxyCodeLine{00174                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00175                 \}}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00177                 \{}
+\DoxyCodeLine{00178                     \textcolor{keywordflow}{if} (number < 0)}
+\DoxyCodeLine{00179                     \{}
+\DoxyCodeLine{00180                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00181                     \}}
+\DoxyCodeLine{00182                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00183                     \{}
+\DoxyCodeLine{00184                         usedInts.Add(number);}
+\DoxyCodeLine{00185                     \}}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187             \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189             \textcolor{comment}{//Debug.Log(allPlayers);}}
+\DoxyCodeLine{00190             \textcolor{comment}{//Debug.Log(PhotonNetwork.LocalPlayer.ToStringFull() + "{} has PhotonNetwork.player.GetPlayerNumber(): "{} + PhotonNetwork.LocalPlayer.GetPlayerNumber());}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             SortedPlayers = PhotonNetwork.CurrentRoom.Players.Values.OrderBy((p) => p.GetPlayerNumber()).ToArray();}
+\DoxyCodeLine{00193             \textcolor{keywordflow}{if} (OnPlayerNumberingChanged != \textcolor{keyword}{null})}
+\DoxyCodeLine{00194             \{}
+\DoxyCodeLine{00195                 OnPlayerNumberingChanged();}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197         \}}
+\DoxyCodeLine{00198     \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00203     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PlayerNumberingExtensions}
+\DoxyCodeLine{00204     \{}
+\DoxyCodeLine{00209         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GetPlayerNumber(\textcolor{keyword}{this} Player player)}
+\DoxyCodeLine{00210         \{}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (player == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00213             \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215             \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode)}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00218             \}}
+\DoxyCodeLine{00219             \textcolor{keywordflow}{if} (!PhotonNetwork.IsConnectedAndReady)}
+\DoxyCodeLine{00220             \{}
+\DoxyCodeLine{00221                 \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00222             \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             \textcolor{keywordtype}{object} value;}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (player.CustomProperties.TryGetValue (PlayerNumbering.RoomPlayerIndexedProp, out value)) \{}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{return} (\textcolor{keywordtype}{byte})value;}
+\DoxyCodeLine{00227             \}}
+\DoxyCodeLine{00228             \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00229         \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00237         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetPlayerNumber(\textcolor{keyword}{this} Player player, \textcolor{keywordtype}{int} playerNumber)}
+\DoxyCodeLine{00238         \{}
+\DoxyCodeLine{00239             \textcolor{keywordflow}{if} (player == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode)}
+\DoxyCodeLine{00244             \{}
+\DoxyCodeLine{00245                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (playerNumber < 0)}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 Debug.LogWarning(\textcolor{stringliteral}{"{}Setting invalid playerNumber: "{}} + playerNumber + \textcolor{stringliteral}{"{} for: "{}} + player.ToStringFull());}
+\DoxyCodeLine{00251             \}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             \textcolor{keywordflow}{if} (!PhotonNetwork.IsConnectedAndReady)}
+\DoxyCodeLine{00254             \{}
+\DoxyCodeLine{00255                 Debug.LogWarning(\textcolor{stringliteral}{"{}SetPlayerNumber was called in state: "{}} + PhotonNetwork.NetworkClientState + \textcolor{stringliteral}{"{}. Not IsConnectedAndReady."{}});}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{keywordtype}{int} current = player.GetPlayerNumber();}
+\DoxyCodeLine{00260             \textcolor{keywordflow}{if} (current != playerNumber)}
+\DoxyCodeLine{00261             \{}
+\DoxyCodeLine{00262                 Debug.Log(\textcolor{stringliteral}{"{}PlayerNumbering: Set number "{}}+playerNumber);}
+\DoxyCodeLine{00263                 player.SetCustomProperties(\textcolor{keyword}{new} Hashtable() \{ \{ PlayerNumbering.RoomPlayerIndexedProp, (byte)playerNumber \} \});}
+\DoxyCodeLine{00264             \}}
+\DoxyCodeLine{00265         \}}
+\DoxyCodeLine{00266     \}}
+\DoxyCodeLine{00267 \}}
+
+\end{DoxyCode}

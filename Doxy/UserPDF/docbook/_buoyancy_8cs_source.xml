@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__buoyancy_8cs_source" xml:lang="en-US">
+<title>Buoyancy.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Scripts/Buoyancy.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__buoyancy_8cs_source_1l00001"/>00001 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__buoyancy_8cs_source_1l00002"/>00002 
+<anchor xml:id="__buoyancy_8cs_source_1l00003"/>00003 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_flat_kit">FlatKit</link>&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00004"/><link linkend="_class_flat_kit_1_1_buoyancy">00004</link> <emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_flat_kit_1_1_buoyancy">Buoyancy</link>&#32;:&#32;MonoBehaviour&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00005"/>00005 &#32;&#32;&#32;&#32;[Tooltip(<emphasis role="stringliteral">&quot;The&#32;object&#32;that&#32;contains&#32;a&#32;Water&#32;material.&quot;</emphasis>)]
+<anchor xml:id="__buoyancy_8cs_source_1l00006"/><link linkend="_class_flat_kit_1_1_buoyancy_1ae2d79c5fdf446f9b40368656a67716af">00006</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Transform&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1ae2d79c5fdf446f9b40368656a67716af">water</link>;
+<anchor xml:id="__buoyancy_8cs_source_1l00007"/>00007 
+<anchor xml:id="__buoyancy_8cs_source_1l00008"/>00008 &#32;&#32;&#32;&#32;[Space][Tooltip(<emphasis role="stringliteral">&quot;Range&#32;of&#32;probing&#32;wave&#32;height&#32;for&#32;buoyancy&#32;rotation.&quot;</emphasis>)]
+<anchor xml:id="__buoyancy_8cs_source_1l00009"/><link linkend="_class_flat_kit_1_1_buoyancy_1aa9c1ca65a305216741580fd60787f06c">00009</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1aa9c1ca65a305216741580fd60787f06c">size</link>&#32;=&#32;1f;
+<anchor xml:id="__buoyancy_8cs_source_1l00010"/>00010 
+<anchor xml:id="__buoyancy_8cs_source_1l00011"/>00011 &#32;&#32;&#32;&#32;[Tooltip(<emphasis role="stringliteral">&quot;Max&#32;height&#32;of&#32;buoyancy&#32;going&#32;up&#32;and&#32;down.&quot;</emphasis>)]
+<anchor xml:id="__buoyancy_8cs_source_1l00012"/><link linkend="_class_flat_kit_1_1_buoyancy_1a5cc21531ea1cd3ce1a9f677e800d6cf0">00012</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1a5cc21531ea1cd3ce1a9f677e800d6cf0">amplitude</link>&#32;=&#32;1f;
+<anchor xml:id="__buoyancy_8cs_source_1l00013"/>00013 
+<anchor xml:id="__buoyancy_8cs_source_1l00014"/>00014 &#32;&#32;&#32;&#32;[Space,&#32;Tooltip(<emphasis role="stringliteral">&quot;Optionally&#32;provide&#32;a&#32;separate&#32;material&#32;to&#32;get&#32;the&#32;wave&#32;parameters.&quot;</emphasis>)]
+<anchor xml:id="__buoyancy_8cs_source_1l00015"/><link linkend="_class_flat_kit_1_1_buoyancy_1a3bfe45718f2ff700a2e2d34bc76b8a7a">00015</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Material&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1a3bfe45718f2ff700a2e2d34bc76b8a7a">overrideWaterMaterial</link>;
+<anchor xml:id="__buoyancy_8cs_source_1l00016"/>00016 
+<anchor xml:id="__buoyancy_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Material&#32;_material;
+<anchor xml:id="__buoyancy_8cs_source_1l00018"/>00018 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;_speed;
+<anchor xml:id="__buoyancy_8cs_source_1l00019"/>00019 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;_amplitude;
+<anchor xml:id="__buoyancy_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;_frequency;
+<anchor xml:id="__buoyancy_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;_direction;
+<anchor xml:id="__buoyancy_8cs_source_1l00022"/>00022 
+<anchor xml:id="__buoyancy_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Vector3&#32;_originalPosition;
+<anchor xml:id="__buoyancy_8cs_source_1l00024"/>00024 
+<anchor xml:id="__buoyancy_8cs_source_1l00025"/>00025 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Start()&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;r&#32;=&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1ae2d79c5fdf446f9b40368656a67716af">water</link>.GetComponent&lt;Renderer&gt;();
+<anchor xml:id="__buoyancy_8cs_source_1l00027"/>00027 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Assert(r);
+<anchor xml:id="__buoyancy_8cs_source_1l00028"/>00028 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_material&#32;=&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1a3bfe45718f2ff700a2e2d34bc76b8a7a">overrideWaterMaterial</link>&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;?&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1a3bfe45718f2ff700a2e2d34bc76b8a7a">overrideWaterMaterial</link>&#32;:&#32;r.sharedMaterial;
+<anchor xml:id="__buoyancy_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Assert(_material);
+<anchor xml:id="__buoyancy_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.Assert(_material.HasProperty(<emphasis role="stringliteral">&quot;_WaveSpeed&quot;</emphasis>));
+<anchor xml:id="__buoyancy_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_speed&#32;=&#32;_material.GetFloat(<emphasis role="stringliteral">&quot;_WaveSpeed&quot;</emphasis>);
+<anchor xml:id="__buoyancy_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_amplitude&#32;=&#32;_material.GetFloat(<emphasis role="stringliteral">&quot;_WaveAmplitude&quot;</emphasis>);
+<anchor xml:id="__buoyancy_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_frequency&#32;=&#32;_material.GetFloat(<emphasis role="stringliteral">&quot;_WaveFrequency&quot;</emphasis>);
+<anchor xml:id="__buoyancy_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_direction&#32;=&#32;_material.GetFloat(<emphasis role="stringliteral">&quot;_WaveDirection&quot;</emphasis>);
+<anchor xml:id="__buoyancy_8cs_source_1l00035"/>00035 
+<anchor xml:id="__buoyancy_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;t&#32;=&#32;transform;
+<anchor xml:id="__buoyancy_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_originalPosition&#32;=&#32;t.position;
+<anchor xml:id="__buoyancy_8cs_source_1l00038"/>00038 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00039"/>00039 
+<anchor xml:id="__buoyancy_8cs_source_1l00040"/>00040 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Update()&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;positionWS&#32;=&#32;transform.position;
+<anchor xml:id="__buoyancy_8cs_source_1l00042"/>00042 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;positionOS&#32;=&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1ae2d79c5fdf446f9b40368656a67716af">water</link>.InverseTransformPoint(positionWS);
+<anchor xml:id="__buoyancy_8cs_source_1l00043"/>00043 
+<anchor xml:id="__buoyancy_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;positionWS.y&#32;=&#32;GetHeightOS(positionOS)&#32;+&#32;_originalPosition.y;
+<anchor xml:id="__buoyancy_8cs_source_1l00045"/>00045 
+<anchor xml:id="__buoyancy_8cs_source_1l00046"/>00046 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.position&#32;=&#32;positionWS;
+<anchor xml:id="__buoyancy_8cs_source_1l00047"/>00047 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.up&#32;=&#32;GetNormalWS(positionOS);
+<anchor xml:id="__buoyancy_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00049"/>00049 
+<anchor xml:id="__buoyancy_8cs_source_1l00050"/>00050 &#32;&#32;&#32;&#32;Vector2&#32;GradientNoiseDir(Vector2&#32;p)&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;p&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(p.x&#32;%&#32;289,&#32;p.y&#32;%&#32;289);
+<anchor xml:id="__buoyancy_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;x&#32;=&#32;(34&#32;*&#32;p.x&#32;+&#32;1)&#32;*&#32;p.x&#32;%&#32;289&#32;+&#32;p.y;
+<anchor xml:id="__buoyancy_8cs_source_1l00053"/>00053 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;x&#32;=&#32;(34&#32;*&#32;x&#32;+&#32;1)&#32;*&#32;x&#32;%&#32;289;
+<anchor xml:id="__buoyancy_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;x&#32;=&#32;((x&#32;/&#32;41)&#32;%&#32;1)&#32;*&#32;2&#32;-&#32;1;
+<anchor xml:id="__buoyancy_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(<emphasis role="keyword">new</emphasis>&#32;Vector2(x&#32;-&#32;Mathf.Floor(x&#32;+&#32;0.5f),&#32;Mathf.Abs(x)&#32;-&#32;0.5f)).normalized;
+<anchor xml:id="__buoyancy_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00057"/>00057 
+<anchor xml:id="__buoyancy_8cs_source_1l00058"/>00058 &#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;GradientNoise(Vector2&#32;p)&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00059"/>00059 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector2&#32;ip&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(Mathf.Floor(p.x),&#32;Mathf.Floor(p.y));
+<anchor xml:id="__buoyancy_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector2&#32;fp&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(p.x&#32;%&#32;1,&#32;p.y&#32;%&#32;1);
+<anchor xml:id="__buoyancy_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;d00&#32;=&#32;Vector3.Dot(GradientNoiseDir(ip),&#32;fp);
+<anchor xml:id="__buoyancy_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;d01&#32;=&#32;Vector3.Dot(GradientNoiseDir(ip&#32;+&#32;Vector2.up),&#32;fp&#32;-&#32;Vector2.up);
+<anchor xml:id="__buoyancy_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;d10&#32;=&#32;Vector3.Dot(GradientNoiseDir(ip&#32;+&#32;Vector2.right),&#32;fp&#32;-&#32;Vector2.right);
+<anchor xml:id="__buoyancy_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;d11&#32;=&#32;Vector3.Dot(GradientNoiseDir(ip&#32;+&#32;Vector2.one),&#32;fp&#32;-&#32;Vector2.one);
+<anchor xml:id="__buoyancy_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;fp&#32;=&#32;fp&#32;*&#32;fp&#32;*&#32;fp&#32;*&#32;(fp&#32;*&#32;(fp&#32;*&#32;6f&#32;-&#32;Vector2.one&#32;*&#32;15f)&#32;+&#32;Vector2.one&#32;*&#32;10f);
+<anchor xml:id="__buoyancy_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Mathf.Lerp(Mathf.Lerp(d00,&#32;d01,&#32;fp.y),&#32;Mathf.Lerp(d10,&#32;d11,&#32;fp.y),&#32;fp.x);
+<anchor xml:id="__buoyancy_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00068"/>00068 
+<anchor xml:id="__buoyancy_8cs_source_1l00069"/>00069 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;Vector3&#32;GetNormalWS(Vector3&#32;positionOS)&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;b&#32;=&#32;positionOS&#32;+&#32;Vector3.forward&#32;*&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1aa9c1ca65a305216741580fd60787f06c">size</link>;
+<anchor xml:id="__buoyancy_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;b.y&#32;=&#32;GetHeightOS(b);
+<anchor xml:id="__buoyancy_8cs_source_1l00072"/>00072 
+<anchor xml:id="__buoyancy_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;c&#32;=&#32;positionOS&#32;+&#32;Vector3.right&#32;*&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1aa9c1ca65a305216741580fd60787f06c">size</link>;
+<anchor xml:id="__buoyancy_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;c.y&#32;=&#32;GetHeightOS(b);
+<anchor xml:id="__buoyancy_8cs_source_1l00075"/>00075 
+<anchor xml:id="__buoyancy_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;n&#32;=&#32;Vector3.Cross(b&#32;-&#32;positionOS,&#32;c&#32;-&#32;positionOS).normalized;
+<anchor xml:id="__buoyancy_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1ae2d79c5fdf446f9b40368656a67716af">water</link>.TransformDirection(n);
+<anchor xml:id="__buoyancy_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00079"/>00079 
+<anchor xml:id="__buoyancy_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;SineWave(Vector3&#32;positionOS,&#32;<emphasis role="keywordtype">float</emphasis>&#32;offset)&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;Shader:</emphasis>
+<anchor xml:id="__buoyancy_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;sin(offset&#32;+&#32;_Time.z&#32;*&#32;_WaveSpeed&#32;+&#32;(pos.x&#32;*&#32;sin(offset&#32;+&#32;_WaveDirection)&#32;+&#32;pos.z&#32;*</emphasis>
+<anchor xml:id="__buoyancy_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cos(offset&#32;+&#32;_WaveDirection))&#32;*&#32;_WaveFrequency);</emphasis>
+<anchor xml:id="__buoyancy_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;timez&#32;=&#32;Time.timeSinceLevelLoad&#32;*&#32;2f;
+<anchor xml:id="__buoyancy_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;s&#32;=&#32;Mathf.Sin(offset&#32;+&#32;timez&#32;*&#32;_speed&#32;+
+<anchor xml:id="__buoyancy_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;(positionOS.x&#32;*&#32;Mathf.Sin(offset&#32;+&#32;_direction)&#32;+&#32;positionOS.z&#32;*
+<anchor xml:id="__buoyancy_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Mathf.Cos(offset&#32;+&#32;_direction))&#32;*&#32;_frequency);
+<anchor xml:id="__buoyancy_8cs_source_1l00088"/>00088 
+<anchor xml:id="__buoyancy_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(_material.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_WAVEMODE_POINTY&quot;</emphasis>))&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;s&#32;=&#32;1.0f&#32;-&#32;Mathf.Abs(s);
+<anchor xml:id="__buoyancy_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00092"/>00092 
+<anchor xml:id="__buoyancy_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;s&#32;*&#32;_amplitude;
+<anchor xml:id="__buoyancy_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00095"/>00095 
+<anchor xml:id="__buoyancy_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;GetHeightOS(Vector3&#32;positionOS)&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;y&#32;=&#32;SineWave(positionOS,&#32;0.0f);
+<anchor xml:id="__buoyancy_8cs_source_1l00098"/>00098 
+<anchor xml:id="__buoyancy_8cs_source_1l00099"/>00099 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(_material.IsKeywordEnabled(<emphasis role="stringliteral">&quot;_WAVEMODE_GRID&quot;</emphasis>))&#32;{
+<anchor xml:id="__buoyancy_8cs_source_1l00100"/>00100 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;y&#32;*=&#32;SineWave(positionOS,&#32;1.57f);
+<anchor xml:id="__buoyancy_8cs_source_1l00101"/>00101 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00102"/>00102 
+<anchor xml:id="__buoyancy_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;y&#32;*=&#32;<link linkend="_class_flat_kit_1_1_buoyancy_1a5cc21531ea1cd3ce1a9f677e800d6cf0">amplitude</link>;
+<anchor xml:id="__buoyancy_8cs_source_1l00104"/>00104 
+<anchor xml:id="__buoyancy_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;y;
+<anchor xml:id="__buoyancy_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__buoyancy_8cs_source_1l00107"/>00107 }
+<anchor xml:id="__buoyancy_8cs_source_1l00108"/>00108 }
+</programlisting></section>

@@ -1,0 +1,104 @@
+\doxysection{Hitscan\+Component.\+cs}
+\label{_hitscan_component_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/GenericHitscan/HitscanComponent.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/GenericHitscan/HitscanComponent.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }HitscanComponent : NetComponent}
+\DoxyCodeLine{00014         , IOnPreSimulate}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018         \textcolor{keyword}{public} GameObject origin;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} HitscanDefinition hitscanDefinition = \textcolor{keyword}{new} HitscanDefinition();}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [Tooltip(\textcolor{stringliteral}{"{}Ignore any collider hits that are nested children of the same NetObject this Hitscan is on."{}})]}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ignoreSelf = \textcolor{keyword}{true};}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{comment}{//\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} visualize = \textcolor{keyword}{false};}
+\DoxyCodeLine{00027         \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{        \#endregion Inspector Items}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} triggerQueued;}
+\DoxyCodeLine{00032         \textcolor{comment}{//protected List<NetworkHit> networkHits = new List<NetworkHit>();}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00035         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             base.Reset();}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039             \textcolor{keywordflow}{if} (!origin)}
+\DoxyCodeLine{00040                 origin = gameObject;}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             base.OnAwake();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (!origin)}
+\DoxyCodeLine{00049                 origin = gameObject;}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPreSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId)}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             \textcolor{keywordflow}{if} (!triggerQueued)}
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             \textcolor{keywordtype}{int} nearest = -\/1;}
+\DoxyCodeLine{00058             Collider[] hits;}
+\DoxyCodeLine{00059             RaycastHit[] rayhits;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordtype}{int} hitcount = hitscanDefinition.GenericHitscanNonAlloc(transform, out rayhits, out hits, ref nearest);}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063             \textcolor{comment}{//\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (visualize)}
+\DoxyCodeLine{00065                 hitscanDefinition.VisualizeHitscan(transform);}
+\DoxyCodeLine{00066             \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00067             triggerQueued = \textcolor{keyword}{false};}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             ProcessHits(hits, hitcount);}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ProcessHits(Collider[] hits, \textcolor{keywordtype}{int} hitcount)}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < hitcount; i++)}
+\DoxyCodeLine{00076             \{}
+\DoxyCodeLine{00077                 var hit = hits[i];}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if} (ignoreSelf)}
+\DoxyCodeLine{00080                 \{}
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00082                     var hitNetObj = hit.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00083                     \textcolor{keywordflow}{if} (hitNetObj == netObj)}
+\DoxyCodeLine{00084                     \{}
+\DoxyCodeLine{00085                         Debug.Log(\textcolor{stringliteral}{"{}Ignoring self "{}} + name + \textcolor{stringliteral}{"{} hit: "{}} + (hit ? hit.name : \textcolor{stringliteral}{"{}null"{}}) + \textcolor{stringliteral}{"{} hitnetobj: "{}} + (hitNetObj ? hitNetObj.name : \textcolor{stringliteral}{"{}null"{}}));}
+\DoxyCodeLine{00086                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                     \}}
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00090                 \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092                 \textcolor{keywordtype}{bool} terminateProcessing = ProcessHit(hit);}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{if} (terminateProcessing)}
+\DoxyCodeLine{00094                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keywordtype}{bool} ProcessHit(Collider hit);}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105     \}}
+\DoxyCodeLine{00106 \}}
+
+\end{DoxyCode}

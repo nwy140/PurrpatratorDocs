@@ -1,0 +1,651 @@
+\doxysection{Region\+Handler.\+cs}
+\label{_region_handler_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/RegionHandler.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/RegionHandler.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}RegionHandler.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   The RegionHandler class provides methods to ping a list of regions,}}
+\DoxyCodeLine{00007 \textcolor{comment}{//   to find the one with best ping.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{preprocessor}{\#if UNITY\_WEBGL}}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#define PING\_VIA\_COROUTINE}}
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00022 \{}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00025     \textcolor{keyword}{using} System.Threading;}
+\DoxyCodeLine{00026     \textcolor{keyword}{using} System.Net;}
+\DoxyCodeLine{00027     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00028     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00029     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00030     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00033     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00034     \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00037     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00038     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00039 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00056     \textcolor{keyword}{public} \textcolor{keyword}{class }RegionHandler}
+\DoxyCodeLine{00057     \{}
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{static} Type PingImplementation;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00067         \textcolor{keyword}{public} List<Region> EnabledRegions \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keywordtype}{string} availableRegionCodes;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{keyword}{private} Region bestRegionCache;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} Region BestRegion}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{keyword}{get}}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} (this.EnabledRegions == \textcolor{keyword}{null})}
+\DoxyCodeLine{00081                 \{}
+\DoxyCodeLine{00082                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00083                 \}}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (this.bestRegionCache != \textcolor{keyword}{null})}
+\DoxyCodeLine{00085                 \{}
+\DoxyCodeLine{00086                     \textcolor{keywordflow}{return} this.bestRegionCache;}
+\DoxyCodeLine{00087                 \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                 this.EnabledRegions.Sort((a, b) => a.Ping.CompareTo(b.Ping) );}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091                 this.bestRegionCache = this.EnabledRegions[0];}
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{return} this.bestRegionCache;}
+\DoxyCodeLine{00093             \}}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SummaryToCache}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             \textcolor{keyword}{get}}
+\DoxyCodeLine{00106             \{}
+\DoxyCodeLine{00107                 \textcolor{keywordflow}{if} (this.BestRegion != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00108                     \textcolor{keywordflow}{return} this.BestRegion.Code + \textcolor{stringliteral}{"{};"{}} + this.BestRegion.Ping + \textcolor{stringliteral}{"{};"{}} + this.availableRegionCodes;}
+\DoxyCodeLine{00109                 \}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111                 \textcolor{keywordflow}{return} this.availableRegionCodes;}
+\DoxyCodeLine{00112             \}}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keywordtype}{string} GetResults()}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             StringBuilder sb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00118             }
+\DoxyCodeLine{00119             sb.AppendFormat(\textcolor{stringliteral}{"{}Region Pinging Result: \{0\}\(\backslash\)n"{}}, this.BestRegion.ToString());}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{foreach} (RegionPinger region \textcolor{keywordflow}{in} this.pingerList)}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 sb.AppendFormat(region.GetResults() + \textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124             sb.AppendFormat(\textcolor{stringliteral}{"{}Previous summary: \{0\}"{}}, this.previousSummaryProvided);}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{return} sb.ToString();}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetRegions(OperationResponse opGetRegions)}
+\DoxyCodeLine{00130         \{}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (opGetRegions.OperationCode != OperationCode.GetRegions)}
+\DoxyCodeLine{00132             \{}
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00134             \}}
+\DoxyCodeLine{00135             \textcolor{keywordflow}{if} (opGetRegions.ReturnCode != ErrorCode.Ok)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordtype}{string}[] regions = opGetRegions[ParameterCode.Region] as \textcolor{keywordtype}{string}[];}
+\DoxyCodeLine{00141             \textcolor{keywordtype}{string}[] servers = opGetRegions[ParameterCode.Address] as \textcolor{keywordtype}{string}[];}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (regions == \textcolor{keyword}{null} || servers == \textcolor{keyword}{null} || regions.Length != servers.Length)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 \textcolor{comment}{//TODO: log error}}
+\DoxyCodeLine{00145                 \textcolor{comment}{//Debug.LogError("{}The region arrays from Name Server are not ok. Must be non-\/null and same length. "{} + (regions == null) + "{} "{} + (servers == null) + "{}\(\backslash\)n"{} + opGetRegions.ToStringFull());}}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148             }
+\DoxyCodeLine{00149             this.bestRegionCache = \textcolor{keyword}{null};}
+\DoxyCodeLine{00150             this.EnabledRegions = \textcolor{keyword}{new} List<Region>(regions.Length);}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < regions.Length; i++)}
+\DoxyCodeLine{00153             \{}
+\DoxyCodeLine{00154                 \textcolor{keywordtype}{string} server = servers[i];}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{if} (PortToPingOverride != 0)}
+\DoxyCodeLine{00156                 \{}
+\DoxyCodeLine{00157                     server = LoadBalancingClient.ReplacePortWithAlternative(servers[i], PortToPingOverride);}
+\DoxyCodeLine{00158                 \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                 Region tmp = \textcolor{keyword}{new} Region(regions[i], server);}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(tmp.Code))}
+\DoxyCodeLine{00162                 \{}
+\DoxyCodeLine{00163                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00164                 \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166                 this.EnabledRegions.Add(tmp);}
+\DoxyCodeLine{00167             \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             Array.Sort(regions);}
+\DoxyCodeLine{00170             this.availableRegionCodes = \textcolor{keywordtype}{string}.Join(\textcolor{stringliteral}{"{},"{}}, regions);}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{keyword}{private} List<RegionPinger> pingerList = \textcolor{keyword}{new} List<RegionPinger>();}
+\DoxyCodeLine{00174         \textcolor{keyword}{private} Action<RegionHandler> onCompleteCall;}
+\DoxyCodeLine{00175         \textcolor{keyword}{private} \textcolor{keywordtype}{int} previousPing;}
+\DoxyCodeLine{00176         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsPinging \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00177         \textcolor{keyword}{private} \textcolor{keywordtype}{string} previousSummaryProvided;}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{static} ushort PortToPingOverride;}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} RegionHandler(ushort masterServerPortOverride = 0)}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             PortToPingOverride = masterServerPortOverride;}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} PingMinimumOfRegions(Action<RegionHandler> onCompleteCallback, \textcolor{keywordtype}{string} previousSummary)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             \textcolor{keywordflow}{if} (this.EnabledRegions == \textcolor{keyword}{null} || this.EnabledRegions.Count == 0)}
+\DoxyCodeLine{00191             \{}
+\DoxyCodeLine{00192                 \textcolor{comment}{//TODO: log error}}
+\DoxyCodeLine{00193                 \textcolor{comment}{//Debug.LogError("{}No regions available. Maybe all got filtered out or the AppId is not correctly configured."{});}}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00195             \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197             \textcolor{keywordflow}{if} (this.IsPinging)}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 \textcolor{comment}{//TODO: log warning}}
+\DoxyCodeLine{00200                 \textcolor{comment}{//Debug.LogWarning("{}PingMinimumOfRegions() skipped, because this RegionHandler is already pinging some regions."{});}}
+\DoxyCodeLine{00201                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00202             \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204             this.IsPinging = \textcolor{keyword}{true};}
+\DoxyCodeLine{00205             this.onCompleteCall = onCompleteCallback;}
+\DoxyCodeLine{00206             this.previousSummaryProvided = previousSummary;}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(previousSummary))}
+\DoxyCodeLine{00209             \{}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00211             \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             \textcolor{keywordtype}{string}[] values = previousSummary.Split(\textcolor{charliteral}{';'});}
+\DoxyCodeLine{00214             \textcolor{keywordflow}{if} (values.Length < 3)}
+\DoxyCodeLine{00215             \{}
+\DoxyCodeLine{00216                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00217             \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             \textcolor{keywordtype}{int} prevBestRegionPing;}
+\DoxyCodeLine{00220             \textcolor{keywordtype}{bool} secondValueIsInt = Int32.TryParse(values[1], out prevBestRegionPing);}
+\DoxyCodeLine{00221             \textcolor{keywordflow}{if} (!secondValueIsInt)}
+\DoxyCodeLine{00222             \{}
+\DoxyCodeLine{00223                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00224             \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordtype}{string} prevBestRegionCode = values[0];}
+\DoxyCodeLine{00227             \textcolor{keywordtype}{string} prevAvailableRegionCodes = values[2];}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(prevBestRegionCode))}
+\DoxyCodeLine{00231             \{}
+\DoxyCodeLine{00232                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(prevAvailableRegionCodes))}
+\DoxyCodeLine{00235             \{}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (!this.availableRegionCodes.Equals(prevAvailableRegionCodes) || !\textcolor{keyword}{this}.availableRegionCodes.Contains(prevBestRegionCode))}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242             \textcolor{keywordflow}{if} (prevBestRegionPing >= RegionPinger.PingWhenFailed)}
+\DoxyCodeLine{00243             \{}
+\DoxyCodeLine{00244                 \textcolor{keywordflow}{return} this.PingEnabledRegions();}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{comment}{// let's check only the preferred region to detect if it's still "{}good enough"{}}}
+\DoxyCodeLine{00248             this.previousPing = prevBestRegionPing;}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             }
+\DoxyCodeLine{00251             Region preferred = this.EnabledRegions.Find(r => r.Code.Equals(prevBestRegionCode));}
+\DoxyCodeLine{00252             RegionPinger singlePinger = \textcolor{keyword}{new} RegionPinger(preferred, this.OnPreferredRegionPinged);}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254             lock (this.pingerList)}
+\DoxyCodeLine{00255             \{}
+\DoxyCodeLine{00256                 this.pingerList.Add(singlePinger);}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             singlePinger.Start();}
+\DoxyCodeLine{00260             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00261         \}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnPreferredRegionPinged(Region preferredRegion)}
+\DoxyCodeLine{00264         \{}
+\DoxyCodeLine{00265             \textcolor{keywordflow}{if} (preferredRegion.Ping > \textcolor{keyword}{this}.previousPing * 1.50f)}
+\DoxyCodeLine{00266             \{}
+\DoxyCodeLine{00267                 this.PingEnabledRegions();}
+\DoxyCodeLine{00268             \}}
+\DoxyCodeLine{00269             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00270             \{}
+\DoxyCodeLine{00271                 this.IsPinging = \textcolor{keyword}{false};}
+\DoxyCodeLine{00272                 this.onCompleteCall(\textcolor{keyword}{this});}
+\DoxyCodeLine{00273 \textcolor{preprocessor}{                \#if PING\_VIA\_COROUTINE}}
+\DoxyCodeLine{00274                 MonoBehaviourEmpty.SelfDestroy();}
+\DoxyCodeLine{00275 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00276             \}}
+\DoxyCodeLine{00277         \}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} PingEnabledRegions()}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{if} (this.EnabledRegions == \textcolor{keyword}{null} || this.EnabledRegions.Count == 0)}
+\DoxyCodeLine{00283             \{}
+\DoxyCodeLine{00284                 \textcolor{comment}{//TODO: log}}
+\DoxyCodeLine{00285                 \textcolor{comment}{//Debug.LogError("{}No regions available. Maybe all got filtered out or the AppId is not correctly configured."{});}}
+\DoxyCodeLine{00286                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00287             \}}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289             lock (this.pingerList)}
+\DoxyCodeLine{00290             \{}
+\DoxyCodeLine{00291                 this.pingerList.Clear();}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                 \textcolor{keywordflow}{foreach} (Region region \textcolor{keywordflow}{in} this.EnabledRegions)}
+\DoxyCodeLine{00294                 \{}
+\DoxyCodeLine{00295                     RegionPinger rp = \textcolor{keyword}{new} RegionPinger(region, this.OnRegionDone);}
+\DoxyCodeLine{00296                     this.pingerList.Add(rp);}
+\DoxyCodeLine{00297                     rp.Start(); \textcolor{comment}{// TODO: check return value}}
+\DoxyCodeLine{00298                 \}}
+\DoxyCodeLine{00299             \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnRegionDone(Region region)}
+\DoxyCodeLine{00305         \{}
+\DoxyCodeLine{00306             lock (this.pingerList)}
+\DoxyCodeLine{00307             \{}
+\DoxyCodeLine{00308                 \textcolor{keywordflow}{if} (this.IsPinging == \textcolor{keyword}{false})}
+\DoxyCodeLine{00309                 \{}
+\DoxyCodeLine{00310                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00311                 \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313                 this.bestRegionCache = \textcolor{keyword}{null};}
+\DoxyCodeLine{00314                 \textcolor{keywordflow}{foreach} (RegionPinger pinger \textcolor{keywordflow}{in} this.pingerList)}
+\DoxyCodeLine{00315                 \{}
+\DoxyCodeLine{00316                     \textcolor{keywordflow}{if} (!pinger.Done)}
+\DoxyCodeLine{00317                     \{}
+\DoxyCodeLine{00318                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00319                     \}}
+\DoxyCodeLine{00320                 \}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                 this.IsPinging = \textcolor{keyword}{false};}
+\DoxyCodeLine{00323             \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325             this.onCompleteCall(\textcolor{keyword}{this});}
+\DoxyCodeLine{00326 \textcolor{preprocessor}{            \#if PING\_VIA\_COROUTINE}}
+\DoxyCodeLine{00327             MonoBehaviourEmpty.SelfDestroy();}
+\DoxyCodeLine{00328 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00329         \}}
+\DoxyCodeLine{00330     \}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332     \textcolor{keyword}{public} \textcolor{keyword}{class }RegionPinger}
+\DoxyCodeLine{00333     \{}
+\DoxyCodeLine{00334         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} Attempts = 5;}
+\DoxyCodeLine{00335         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IgnoreInitialAttempt = \textcolor{keyword}{true};}
+\DoxyCodeLine{00336         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MaxMilliseconsPerPing = 800; \textcolor{comment}{// enter a value you're sure some server can beat (have a lower rtt)}}
+\DoxyCodeLine{00337         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} PingWhenFailed = Attempts * MaxMilliseconsPerPing;}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         \textcolor{keyword}{private} Region region;}
+\DoxyCodeLine{00340         \textcolor{keyword}{private} \textcolor{keywordtype}{string} regionAddress;}
+\DoxyCodeLine{00341         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CurrentAttempt = 0;}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Done \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00344         \textcolor{keyword}{private} Action<Region> onDoneCall;}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346         \textcolor{keyword}{private} PhotonPing ping;}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348         \textcolor{keyword}{private} List<int> rttResults;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350         \textcolor{keyword}{public} RegionPinger(Region region, Action<Region> onDoneCallback)}
+\DoxyCodeLine{00351         \{}
+\DoxyCodeLine{00352             this.region = region;}
+\DoxyCodeLine{00353             this.region.Ping = PingWhenFailed;}
+\DoxyCodeLine{00354             this.Done = \textcolor{keyword}{false};}
+\DoxyCodeLine{00355             this.onDoneCall = onDoneCallback;}
+\DoxyCodeLine{00356         \}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00360         \textcolor{keyword}{private} PhotonPing GetPingImplementation()}
+\DoxyCodeLine{00361         \{}
+\DoxyCodeLine{00362             PhotonPing ping = \textcolor{keyword}{null};}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364             \textcolor{comment}{// using each type explicitly in the conditional code, makes sure Unity doesn't strip the class / constructor.}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366 \textcolor{preprocessor}{            \#if !UNITY\_EDITOR \&\& NETFX\_CORE}}
+\DoxyCodeLine{00367             \textcolor{keywordflow}{if} (RegionHandler.PingImplementation == \textcolor{keyword}{null} || RegionHandler.PingImplementation == typeof(PingWindowsStore))}
+\DoxyCodeLine{00368             \{}
+\DoxyCodeLine{00369                 ping = \textcolor{keyword}{new} PingWindowsStore();}
+\DoxyCodeLine{00370             \}}
+\DoxyCodeLine{00371 \textcolor{preprocessor}{            \#elif NATIVE\_SOCKETS || NO\_SOCKET}}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{if} (RegionHandler.PingImplementation == \textcolor{keyword}{null} || RegionHandler.PingImplementation == typeof(PingNativeDynamic))}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374                 ping = \textcolor{keyword}{new} PingNativeDynamic();}
+\DoxyCodeLine{00375             \}}
+\DoxyCodeLine{00376 \textcolor{preprocessor}{            \#elif UNITY\_WEBGL}}
+\DoxyCodeLine{00377             \textcolor{keywordflow}{if} (RegionHandler.PingImplementation == \textcolor{keyword}{null} || RegionHandler.PingImplementation == typeof(PingHttp))}
+\DoxyCodeLine{00378             \{}
+\DoxyCodeLine{00379                 ping = \textcolor{keyword}{new} PingHttp();}
+\DoxyCodeLine{00380             \}}
+\DoxyCodeLine{00381 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00382             \textcolor{keywordflow}{if} (RegionHandler.PingImplementation == \textcolor{keyword}{null} || RegionHandler.PingImplementation == typeof(PingMono))}
+\DoxyCodeLine{00383             \{}
+\DoxyCodeLine{00384                 ping = \textcolor{keyword}{new} PingMono();}
+\DoxyCodeLine{00385             \}}
+\DoxyCodeLine{00386 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388             \textcolor{keywordflow}{if} (ping == \textcolor{keyword}{null})}
+\DoxyCodeLine{00389             \{}
+\DoxyCodeLine{00390                 \textcolor{keywordflow}{if} (RegionHandler.PingImplementation != \textcolor{keyword}{null})}
+\DoxyCodeLine{00391                 \{}
+\DoxyCodeLine{00392                     ping = (PhotonPing)Activator.CreateInstance(RegionHandler.PingImplementation);}
+\DoxyCodeLine{00393                 \}}
+\DoxyCodeLine{00394             \}}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396             \textcolor{keywordflow}{return} ping;}
+\DoxyCodeLine{00397         \}}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00408         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Start()}
+\DoxyCodeLine{00409         \{}
+\DoxyCodeLine{00410             \textcolor{comment}{// all addresses for Photon region servers will contain a :port ending. this needs to be removed first.}}
+\DoxyCodeLine{00411             \textcolor{comment}{// PhotonPing.StartPing() requires a plain (IP) address without port or protocol-\/prefix (on all but Windows 8.1 and WebGL platforms).}}
+\DoxyCodeLine{00412             \textcolor{keywordtype}{string} address = this.region.HostAndPort;}
+\DoxyCodeLine{00413             \textcolor{keywordtype}{int} indexOfColon = address.LastIndexOf(\textcolor{charliteral}{':'});}
+\DoxyCodeLine{00414             \textcolor{keywordflow}{if} (indexOfColon > 1)}
+\DoxyCodeLine{00415             \{}
+\DoxyCodeLine{00416                 address = address.Substring(0, indexOfColon);}
+\DoxyCodeLine{00417             \}}
+\DoxyCodeLine{00418             this.regionAddress = ResolveHost(address);}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420 }
+\DoxyCodeLine{00421             this.ping = this.GetPingImplementation();}
+\DoxyCodeLine{00422 }
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424             this.Done = \textcolor{keyword}{false};}
+\DoxyCodeLine{00425             this.CurrentAttempt = 0;}
+\DoxyCodeLine{00426             this.rttResults = \textcolor{keyword}{new} List<int>(Attempts);}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429 \textcolor{preprocessor}{            \#if PING\_VIA\_COROUTINE}}
+\DoxyCodeLine{00430             MonoBehaviourEmpty.Instance.StartCoroutine(this.RegionPingCoroutine());}
+\DoxyCodeLine{00431 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00432             \textcolor{keywordtype}{bool} queued = \textcolor{keyword}{false};}
+\DoxyCodeLine{00433 \textcolor{preprocessor}{            \#if !NETFX\_CORE}}
+\DoxyCodeLine{00434             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 queued = ThreadPool.QueueUserWorkItem(this.RegionPingPooled);}
+\DoxyCodeLine{00437             \}}
+\DoxyCodeLine{00438             \textcolor{keywordflow}{catch}}
+\DoxyCodeLine{00439             \{}
+\DoxyCodeLine{00440                 queued = \textcolor{keyword}{false};}
+\DoxyCodeLine{00441             \}}
+\DoxyCodeLine{00442 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00443             \textcolor{keywordflow}{if} (!queued)}
+\DoxyCodeLine{00444             \{}
+\DoxyCodeLine{00445                 SupportClass.StartBackgroundCalls(this.RegionPingThreaded, 0, \textcolor{stringliteral}{"{}RegionPing\_"{}} + this.region.Code + \textcolor{stringliteral}{"{}\_"{}} + \textcolor{keyword}{this}.region.Cluster);}
+\DoxyCodeLine{00446             \}}
+\DoxyCodeLine{00447 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00451         \}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453         \textcolor{comment}{// wraps RegionPingThreaded() to get the signature compatible with ThreadPool.QueueUserWorkItem}}
+\DoxyCodeLine{00454         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} RegionPingPooled(\textcolor{keywordtype}{object} context)}
+\DoxyCodeLine{00455         \{}
+\DoxyCodeLine{00456             this.RegionPingThreaded();}
+\DoxyCodeLine{00457         \}}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} RegionPingThreaded()}
+\DoxyCodeLine{00460         \{}
+\DoxyCodeLine{00461             this.region.Ping = PingWhenFailed;}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463             \textcolor{keywordtype}{float} rttSum = 0.0f;}
+\DoxyCodeLine{00464             \textcolor{keywordtype}{int} replyCount = 0;}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00467             Stopwatch sw = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{00468             \textcolor{keywordflow}{for} (this.CurrentAttempt = 0; this.CurrentAttempt < Attempts; this.CurrentAttempt++)}
+\DoxyCodeLine{00469             \{}
+\DoxyCodeLine{00470                 \textcolor{keywordtype}{bool} overtime = \textcolor{keyword}{false};}
+\DoxyCodeLine{00471                 sw.Reset();}
+\DoxyCodeLine{00472                 sw.Start();}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00475                 \{}
+\DoxyCodeLine{00476                     this.ping.StartPing(this.regionAddress);}
+\DoxyCodeLine{00477                 \}}
+\DoxyCodeLine{00478                 \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00479                 \{}
+\DoxyCodeLine{00480                     System.Diagnostics.Debug.WriteLine(\textcolor{stringliteral}{"{}RegionPinger.RegionPingThreaded() catched an exception for ping.StartPing(). Exception: "{}} + e + \textcolor{stringliteral}{"{} Source: "{}} + e.Source + \textcolor{stringliteral}{"{} Message: "{}} + e.Message);}
+\DoxyCodeLine{00481                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00482                 \}}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00485                 \textcolor{keywordflow}{while} (!this.ping.Done())}
+\DoxyCodeLine{00486                 \{}
+\DoxyCodeLine{00487                     \textcolor{keywordflow}{if} (sw.ElapsedMilliseconds >= MaxMilliseconsPerPing)}
+\DoxyCodeLine{00488                     \{}
+\DoxyCodeLine{00489                         overtime = \textcolor{keyword}{true};}
+\DoxyCodeLine{00490                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00491                     \}}
+\DoxyCodeLine{00492 \textcolor{preprocessor}{                    \#if !NETFX\_CORE}}
+\DoxyCodeLine{00493                     System.Threading.Thread.Sleep(0);}
+\DoxyCodeLine{00494 \textcolor{preprocessor}{                    \#endif}}
+\DoxyCodeLine{00495                 \}}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498                 sw.Stop();}
+\DoxyCodeLine{00499                 \textcolor{keywordtype}{int} rtt = (int)sw.ElapsedMilliseconds;}
+\DoxyCodeLine{00500                 \textcolor{keyword}{this}.rttResults.Add(rtt);}
+\DoxyCodeLine{00501 }
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{if} (IgnoreInitialAttempt \&\& this.CurrentAttempt == 0)}
+\DoxyCodeLine{00503                 \{}
+\DoxyCodeLine{00504                     \textcolor{comment}{// do nothing.}}
+\DoxyCodeLine{00505                 \}}
+\DoxyCodeLine{00506                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.ping.Successful \&\& !overtime)}
+\DoxyCodeLine{00507                 \{}
+\DoxyCodeLine{00508                     rttSum += rtt;}
+\DoxyCodeLine{00509                     replyCount++;}
+\DoxyCodeLine{00510                     this.region.Ping = (int)((rttSum) / replyCount);}
+\DoxyCodeLine{00511                 \}}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513 \textcolor{preprocessor}{                \#if !NETFX\_CORE}}
+\DoxyCodeLine{00514                 System.Threading.Thread.Sleep(10);}
+\DoxyCodeLine{00515 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00516             \}}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518             \textcolor{comment}{//Debug.Log("{}Done: "{}+ this.region.Code);}}
+\DoxyCodeLine{00519             this.Done = \textcolor{keyword}{true};}
+\DoxyCodeLine{00520             this.ping.Dispose();}
+\DoxyCodeLine{00521 }
+\DoxyCodeLine{00522             this.onDoneCall(this.region);}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00525         \}}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527 }
+\DoxyCodeLine{00528 \textcolor{preprocessor}{        \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00532         \textcolor{keyword}{protected} \textcolor{keyword}{internal} IEnumerator RegionPingCoroutine()}
+\DoxyCodeLine{00533         \{}
+\DoxyCodeLine{00534             this.region.Ping = PingWhenFailed;}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536             \textcolor{keywordtype}{float} rttSum = 0.0f;}
+\DoxyCodeLine{00537             \textcolor{keywordtype}{int} replyCount = 0;}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539 }
+\DoxyCodeLine{00540             Stopwatch sw = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{00541             \textcolor{keywordflow}{for} (this.CurrentAttempt = 0; this.CurrentAttempt < Attempts; this.CurrentAttempt++)}
+\DoxyCodeLine{00542             \{}
+\DoxyCodeLine{00543                 \textcolor{keywordtype}{bool} overtime = \textcolor{keyword}{false};}
+\DoxyCodeLine{00544                 sw.Reset();}
+\DoxyCodeLine{00545                 sw.Start();}
+\DoxyCodeLine{00546 }
+\DoxyCodeLine{00547                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00548                 \{}
+\DoxyCodeLine{00549                     this.ping.StartPing(this.regionAddress);}
+\DoxyCodeLine{00550                 \}}
+\DoxyCodeLine{00551                 \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00552                 \{}
+\DoxyCodeLine{00553                     Debug.Log(\textcolor{stringliteral}{"{}catched: "{}} + e);}
+\DoxyCodeLine{00554                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00555                 \}}
+\DoxyCodeLine{00556 }
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558                 \textcolor{keywordflow}{while} (!this.ping.Done())}
+\DoxyCodeLine{00559                 \{}
+\DoxyCodeLine{00560                     \textcolor{keywordflow}{if} (sw.ElapsedMilliseconds >= MaxMilliseconsPerPing)}
+\DoxyCodeLine{00561                     \{}
+\DoxyCodeLine{00562                         overtime = \textcolor{keyword}{true};}
+\DoxyCodeLine{00563                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00564                     \}}
+\DoxyCodeLine{00565                     yield \textcolor{keywordflow}{return} 0; \textcolor{comment}{// keep this loop tight, to avoid adding local lag to rtt.}}
+\DoxyCodeLine{00566                 \}}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568 }
+\DoxyCodeLine{00569                 sw.Stop();}
+\DoxyCodeLine{00570                 \textcolor{keywordtype}{int} rtt = (int)sw.ElapsedMilliseconds;}
+\DoxyCodeLine{00571                 \textcolor{keyword}{this}.rttResults.Add(rtt);}
+\DoxyCodeLine{00572 }
+\DoxyCodeLine{00573 }
+\DoxyCodeLine{00574                 \textcolor{keywordflow}{if} (IgnoreInitialAttempt \&\& this.CurrentAttempt == 0)}
+\DoxyCodeLine{00575                 \{}
+\DoxyCodeLine{00576                     \textcolor{comment}{// do nothing.}}
+\DoxyCodeLine{00577                 \}}
+\DoxyCodeLine{00578                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.ping.Successful \&\& !overtime)}
+\DoxyCodeLine{00579                 \{}
+\DoxyCodeLine{00580                     rttSum += rtt;}
+\DoxyCodeLine{00581                     replyCount++;}
+\DoxyCodeLine{00582                     this.region.Ping = (int)((rttSum) / replyCount);}
+\DoxyCodeLine{00583                 \}}
+\DoxyCodeLine{00584 }
+\DoxyCodeLine{00585                 yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(0.1f);}
+\DoxyCodeLine{00586             \}}
+\DoxyCodeLine{00587 }
+\DoxyCodeLine{00588 }
+\DoxyCodeLine{00589             \textcolor{comment}{//Debug.Log("{}Done: "{}+ this.region.Code);}}
+\DoxyCodeLine{00590             this.Done = \textcolor{keyword}{true};}
+\DoxyCodeLine{00591             this.ping.Dispose();}
+\DoxyCodeLine{00592             this.onDoneCall(this.region);}
+\DoxyCodeLine{00593             yield \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00594         \}}
+\DoxyCodeLine{00595 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00596 }
+\DoxyCodeLine{00597 }
+\DoxyCodeLine{00598         \textcolor{keyword}{public} \textcolor{keywordtype}{string} GetResults()}
+\DoxyCodeLine{00599         \{}
+\DoxyCodeLine{00600             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}: \{1\} (\{2\})"{}}, this.region.Code, \textcolor{keyword}{this}.region.Ping, \textcolor{keyword}{this}.rttResults.ToStringFull());}
+\DoxyCodeLine{00601         \}}
+\DoxyCodeLine{00602 }
+\DoxyCodeLine{00612         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ResolveHost(\textcolor{keywordtype}{string} hostName)}
+\DoxyCodeLine{00613         \{}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615             \textcolor{keywordflow}{if} (hostName.StartsWith(\textcolor{stringliteral}{"{}wss://"{}}))}
+\DoxyCodeLine{00616             \{}
+\DoxyCodeLine{00617                 hostName = hostName.Substring(6);}
+\DoxyCodeLine{00618             \}}
+\DoxyCodeLine{00619             \textcolor{keywordflow}{if} (hostName.StartsWith(\textcolor{stringliteral}{"{}ws://"{}}))}
+\DoxyCodeLine{00620             \{}
+\DoxyCodeLine{00621                 hostName = hostName.Substring(5);}
+\DoxyCodeLine{00622             \}}
+\DoxyCodeLine{00623 }
+\DoxyCodeLine{00624             \textcolor{keywordtype}{string} ipv4Address = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00627             \{}
+\DoxyCodeLine{00628 \textcolor{preprocessor}{                \#if UNITY\_WSA || NETFX\_CORE || UNITY\_WEBGL}}
+\DoxyCodeLine{00629                 \textcolor{keywordflow}{return} hostName;}
+\DoxyCodeLine{00630 \textcolor{preprocessor}{                \#else}}
+\DoxyCodeLine{00631 }
+\DoxyCodeLine{00632                 IPAddress[] address = Dns.GetHostAddresses(hostName);}
+\DoxyCodeLine{00633                 \textcolor{keywordflow}{if} (address.Length == 1)}
+\DoxyCodeLine{00634                 \{}
+\DoxyCodeLine{00635                     \textcolor{keywordflow}{return} address[0].ToString();}
+\DoxyCodeLine{00636                 \}}
+\DoxyCodeLine{00637 }
+\DoxyCodeLine{00638                 \textcolor{comment}{// if we got more addresses, try to pick a IPv6 one}}
+\DoxyCodeLine{00639                 \textcolor{comment}{// checking ipAddress.ToString() means we don't have to import System.Net.Sockets, which is not available on some platforms (Metro)}}
+\DoxyCodeLine{00640                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < address.Length; index++)}
+\DoxyCodeLine{00641                 \{}
+\DoxyCodeLine{00642                     IPAddress ipAddress = address[index];}
+\DoxyCodeLine{00643                     \textcolor{keywordflow}{if} (ipAddress != \textcolor{keyword}{null})}
+\DoxyCodeLine{00644                     \{}
+\DoxyCodeLine{00645                         \textcolor{keywordflow}{if} (ipAddress.ToString().Contains(\textcolor{stringliteral}{"{}:"{}}))}
+\DoxyCodeLine{00646                         \{}
+\DoxyCodeLine{00647                             \textcolor{keywordflow}{return} ipAddress.ToString();}
+\DoxyCodeLine{00648                         \}}
+\DoxyCodeLine{00649                         \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(ipv4Address))}
+\DoxyCodeLine{00650                         \{}
+\DoxyCodeLine{00651                             ipv4Address = address.ToString();}
+\DoxyCodeLine{00652                         \}}
+\DoxyCodeLine{00653                     \}}
+\DoxyCodeLine{00654                 \}}
+\DoxyCodeLine{00655 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00656             \}}
+\DoxyCodeLine{00657             \textcolor{keywordflow}{catch} (System.Exception e)}
+\DoxyCodeLine{00658             \{}
+\DoxyCodeLine{00659                 System.Diagnostics.Debug.WriteLine(\textcolor{stringliteral}{"{}RegionPinger.ResolveHost() catched an exception for Dns.GetHostAddresses(). Exception: "{}} + e + \textcolor{stringliteral}{"{} Source: "{}} + e.Source + \textcolor{stringliteral}{"{} Message: "{}} + e.Message);}
+\DoxyCodeLine{00660             \}}
+\DoxyCodeLine{00661 }
+\DoxyCodeLine{00662             \textcolor{keywordflow}{return} ipv4Address;}
+\DoxyCodeLine{00663         \}}
+\DoxyCodeLine{00664     \}}
+\DoxyCodeLine{00665 }
+\DoxyCodeLine{00666 \textcolor{preprocessor}{    \#if PING\_VIA\_COROUTINE}}
+\DoxyCodeLine{00667     \textcolor{keyword}{internal} \textcolor{keyword}{class }MonoBehaviourEmpty : MonoBehaviour}
+\DoxyCodeLine{00668     \{}
+\DoxyCodeLine{00669         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} instanceSet; \textcolor{comment}{// to avoid instance null check which may be incorrect}}
+\DoxyCodeLine{00670         \textcolor{keyword}{private} \textcolor{keyword}{static} MonoBehaviourEmpty instance;}
+\DoxyCodeLine{00671 }
+\DoxyCodeLine{00672         \textcolor{keyword}{public} \textcolor{keyword}{static} MonoBehaviourEmpty Instance}
+\DoxyCodeLine{00673         \{}
+\DoxyCodeLine{00674             \textcolor{keyword}{get}}
+\DoxyCodeLine{00675             \{}
+\DoxyCodeLine{00676                 \textcolor{keywordflow}{if} (instanceSet)}
+\DoxyCodeLine{00677                 \{}
+\DoxyCodeLine{00678                     \textcolor{keywordflow}{return} instance;}
+\DoxyCodeLine{00679                 \}}
+\DoxyCodeLine{00680                 GameObject go = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00681                 DontDestroyOnLoad(go);}
+\DoxyCodeLine{00682                 go.name = \textcolor{stringliteral}{"{}RegionPinger"{}};}
+\DoxyCodeLine{00683                 instance = go.AddComponent<MonoBehaviourEmpty>();}
+\DoxyCodeLine{00684                 instanceSet = \textcolor{keyword}{true};}
+\DoxyCodeLine{00685                 \textcolor{keywordflow}{return} instance;}
+\DoxyCodeLine{00686             \}}
+\DoxyCodeLine{00687         \}}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SelfDestroy()}
+\DoxyCodeLine{00690         \{}
+\DoxyCodeLine{00691             \textcolor{keywordflow}{if} (instanceSet)}
+\DoxyCodeLine{00692             \{}
+\DoxyCodeLine{00693                 instanceSet = \textcolor{keyword}{false};}
+\DoxyCodeLine{00694                 Destroy(instance.gameObject);}
+\DoxyCodeLine{00695             \}}
+\DoxyCodeLine{00696         \}}
+\DoxyCodeLine{00697     \}}
+\DoxyCodeLine{00698 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00699 \}}
+
+\end{DoxyCode}

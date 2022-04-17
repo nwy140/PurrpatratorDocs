@@ -1,0 +1,224 @@
+\doxysection{Mask\+Logic.\+cs}
+\label{_mask_logic_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GUITools/CustomMaskEditors/MaskLogic.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GUITools/CustomMaskEditors/MaskLogic.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00019     [System.Serializable]}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }MaskLogic}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{enum} Operator \{ EQUALS, AND, OR \}}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} Operator operation = Operator.AND;}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{int} stateMask;}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{int} notMask = 0;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{comment}{//cache}}
+\DoxyCodeLine{00028         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} trueMask;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{string}[] EnumNames \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00031         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{int}[] EnumValues \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00032         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{bool} DefinesZero \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00033         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{int} DefaultValue \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} MaskLogic()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             stateMask = DefaultValue;}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RecalculateMasks()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00046             \textcolor{keywordflow}{if} (operation == Operator.EQUALS)}
+\DoxyCodeLine{00047                 notMask = 0;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00050             notMask \&= stateMask;}
+\DoxyCodeLine{00052             \textcolor{comment}{//if (operation != Operator.EQUALS)}}
+\DoxyCodeLine{00053             trueMask = stateMask \& \string~notMask;}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00057         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{string} EnumTypeName \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00058 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Evaluate(\textcolor{keywordtype}{int} state)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (stateMask == 0)}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{return} state == 0;}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             \textcolor{keywordflow}{switch} (operation)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{case} Operator.EQUALS:}
+\DoxyCodeLine{00070                     \{}
+\DoxyCodeLine{00071                         \textcolor{keywordflow}{return} (stateMask == state);}
+\DoxyCodeLine{00072                     \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{case} Operator.OR:}
+\DoxyCodeLine{00075                     \{}
+\DoxyCodeLine{00076                         \textcolor{keywordflow}{return} ((trueMask \& state) != 0) || ((notMask \& state) != notMask);}
+\DoxyCodeLine{00077                     \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{case} Operator.AND:}
+\DoxyCodeLine{00080                     \{}
+\DoxyCodeLine{00081                         \textcolor{keywordflow}{return} ((trueMask \& state) == trueMask) \&\& ((notMask \& state) == 0);}
+\DoxyCodeLine{00082                     \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00085                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00086                     operation = Operator.EQUALS;}
+\DoxyCodeLine{00087                     \textcolor{keywordflow}{return} (stateMask == state);}
+\DoxyCodeLine{00088             \}}
+\DoxyCodeLine{00089         \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keyword}{protected} \textcolor{keyword}{const} \textcolor{keywordtype}{string} HELP\_URL = \textcolor{stringliteral}{"{}https://docs.google.com/document/d/1ySmkOBsL0qJnIk7iN9lbXPlfmYTGkN7JFgKDBdqj9e8/edit\#bookmark=kix.lw6o4eau4q8i"{}};}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIStyle boxstyle;}
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DrawGUI(SerializedProperty sp)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             var stateMask = sp.FindPropertyRelative(\textcolor{stringliteral}{"{}stateMask"{}});}
+\DoxyCodeLine{00104             var notMask = sp.FindPropertyRelative(\textcolor{stringliteral}{"{}notMask"{}});}
+\DoxyCodeLine{00105             var operation = sp.FindPropertyRelative(\textcolor{stringliteral}{"{}operation"{}});}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             \textcolor{keywordtype}{float} lwidth = EditorGUIUtility.labelWidth -\/ 40;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             \textcolor{comment}{//EditorGUI.BeginDisabledGroup(stateMask.intValue == 0);}}
+\DoxyCodeLine{00113 \textcolor{comment}{}            \textcolor{comment}{//if (stateMask.intValue == 0 \&\& operation.intValue != 0)}}
+\DoxyCodeLine{00114             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00115             \textcolor{comment}{//  operation.intValue = 0;}}
+\DoxyCodeLine{00116             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118             Rect opRect = EditorGUILayout.GetControlRect(\textcolor{keyword}{true}, 16);}
+\DoxyCodeLine{00119             \textcolor{comment}{//EditorGUI.LabelField(new Rect(opRect) \{ width = lwidth \}, "{}Operator"{}, (GUIStyle)"{}RightLabel"{});}}
+\DoxyCodeLine{00120             \textcolor{comment}{//var oldOp = operation.intValue;}}
+\DoxyCodeLine{00121             EditorUtils.PropertyFieldWithDocsLink(opRect, operation, \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Mask Logic"{}}, operation.tooltip), HELP\_URL);}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{if} (operation.intValue == 0)}
+\DoxyCodeLine{00123             \{}
+\DoxyCodeLine{00125                 notMask.intValue = 0;}
+\DoxyCodeLine{00126                 sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00127             \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00131             \textcolor{comment}{//if (oldOp == (int)Operator.EQUALS \&\& oldOp != operation.intValue)}}
+\DoxyCodeLine{00132             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00133             \textcolor{comment}{//  Debug.Log("{}HasCHanged"{});}}
+\DoxyCodeLine{00134             \textcolor{comment}{//  stateMask.intValue = 1;}}
+\DoxyCodeLine{00135             \textcolor{comment}{//  sp.serializedObject.ApplyModifiedProperties();}}
+\DoxyCodeLine{00136             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{comment}{//EditorGUI.PropertyField(new Rect(opRect) /*\{ xMin = opRect.xMin + lwidth + 16, width = 82 \}*/, operation, new GUIContent("{}Mask Logic"{}, operation.tooltip));}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{comment}{//EditorGUI.EndDisabledGroup();}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (boxstyle == \textcolor{keyword}{null}) boxstyle = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(4, 4, 4, 4) \};}
+\DoxyCodeLine{00143             EditorGUILayout.BeginVertical(boxstyle);}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (operation.intValue == (\textcolor{keywordtype}{int})Operator.EQUALS)}
+\DoxyCodeLine{00146                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}If value of "{}} + EnumTypeName + \textcolor{stringliteral}{"{} EQUALS "{}});}
+\DoxyCodeLine{00147             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00148                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}If value of "{}} + EnumTypeName + (stateMask.intValue == 0 ? \textcolor{stringliteral}{"{} == 0"{}} : \textcolor{stringliteral}{"{}"{}}));}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             \textcolor{keywordtype}{int} firstSetBit = -\/1;}
+\DoxyCodeLine{00151             var enumNames = EnumNames;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < enumNames.Length; ++i)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 \textcolor{keywordtype}{int} value = EnumValues[i];}
+\DoxyCodeLine{00156                 \textcolor{keywordtype}{string} name = enumNames[i];}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158                 \textcolor{keywordflow}{if} (value == 0)}
+\DoxyCodeLine{00159                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161                 \textcolor{keywordtype}{bool} \textcolor{keyword}{set} = (stateMask.intValue \& value) != 0;}
+\DoxyCodeLine{00162                 \textcolor{keywordtype}{bool} not = (notMask.intValue \& value) != 0;}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{if} (\textcolor{keyword}{set})}
+\DoxyCodeLine{00165                     \textcolor{keywordflow}{if} (firstSetBit == -\/1)}
+\DoxyCodeLine{00166                         firstSetBit = i;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170                 Rect r = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172                 EditorGUI.BeginDisabledGroup(!\textcolor{keyword}{set});}
+\DoxyCodeLine{00173                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + lwidth + 32 \}, name);}
+\DoxyCodeLine{00174                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                 \textcolor{keywordtype}{bool} newset = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + lwidth + 16, width = 16 \}, GUIContent.none, \textcolor{keyword}{set});}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180                 \textcolor{keywordflow}{if} (operation.intValue != (\textcolor{keywordtype}{int})Operator.EQUALS)}
+\DoxyCodeLine{00181                 \{}
+\DoxyCodeLine{00183                     \textcolor{keywordflow}{if} (stateMask.intValue == 0 )}
+\DoxyCodeLine{00184                     \{}
+\DoxyCodeLine{00185                         \textcolor{comment}{//if (i == 1)}}
+\DoxyCodeLine{00186                         \textcolor{comment}{//  EditorGUI.LabelField(new Rect(r) \{ width = lwidth \}, "{} "{}, (GUIStyle)"{}RightLabel"{});}}
+\DoxyCodeLine{00187                     \}}
+\DoxyCodeLine{00188                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\textcolor{keyword}{set})}
+\DoxyCodeLine{00189                     \{}
+\DoxyCodeLine{00190                         \textcolor{keywordtype}{string} conj = operation.intValue == (int)Operator.AND ? \textcolor{stringliteral}{"{}and is "{}} : \textcolor{stringliteral}{"{}or is "{}};}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192                         EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r) \{ width = lwidth \}, (i == firstSetBit ? \textcolor{stringliteral}{"{} is "{}} : conj) + (not ? \textcolor{stringliteral}{"{}not "{}} : \textcolor{stringliteral}{"{}"{}}), (GUIStyle)\textcolor{stringliteral}{"{}RightLabel"{}});}
+\DoxyCodeLine{00193                         \textcolor{keywordtype}{bool} newnot = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + lwidth, width = 16 \}, GUIContent.none, not);}
+\DoxyCodeLine{00194                         \textcolor{keywordflow}{if} (newnot != not)}
+\DoxyCodeLine{00195                         \{}
+\DoxyCodeLine{00196                             \textcolor{keywordflow}{if} (newnot)}
+\DoxyCodeLine{00197                                 notMask.intValue = notMask.intValue | value;}
+\DoxyCodeLine{00198                             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00199                                 notMask.intValue = notMask.intValue \& \string~value;}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201                             sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00202                         \}}
+\DoxyCodeLine{00203                     \}}
+\DoxyCodeLine{00204                 \}}
+\DoxyCodeLine{00205                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00206                 \{}
+\DoxyCodeLine{00207                     \textcolor{comment}{//if (i == 1)}}
+\DoxyCodeLine{00208                     \textcolor{comment}{//  EditorGUI.LabelField(new Rect(r) \{ width = lwidth \}, "{}If "{} + EnumTypeName + "{} =="{}, (GUIStyle)"{}RightLabel"{});}}
+\DoxyCodeLine{00209                 \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{if} (newset != \textcolor{keyword}{set})}
+\DoxyCodeLine{00212                 \{}
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{if} (newset)}
+\DoxyCodeLine{00214                         stateMask.intValue = stateMask.intValue | value;}
+\DoxyCodeLine{00215                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00216                         stateMask.intValue = stateMask.intValue \& \string~value;}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00219                     notMask.intValue = stateMask.intValue \& notMask.intValue;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221                     sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00222                 \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00225             \}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00230             \{}
+\DoxyCodeLine{00231                 sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00232                 EditorUtility.SetDirty(sp.serializedObject.targetObject);}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00236     \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238 \}}
+
+\end{DoxyCode}

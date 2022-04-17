@@ -1,0 +1,193 @@
+\doxysection{Web\+Socket.\+cs}
+\label{_web_socket_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonLibs/WebSocket/WebSocket.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonLibs/WebSocket/WebSocket.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{preprocessor}{\#if UNITY\_WEBGL || WEBSOCKET || ((UNITY\_XBOXONE || UNITY\_GAMECORE) \&\& UNITY\_EDITOR)}}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00005 \textcolor{comment}{//   Provided originally by Unity to cover WebSocket support in WebGL and the Editor. Modified by Exit Games GmbH.}}
+\DoxyCodeLine{00006 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00007 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }ExitGames.Client.Photon}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00015 \textcolor{preprocessor}{    \#if UNITY\_WEBGL \&\& !UNITY\_EDITOR}}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} System.Runtime.InteropServices;}
+\DoxyCodeLine{00017 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} WebSocketSharp;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} System.Security.Authentication;}
+\DoxyCodeLine{00021 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keyword}{class }WebSocket}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026         \textcolor{keyword}{private} Uri mUrl;}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keywordtype}{string} protocols = \textcolor{stringliteral}{"{}GpBinaryV16"{}};}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} WebSocket(Uri url, \textcolor{keywordtype}{string} serialization = \textcolor{keyword}{null})}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             this.mUrl = url;}
+\DoxyCodeLine{00033             \textcolor{keywordflow}{if} (serialization != \textcolor{keyword}{null})}
+\DoxyCodeLine{00034             \{}
+\DoxyCodeLine{00035                 this.protocols = serialization;}
+\DoxyCodeLine{00036             \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038             \textcolor{keywordtype}{string} protocol = mUrl.Scheme;}
+\DoxyCodeLine{00039             \textcolor{keywordflow}{if} (!protocol.Equals(\textcolor{stringliteral}{"{}ws"{}}) \&\& !protocol.Equals(\textcolor{stringliteral}{"{}wss"{}}))}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{throw} \textcolor{keyword}{new} ArgumentException(\textcolor{stringliteral}{"{}Unsupported protocol: "{}} + protocol);}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SendString(\textcolor{keywordtype}{string} str)}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             Send(Encoding.UTF8.GetBytes (str));}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{string} RecvString()}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             \textcolor{keywordtype}{byte}[] retval = Recv();}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (retval == \textcolor{keyword}{null})}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00053             \textcolor{keywordflow}{return} Encoding.UTF8.GetString (retval);}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{    \#if UNITY\_WEBGL \&\& !UNITY\_EDITOR}}
+\DoxyCodeLine{00057         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00058         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{int} SocketCreate (\textcolor{keywordtype}{string} url, \textcolor{keywordtype}{string} protocols);}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00061         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{int} SocketState (\textcolor{keywordtype}{int} socketInstance);}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00064         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{void} SocketSend (\textcolor{keywordtype}{int} socketInstance, \textcolor{keywordtype}{byte}[] ptr, \textcolor{keywordtype}{int} length);}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00067         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{void} SocketRecv (\textcolor{keywordtype}{int} socketInstance, \textcolor{keywordtype}{byte}[] ptr, \textcolor{keywordtype}{int} length);}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00070         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{int} SocketRecvLength (\textcolor{keywordtype}{int} socketInstance);}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00073         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{void} SocketClose (\textcolor{keywordtype}{int} socketInstance);}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         [DllImport(\textcolor{stringliteral}{"{}\_\_Internal"{}})]}
+\DoxyCodeLine{00076         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keyword}{extern} \textcolor{keywordtype}{int} SocketError (\textcolor{keywordtype}{int} socketInstance, \textcolor{keywordtype}{byte}[] ptr, \textcolor{keywordtype}{int} length);}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keywordtype}{int} m\_NativeRef = 0;}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Send(\textcolor{keywordtype}{byte}[] buffer)}
+\DoxyCodeLine{00081         \{}
+\DoxyCodeLine{00082             SocketSend (m\_NativeRef, buffer, buffer.Length);}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{public} \textcolor{keywordtype}{byte}[] Recv()}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keywordtype}{int} length = SocketRecvLength (m\_NativeRef);}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{if} (length == 0)}
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00090             \textcolor{keywordtype}{byte}[] buffer = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[length];}
+\DoxyCodeLine{00091             SocketRecv (m\_NativeRef, buffer, length);}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Connect()}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             m\_NativeRef = SocketCreate (mUrl.ToString(), \textcolor{keyword}{this}.protocols);}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             \textcolor{comment}{//while (SocketState(m\_NativeRef) == 0)}}
+\DoxyCodeLine{00100             \textcolor{comment}{//    yield return 0;}}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Close()}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             SocketClose(m\_NativeRef);}
+\DoxyCodeLine{00106         \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Connected}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} SocketState(m\_NativeRef) != 0; \}}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Error}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             \textcolor{keyword}{get} \{}
+\DoxyCodeLine{00116                 \textcolor{keyword}{const} \textcolor{keywordtype}{int} bufsize = 1024;}
+\DoxyCodeLine{00117                 \textcolor{keywordtype}{byte}[] buffer = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[bufsize];}
+\DoxyCodeLine{00118                 \textcolor{keywordtype}{int} result = SocketError (m\_NativeRef, buffer, bufsize);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120                 \textcolor{keywordflow}{if} (result == 0)}
+\DoxyCodeLine{00121                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{return} Encoding.UTF8.GetString (buffer);}
+\DoxyCodeLine{00124             \}}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{00127         WebSocketSharp.WebSocket m\_Socket;}
+\DoxyCodeLine{00128         Queue<byte[]> m\_Messages = \textcolor{keyword}{new} Queue<byte[]>();}
+\DoxyCodeLine{00129         \textcolor{keywordtype}{bool} m\_IsConnected = \textcolor{keyword}{false};}
+\DoxyCodeLine{00130         \textcolor{keywordtype}{string} m\_Error = \textcolor{keyword}{null};}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Connect()}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             m\_Socket = \textcolor{keyword}{new} WebSocketSharp.WebSocket(mUrl.ToString(), \textcolor{keyword}{new} \textcolor{keywordtype}{string}[] \{ this.protocols \});}
+\DoxyCodeLine{00135             m\_Socket.SslConfiguration.EnabledSslProtocols = m\_Socket.SslConfiguration.EnabledSslProtocols | (SslProtocols)(3072| 768);}
+\DoxyCodeLine{00136             m\_Socket.OnMessage += (sender, e) => m\_Messages.Enqueue(e.RawData);}
+\DoxyCodeLine{00137             m\_Socket.OnOpen += (sender, e) => m\_IsConnected = \textcolor{keyword}{true};}
+\DoxyCodeLine{00138             \textcolor{comment}{//this.m\_Socket.Log.Level = LogLevel.Debug;}}
+\DoxyCodeLine{00139             \textcolor{comment}{//this.m\_Socket.Log.Output += Output;}}
+\DoxyCodeLine{00140             this.m\_Socket.OnClose += SocketOnClose;}
+\DoxyCodeLine{00141             m\_Socket.OnError += (sender, e) => m\_Error = e.Message + (e.Exception == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{} / "{}} + e.Exception);}
+\DoxyCodeLine{00142             m\_Socket.ConnectAsync();}
+\DoxyCodeLine{00143         \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SocketOnClose(\textcolor{keywordtype}{object} sender, CloseEventArgs e)}
+\DoxyCodeLine{00146         \{}
+\DoxyCodeLine{00147             \textcolor{comment}{//UnityEngine.Debug.Log(e.Code.ToString());}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             \textcolor{comment}{// this code is used for cases when the socket failed to get created (specifically used to detect "{}blocked by Windows firewall"{})}}
+\DoxyCodeLine{00150             \textcolor{comment}{// for some reason this situation is not calling OnError}}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (e.Code == 1006)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 this.m\_Error = e.Reason;}
+\DoxyCodeLine{00154                 this.m\_IsConnected = \textcolor{keyword}{false};}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Connected \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_IsConnected; \} \}\textcolor{comment}{// added by TS}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Send(\textcolor{keywordtype}{byte}[] buffer)}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             m\_Socket.Send(buffer);}
+\DoxyCodeLine{00164         \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166         \textcolor{keyword}{public} \textcolor{keywordtype}{byte}[] Recv()}
+\DoxyCodeLine{00167         \{}
+\DoxyCodeLine{00168             \textcolor{keywordflow}{if} (m\_Messages.Count == 0)}
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00170             \textcolor{keywordflow}{return} m\_Messages.Dequeue();}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Close()}
+\DoxyCodeLine{00174         \{}
+\DoxyCodeLine{00175             m\_Socket.Close();}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Error}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             \textcolor{keyword}{get}}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{return} m\_Error;}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00186     \}}
+\DoxyCodeLine{00187 \}}
+\DoxyCodeLine{00188 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

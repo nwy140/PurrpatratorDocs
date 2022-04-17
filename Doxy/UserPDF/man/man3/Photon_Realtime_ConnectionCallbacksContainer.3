@@ -1,0 +1,143 @@
+.TH "Photon.Realtime.ConnectionCallbacksContainer" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Realtime.ConnectionCallbacksContainer \- Container type for callbacks defined by \fBIConnectionCallbacks\fP\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits List< IConnectionCallbacks >, and \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBConnectionCallbacksContainer\fP (\fBLoadBalancingClient\fP client)"
+.br
+.ti -1c
+.RI "void \fBOnConnected\fP ()"
+.br
+.RI "Called to signal that the 'low level connection' got established but before the client can call operation on the server\&. "
+.ti -1c
+.RI "void \fBOnConnectedToMaster\fP ()"
+.br
+.RI "Called when the client is connected to the Master Server and ready for matchmaking and other tasks\&. "
+.ti -1c
+.RI "void \fBOnRegionListReceived\fP (\fBRegionHandler\fP regionHandler)"
+.br
+.RI "Called when the Name Server provided a list of regions for your title\&. "
+.ti -1c
+.RI "void \fBOnDisconnected\fP (\fBDisconnectCause\fP cause)"
+.br
+.RI "Called after disconnecting from the \fBPhoton\fP server\&. "
+.ti -1c
+.RI "void \fBOnCustomAuthenticationResponse\fP (Dictionary< string, object > data)"
+.br
+.RI "Called when your Custom Authentication service responds with additional data\&. "
+.ti -1c
+.RI "void \fBOnCustomAuthenticationFailed\fP (string debugMessage)"
+.br
+.RI "Called when the custom authentication failed\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Container type for callbacks defined by \fBIConnectionCallbacks\fP\&. 
+
+See LoadBalancingCallbackTargets\&. 
+.PP
+While the interfaces of callbacks wrap up the methods that will be called, the container classes implement a simple way to call a method on all registered objects\&. 
+.PP
+Definition at line \fB4062\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Photon\&.Realtime\&.ConnectionCallbacksContainer\&.ConnectionCallbacksContainer (\fBLoadBalancingClient\fP client)"
+
+.PP
+Definition at line \fB4066\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnConnected ()"
+
+.PP
+Called to signal that the 'low level connection' got established but before the client can call operation on the server\&. After the (low level transport) connection is established, the client will automatically send the Authentication operation, which needs to get a response before the client can call other operations\&.
+.PP
+Your logic should wait for either: OnRegionListReceived or OnConnectedToMaster\&.
+.PP
+This callback is useful to detect if the server can be reached at all (technically)\&. Most often, it's enough to implement \fBOnDisconnected(DisconnectCause cause)\fP and check for the cause\&.
+.PP
+This is not called for transitions from the masterserver to game servers\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4071\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnConnectedToMaster ()"
+
+.PP
+Called when the client is connected to the Master Server and ready for matchmaking and other tasks\&. The list of available rooms won't become available unless you join a lobby via \fBLoadBalancingClient\&.OpJoinLobby\fP\&. You can join rooms and create them even without being in a lobby\&. The default lobby is used in that case\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4081\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnCustomAuthenticationFailed (string debugMessage)"
+
+.PP
+Called when the custom authentication failed\&. Followed by disconnect! 
+.PP
+Custom Authentication can fail due to user-input, bad tokens/secrets\&. If authentication is successful, this method is not called\&. Implement OnJoinedLobby() or \fBOnConnectedToMaster()\fP (as usual)\&.
+.PP
+During development of a game, it might also fail due to wrong configuration on the server side\&. In those cases, logging the debugMessage is very important\&.
+.PP
+Unless you setup a custom authentication service for your app (in the \fCDashboard\fP), this won't be called! 
+.PP
+\fBParameters\fP
+.RS 4
+\fIdebugMessage\fP Contains a debug message why authentication failed\&. This has to be fixed during development\&.
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4121\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnCustomAuthenticationResponse (Dictionary< string, object > data)"
+
+.PP
+Called when your Custom Authentication service responds with additional data\&. Custom Authentication services can include some custom data in their response\&. When present, that data is made available in this callback as Dictionary\&. While the keys of your data have to be strings, the values can be either string or a number (in Json)\&. You need to make extra sure, that the value type is the one you expect\&. Numbers become (currently) int64\&.
+.PP
+Example: void OnCustomAuthenticationResponse(Dictionary<string, object> data) { \&.\&.\&. } 
+.PP
+https://doc\&.photonengine\&.com/en-us/realtime/current/reference/custom-authentication 
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4111\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnDisconnected (\fBDisconnectCause\fP cause)"
+
+.PP
+Called after disconnecting from the \fBPhoton\fP server\&. It could be a failure or an explicit disconnect call 
+.PP
+The reason for this disconnect is provided as DisconnectCause\&. 
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4101\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+.SS "void Photon\&.Realtime\&.ConnectionCallbacksContainer\&.OnRegionListReceived (\fBRegionHandler\fP regionHandler)"
+
+.PP
+Called when the Name Server provided a list of regions for your title\&. Check the \fBRegionHandler\fP class description, to make use of the provided values\&.
+.PP
+\fBParameters\fP
+.RS 4
+\fIregionHandler\fP The currently used \fBRegionHandler\fP\&.
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Realtime\&.IConnectionCallbacks\fP\&.
+.PP
+Definition at line \fB4091\fP of file \fBLoadBalancingClient\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

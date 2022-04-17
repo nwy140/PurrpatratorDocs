@@ -1,0 +1,313 @@
+\doxysection{Inspector\+Utils.\+cs}
+\label{_inspector_utils_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/EditorTools/InspectorUtils.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/EditorTools/InspectorUtils.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PropertyDrawerUtility}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetActualObjectForSerializedProperty<T>(\textcolor{keyword}{this} FieldInfo fieldInfo, SerializedProperty property) where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00024         \{}
+\DoxyCodeLine{00025             var obj = fieldInfo.GetValue(property.serializedObject.targetObject);}
+\DoxyCodeLine{00026             }
+\DoxyCodeLine{00027             \textcolor{keywordflow}{if} (obj == \textcolor{keyword}{null}) \{ \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029             T actualObject = \textcolor{keyword}{null};}
+\DoxyCodeLine{00030             \textcolor{keywordflow}{if} (obj.GetType().IsArray)}
+\DoxyCodeLine{00031             \{}
+\DoxyCodeLine{00032                 var index = Convert.ToInt32(\textcolor{keyword}{new} \textcolor{keywordtype}{string}(property.propertyPath.Where(c => \textcolor{keywordtype}{char}.IsDigit(c)).ToArray()));}
+\DoxyCodeLine{00033                 actualObject = ((T[])obj)[index];}
+\DoxyCodeLine{00034             \}}
+\DoxyCodeLine{00035             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00036             \{}
+\DoxyCodeLine{00037                 actualObject = obj as T;}
+\DoxyCodeLine{00038             \}}
+\DoxyCodeLine{00039             \textcolor{keywordflow}{return} actualObject;}
+\DoxyCodeLine{00040         \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{object} GetParent(SerializedProperty prop)}
+\DoxyCodeLine{00043         \{}
+\DoxyCodeLine{00044             var path = prop.propertyPath.Replace(\textcolor{stringliteral}{"{}.Array.data["{}}, \textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00045             \textcolor{keywordtype}{object} obj = prop.serializedObject.targetObject;}
+\DoxyCodeLine{00046             var elements = path.Split(\textcolor{charliteral}{'.'});}
+\DoxyCodeLine{00047             \textcolor{keywordflow}{foreach} (var element \textcolor{keywordflow}{in} elements.Take(elements.Length -\/ 1))}
+\DoxyCodeLine{00048             \{}
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{if} (element.Contains(\textcolor{stringliteral}{"{}["{}}))}
+\DoxyCodeLine{00050                 \{}
+\DoxyCodeLine{00051                     var elementName = element.Substring(0, element.IndexOf(\textcolor{stringliteral}{"{}["{}}));}
+\DoxyCodeLine{00052                     var index = Convert.ToInt32(element.Substring(element.IndexOf(\textcolor{stringliteral}{"{}["{}})).Replace(\textcolor{stringliteral}{"{}["{}}, \textcolor{stringliteral}{"{}"{}}).Replace(\textcolor{stringliteral}{"{}]"{}}, \textcolor{stringliteral}{"{}"{}}));}
+\DoxyCodeLine{00053                     obj = GetValue(obj, elementName, index);}
+\DoxyCodeLine{00054                 \}}
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00056                 \{}
+\DoxyCodeLine{00057                     obj = GetValue(obj, element);}
+\DoxyCodeLine{00058                 \}}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{return} obj;}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GetIndexOfDrawerObject(SerializedProperty property, \textcolor{keywordtype}{bool} reportError = \textcolor{keyword}{true})}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070             \textcolor{keywordtype}{string} path = \textcolor{keyword}{property}.propertyPath;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{keywordtype}{int} start = path.IndexOf(\textcolor{stringliteral}{"{}["{}}) + 1;}
+\DoxyCodeLine{00073             \textcolor{keywordtype}{int} len = path.IndexOf(\textcolor{stringliteral}{"{}]"{}}) -\/ start;}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             \textcolor{keywordflow}{if} (len < 1)}
+\DoxyCodeLine{00076                 \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \textcolor{keywordtype}{int} index = -\/1;}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} ((len > 0 \&\& Int32.TryParse(path.Substring(path.IndexOf(\textcolor{stringliteral}{"{}["{}}) + 1, len), out index)) == \textcolor{keyword}{false} \&\& reportError)}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 Debug.Log(\textcolor{stringliteral}{"{}Attempted to find the index of a non-\/array serialized property."{}});}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083             \textcolor{keywordflow}{return} index;}
+\DoxyCodeLine{00084         \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} GetValue(\textcolor{keywordtype}{object} source, \textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00087         \{}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{if} (source == \textcolor{keyword}{null})}
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00090             var type = source.GetType();}
+\DoxyCodeLine{00091             var f = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{if} (f == \textcolor{keyword}{null})}
+\DoxyCodeLine{00093             \{}
+\DoxyCodeLine{00094                 var p = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);}
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{if} (p == \textcolor{keyword}{null})}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00097                 \textcolor{keywordflow}{return} p.GetValue(source, \textcolor{keyword}{null});}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099             \textcolor{keywordflow}{return} f.GetValue(source);}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} GetValue(\textcolor{keywordtype}{object} source, \textcolor{keywordtype}{string} name, \textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             var enumerable = GetValue(source, name) as IEnumerable;}
+\DoxyCodeLine{00105             var enm = enumerable.GetEnumerator();}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{while} (index-\/-\/ >= 0)}
+\DoxyCodeLine{00107                 enm.MoveNext();}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{return} enm.Current;}
+\DoxyCodeLine{00109         \}}
+\DoxyCodeLine{00110     \}}
+\DoxyCodeLine{00111 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114     \textcolor{keyword}{public} \textcolor{keyword}{class }MinMaxRangeAttribute : PropertyAttribute}
+\DoxyCodeLine{00115     \{}
+\DoxyCodeLine{00116         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{float} max;}
+\DoxyCodeLine{00117         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{float} min;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{public} MinMaxRangeAttribute(\textcolor{keywordtype}{float} min, \textcolor{keywordtype}{float} max)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             this.min = min;}
+\DoxyCodeLine{00122             this.max = max;}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124     \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128     [CustomPropertyDrawer(typeof(MinMaxRangeAttribute))]}
+\DoxyCodeLine{00129     \textcolor{keyword}{class }MinMaxRangeDrawer : PropertyDrawer}
+\DoxyCodeLine{00130     \{}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect position, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{keywordflow}{if} (property.propertyType == SerializedPropertyType.Vector2)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137                 Vector2 range = \textcolor{keyword}{property}.vector2Value;}
+\DoxyCodeLine{00138                 \textcolor{keywordtype}{float} min = range.x;}
+\DoxyCodeLine{00139                 \textcolor{keywordtype}{float} max = range.y;}
+\DoxyCodeLine{00140                 MinMaxRangeAttribute attr = attribute as MinMaxRangeAttribute;}
+\DoxyCodeLine{00141                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00142                 EditorGUI.MinMaxSlider(position, label, ref min, ref max, attr.min, attr.max);}
+\DoxyCodeLine{00143                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00144                 \{}
+\DoxyCodeLine{00145                     range.x = min;}
+\DoxyCodeLine{00146                     range.y = max;}
+\DoxyCodeLine{00147                     \textcolor{keyword}{property}.vector2Value = range;}
+\DoxyCodeLine{00148                 \}}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 EditorGUI.LabelField(position, label, \textcolor{stringliteral}{"{}Use only with Vector2"{}});}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155     \}}
+\DoxyCodeLine{00156 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00161     \textcolor{keyword}{public} \textcolor{keyword}{class }BitsPerRangeAttribute : PropertyAttribute}
+\DoxyCodeLine{00162     \{}
+\DoxyCodeLine{00163         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} max;}
+\DoxyCodeLine{00164         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} min;}
+\DoxyCodeLine{00165         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} label;}
+\DoxyCodeLine{00166         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{bool} showLabel;}
+\DoxyCodeLine{00167         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} tooltip;}
+\DoxyCodeLine{00168         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} show;}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         \textcolor{keyword}{public} BitsPerRangeAttribute(\textcolor{keywordtype}{int} min, \textcolor{keywordtype}{int} max, \textcolor{keywordtype}{bool} show, \textcolor{keywordtype}{bool} zeroBase = \textcolor{keyword}{false}, \textcolor{keywordtype}{string} label = \textcolor{stringliteral}{"{}Max:"{}}, \textcolor{keywordtype}{bool} showLabel = \textcolor{keyword}{true}, \textcolor{keywordtype}{string} tooltip = \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00171         \{}
+\DoxyCodeLine{00172             this.show = show;}
+\DoxyCodeLine{00173             this.min = min;}
+\DoxyCodeLine{00174             this.max = max;}
+\DoxyCodeLine{00175             this.label = label;}
+\DoxyCodeLine{00176             this.showLabel = showLabel;}
+\DoxyCodeLine{00177             this.tooltip = tooltip;}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179     \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184     [CustomPropertyDrawer(typeof(BitsPerRangeAttribute))]}
+\DoxyCodeLine{00185     \textcolor{keyword}{public} \textcolor{keyword}{class }BitsPerRangeDrawer : PropertyDrawer}
+\DoxyCodeLine{00186     \{}
+\DoxyCodeLine{00187         \textcolor{keyword}{const} \textcolor{keywordtype}{float} labelHeight = 20;}
+\DoxyCodeLine{00188         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00189         \{}
+\DoxyCodeLine{00190             }
+\DoxyCodeLine{00191             BitsPerRangeAttribute attr = attribute as BitsPerRangeAttribute;}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{if} (attr.show)}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{return} attr.showLabel ? 66 : (66 -\/ labelHeight); \textcolor{comment}{//EditorGUI.GetPropertyHeight(property, label, true);}}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00199         \{}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201             BitsPerRangeAttribute attr = attribute as BitsPerRangeAttribute;}
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (!attr.show)}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             Rect ir = EditorGUI.IndentedRect(r);}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207             GUIContent emptyContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}"{}}, attr.tooltip);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordtype}{float} \_labelheight = attr.showLabel ? labelHeight : 0;}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (attr.showLabel)}
+\DoxyCodeLine{00212                 GUI.Label(\textcolor{keyword}{new} Rect(ir.xMin, ir.yMin, ir.width -\/ 1, 17), property.displayName + \textcolor{stringliteral}{"{}:"{}}, \textcolor{stringliteral}{"{}OL Title"{}});}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214             GUI.Box(\textcolor{keyword}{new} Rect(ir.xMin, ir.yMin + \_labelheight, ir.width, ir.height -\/ 22), GUIContent.none, \textcolor{stringliteral}{"{}GroupBox"{}});}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             \textcolor{keywordtype}{float} padding = 6f;}
+\DoxyCodeLine{00217             Rect row = \textcolor{keyword}{new} Rect(ir.xMin + padding, ir.yMin + \_labelheight + padding, ir.width -\/ padding * 2, 17);}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             \textcolor{keywordtype}{int} value = \textcolor{keyword}{property}.intValue;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{comment}{//GUI.Label(row, property.displayName + "{}:"{}, "{}BoldLabel"{});}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             row.width -\/= 28;}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             \textcolor{keywordtype}{int} holdindent = EditorGUI.indentLevel;}
+\DoxyCodeLine{00226             EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00227             \textcolor{keyword}{property}.intValue = EditorGUI.IntSlider(row, emptyContent, property.intValue, attr.min, attr.max);}
+\DoxyCodeLine{00228             EditorGUI.indentLevel = holdindent;}
+\DoxyCodeLine{00229             row.width += 28;}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             GUI.Label(row, \textcolor{stringliteral}{"{}bits"{}}, \textcolor{stringliteral}{"{}RightLabel"{}});}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             row.y += 17f;}
+\DoxyCodeLine{00234             row.height = 17f;}
+\DoxyCodeLine{00235             GUI.Label(row, attr.label + \textcolor{stringliteral}{"{} "{}} + ((uint)System.Math.Pow(2, property.intValue)).ToString());}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237         \}}
+\DoxyCodeLine{00238     \}}
+\DoxyCodeLine{00239 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00244     \textcolor{keyword}{public} \textcolor{keyword}{class }ReadOnlyAttribute : PropertyAttribute}
+\DoxyCodeLine{00245     \{}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247     \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00250     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]}
+\DoxyCodeLine{00251     \textcolor{keyword}{public} \textcolor{keyword}{class }ReadOnlyDrawer : PropertyDrawer}
+\DoxyCodeLine{00252     \{}
+\DoxyCodeLine{00253         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00254         \{}
+\DoxyCodeLine{00255             \textcolor{keywordflow}{return} EditorGUI.GetPropertyHeight(property, label, \textcolor{keyword}{true});}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00259         \{}
+\DoxyCodeLine{00260             GUI.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00261             \textcolor{comment}{//EditorGUI.PropertyField(position, property, label, true);}}
+\DoxyCodeLine{00262             EditorGUI.LabelField(r, label);}
+\DoxyCodeLine{00263             EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(r.width -\/ 50 + 14, r.yMin, 50, r.height), property, GUIContent.none, \textcolor{keyword}{true});}
+\DoxyCodeLine{00264             GUI.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00265         \}}
+\DoxyCodeLine{00266     \}}
+\DoxyCodeLine{00267 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00273     [System.Serializable]}
+\DoxyCodeLine{00274     \textcolor{keyword}{public} \textcolor{keyword}{class }SingleUnityLayer}
+\DoxyCodeLine{00275     \{}
+\DoxyCodeLine{00276         [SerializeField]}
+\DoxyCodeLine{00277         [HideInInspector]}
+\DoxyCodeLine{00278         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_LayerIndex = 0;}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keyword}{public} \textcolor{keywordtype}{int} LayerIndex}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} m\_LayerIndex; \}}
+\DoxyCodeLine{00283         \}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(\textcolor{keywordtype}{int} \_layerIndex)}
+\DoxyCodeLine{00286         \{}
+\DoxyCodeLine{00287             \textcolor{keywordflow}{if} (\_layerIndex > 0 \&\& \_layerIndex < 32)}
+\DoxyCodeLine{00288             \{}
+\DoxyCodeLine{00289                 m\_LayerIndex = \_layerIndex;}
+\DoxyCodeLine{00290             \}}
+\DoxyCodeLine{00291         \}}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293         \textcolor{keyword}{public} \textcolor{keywordtype}{int} Mask}
+\DoxyCodeLine{00294         \{}
+\DoxyCodeLine{00295             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} 1 << m\_LayerIndex; \}}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298         \textcolor{keyword}{public} \textcolor{keyword}{static} implicit \textcolor{keyword}{operator} int(SingleUnityLayer m)}
+\DoxyCodeLine{00299         \{}
+\DoxyCodeLine{00300             \textcolor{keywordflow}{return} m.LayerIndex;}
+\DoxyCodeLine{00301         \}}
+\DoxyCodeLine{00302     \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00305     [CustomPropertyDrawer(typeof(SingleUnityLayer))]}
+\DoxyCodeLine{00306     \textcolor{keyword}{public} \textcolor{keyword}{class }SingleUnityLayerPropertyDrawer : PropertyDrawer}
+\DoxyCodeLine{00307     \{}
+\DoxyCodeLine{00308         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect \_position, SerializedProperty \_property, GUIContent \_label)}
+\DoxyCodeLine{00309         \{}
+\DoxyCodeLine{00310             EditorGUI.BeginProperty(\_position, GUIContent.none, \_property);}
+\DoxyCodeLine{00311             SerializedProperty layerIndex = \_property.FindPropertyRelative(\textcolor{stringliteral}{"{}m\_LayerIndex"{}});}
+\DoxyCodeLine{00312             \_position = EditorGUI.PrefixLabel(\_position, GUIUtility.GetControlID(FocusType.Passive), \_label);}
+\DoxyCodeLine{00313             \textcolor{keywordflow}{if} (layerIndex != \textcolor{keyword}{null})}
+\DoxyCodeLine{00314             \{}
+\DoxyCodeLine{00315                 layerIndex.intValue = EditorGUI.LayerField(\_position, layerIndex.intValue);}
+\DoxyCodeLine{00316             \}}
+\DoxyCodeLine{00317             EditorGUI.EndProperty();}
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319     \}}
+\DoxyCodeLine{00320 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323 \}}
+\DoxyCodeLine{00324 }
+
+\end{DoxyCode}

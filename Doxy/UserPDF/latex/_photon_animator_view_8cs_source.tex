@@ -1,0 +1,523 @@
+\doxysection{Photon\+Animator\+View.\+cs}
+\label{_photon_animator_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonAnimatorView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Views/PhotonAnimatorView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonAnimatorView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Component to synchronize Mecanim animations via PUN.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00027     [AddComponentMenu(\textcolor{stringliteral}{"{}Photon Networking/Photon Animator View"{}})]}
+\DoxyCodeLine{00028     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonAnimatorView : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030 \textcolor{preprocessor}{        \#region Enums}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{enum} ParameterType}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             Float = 1,}
+\DoxyCodeLine{00035             Int = 3,}
+\DoxyCodeLine{00036             Bool = 4,}
+\DoxyCodeLine{00037             Trigger = 9,}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{enum} SynchronizeType}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             Disabled = 0,}
+\DoxyCodeLine{00044             Discrete = 1,}
+\DoxyCodeLine{00045             Continuous = 2,}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         [System.Serializable]}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{class }SynchronizedParameter}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             \textcolor{keyword}{public} ParameterType Type;}
+\DoxyCodeLine{00053             \textcolor{keyword}{public} SynchronizeType SynchronizeType;}
+\DoxyCodeLine{00054             \textcolor{keyword}{public} \textcolor{keywordtype}{string} Name;}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         [System.Serializable]}
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{class }SynchronizedLayer}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{keyword}{public} SynchronizeType SynchronizeType;}
+\DoxyCodeLine{00062             \textcolor{keyword}{public} \textcolor{keywordtype}{int} LayerIndex;}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{preprocessor}{        \#region Properties}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070 \textcolor{preprocessor}{        \#if PHOTON\_DEVELOP}}
+\DoxyCodeLine{00071         \textcolor{keyword}{public} PhotonAnimatorView ReceivingSender;}
+\DoxyCodeLine{00072 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077 \textcolor{preprocessor}{        \#region Members}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} TriggerUsageWarningDone;}
+\DoxyCodeLine{00080         }
+\DoxyCodeLine{00081         \textcolor{keyword}{private} Animator m\_Animator;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{private} PhotonStreamQueue m\_StreamQueue = \textcolor{keyword}{new} PhotonStreamQueue(120);}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{comment}{//These fields are only used in the CustomEditor for this script and would trigger a}}
+\DoxyCodeLine{00086         \textcolor{comment}{//"{}this variable is never used"{} warning, which I am suppressing here}}
+\DoxyCodeLine{00087 \textcolor{preprocessor}{        \#pragma warning disable 0414}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         [HideInInspector]}
+\DoxyCodeLine{00090         [SerializeField]}
+\DoxyCodeLine{00091         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} ShowLayerWeightsInspector = \textcolor{keyword}{true};}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         [HideInInspector]}
+\DoxyCodeLine{00094         [SerializeField]}
+\DoxyCodeLine{00095         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} ShowParameterInspector = \textcolor{keyword}{true};}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097 \textcolor{preprocessor}{        \#pragma warning restore 0414}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         [HideInInspector]}
+\DoxyCodeLine{00100         [SerializeField]}
+\DoxyCodeLine{00101         \textcolor{keyword}{private} List<SynchronizedParameter> m\_SynchronizeParameters = \textcolor{keyword}{new} List<SynchronizedParameter>();}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         [HideInInspector]}
+\DoxyCodeLine{00104         [SerializeField]}
+\DoxyCodeLine{00105         \textcolor{keyword}{private} List<SynchronizedLayer> m\_SynchronizeLayers = \textcolor{keyword}{new} List<SynchronizedLayer>();}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107         \textcolor{keyword}{private} Vector3 m\_ReceiverPosition;}
+\DoxyCodeLine{00108         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_LastDeserializeTime;}
+\DoxyCodeLine{00109         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_WasSynchronizeTypeChanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00115         List<string> m\_raisedDiscreteTriggersCache = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120 \textcolor{preprocessor}{        \#region Unity}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00123         \{}
+\DoxyCodeLine{00124             this.m\_Animator = GetComponent<Animator>();}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00128         \{}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{if} (this.m\_Animator.applyRootMotion \&\& \textcolor{keyword}{this}.photonView.IsMine == \textcolor{keyword}{false} \&\& PhotonNetwork.IsConnected == \textcolor{keyword}{true})}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 this.m\_Animator.applyRootMotion = \textcolor{keyword}{false};}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (PhotonNetwork.InRoom == \textcolor{keyword}{false} || PhotonNetwork.CurrentRoom.PlayerCount <= 1)}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 this.m\_StreamQueue.Reset();}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordflow}{if} (this.photonView.IsMine == \textcolor{keyword}{true})}
+\DoxyCodeLine{00141             \{}
+\DoxyCodeLine{00142                 this.SerializeDataContinuously();}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144                 this.CacheDiscreteTriggers();}
+\DoxyCodeLine{00145             \}}
+\DoxyCodeLine{00146             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00147             \{}
+\DoxyCodeLine{00148                 this.DeserializeDataContinuously();}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155 \textcolor{preprocessor}{        \#region Setup Synchronizing Methods}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00160         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CacheDiscreteTriggers()}
+\DoxyCodeLine{00161         \{}
+\DoxyCodeLine{00162             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00163             \{}
+\DoxyCodeLine{00164                 SynchronizedParameter parameter = this.m\_SynchronizeParameters[i];}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166                 \textcolor{keywordflow}{if} (parameter.SynchronizeType == SynchronizeType.Discrete \&\& parameter.Type == ParameterType.Trigger \&\& \textcolor{keyword}{this}.m\_Animator.GetBool(parameter.Name))}
+\DoxyCodeLine{00167                 \{}
+\DoxyCodeLine{00168                     \textcolor{keywordflow}{if} (parameter.Type == ParameterType.Trigger)}
+\DoxyCodeLine{00169                     \{}
+\DoxyCodeLine{00170                         this.m\_raisedDiscreteTriggersCache.Add(parameter.Name);}
+\DoxyCodeLine{00171                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00172                     \}}
+\DoxyCodeLine{00173                 \}}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175         \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} DoesLayerSynchronizeTypeExist(\textcolor{keywordtype}{int} layerIndex)}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             \textcolor{keywordflow}{return} this.m\_SynchronizeLayers.FindIndex(item => item.LayerIndex == layerIndex) != -\/1;}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00192         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} DoesParameterSynchronizeTypeExist(\textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00193         \{}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{return} this.m\_SynchronizeParameters.FindIndex(item => item.Name == name) != -\/1;}
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} List<SynchronizedLayer> GetSynchronizedLayers()}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             \textcolor{keywordflow}{return} this.m\_SynchronizeLayers;}
+\DoxyCodeLine{00204         \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00210         \textcolor{keyword}{public} List<SynchronizedParameter> GetSynchronizedParameters()}
+\DoxyCodeLine{00211         \{}
+\DoxyCodeLine{00212             \textcolor{keywordflow}{return} this.m\_SynchronizeParameters;}
+\DoxyCodeLine{00213         \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} SynchronizeType GetLayerSynchronizeType(\textcolor{keywordtype}{int} layerIndex)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             \textcolor{keywordtype}{int} index = this.m\_SynchronizeLayers.FindIndex(item => item.LayerIndex == layerIndex);}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             \textcolor{keywordflow}{if} (index == -\/1)}
+\DoxyCodeLine{00225             \{}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{return} SynchronizeType.Disabled;}
+\DoxyCodeLine{00227             \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{keywordflow}{return} this.m\_SynchronizeLayers[index].SynchronizeType;}
+\DoxyCodeLine{00230         \}}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00237         \textcolor{keyword}{public} SynchronizeType GetParameterSynchronizeType(\textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00238         \{}
+\DoxyCodeLine{00239             \textcolor{keywordtype}{int} index = this.m\_SynchronizeParameters.FindIndex(item => item.Name == name);}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{keywordflow}{if} (index == -\/1)}
+\DoxyCodeLine{00242             \{}
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{return} SynchronizeType.Disabled;}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \textcolor{keywordflow}{return} this.m\_SynchronizeParameters[index].SynchronizeType;}
+\DoxyCodeLine{00247         \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00254         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetLayerSynchronized(\textcolor{keywordtype}{int} layerIndex, SynchronizeType synchronizeType)}
+\DoxyCodeLine{00255         \{}
+\DoxyCodeLine{00256             \textcolor{keywordflow}{if} (Application.isPlaying == \textcolor{keyword}{true})}
+\DoxyCodeLine{00257             \{}
+\DoxyCodeLine{00258                 this.m\_WasSynchronizeTypeChanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00259             \}}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261             \textcolor{keywordtype}{int} index = this.m\_SynchronizeLayers.FindIndex(item => item.LayerIndex == layerIndex);}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263             \textcolor{keywordflow}{if} (index == -\/1)}
+\DoxyCodeLine{00264             \{}
+\DoxyCodeLine{00265                 this.m\_SynchronizeLayers.Add(\textcolor{keyword}{new} SynchronizedLayer \{LayerIndex = layerIndex, SynchronizeType = synchronizeType\});}
+\DoxyCodeLine{00266             \}}
+\DoxyCodeLine{00267             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00268             \{}
+\DoxyCodeLine{00269                 this.m\_SynchronizeLayers[index].SynchronizeType = synchronizeType;}
+\DoxyCodeLine{00270             \}}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetParameterSynchronized(\textcolor{keywordtype}{string} name, ParameterType type, SynchronizeType synchronizeType)}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281             \textcolor{keywordflow}{if} (Application.isPlaying == \textcolor{keyword}{true})}
+\DoxyCodeLine{00282             \{}
+\DoxyCodeLine{00283                 this.m\_WasSynchronizeTypeChanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00284             \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286             \textcolor{keywordtype}{int} index = this.m\_SynchronizeParameters.FindIndex(item => item.Name == name);}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288             \textcolor{keywordflow}{if} (index == -\/1)}
+\DoxyCodeLine{00289             \{}
+\DoxyCodeLine{00290                 this.m\_SynchronizeParameters.Add(\textcolor{keyword}{new} SynchronizedParameter \{Name = name, Type = type, SynchronizeType = synchronizeType\});}
+\DoxyCodeLine{00291             \}}
+\DoxyCodeLine{00292             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00293             \{}
+\DoxyCodeLine{00294                 this.m\_SynchronizeParameters[index].SynchronizeType = synchronizeType;}
+\DoxyCodeLine{00295             \}}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SerializeDataContinuously()}
+\DoxyCodeLine{00304         \{}
+\DoxyCodeLine{00305             \textcolor{keywordflow}{if} (this.m\_Animator == \textcolor{keyword}{null})}
+\DoxyCodeLine{00306             \{}
+\DoxyCodeLine{00307                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00308             \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00311             \{}
+\DoxyCodeLine{00312                 \textcolor{keywordflow}{if} (this.m\_SynchronizeLayers[i].SynchronizeType == SynchronizeType.Continuous)}
+\DoxyCodeLine{00313                 \{}
+\DoxyCodeLine{00314                     this.m\_StreamQueue.SendNext(this.m\_Animator.GetLayerWeight(\textcolor{keyword}{this}.m\_SynchronizeLayers[i].LayerIndex));}
+\DoxyCodeLine{00315                 \}}
+\DoxyCodeLine{00316             \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00319             \{}
+\DoxyCodeLine{00320                 SynchronizedParameter parameter = this.m\_SynchronizeParameters[i];}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                 \textcolor{keywordflow}{if} (parameter.SynchronizeType == SynchronizeType.Continuous)}
+\DoxyCodeLine{00323                 \{}
+\DoxyCodeLine{00324                     \textcolor{keywordflow}{switch} (parameter.Type)}
+\DoxyCodeLine{00325                     \{}
+\DoxyCodeLine{00326                         \textcolor{keywordflow}{case} ParameterType.Bool:}
+\DoxyCodeLine{00327                             this.m\_StreamQueue.SendNext(this.m\_Animator.GetBool(parameter.Name));}
+\DoxyCodeLine{00328                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00329                         \textcolor{keywordflow}{case} ParameterType.Float:}
+\DoxyCodeLine{00330                             this.m\_StreamQueue.SendNext(this.m\_Animator.GetFloat(parameter.Name));}
+\DoxyCodeLine{00331                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00332                         \textcolor{keywordflow}{case} ParameterType.Int:}
+\DoxyCodeLine{00333                             this.m\_StreamQueue.SendNext(this.m\_Animator.GetInteger(parameter.Name));}
+\DoxyCodeLine{00334                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00335                         \textcolor{keywordflow}{case} ParameterType.Trigger:}
+\DoxyCodeLine{00336                             \textcolor{keywordflow}{if} (!TriggerUsageWarningDone)}
+\DoxyCodeLine{00337                             \{}
+\DoxyCodeLine{00338                                 TriggerUsageWarningDone = \textcolor{keyword}{true};}
+\DoxyCodeLine{00339                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonAnimatorView: When using triggers, make sure this component is last in the stack.\(\backslash\)n"{}} +}
+\DoxyCodeLine{00340                                           \textcolor{stringliteral}{"{}If you still experience issues, implement triggers as a regular RPC \(\backslash\)n"{}} +}
+\DoxyCodeLine{00341                                           \textcolor{stringliteral}{"{}or in custom IPunObservable component instead"{}},\textcolor{keyword}{this});}
+\DoxyCodeLine{00342                             }
+\DoxyCodeLine{00343                             \}}
+\DoxyCodeLine{00344                             this.m\_StreamQueue.SendNext(this.m\_Animator.GetBool(parameter.Name));}
+\DoxyCodeLine{00345                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00346                     \}}
+\DoxyCodeLine{00347                 \}}
+\DoxyCodeLine{00348             \}}
+\DoxyCodeLine{00349         \}}
+\DoxyCodeLine{00350 }
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DeserializeDataContinuously()}
+\DoxyCodeLine{00353         \{}
+\DoxyCodeLine{00354             \textcolor{keywordflow}{if} (this.m\_StreamQueue.HasQueuedObjects() == \textcolor{keyword}{false})}
+\DoxyCodeLine{00355             \{}
+\DoxyCodeLine{00356                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00357             \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00360             \{}
+\DoxyCodeLine{00361                 \textcolor{keywordflow}{if} (this.m\_SynchronizeLayers[i].SynchronizeType == SynchronizeType.Continuous)}
+\DoxyCodeLine{00362                 \{}
+\DoxyCodeLine{00363                     this.m\_Animator.SetLayerWeight(this.m\_SynchronizeLayers[i].LayerIndex, (\textcolor{keywordtype}{float}) this.m\_StreamQueue.ReceiveNext());}
+\DoxyCodeLine{00364                 \}}
+\DoxyCodeLine{00365             \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00368             \{}
+\DoxyCodeLine{00369                 SynchronizedParameter parameter = this.m\_SynchronizeParameters[i];}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371                 \textcolor{keywordflow}{if} (parameter.SynchronizeType == SynchronizeType.Continuous)}
+\DoxyCodeLine{00372                 \{}
+\DoxyCodeLine{00373                     \textcolor{keywordflow}{switch} (parameter.Type)}
+\DoxyCodeLine{00374                     \{}
+\DoxyCodeLine{00375                         \textcolor{keywordflow}{case} ParameterType.Bool:}
+\DoxyCodeLine{00376                             this.m\_Animator.SetBool(parameter.Name, (\textcolor{keywordtype}{bool}) \textcolor{keyword}{this}.m\_StreamQueue.ReceiveNext());}
+\DoxyCodeLine{00377                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00378                         \textcolor{keywordflow}{case} ParameterType.Float:}
+\DoxyCodeLine{00379                             this.m\_Animator.SetFloat(parameter.Name, (\textcolor{keywordtype}{float}) \textcolor{keyword}{this}.m\_StreamQueue.ReceiveNext());}
+\DoxyCodeLine{00380                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00381                         \textcolor{keywordflow}{case} ParameterType.Int:}
+\DoxyCodeLine{00382                             this.m\_Animator.SetInteger(parameter.Name, (\textcolor{keywordtype}{int}) \textcolor{keyword}{this}.m\_StreamQueue.ReceiveNext());}
+\DoxyCodeLine{00383                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00384                         \textcolor{keywordflow}{case} ParameterType.Trigger:}
+\DoxyCodeLine{00385                             this.m\_Animator.SetBool(parameter.Name, (\textcolor{keywordtype}{bool}) \textcolor{keyword}{this}.m\_StreamQueue.ReceiveNext());}
+\DoxyCodeLine{00386                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00387                     \}}
+\DoxyCodeLine{00388                 \}}
+\DoxyCodeLine{00389             \}}
+\DoxyCodeLine{00390         \}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SerializeDataDiscretly(PhotonStream stream)}
+\DoxyCodeLine{00393         \{}
+\DoxyCodeLine{00394             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00395             \{}
+\DoxyCodeLine{00396                 \textcolor{keywordflow}{if} (this.m\_SynchronizeLayers[i].SynchronizeType == SynchronizeType.Discrete)}
+\DoxyCodeLine{00397                 \{}
+\DoxyCodeLine{00398                     stream.SendNext(this.m\_Animator.GetLayerWeight(\textcolor{keyword}{this}.m\_SynchronizeLayers[i].LayerIndex));}
+\DoxyCodeLine{00399                 \}}
+\DoxyCodeLine{00400             \}}
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00402             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00403             \{}
+\DoxyCodeLine{00404                }
+\DoxyCodeLine{00405                 SynchronizedParameter parameter = this.m\_SynchronizeParameters[i];}
+\DoxyCodeLine{00406        }
+\DoxyCodeLine{00407                 \textcolor{keywordflow}{if} (parameter.SynchronizeType == SynchronizeType.Discrete)}
+\DoxyCodeLine{00408                 \{}
+\DoxyCodeLine{00409                     \textcolor{keywordflow}{switch} (parameter.Type)}
+\DoxyCodeLine{00410                     \{}
+\DoxyCodeLine{00411                         \textcolor{keywordflow}{case} ParameterType.Bool:}
+\DoxyCodeLine{00412                             stream.SendNext(this.m\_Animator.GetBool(parameter.Name));}
+\DoxyCodeLine{00413                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00414                         \textcolor{keywordflow}{case} ParameterType.Float:}
+\DoxyCodeLine{00415                             stream.SendNext(this.m\_Animator.GetFloat(parameter.Name));}
+\DoxyCodeLine{00416                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00417                         \textcolor{keywordflow}{case} ParameterType.Int:}
+\DoxyCodeLine{00418                             stream.SendNext(this.m\_Animator.GetInteger(parameter.Name));}
+\DoxyCodeLine{00419                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00420                         \textcolor{keywordflow}{case} ParameterType.Trigger:}
+\DoxyCodeLine{00421                             \textcolor{keywordflow}{if} (!TriggerUsageWarningDone)}
+\DoxyCodeLine{00422                             \{}
+\DoxyCodeLine{00423                                 TriggerUsageWarningDone = \textcolor{keyword}{true};}
+\DoxyCodeLine{00424                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonAnimatorView: When using triggers, make sure this component is last in the stack.\(\backslash\)n"{}} +}
+\DoxyCodeLine{00425                                           \textcolor{stringliteral}{"{}If you still experience issues, implement triggers as a regular RPC \(\backslash\)n"{}} +}
+\DoxyCodeLine{00426                                           \textcolor{stringliteral}{"{}or in custom IPunObservable component instead"{}},\textcolor{keyword}{this});}
+\DoxyCodeLine{00427                             }
+\DoxyCodeLine{00428                             \}}
+\DoxyCodeLine{00429                             \textcolor{comment}{// here we can't rely on the current real state of the trigger, we might have missed its raise}}
+\DoxyCodeLine{00430                             stream.SendNext(this.m\_raisedDiscreteTriggersCache.Contains(parameter.Name));}
+\DoxyCodeLine{00431                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00432                     \}}
+\DoxyCodeLine{00433                 \}}
+\DoxyCodeLine{00434             \}}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436             \textcolor{comment}{// reset the cache, we've synchronized.}}
+\DoxyCodeLine{00437             this.m\_raisedDiscreteTriggersCache.Clear();}
+\DoxyCodeLine{00438         \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DeserializeDataDiscretly(PhotonStream stream)}
+\DoxyCodeLine{00441         \{}
+\DoxyCodeLine{00442             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00443             \{}
+\DoxyCodeLine{00444                 \textcolor{keywordflow}{if} (this.m\_SynchronizeLayers[i].SynchronizeType == SynchronizeType.Discrete)}
+\DoxyCodeLine{00445                 \{}
+\DoxyCodeLine{00446                     this.m\_Animator.SetLayerWeight(this.m\_SynchronizeLayers[i].LayerIndex, (\textcolor{keywordtype}{float}) stream.ReceiveNext());}
+\DoxyCodeLine{00447                 \}}
+\DoxyCodeLine{00448             \}}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00451             \{}
+\DoxyCodeLine{00452                 SynchronizedParameter parameter = this.m\_SynchronizeParameters[i];}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454                 \textcolor{keywordflow}{if} (parameter.SynchronizeType == SynchronizeType.Discrete)}
+\DoxyCodeLine{00455                 \{}
+\DoxyCodeLine{00456                     \textcolor{keywordflow}{switch} (parameter.Type)}
+\DoxyCodeLine{00457                     \{}
+\DoxyCodeLine{00458                         \textcolor{keywordflow}{case} ParameterType.Bool:}
+\DoxyCodeLine{00459                             \textcolor{keywordflow}{if} (stream.PeekNext() is \textcolor{keywordtype}{bool} == \textcolor{keyword}{false})}
+\DoxyCodeLine{00460                             \{}
+\DoxyCodeLine{00461                                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00462                             \}}
+\DoxyCodeLine{00463                             this.m\_Animator.SetBool(parameter.Name, (\textcolor{keywordtype}{bool}) stream.ReceiveNext());}
+\DoxyCodeLine{00464                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00465                         \textcolor{keywordflow}{case} ParameterType.Float:}
+\DoxyCodeLine{00466                             \textcolor{keywordflow}{if} (stream.PeekNext() is \textcolor{keywordtype}{float} == \textcolor{keyword}{false})}
+\DoxyCodeLine{00467                             \{}
+\DoxyCodeLine{00468                                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00469                             \}}
+\DoxyCodeLine{00470 }
+\DoxyCodeLine{00471                             this.m\_Animator.SetFloat(parameter.Name, (\textcolor{keywordtype}{float}) stream.ReceiveNext());}
+\DoxyCodeLine{00472                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00473                         \textcolor{keywordflow}{case} ParameterType.Int:}
+\DoxyCodeLine{00474                             \textcolor{keywordflow}{if} (stream.PeekNext() is \textcolor{keywordtype}{int} == \textcolor{keyword}{false})}
+\DoxyCodeLine{00475                             \{}
+\DoxyCodeLine{00476                                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00477                             \}}
+\DoxyCodeLine{00478 }
+\DoxyCodeLine{00479                             this.m\_Animator.SetInteger(parameter.Name, (\textcolor{keywordtype}{int}) stream.ReceiveNext());}
+\DoxyCodeLine{00480                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00481                         \textcolor{keywordflow}{case} ParameterType.Trigger:}
+\DoxyCodeLine{00482                             \textcolor{keywordflow}{if} (stream.PeekNext() is \textcolor{keywordtype}{bool} == \textcolor{keyword}{false})}
+\DoxyCodeLine{00483                             \{}
+\DoxyCodeLine{00484                                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00485                             \}}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487                             \textcolor{keywordflow}{if} ((\textcolor{keywordtype}{bool}) stream.ReceiveNext())}
+\DoxyCodeLine{00488                             \{}
+\DoxyCodeLine{00489                                 this.m\_Animator.SetTrigger(parameter.Name);}
+\DoxyCodeLine{00490                             \}}
+\DoxyCodeLine{00491                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00492                     \}}
+\DoxyCodeLine{00493                 \}}
+\DoxyCodeLine{00494             \}}
+\DoxyCodeLine{00495         \}}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SerializeSynchronizationTypeState(PhotonStream stream)}
+\DoxyCodeLine{00498         \{}
+\DoxyCodeLine{00499             \textcolor{keywordtype}{byte}[] states = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[this.m\_SynchronizeLayers.Count + this.m\_SynchronizeParameters.Count];}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00502             \{}
+\DoxyCodeLine{00503                 states[i] = (byte) this.m\_SynchronizeLayers[i].SynchronizeType;}
+\DoxyCodeLine{00504             \}}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00507             \{}
+\DoxyCodeLine{00508                 states[this.m\_SynchronizeLayers.Count + i] = (byte) this.m\_SynchronizeParameters[i].SynchronizeType;}
+\DoxyCodeLine{00509             \}}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             stream.SendNext(states);}
+\DoxyCodeLine{00512         \}}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00514         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DeserializeSynchronizationTypeState(PhotonStream stream)}
+\DoxyCodeLine{00515         \{}
+\DoxyCodeLine{00516             \textcolor{keywordtype}{byte}[] state = (\textcolor{keywordtype}{byte}[]) stream.ReceiveNext();}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeLayers.Count; ++i)}
+\DoxyCodeLine{00519             \{}
+\DoxyCodeLine{00520                 this.m\_SynchronizeLayers[i].SynchronizeType = (SynchronizeType) state[i];}
+\DoxyCodeLine{00521             \}}
+\DoxyCodeLine{00522 }
+\DoxyCodeLine{00523             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SynchronizeParameters.Count; ++i)}
+\DoxyCodeLine{00524             \{}
+\DoxyCodeLine{00525                 this.m\_SynchronizeParameters[i].SynchronizeType = (SynchronizeType) state[this.m\_SynchronizeLayers.Count + i];}
+\DoxyCodeLine{00526             \}}
+\DoxyCodeLine{00527         \}}
+\DoxyCodeLine{00528 }
+\DoxyCodeLine{00529         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00530         \{}
+\DoxyCodeLine{00531             \textcolor{keywordflow}{if} (this.m\_Animator == \textcolor{keyword}{null})}
+\DoxyCodeLine{00532             \{}
+\DoxyCodeLine{00533                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00534             \}}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536             \textcolor{keywordflow}{if} (stream.IsWriting == \textcolor{keyword}{true})}
+\DoxyCodeLine{00537             \{}
+\DoxyCodeLine{00538                 \textcolor{keywordflow}{if} (this.m\_WasSynchronizeTypeChanged == \textcolor{keyword}{true})}
+\DoxyCodeLine{00539                 \{}
+\DoxyCodeLine{00540                     this.m\_StreamQueue.Reset();}
+\DoxyCodeLine{00541                     this.SerializeSynchronizationTypeState(stream);}
+\DoxyCodeLine{00542 }
+\DoxyCodeLine{00543                     this.m\_WasSynchronizeTypeChanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00544                 \}}
+\DoxyCodeLine{00545 }
+\DoxyCodeLine{00546                 this.m\_StreamQueue.Serialize(stream);}
+\DoxyCodeLine{00547                 this.SerializeDataDiscretly(stream);}
+\DoxyCodeLine{00548             \}}
+\DoxyCodeLine{00549             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00550             \{}
+\DoxyCodeLine{00551 \textcolor{preprocessor}{                \#if PHOTON\_DEVELOP}}
+\DoxyCodeLine{00552                 \textcolor{keywordflow}{if}( ReceivingSender != \textcolor{keyword}{null} )}
+\DoxyCodeLine{00553                 \{}
+\DoxyCodeLine{00554                     ReceivingSender.OnPhotonSerializeView( stream, info );}
+\DoxyCodeLine{00555                 \}}
+\DoxyCodeLine{00556                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00557 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00558                 \{}
+\DoxyCodeLine{00559                     \textcolor{keywordflow}{if} (stream.PeekNext() is \textcolor{keywordtype}{byte}[])}
+\DoxyCodeLine{00560                     \{}
+\DoxyCodeLine{00561                         this.DeserializeSynchronizationTypeState(stream);}
+\DoxyCodeLine{00562                     \}}
+\DoxyCodeLine{00563 }
+\DoxyCodeLine{00564                     this.m\_StreamQueue.Deserialize(stream);}
+\DoxyCodeLine{00565                     this.DeserializeDataDiscretly(stream);}
+\DoxyCodeLine{00566                 \}}
+\DoxyCodeLine{00567             \}}
+\DoxyCodeLine{00568         \}}
+\DoxyCodeLine{00569 }
+\DoxyCodeLine{00570 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00571     \}}
+\DoxyCodeLine{00572 \}}
+
+\end{DoxyCode}

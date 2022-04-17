@@ -1,0 +1,242 @@
+\doxysection{Player\+Details\+Controller.\+cs}
+\label{_player_details_controller_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Controllers/PlayerDetailsController.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Controllers/PlayerDetailsController.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerDetailsController.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007  }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00019 \{}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerDetailsController : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} GameObject ContentPanel;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} PropertyCell PropertyCellPrototype;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} Text UpdateStatusText;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} Transform BuiltInPropertiesPanel;}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Transform PlayerNumberingExtensionPanel;}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} Transform ScoreExtensionPanel;}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} Transform TeamExtensionPanel;}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} Transform TurnExtensionPanel;}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} Transform CustomPropertiesPanel;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} GameObject MasterClientToolBar;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} GameObject NotInRoomLabel;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         Dictionary<string, PropertyCell> builtInPropsCellList = \textcolor{keyword}{new} Dictionary<string, PropertyCell>();}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         Player \_player;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             this.PropertyCellPrototype.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00052         \}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             base.OnEnable(); \textcolor{comment}{// as this inherits from MonoBehaviourPunCallbacks, we need to call base}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00060             NotInRoomLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             PlayerNumbering.OnPlayerNumberingChanged += OnPlayerNumberingChanged;}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             base.OnDisable(); \textcolor{comment}{// as this inherits from MonoBehaviourPunCallbacks, we need to call base}}
+\DoxyCodeLine{00068             PlayerNumbering.OnPlayerNumberingChanged -\/= OnPlayerNumberingChanged;}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetPlayerTarget(Player player)}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             \textcolor{comment}{//Debug.Log("{}SetPlayerTarget "{} + player);}}
+\DoxyCodeLine{00075             this.\_player = player;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             ContentPanel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00078             NotInRoomLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             this.ResetList();}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{keywordflow}{foreach} (DictionaryEntry item \textcolor{keywordflow}{in} this.GetAllPlayerBuiltIntProperties())}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 this.AddProperty(ParseKey(item.Key), item.Value.ToString(), \textcolor{keyword}{this}.BuiltInPropertiesPanel);}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             \textcolor{comment}{// PlayerNumbering extension}}
+\DoxyCodeLine{00088             this.AddProperty(\textcolor{stringliteral}{"{}Player Number"{}}, \textcolor{stringliteral}{"{}\#"{}} + player.GetPlayerNumber().ToString(\textcolor{stringliteral}{"{}00"{}}), \textcolor{keyword}{this}.PlayerNumberingExtensionPanel);}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{comment}{// Score extension}}
+\DoxyCodeLine{00092             this.AddProperty(PunPlayerScores.PlayerScoreProp, player.GetScore().ToString(), \textcolor{keyword}{this}.ScoreExtensionPanel);}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{foreach} (DictionaryEntry item \textcolor{keywordflow}{in} \_player.CustomProperties)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 this.AddProperty(ParseKey(item.Key), item.Value.ToString(), \textcolor{keyword}{this}.CustomPropertiesPanel);}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             MasterClientToolBar.SetActive(PhotonNetwork.CurrentRoom.PlayerCount>1 \&\& PhotonNetwork.LocalPlayer.IsMasterClient);}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keywordtype}{void} AddProperty(\textcolor{keywordtype}{string} property, \textcolor{keywordtype}{string} value, Transform parent)}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             PropertyCell \_cell = Instantiate(PropertyCellPrototype);}
+\DoxyCodeLine{00106             builtInPropsCellList.Add(property, \_cell);}
+\DoxyCodeLine{00107             \_cell.transform.SetParent(parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00108             \_cell.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00109             \_cell.AddToList(property, value, \textcolor{keyword}{false});}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keywordtype}{string} ParseKey(\textcolor{keywordtype}{object} key)}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             \textcolor{keywordflow}{if} (key.GetType() == typeof(\textcolor{keywordtype}{byte}))}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 \textcolor{keywordtype}{byte} \_byteKey = (byte)key;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{switch} (\_byteKey)}
+\DoxyCodeLine{00120                 \{}
+\DoxyCodeLine{00121                     \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})255:}
+\DoxyCodeLine{00122                         \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}PlayerName"{}};}
+\DoxyCodeLine{00123                     \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})254:}
+\DoxyCodeLine{00124                         \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Inactive"{}};}
+\DoxyCodeLine{00125                     \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})253:}
+\DoxyCodeLine{00126                         \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}UserId"{}};}
+\DoxyCodeLine{00127                 \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130             \textcolor{keywordflow}{return} key.ToString();}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keyword}{public} \textcolor{keywordtype}{void} KickOutPlayer()}
+\DoxyCodeLine{00134         \{}
+\DoxyCodeLine{00135             PhotonNetwork.CloseConnection(\_player);}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetAsMaster()}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140             PhotonNetwork.SetMasterClient(\_player);}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143 \textcolor{preprocessor}{        \#region Photon CallBacks}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00146         \{}
+\DoxyCodeLine{00147             NotInRoomLabel.SetActive(otherPlayer == \_player);}
+\DoxyCodeLine{00148             ContentPanel.SetActive(otherPlayer != \_player);}
+\DoxyCodeLine{00149         \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             MasterClientToolBar.SetActive(\_player == newMasterClient);}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player target, ExitGames.Client.Photon.Hashtable changedProps)}
+\DoxyCodeLine{00157         \{}
+\DoxyCodeLine{00158             \textcolor{comment}{//Debug.Log("{}OnPlayerPropertiesUpdate "{} + target.ActorNumber + "{} "{} + target.ToStringFull() + "{} "{} + changedProps.ToStringFull());}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160             \textcolor{comment}{//Debug.Log("{}\_player.ID "{} + \_player.ActorNumber);}}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{if} (\_player.ActorNumber == target.ActorNumber)}
+\DoxyCodeLine{00162             \{}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{foreach} (DictionaryEntry entry \textcolor{keywordflow}{in} changedProps)}
+\DoxyCodeLine{00165                 \{}
+\DoxyCodeLine{00166                     \textcolor{keywordtype}{string} \_key = this.ParseKey(entry.Key);}
+\DoxyCodeLine{00167                     \textcolor{keywordflow}{if} (this.builtInPropsCellList.ContainsKey(\_key))}
+\DoxyCodeLine{00168                     \{}
+\DoxyCodeLine{00169                         this.builtInPropsCellList[\_key].UpdateInfo(entry.Value.ToString());}
+\DoxyCodeLine{00170                     \}}
+\DoxyCodeLine{00171                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00172                     \{}
+\DoxyCodeLine{00173                         this.AddProperty(\_key, entry.Value.ToString(), \textcolor{keyword}{this}.CustomPropertiesPanel);}
+\DoxyCodeLine{00174                     \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                 \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             StartCoroutine(\textcolor{stringliteral}{"{}UpdateUIPing"{}});}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnPlayerNumberingChanged()}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (\_player != \textcolor{keyword}{null})}
+\DoxyCodeLine{00189             \{ \textcolor{comment}{// we might be called before player is setup}}
+\DoxyCodeLine{00190                 this.builtInPropsCellList[\textcolor{stringliteral}{"{}Player Number"{}}].UpdateInfo(\textcolor{stringliteral}{"{}\#"{}} + \_player.GetPlayerNumber().ToString(\textcolor{stringliteral}{"{}00"{}}));}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         IEnumerator UpdateUIPing()}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             UpdateStatusText.text = \textcolor{stringliteral}{"{}Updated"{}};}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(1f);}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00202         \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetList()}
+\DoxyCodeLine{00206         \{}
+\DoxyCodeLine{00207             \textcolor{keywordflow}{foreach} (KeyValuePair<string, PropertyCell> entry \textcolor{keywordflow}{in} builtInPropsCellList)}
+\DoxyCodeLine{00208             \{}
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{if} (entry.Value != \textcolor{keyword}{null})}
+\DoxyCodeLine{00210                 \{}
+\DoxyCodeLine{00211                     Destroy(entry.Value.gameObject);}
+\DoxyCodeLine{00212                 \}}
+\DoxyCodeLine{00213             \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215             builtInPropsCellList = \textcolor{keyword}{new} Dictionary<string, PropertyCell>();}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         Hashtable GetAllPlayerBuiltIntProperties()}
+\DoxyCodeLine{00220         \{}
+\DoxyCodeLine{00221             Hashtable allProps = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (\_player != \textcolor{keyword}{null})}
+\DoxyCodeLine{00224             \{}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226                 allProps[\textcolor{stringliteral}{"{}ID"{}}] = \_player.ActorNumber;}
+\DoxyCodeLine{00227                 allProps[ActorProperties.UserId] = \_player.UserId != \textcolor{keyword}{null} ? \_player.UserId : \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00228                 allProps[\textcolor{stringliteral}{"{}NickName"{}}] = \_player.NickName != \textcolor{keyword}{null} ? \_player.NickName : \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00229                 allProps[\textcolor{stringliteral}{"{}IsLocal"{}}] = \_player.IsLocal;}
+\DoxyCodeLine{00230                 allProps[ActorProperties.IsInactive] = \_player.IsInactive;}
+\DoxyCodeLine{00231                 allProps[\textcolor{stringliteral}{"{}IsMasterClient"{}}] = \_player.IsMasterClient;}
+\DoxyCodeLine{00232             \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             Debug.Log(allProps.ToStringFull());}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordflow}{return} allProps;}
+\DoxyCodeLine{00237         \}}
+\DoxyCodeLine{00238     \}}
+\DoxyCodeLine{00239 \}}
+
+\end{DoxyCode}

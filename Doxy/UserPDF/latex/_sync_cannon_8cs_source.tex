@@ -1,0 +1,219 @@
+\doxysection{Sync\+Cannon.\+cs}
+\label{_sync_cannon_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncCannon.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/SyncCannon.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun.Simple.Pooling;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncCannon : SyncShootBase}
+\DoxyCodeLine{00019         , IProjectileCannon}
+\DoxyCodeLine{00020         \textcolor{comment}{//, IOnContactEvent}}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.WEAPONS; \} \}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [SerializeField] \textcolor{keyword}{public} GameObject projPrefab;}
+\DoxyCodeLine{00027         [SerializeField] \textcolor{keyword}{public} Vector3 velocity = \textcolor{keyword}{new} Vector3(0, 0, 10f);}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [SerializeField] [EnumMask] \textcolor{keyword}{public} RespondTo terminateOn = RespondTo.HitNetObj | RespondTo.HitNonNetObj;}
+\DoxyCodeLine{00030         [SerializeField] [EnumMask] \textcolor{keyword}{public} RespondTo damageOn = RespondTo.HitNetObj | RespondTo.HitNonNetObj;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [Tooltip(\textcolor{stringliteral}{"{}Projectiles are advanced (lagCompensate * RTT) ms into the future on non-\/owner clients. This will better time align projectiles to the local players time frame "{}} +}
+\DoxyCodeLine{00033             \textcolor{stringliteral}{"{}(For example dodging a projectile locally is more likely to be how the shooter saw events as well). 0 = Fully in shooters time frame and 1 = Fully in the local players time frame."{}})]}
+\DoxyCodeLine{00034         [Range(0f, 1f)]}
+\DoxyCodeLine{00035         [SerializeField] \textcolor{keyword}{public} \textcolor{keywordtype}{float} lagCompensate = 1f;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{comment}{//protected override void PopulateFrames()}}
+\DoxyCodeLine{00041         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00042         \textcolor{comment}{//    int frameCount = TickEngineSettings.frameCount;}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{comment}{//    frames = new NetHitFrame[frameCount + 1];}}
+\DoxyCodeLine{00045         \textcolor{comment}{//    for (int i = 0; i <= frameCount; ++i)}}
+\DoxyCodeLine{00046         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00047         \textcolor{comment}{//        frames[i] = new NetHitFrame(this, false, i);}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00050         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052 \textcolor{preprocessor}{        \#region Initialization}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             base.Reset();}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             base.OnAwake();}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (projPrefab == \textcolor{keyword}{null})}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 projPrefab = ProjectileHelpers.GetPlaceholderProj();}
+\DoxyCodeLine{00067                 Pool.AddPrefabToPool(projPrefab, 8, 8, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070                 Pool.AddPrefabToPool(projPrefab);}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{protected} \textcolor{keyword}{static} List<NetObject> reusableNetObjects = \textcolor{keyword}{new} List<NetObject>();}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{comment}{//public bool OnContactEvent(ref ContactEvent contactEvent)}}
+\DoxyCodeLine{00078         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00079         \textcolor{comment}{//    //List<NetObject> netObjects = reusableNetObjects;}}
+\DoxyCodeLine{00080         \textcolor{comment}{//    ///// Collect the nested parent NetObjs for correct self-\/hit testing. The first one returned is actual object that was hit.}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{comment}{//    //var other = contactEvent.contacter;}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{comment}{//    //other.NetObj.transform.GetNestedComponentsInParents(netObjects);}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{comment}{//    //NetObject netObj = netObjects.Count == 0 ? null : netObjects[0];}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{comment}{//    ///// Hit was not NetOBj}}
+\DoxyCodeLine{00089         \textcolor{comment}{//    //if (ReferenceEquals(netObj, null))}}
+\DoxyCodeLine{00090         \textcolor{comment}{//    //\{}}
+\DoxyCodeLine{00091         \textcolor{comment}{//    //    return false;}}
+\DoxyCodeLine{00092         \textcolor{comment}{//    //\}}}
+\DoxyCodeLine{00093         \textcolor{comment}{//    ///// Hit was NetObj}}
+\DoxyCodeLine{00094         \textcolor{comment}{//    //else}}
+\DoxyCodeLine{00095         \textcolor{comment}{//    //\{}}
+\DoxyCodeLine{00096         \textcolor{comment}{//    //    int netObjId = netObj.ViewID;}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098         \textcolor{comment}{//    //    /// Test all nested NetObjs for a match with self}}
+\DoxyCodeLine{00099         \textcolor{comment}{//    //    bool hitWasOwner = false;}}
+\DoxyCodeLine{00100         \textcolor{comment}{//    //    var ownerNetObj = NetObj;}}
+\DoxyCodeLine{00101         \textcolor{comment}{//    //    foreach (var netobj in netObjects)}}
+\DoxyCodeLine{00102         \textcolor{comment}{//    //        if (ReferenceEquals(netobj, ownerNetObj))}}
+\DoxyCodeLine{00103         \textcolor{comment}{//    //        \{}}
+\DoxyCodeLine{00104         \textcolor{comment}{//    //            hitWasOwner = true;}}
+\DoxyCodeLine{00105         \textcolor{comment}{//    //            break;}}
+\DoxyCodeLine{00106         \textcolor{comment}{//    //        \}}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{comment}{//    //    /// Hit was self}}
+\DoxyCodeLine{00109         \textcolor{comment}{//    //    if (hitWasOwner)}}
+\DoxyCodeLine{00110         \textcolor{comment}{//    //    \{}}
+\DoxyCodeLine{00111         \textcolor{comment}{//    //        return false;}}
+\DoxyCodeLine{00112         \textcolor{comment}{//    //    \}}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{comment}{//    //    ///// TODO: this collider ID code is pretty hacked together. Need to decide if syncing the collider ID}}
+\DoxyCodeLine{00115         \textcolor{comment}{//    //    ///// should even happen, and if so how colliders are determined for some events like triggers.}}
+\DoxyCodeLine{00116         \textcolor{comment}{//    //    //bool isCollider = ((other is Collider) || (other is Collider2D));}}
+\DoxyCodeLine{00117         \textcolor{comment}{//    //    //int colliderId = (isCollider) ? netObj.colliderLookup[other] : 0;}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{comment}{//    //    /// Hit was NetObj}}
+\DoxyCodeLine{00120         \textcolor{comment}{//    //    var contactGroup = (other as Component).GetComponent<IContactGroupAssign>();}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{comment}{//    //    int mask = ReferenceEquals(contactGroup, null) ? 0 : contactGroup.Mask;}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124         \textcolor{comment}{//    //    Debug.Log("{}OnHit "{} + contactEvent.contactType);}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{comment}{//    //    /// If this connection owns this launcher/projectile, log this hit}}
+\DoxyCodeLine{00127         \textcolor{comment}{//    //    QueueHit(new NetworkHit(netObjId, mask, colliderId));}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{comment}{//    //    return true;}}
+\DoxyCodeLine{00130         \textcolor{comment}{//    //\}}}
+\DoxyCodeLine{00131         \textcolor{comment}{//    return false;}}
+\DoxyCodeLine{00132         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00138         \textcolor{comment}{//public void QueueHit(NetworkHit hit)}}
+\DoxyCodeLine{00139         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         \textcolor{comment}{//    if (IsMine)}}
+\DoxyCodeLine{00142         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00143         \textcolor{comment}{//        projectileHitQueue.Enqueue(hit);}}
+\DoxyCodeLine{00144         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00145         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00150         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Trigger(Frame frame, \textcolor{keywordtype}{int} subFrameId, \textcolor{keywordtype}{float} timeshift = 0)}
+\DoxyCodeLine{00151         \{}
+\DoxyCodeLine{00152             Pool p = Pool.Spawn(projPrefab, origin);}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             var proxy = p.GetComponent<IContactTrigger>();}
+\DoxyCodeLine{00155             proxy.Proxy = contactTrigger;}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             var ssproj = p.GetComponent<IProjectile>();}
+\DoxyCodeLine{00158             ssproj.Initialize(\textcolor{keyword}{this}, frame.frameId, subFrameId, velocity, terminateOn, damageOn, lagCompensate * timeshift);}
+\DoxyCodeLine{00159             ssproj.Owner = \textcolor{keyword}{this};}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164 \textcolor{preprocessor}{        \#region Timings}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166         \textcolor{comment}{//public override void OnPostSimulate(int frameId, int subFrameId, bool isNetTick)}}
+\DoxyCodeLine{00167         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00168         \textcolor{comment}{//    /// Base handles the fire triggers. We have special handling for hits, since they come in from the projectiles and are not instant}}
+\DoxyCodeLine{00169         \textcolor{comment}{//    base.OnPostSimulate(frameId, subFrameId, isNetTick);}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{comment}{//    NetHitFrame frame = frames[frameId];}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{comment}{//    /// Owner log hits to frame/subframe}}
+\DoxyCodeLine{00174         \textcolor{comment}{//    if (projectileHitQueue.Count > 0)}}
+\DoxyCodeLine{00175         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00176         \textcolor{comment}{//        while (projectileHitQueue.Count > 0)}}
+\DoxyCodeLine{00177         \textcolor{comment}{//            frame.netHits[subFrameId].hits.Add(projectileHitQueue.Dequeue());}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{comment}{//        frame.content = FrameContents.Complete;}}
+\DoxyCodeLine{00180         \textcolor{comment}{//        frame.hitmask |= ((uint)1 << subFrameId);}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{comment}{//        HitsCallbacks(frame.netHits[subFrameId]);}}
+\DoxyCodeLine{00183         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00184         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00187     \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191     [CustomEditor(typeof(SyncCannon), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00192     [CanEditMultipleObjects]}
+\DoxyCodeLine{00193     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncCannonEditor : SyncShootBaseEditor}
+\DoxyCodeLine{00194     \{}
+\DoxyCodeLine{00195         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             \textcolor{keyword}{get}}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Attach this component to any root or child GameObject to define a networked projectile launcher. "{}} +}
+\DoxyCodeLine{00200                     \textcolor{stringliteral}{"{}A NetObject is required on this object or a parent.\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00201                     \textcolor{stringliteral}{"{}Initiate a projectile by calling:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00202                     \textcolor{stringliteral}{"{}this"{}} + typeof(SyncCannon).Name + \textcolor{stringliteral}{"{}.QueueTrigger()"{}};}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204         \}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SUBSYS\_PATH + \textcolor{stringliteral}{"{}\#synccannon\_component"{}}; \}}
+\DoxyCodeLine{00209         \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             \textcolor{keyword}{get}}
+\DoxyCodeLine{00214             \{}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncCannonText"{}};}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218     \}}
+\DoxyCodeLine{00219 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00220 \}}
+\DoxyCodeLine{00221 }
+
+\end{DoxyCode}

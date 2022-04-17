@@ -1,0 +1,128 @@
+\doxysection{Outline\+Detection.\+cs}
+\label{_outline_detection_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/Human Chores/OutlineDetection.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/Human Chores/OutlineDetection.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} SInt.MissionObjectives;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{public} \textcolor{keyword}{class }OutlineDetection : MonoBehaviour}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011     [SerializeField]}
+\DoxyCodeLine{00012     \textcolor{keyword}{private} Camera playerCamera;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [SerializeField]}
+\DoxyCodeLine{00015     \textcolor{keyword}{private} Button choreButton;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} LayerMask layerMask;}
+\DoxyCodeLine{00018     \textcolor{comment}{//public List<string> allowedTags;}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{comment}{//public UnityEvent TaskComplete;}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     PhotonView PV;}
+\DoxyCodeLine{00023     ButtonHoldDown choreButtonHoldDownComp;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025     \textcolor{comment}{// Human Only}}
+\DoxyCodeLine{00026     Chores chores;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         PV = GetComponent<PhotonView>();}
+\DoxyCodeLine{00031         \textcolor{comment}{//animator = GetComponent<Animator>();}}
+\DoxyCodeLine{00032         choreButtonHoldDownComp = choreButton.GetComponent<ButtonHoldDown>();}
+\DoxyCodeLine{00033         TryGetComponent(out chores);}
+\DoxyCodeLine{00034     \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00037     \{}
+\DoxyCodeLine{00038         var rayCast = playerCamera.ViewportPointToRay(Vector3.one * 0.5f);}
+\DoxyCodeLine{00039         RaycastHit camTrigger;}
+\DoxyCodeLine{00040         \textcolor{comment}{//Debug.DrawRay(rayCast.origin, rayCast.direction);}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keywordflow}{if} (PV.IsMine)}
+\DoxyCodeLine{00043         \{}
+\DoxyCodeLine{00044             \textcolor{keywordflow}{if} (Physics.Raycast(rayCast, out camTrigger, 5f, Physics.AllLayers, QueryTriggerInteraction.Collide))}
+\DoxyCodeLine{00045             \{}
+\DoxyCodeLine{00046                 \textcolor{comment}{//var hits = Physics.RaycastAll(rayCast, 5f, layerMask, QueryTriggerInteraction.Collide);}}
+\DoxyCodeLine{00047                 \textcolor{comment}{//if (hits.Length > 0)}}
+\DoxyCodeLine{00048                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00049                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00050                 \textcolor{comment}{//foreach (var h in hits)}}
+\DoxyCodeLine{00051                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00052                 \textcolor{comment}{//    HandleOutlineRaycast(h.collider.gameObject);}}
+\DoxyCodeLine{00053                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00054                 HandleOutlineRaycast(camTrigger.collider.gameObject);}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 HandleOutlineRaycast(\textcolor{keyword}{null});}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060         \}}
+\DoxyCodeLine{00061         }
+\DoxyCodeLine{00062     \}}
+\DoxyCodeLine{00063     [Header(\textcolor{stringliteral}{"{}Outline Colors (Detected Requires Chore Layer Mask)"{}})]}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065     \textcolor{keyword}{public} List<OutlinePUN> outlinePUNComponents;}
+\DoxyCodeLine{00066     \textcolor{keyword}{public} \textcolor{keywordtype}{float} outlineWidth = 10f;}
+\DoxyCodeLine{00067     \textcolor{comment}{//public Color outsideRangeColor;}}
+\DoxyCodeLine{00068     \textcolor{comment}{//public float outsideRangeMaxDist = 7f;}}
+\DoxyCodeLine{00069     \textcolor{keyword}{public} Color withinRangeColor;}
+\DoxyCodeLine{00070     \textcolor{keyword}{public} \textcolor{keywordtype}{float} withinRangeMaxDist = 3f;}
+\DoxyCodeLine{00071     \textcolor{comment}{//public Color disabledOutlineColor;}}
+\DoxyCodeLine{00072     \textcolor{keyword}{public} \textcolor{keywordtype}{void} HandleOutlineRaycast(GameObject detectedObj)}
+\DoxyCodeLine{00073     \{}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         OutlinePUN outlinePUN = \textcolor{keyword}{null};}
+\DoxyCodeLine{00076         \textcolor{keywordflow}{if} (detectedObj != \textcolor{keyword}{null} \&\& detectedObj!=this.gameObject)}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{keywordtype}{bool} conditionHuman = \textcolor{keyword}{false};}
+\DoxyCodeLine{00079             conditionHuman = chores!=\textcolor{keyword}{null} \&\& (detectedObj.GetComponent<FixDestroyedFurniture>()\textcolor{comment}{/*GetComponent<PhotonView>()*/} != \textcolor{keyword}{null} || layerMask == (layerMask | (1 << detectedObj.layer)));}
+\DoxyCodeLine{00080             \textcolor{comment}{//conditionHuman = chores!=null }}
+\DoxyCodeLine{00081             \textcolor{comment}{//    \&\&}}
+\DoxyCodeLine{00082             \textcolor{comment}{//    (detectedObj.GetComponent<FixDestroyedFurniture>() != null  }}
+\DoxyCodeLine{00083             \textcolor{comment}{//    || detectedObj.GetComponent<Sink>() != false \&\& chores.washDishTask == false}}
+\DoxyCodeLine{00084             \textcolor{comment}{//    || detectedObj.GetComponent<Cabinet>() != false \&\& chores.washDishTask}}
+\DoxyCodeLine{00085             \textcolor{comment}{//    || }}
+\DoxyCodeLine{00086             \textcolor{keywordtype}{bool} conditionCat = \textcolor{keyword}{false};}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             \textcolor{keywordflow}{if} (conditionHuman || conditionCat)}
+\DoxyCodeLine{00089             \{}
+\DoxyCodeLine{00090                 \textcolor{keywordtype}{bool} hasOutlinePUN = detectedObj.TryGetComponent(out outlinePUN);}
+\DoxyCodeLine{00091                 \textcolor{keywordflow}{if} (hasOutlinePUN == \textcolor{keyword}{false})}
+\DoxyCodeLine{00092                 \{}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094                     outlinePUN = detectedObj.AddComponent<OutlinePUN>();}
+\DoxyCodeLine{00095                     \textcolor{keywordflow}{if} (outlinePUNComponents.Contains(outlinePUN) == \textcolor{keyword}{false})}
+\DoxyCodeLine{00096                     \{}
+\DoxyCodeLine{00097                         outlinePUNComponents.Add(outlinePUN);}
+\DoxyCodeLine{00098                     \}}
+\DoxyCodeLine{00099                 \}}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103         \textcolor{keywordflow}{foreach} (OutlinePUN o \textcolor{keywordflow}{in} outlinePUNComponents)}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (Vector3.Distance(\textcolor{keyword}{this}.transform.position, o.transform.position) <= withinRangeMaxDist \&\& choreButton.interactable == \textcolor{keyword}{true}\textcolor{comment}{/*\&\& o == outlinePUN*/})}
+\DoxyCodeLine{00106             \{}
+\DoxyCodeLine{00107                 o.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{if} (withinRangeColor == \textcolor{keywordflow}{default}) \textcolor{comment}{// if unset, set color via hexadecimal}}
+\DoxyCodeLine{00109                 \{}
+\DoxyCodeLine{00110                     ColorUtility.TryParseHtmlString(\textcolor{stringliteral}{"{}\#53FF40"{}}, out withinRangeColor);}
+\DoxyCodeLine{00111                 \}}
+\DoxyCodeLine{00112                 o.OutlineColor = withinRangeColor;}
+\DoxyCodeLine{00113                 outlinePUN.OutlineWidth = outlineWidth;}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 o.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120     \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 \}}
+
+\end{DoxyCode}

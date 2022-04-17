@@ -1,0 +1,331 @@
+\doxysection{Sync\+Object.\+cs}
+\label{_sync_object_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/SyncObject.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/SyncObject.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} emotitron.Utilities.GUIUtilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{enum} ReadyStateEnum \{ Unready, Ready, Disabled \}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{comment}{//public interface ISyncObject}}
+\DoxyCodeLine{00019     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00020     \textcolor{comment}{//  int SyncObjIndex \{ get; set; \}}}
+\DoxyCodeLine{00021     \textcolor{comment}{//  ReadyStateEnum ReadyState \{ get; set; \}}}
+\DoxyCodeLine{00022     \textcolor{comment}{//       void ResetBuffers();}}
+\DoxyCodeLine{00023     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00029     [HelpURL(Internal.SimpleDocsURLS.SYNCCOMPS\_PATH)]}
+\DoxyCodeLine{00030     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SyncObject : NetComponent \textcolor{comment}{// NetObjComponent}}
+\DoxyCodeLine{00031         , IOnEnable}
+\DoxyCodeLine{00032         , IOnDisable}
+\DoxyCodeLine{00033         , IApplyOrder}
+\DoxyCodeLine{00034     \{}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036 \textcolor{preprocessor}{        \#region IApplyOrder Implementations}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00039         [ShowIfInterface(typeof(IAdjustableApplyOrder), ApplyOrderConstants.TOOLTIP, 0, ApplyOrderConstants.MAX\_ORDER\_VAL)]}
+\DoxyCodeLine{00040 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{int} \_applyOrder = ApplyOrderConstants.DEFAULT;}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_applyOrder; \} \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         [Tooltip(\textcolor{stringliteral}{"{}Every X Net Tick this object will serialize a full update, regardless of having changed or not."{}})]}
+\DoxyCodeLine{00049         [Range(1, 12)]}
+\DoxyCodeLine{00050         [HideInInspector]}
+\DoxyCodeLine{00051         [SerializeField]}
+\DoxyCodeLine{00052         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} keyframeRate = 1; \textcolor{comment}{// NetObjAdapter.NET\_LIB == NetLibrary.PUN2 ? 1 : 0;}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         [Tooltip(\textcolor{stringliteral}{"{}When enabled, components will be instructed to check for changes and serialize them. When disabled, components will be instructed to ONLY send keyframes."{}})]}
+\DoxyCodeLine{00055         [HideInInspector]}
+\DoxyCodeLine{00056         [SerializeField]}
+\DoxyCodeLine{00057         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} useDeltas = \textcolor{keyword}{true};}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} UseDeltas \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} useDeltas; \} \textcolor{keyword}{set} \{ useDeltas = value; \} \}}
+\DoxyCodeLine{00059         }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{        \#endregion Inspector}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{comment}{// Cached values}}
+\DoxyCodeLine{00063         \textcolor{comment}{//protected static int frameCount, frameCountBits, sendEveryXTick;}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsKeyframe(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{return} (keyframeRate != 0) \&\& ((frameId \% keyframeRate) == 0 || frameId == TickEngineSettings.frameCount);}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ResetBuffers() \{ \}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076 \textcolor{preprocessor}{        \#region IReadyable Implementations}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{const} \textcolor{keywordtype}{string} ALWAYS\_READY\_TOOLTIP =}
+\DoxyCodeLine{00079             \textcolor{stringliteral}{"{}When true, the NetObject will not factor this SyncObj's ready state into firing IOnNetObjReady callbacks."{}};}
+\DoxyCodeLine{00080         [ShowIfInterface(typeof(IReadyable), ALWAYS\_READY\_TOOLTIP)]}
+\DoxyCodeLine{00081         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} \_alwaysReady = \textcolor{keyword}{true};}
+\DoxyCodeLine{00082         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AlwaysReady \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_alwaysReady; \} \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 \textcolor{preprocessor}{        \#region ISyncOptional Implementation}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{const} \textcolor{keywordtype}{string} INCLUDE\_SERIALIZATION\_TOOLTIP =}
+\DoxyCodeLine{00089             \textcolor{stringliteral}{"{}When false, the NetObject will not serialize this SyncObj's state. This cannot be changed at runtime. Disable this component on the owner to disable sync at runtime instead."{}};}
+\DoxyCodeLine{00090         \textcolor{comment}{//[ShowIfInterface(typeof(ISerializationOptional), INCLUDE\_SERIALIZATION\_TOOLTIP)]}}
+\DoxyCodeLine{00091         [Tooltip(INCLUDE\_SERIALIZATION\_TOOLTIP)]}
+\DoxyCodeLine{00092         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} serializeThis = \textcolor{keyword}{true};}
+\DoxyCodeLine{00093         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} IncludeInSerialization \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} serializeThis; \} \}}
+\DoxyCodeLine{00094         }
+\DoxyCodeLine{00095 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SkipWhenEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         [System.NonSerialized]}
+\DoxyCodeLine{00100         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} syncObjIndex;}
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keywordtype}{int} SyncObjIndex \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} syncObjIndex; \} \textcolor{keyword}{set} \{ syncObjIndex = value; \} \}}
+\DoxyCodeLine{00102         }
+\DoxyCodeLine{00103 \textcolor{preprocessor}{        \#region Readyable}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{protected} ReadyStateEnum \_readyState;}
+\DoxyCodeLine{00106         \textcolor{keyword}{public} ReadyStateEnum ReadyState}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_readyState; \}}
+\DoxyCodeLine{00109             \textcolor{keyword}{set}}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{if} (\_readyState == value \textcolor{comment}{/*\&\& ReadyState == ReadyStateEnum.Ready*/})}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 \textcolor{comment}{//if (value == ReadyStateEnum.Ready)}}
+\DoxyCodeLine{00116                 \textcolor{comment}{//    if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00117                 \textcolor{comment}{//        Debug.Log(Time.time + "{}<color=orange> Ready change </color>"{} + name + "{} "{} + this.GetType().Name + "{} "{} + \_readyState + "{}-\/>"{} + value}}
+\DoxyCodeLine{00118                 \textcolor{comment}{//            + "{} parent: <b>"{} + (transform.parent ? transform.parent.name : "{}none"{}) + "{} y: "{} + transform.localPosition.y + "{}</b>"{});}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120                 \_readyState = value;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00123                 netObj.OnSyncObjReadyChange(\textcolor{keyword}{this}, \_readyState);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (onReadyCallbacks != \textcolor{keyword}{null})}
+\DoxyCodeLine{00127                     onReadyCallbacks.Invoke(\textcolor{keyword}{this}, value);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keyword}{public} System.Action<SyncObject, ReadyStateEnum> onReadyCallbacks;}
+\DoxyCodeLine{00134         }
+\DoxyCodeLine{00135         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPostEnable()}
+\DoxyCodeLine{00136         \{}
+\DoxyCodeLine{00137             base.OnPostEnable();}
+\DoxyCodeLine{00139             \textcolor{comment}{//var iReadyable = this as IReadyable;}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{comment}{//if (ReferenceEquals(iReadyable, null) || iReadyable.AlwaysReady /*|| \_readyState != ReadyStateEnum.Unready*/)}}
+\DoxyCodeLine{00142             \textcolor{comment}{//  ReadyState = ReadyStateEnum.Ready;}}
+\DoxyCodeLine{00143             \textcolor{comment}{//else}}
+\DoxyCodeLine{00144             \textcolor{comment}{//  ReadyState = ReadyStateEnum.Unready;}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148         }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (!controllerChanged)}
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00157             var iReadyable = \textcolor{keyword}{this} as IReadyable;}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (ReferenceEquals(iReadyable, \textcolor{keyword}{null}) || iReadyable.AlwaysReady || \_readyState != ReadyStateEnum.Unready)}
+\DoxyCodeLine{00160                 ReadyState = ReadyStateEnum.Ready;}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (!isActiveAndEnabled)}
+\DoxyCodeLine{00162                 ReadyState = ReadyStateEnum.Disabled;}
+\DoxyCodeLine{00163             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00164                 ReadyState = ReadyStateEnum.Unready;}
+\DoxyCodeLine{00165         \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPostDisable()}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             base.OnPostDisable();}
+\DoxyCodeLine{00171             ReadyState = ReadyStateEnum.Disabled;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             base.OnValidate();}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00183             \textcolor{keywordflow}{if} ((\textcolor{keyword}{this} is IUseKeyframes) == \textcolor{keyword}{false})}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{if} (keyframeRate != 1)}
+\DoxyCodeLine{00186                 \{}
+\DoxyCodeLine{00187                     keyframeRate = 1;}
+\DoxyCodeLine{00188                 \}}
+\DoxyCodeLine{00189             \}}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194 \textcolor{preprocessor}{        \#region Initialization / Shutdown}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             base.OnAwake();}
+\DoxyCodeLine{00205             \textcolor{comment}{//frameCount = SimpleSyncSettings.frameCount;}}
+\DoxyCodeLine{00206             \textcolor{comment}{//frameCountBits = SimpleSyncSettings.frameCountBits;}}
+\DoxyCodeLine{00207             \textcolor{comment}{//sendEveryXTick = SimpleSyncSettings.sendEveryXTick;}}
+\DoxyCodeLine{00208         \}}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00211         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             }
+\DoxyCodeLine{00214         \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} ConvertSecsToTicks(\textcolor{keywordtype}{float} seconds)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})(seconds / (Time.fixedDeltaTime * TickEngineSettings.sendEveryXTick))\textcolor{comment}{/* -\/ 1*/};}
+\DoxyCodeLine{00221         \}}
+\DoxyCodeLine{00222     \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00226     [CustomEditor(typeof(SyncObject), isFallback = \textcolor{keyword}{false})]}
+\DoxyCodeLine{00227     [CanEditMultipleObjects]}
+\DoxyCodeLine{00228     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncObjectEditor : HeaderEditorBase}
+\DoxyCodeLine{00229     \{}
+\DoxyCodeLine{00230         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00231         \{}
+\DoxyCodeLine{00232             \textcolor{keyword}{get}}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SYNCCOMPS\_PATH;}
+\DoxyCodeLine{00235             \}}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         \textcolor{keyword}{protected} readonly System.Text.StringBuilder sb = \textcolor{keyword}{new} System.Text.StringBuilder();}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncObjectText"{}}; \} \}}
+\DoxyCodeLine{00241         \textcolor{comment}{//protected override string TextFallbackPath \{ get \{ return "{}Header/SyncObjectText"{}; \} \}}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} BackTexturePath  \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/BlueBack"{}}; \} \}}
+\DoxyCodeLine{00244         \textcolor{comment}{//protected override string BackFallbackPath \{ get \{ return "{}Header/BlueBack"{}; \} \}}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} IconTexturePath \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/PUN\_IconBlue"{}}; \} \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} GridTexturePath \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \} \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00253         \{}
+\DoxyCodeLine{00254             base.OnInspectorGUI();}
+\DoxyCodeLine{00255         \}}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUIInjectMiddle()}
+\DoxyCodeLine{00258         \{}
+\DoxyCodeLine{00259             base.OnInspectorGUIInjectMiddle();}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262             var serializeThis = serializedObject.FindProperty(\textcolor{stringliteral}{"{}serializeThis"{}});}
+\DoxyCodeLine{00263             \textcolor{keywordtype}{bool} serializationIsOptional = target is ISerializationOptional;}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265             \textcolor{keywordflow}{if} (serializationIsOptional)}
+\DoxyCodeLine{00266             \{}
+\DoxyCodeLine{00267                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                 EditorGUILayout.PropertyField(serializeThis);}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00272                 \{}
+\DoxyCodeLine{00273                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00274                 \}}
+\DoxyCodeLine{00275             \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278             IUseKeyframes useKeyframes = target as IUseKeyframes;}
+\DoxyCodeLine{00279             \textcolor{keywordflow}{if} (!ReferenceEquals(useKeyframes, \textcolor{keyword}{null}) \&\& (!serializationIsOptional || serializeThis.boolValue))}
+\DoxyCodeLine{00280             \{}
+\DoxyCodeLine{00281                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                 var keyframeRate = serializedObject.FindProperty(\textcolor{stringliteral}{"{}keyframeRate"{}});}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285                 \textcolor{keywordtype}{int} maxkeyval = TickEngineSettings.MaxKeyframes;}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287                 \textcolor{keywordflow}{if} (keyframeRate.intValue > maxkeyval)}
+\DoxyCodeLine{00288                 \{}
+\DoxyCodeLine{00289                     keyframeRate.intValue = maxkeyval;}
+\DoxyCodeLine{00290                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00291                 \}}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                 EditorGUILayout.IntSlider(keyframeRate, 0, TickEngineSettings.MaxKeyframes);}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00296                 IDeltaFrameChangeDetect useDeltaframes = target as IDeltaFrameChangeDetect;}
+\DoxyCodeLine{00297                 \textcolor{keywordflow}{if} (!ReferenceEquals(useDeltaframes, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00298                 \{}
+\DoxyCodeLine{00299                     var useDeltas = serializedObject.FindProperty(\textcolor{stringliteral}{"{}useDeltas"{}});}
+\DoxyCodeLine{00300                     EditorGUILayout.PropertyField(useDeltas);}
+\DoxyCodeLine{00301                 \}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00304                 \{}
+\DoxyCodeLine{00305                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00306                 \}}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             }
+\DoxyCodeLine{00310         \}}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<object, bool> foldoutStates = \textcolor{keyword}{new} Dictionary<object, bool>();}
+\DoxyCodeLine{00313         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} ListFoundInterfaces<T>(GameObject go, List<T> list) where T : \textcolor{keyword}{class}}
+\DoxyCodeLine{00314         \{}
+\DoxyCodeLine{00315             go.GetComponentsInChildren(list);}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             reusableGC.text = \textcolor{stringliteral}{"{}["{}} + list.Count + \textcolor{stringliteral}{"{}] "{}} + typeof(T).Name + \textcolor{stringliteral}{"{} found:"{}};}
+\DoxyCodeLine{00318             reusableGC.tooltip = \textcolor{stringliteral}{"{}Callbacks found on this NetObject"{}};}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320             \textcolor{keywordflow}{if} (!foldoutStates.ContainsKey(list))}
+\DoxyCodeLine{00321                 foldoutStates.Add(list, \textcolor{keyword}{false});}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             foldoutStates[list] = EditorGUILayout.Foldout(foldoutStates[list], reusableGC);}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325             \textcolor{keywordflow}{if} (foldoutStates[list])}
+\DoxyCodeLine{00326             \{}
+\DoxyCodeLine{00327                 EditorGUILayout.BeginVertical(\textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}));}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329                 \textcolor{keywordflow}{if} (list.Count == 0)}
+\DoxyCodeLine{00330                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}<i>none</i>"{}}, richBox);}
+\DoxyCodeLine{00331                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00332                 \{}
+\DoxyCodeLine{00333                     EditorGUI.BeginDisabledGroup(\textcolor{keyword}{true});}
+\DoxyCodeLine{00334                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < list.Count; ++i)}
+\DoxyCodeLine{00335                     \{}
+\DoxyCodeLine{00336                         EditorGUILayout.ObjectField(list[i] as Component, typeof(Component), \textcolor{keyword}{false});}
+\DoxyCodeLine{00337                     \}}
+\DoxyCodeLine{00338                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00339                 \}}
+\DoxyCodeLine{00340                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00341             \}}
+\DoxyCodeLine{00342         \}}
+\DoxyCodeLine{00343     \}}
+\DoxyCodeLine{00344 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346 \}}
+\DoxyCodeLine{00347 }
+
+\end{DoxyCode}

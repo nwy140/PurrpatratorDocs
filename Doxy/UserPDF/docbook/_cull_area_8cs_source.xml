@@ -1,0 +1,372 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__cull_area_8cs_source" xml:lang="en-US">
+<title>CullArea.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullArea.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__cull_area_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&#32;file=&quot;CullArea.cs&quot;&#32;company=&quot;Exit&#32;Games&#32;GmbH&quot;&gt;</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&#32;&#32;Part&#32;of:&#32;Photon&#32;Unity&#32;Utilities,</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00005"/>00005 <emphasis role="comment">//&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00006"/>00006 <emphasis role="comment">//&#32;&#32;Represents&#32;the&#32;cull&#32;area&#32;used&#32;for&#32;network&#32;culling.</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00007"/>00007 <emphasis role="comment">//&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00008"/>00008 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00009"/>00009 <emphasis role="comment">//&#32;--------------------------------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00010"/>00010 
+<anchor xml:id="__cull_area_8cs_source_1l00011"/>00011 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__cull_area_8cs_source_1l00012"/>00012 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__cull_area_8cs_source_1l00013"/>00013 
+<anchor xml:id="__cull_area_8cs_source_1l00014"/><link linkend="_namespace_photon_1_1_pun_1_1_utility_scripts">00014</link> <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_utility_scripts">Photon.Pun.UtilityScripts</link>
+<anchor xml:id="__cull_area_8cs_source_1l00015"/>00015 {
+<anchor xml:id="__cull_area_8cs_source_1l00016"/>00016 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__cull_area_8cs_source_1l00017"/>00017 
+<anchor xml:id="__cull_area_8cs_source_1l00018"/>00018 
+<anchor xml:id="__cull_area_8cs_source_1l00022"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area">00022</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area">CullArea</link>&#32;:&#32;MonoBehaviour
+<anchor xml:id="__cull_area_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00024"/>00024 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;MAX_NUMBER_OF_ALLOWED_CELLS&#32;=&#32;250;
+<anchor xml:id="__cull_area_8cs_source_1l00025"/>00025 
+<anchor xml:id="__cull_area_8cs_source_1l00026"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aae2ffa5816df5b33da8d29b1fc1a1e67">00026</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aae2ffa5816df5b33da8d29b1fc1a1e67">MAX_NUMBER_OF_SUBDIVISIONS</link>&#32;=&#32;3;
+<anchor xml:id="__cull_area_8cs_source_1l00027"/>00027 
+<anchor xml:id="__cull_area_8cs_source_1l00034"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">00034</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;readonly&#32;<emphasis role="keywordtype">byte</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>&#32;=&#32;1;
+<anchor xml:id="__cull_area_8cs_source_1l00035"/>00035 
+<anchor xml:id="__cull_area_8cs_source_1l00045"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aa7c010541fc441ddc7335ac8d1ef820f">00045</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;readonly&#32;<emphasis role="keywordtype">int</emphasis>[]&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aa7c010541fc441ddc7335ac8d1ef820f">SUBDIVISION_FIRST_LEVEL_ORDER</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>[4]&#32;{&#32;0,&#32;1,&#32;1,&#32;1&#32;};
+<anchor xml:id="__cull_area_8cs_source_1l00046"/>00046 
+<anchor xml:id="__cull_area_8cs_source_1l00056"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a607cf1d6e2c0c6dae1b8a4dfc1c7698a">00056</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;readonly&#32;<emphasis role="keywordtype">int</emphasis>[]&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a607cf1d6e2c0c6dae1b8a4dfc1c7698a">SUBDIVISION_SECOND_LEVEL_ORDER</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>[8]&#32;{&#32;0,&#32;2,&#32;1,&#32;2,&#32;0,&#32;2,&#32;1,&#32;2&#32;};
+<anchor xml:id="__cull_area_8cs_source_1l00057"/>00057 
+<anchor xml:id="__cull_area_8cs_source_1l00068"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a370904381dfbbeb43b0375cff6c04736">00068</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;readonly&#32;<emphasis role="keywordtype">int</emphasis>[]&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a370904381dfbbeb43b0375cff6c04736">SUBDIVISION_THIRD_LEVEL_ORDER</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>[12]&#32;{&#32;0,&#32;3,&#32;2,&#32;3,&#32;1,&#32;3,&#32;2,&#32;3,&#32;1,&#32;3,&#32;2,&#32;3&#32;};
+<anchor xml:id="__cull_area_8cs_source_1l00069"/>00069 
+<anchor xml:id="__cull_area_8cs_source_1l00070"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1abb9825997a86c9832faa4e6a2bfb7534">00070</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Vector2&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1abb9825997a86c9832faa4e6a2bfb7534">Center</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00071"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae10a9f162b15f9e69b5be46f006c5c77">00071</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Vector2&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae10a9f162b15f9e69b5be46f006c5c77">Size</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(25.0f,&#32;25.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00072"/>00072 
+<anchor xml:id="__cull_area_8cs_source_1l00073"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af4e57a348adc8d4ed295f0486c14d650">00073</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Vector2[]&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af4e57a348adc8d4ed295f0486c14d650">Subdivisions</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2[<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1aae2ffa5816df5b33da8d29b1fc1a1e67">MAX_NUMBER_OF_SUBDIVISIONS</link>];
+<anchor xml:id="__cull_area_8cs_source_1l00074"/>00074 
+<anchor xml:id="__cull_area_8cs_source_1l00075"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">00075</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af6a0c3e0ed2fd09ea26247675938c618">NumberOfSubdivisions</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00076"/>00076 
+<anchor xml:id="__cull_area_8cs_source_1l00077"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae12f1e1f43cbf70e1009816a8c45e3e0">00077</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae12f1e1f43cbf70e1009816a8c45e3e0">CellCount</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00078"/>00078 
+<anchor xml:id="__cull_area_8cs_source_1l00079"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">00079</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree">CellTree</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree">CellTree</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00080"/>00080 
+<anchor xml:id="__cull_area_8cs_source_1l00081"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a3deefbb62fb08cad0e3834016dbb39af">00081</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Dictionary&lt;int,&#32;GameObject&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a3deefbb62fb08cad0e3834016dbb39af">Map</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00082"/>00082 
+<anchor xml:id="__cull_area_8cs_source_1l00083"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a37168edae9912f5efc521652aee2a115">00083</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a37168edae9912f5efc521652aee2a115">YIsUpAxis</link>&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00084"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ab3bb308f40235b23986844f83d361964">00084</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ab3bb308f40235b23986844f83d361964">RecreateCellHierarchy</link>&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00085"/>00085 
+<anchor xml:id="__cull_area_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">byte</emphasis>&#32;idCounter;
+<anchor xml:id="__cull_area_8cs_source_1l00087"/>00087 
+<anchor xml:id="__cull_area_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Awake()
+<anchor xml:id="__cull_area_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.idCounter&#32;=&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00094"/>00094 
+<anchor xml:id="__cull_area_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.CreateCellHierarchy();
+<anchor xml:id="__cull_area_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00097"/>00097 
+<anchor xml:id="__cull_area_8cs_source_1l00101"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae6cf4cd517e6710fd0d6c8278f8584eb">00101</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae6cf4cd517e6710fd0d6c8278f8584eb">OnDrawGizmos</link>()
+<anchor xml:id="__cull_area_8cs_source_1l00102"/>00102 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00103"/>00103 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.idCounter&#32;=&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1af00343c127df837d5f77c888823afb4f">FIRST_GROUP_ID</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00104"/>00104 
+<anchor xml:id="__cull_area_8cs_source_1l00105"/>00105 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RecreateCellHierarchy)
+<anchor xml:id="__cull_area_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.CreateCellHierarchy();
+<anchor xml:id="__cull_area_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00109"/>00109 
+<anchor xml:id="__cull_area_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.DrawCells();
+<anchor xml:id="__cull_area_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00112"/>00112 
+<anchor xml:id="__cull_area_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;CreateCellHierarchy()
+<anchor xml:id="__cull_area_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.IsCellCountAllowed())
+<anchor xml:id="__cull_area_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<link linkend="_namespace_photon_1_1_pun_1ac6a6ed4f0d7a7522026d8cd2beec9671">Debug</link>.isDebugBuild)
+<anchor xml:id="__cull_area_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_namespace_photon_1_1_pun_1ac6a6ed4f0d7a7522026d8cd2beec9671">Debug</link>.LogError(<emphasis role="stringliteral">&quot;There&#32;are&#32;too&#32;many&#32;cells&#32;created&#32;by&#32;your&#32;subdivision&#32;options.&#32;Maximum&#32;allowed&#32;number&#32;of&#32;cells&#32;is&#32;&quot;</emphasis>&#32;+&#32;(MAX_NUMBER_OF_ALLOWED_CELLS&#32;-&#32;this.FIRST_GROUP_ID)&#32;+
+<anchor xml:id="__cull_area_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="stringliteral">&quot;.&#32;Current&#32;number&#32;of&#32;cells&#32;is&#32;&quot;</emphasis>&#32;+&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae12f1e1f43cbf70e1009816a8c45e3e0">CellCount</link>&#32;+&#32;<emphasis role="stringliteral">&quot;.&quot;</emphasis>);
+<anchor xml:id="__cull_area_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00126"/>00126 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00127"/>00127 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00128"/>00128 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Application.Quit();
+<anchor xml:id="__cull_area_8cs_source_1l00129"/>00129 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00131"/>00131 
+<anchor xml:id="__cull_area_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;CellTreeNode&#32;rootNode&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;CellTreeNode(this.idCounter++,&#32;CellTreeNode.ENodeType.Root,&#32;<emphasis role="keyword">null</emphasis>);
+<anchor xml:id="__cull_area_8cs_source_1l00133"/>00133 
+<anchor xml:id="__cull_area_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.YIsUpAxis)
+<anchor xml:id="__cull_area_8cs_source_1l00135"/>00135 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(transform.position.x,&#32;transform.position.y);
+<anchor xml:id="__cull_area_8cs_source_1l00137"/>00137 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(transform.localScale.x,&#32;transform.localScale.y);
+<anchor xml:id="__cull_area_8cs_source_1l00138"/>00138 
+<anchor xml:id="__cull_area_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(this.Center.x,&#32;<emphasis role="keyword">this</emphasis>.Center.y,&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(this.Size.x,&#32;<emphasis role="keyword">this</emphasis>.Size.y,&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.TopLeft&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3((this.Center.x&#32;-&#32;(<emphasis role="keyword">this</emphasis>.Size.x&#32;/&#32;2.0f)),&#32;(<emphasis role="keyword">this</emphasis>.Center.y&#32;-&#32;(<emphasis role="keyword">this</emphasis>.Size.y&#32;/&#32;2.0f)),&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00142"/>00142 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.BottomRight&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3((this.Center.x&#32;+&#32;(<emphasis role="keyword">this</emphasis>.Size.x&#32;/&#32;2.0f)),&#32;(<emphasis role="keyword">this</emphasis>.Center.y&#32;+&#32;(<emphasis role="keyword">this</emphasis>.Size.y&#32;/&#32;2.0f)),&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00144"/>00144 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00145"/>00145 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00146"/>00146 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(transform.position.x,&#32;transform.position.z);
+<anchor xml:id="__cull_area_8cs_source_1l00147"/>00147 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector2(transform.localScale.x,&#32;transform.localScale.z);
+<anchor xml:id="__cull_area_8cs_source_1l00148"/>00148 
+<anchor xml:id="__cull_area_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(this.Center.x,&#32;0.0f,&#32;<emphasis role="keyword">this</emphasis>.Center.y);
+<anchor xml:id="__cull_area_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(this.Size.x,&#32;0.0f,&#32;<emphasis role="keyword">this</emphasis>.Size.y);
+<anchor xml:id="__cull_area_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.TopLeft&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3((this.Center.x&#32;-&#32;(<emphasis role="keyword">this</emphasis>.Size.x&#32;/&#32;2.0f)),&#32;0.0f,&#32;(<emphasis role="keyword">this</emphasis>.Center.y&#32;-&#32;(<emphasis role="keyword">this</emphasis>.Size.y&#32;/&#32;2.0f)));
+<anchor xml:id="__cull_area_8cs_source_1l00152"/>00152 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootNode.BottomRight&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3((this.Center.x&#32;+&#32;(<emphasis role="keyword">this</emphasis>.Size.x&#32;/&#32;2.0f)),&#32;0.0f,&#32;(<emphasis role="keyword">this</emphasis>.Center.y&#32;+&#32;(<emphasis role="keyword">this</emphasis>.Size.y&#32;/&#32;2.0f)));
+<anchor xml:id="__cull_area_8cs_source_1l00153"/>00153 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00154"/>00154 
+<anchor xml:id="__cull_area_8cs_source_1l00155"/>00155 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.CreateChildCells(rootNode,&#32;1);
+<anchor xml:id="__cull_area_8cs_source_1l00156"/>00156 
+<anchor xml:id="__cull_area_8cs_source_1l00157"/>00157 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">CellTree</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">CellTree</link>(rootNode);
+<anchor xml:id="__cull_area_8cs_source_1l00158"/>00158 
+<anchor xml:id="__cull_area_8cs_source_1l00159"/>00159 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RecreateCellHierarchy&#32;=&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00160"/>00160 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00161"/>00161 
+<anchor xml:id="__cull_area_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;CreateChildCells(CellTreeNode&#32;parent,&#32;<emphasis role="keywordtype">int</emphasis>&#32;cellLevelInHierarchy)
+<anchor xml:id="__cull_area_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(cellLevelInHierarchy&#32;&gt;&#32;this.NumberOfSubdivisions)
+<anchor xml:id="__cull_area_8cs_source_1l00170"/>00170 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00173"/>00173 
+<anchor xml:id="__cull_area_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;rowCount&#32;=&#32;(int)this.Subdivisions[(cellLevelInHierarchy&#32;-&#32;1)].x;
+<anchor xml:id="__cull_area_8cs_source_1l00175"/>00175 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;columnCount&#32;=&#32;(int)this.Subdivisions[(cellLevelInHierarchy&#32;-&#32;1)].y;
+<anchor xml:id="__cull_area_8cs_source_1l00176"/>00176 
+<anchor xml:id="__cull_area_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;startX&#32;=&#32;parent.Center.x&#32;-&#32;(parent.Size.x&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;width&#32;=&#32;parent.Size.x&#32;/&#32;rowCount;
+<anchor xml:id="__cull_area_8cs_source_1l00179"/>00179 
+<anchor xml:id="__cull_area_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;row&#32;=&#32;0;&#32;row&#32;&lt;&#32;rowCount;&#32;++row)
+<anchor xml:id="__cull_area_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;column&#32;=&#32;0;&#32;column&#32;&lt;&#32;columnCount;&#32;++column)
+<anchor xml:id="__cull_area_8cs_source_1l00183"/>00183 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;xPos&#32;=&#32;startX&#32;+&#32;(row&#32;*&#32;width)&#32;+&#32;(width&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00185"/>00185 
+<anchor xml:id="__cull_area_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;CellTreeNode&#32;node&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;CellTreeNode(this.idCounter++,&#32;(this.NumberOfSubdivisions&#32;==&#32;cellLevelInHierarchy)&#32;?&#32;CellTreeNode.ENodeType.Leaf&#32;:&#32;CellTreeNode.ENodeType.Node,&#32;parent);
+<anchor xml:id="__cull_area_8cs_source_1l00187"/>00187 
+<anchor xml:id="__cull_area_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.YIsUpAxis)
+<anchor xml:id="__cull_area_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;startY&#32;=&#32;parent.Center.y&#32;-&#32;(parent.Size.y&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;height&#32;=&#32;parent.Size.y&#32;/&#32;columnCount;
+<anchor xml:id="__cull_area_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;yPos&#32;=&#32;startY&#32;+&#32;(column&#32;*&#32;height)&#32;+&#32;(height&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00193"/>00193 
+<anchor xml:id="__cull_area_8cs_source_1l00194"/>00194 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos,&#32;yPos,&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00195"/>00195 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(width,&#32;height,&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00196"/>00196 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.TopLeft&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos&#32;-&#32;(width&#32;/&#32;2.0f),&#32;yPos&#32;-&#32;(height&#32;/&#32;2.0f),&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00197"/>00197 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.BottomRight&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos&#32;+&#32;(width&#32;/&#32;2.0f),&#32;yPos&#32;+&#32;(height&#32;/&#32;2.0f),&#32;0.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00198"/>00198 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;startZ&#32;=&#32;parent.Center.z&#32;-&#32;(parent.Size.z&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;depth&#32;=&#32;parent.Size.z&#32;/&#32;columnCount;
+<anchor xml:id="__cull_area_8cs_source_1l00203"/>00203 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;zPos&#32;=&#32;startZ&#32;+&#32;(column&#32;*&#32;depth)&#32;+&#32;(depth&#32;/&#32;2.0f);
+<anchor xml:id="__cull_area_8cs_source_1l00204"/>00204 
+<anchor xml:id="__cull_area_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.Center&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos,&#32;0.0f,&#32;zPos);
+<anchor xml:id="__cull_area_8cs_source_1l00206"/>00206 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.Size&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(width,&#32;0.0f,&#32;depth);
+<anchor xml:id="__cull_area_8cs_source_1l00207"/>00207 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.TopLeft&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos&#32;-&#32;(width&#32;/&#32;2.0f),&#32;0.0f,&#32;zPos&#32;-&#32;(depth&#32;/&#32;2.0f));
+<anchor xml:id="__cull_area_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.BottomRight&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Vector3(xPos&#32;+&#32;(width&#32;/&#32;2.0f),&#32;0.0f,&#32;zPos&#32;+&#32;(depth&#32;/&#32;2.0f));
+<anchor xml:id="__cull_area_8cs_source_1l00209"/>00209 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00210"/>00210 
+<anchor xml:id="__cull_area_8cs_source_1l00211"/>00211 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;parent.AddChild(node);
+<anchor xml:id="__cull_area_8cs_source_1l00212"/>00212 
+<anchor xml:id="__cull_area_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.CreateChildCells(node,&#32;(cellLevelInHierarchy&#32;+&#32;1));
+<anchor xml:id="__cull_area_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00216"/>00216 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00217"/>00217 
+<anchor xml:id="__cull_area_8cs_source_1l00221"/>00221 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;DrawCells()
+<anchor xml:id="__cull_area_8cs_source_1l00222"/>00222 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">CellTree</link>&#32;!=&#32;<emphasis role="keyword">null</emphasis>)&#32;&amp;&amp;&#32;(this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">CellTree</link>.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">RootNode</link>&#32;!=&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__cull_area_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ad4014c1fa20b256bf1e9e8323ac38bfe">CellTree</link>.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">RootNode</link>.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a29ff0e593ea6718d04a9427fd5ef42bc">Draw</link>();
+<anchor xml:id="__cull_area_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00228"/>00228 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RecreateCellHierarchy&#32;=&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00232"/>00232 
+<anchor xml:id="__cull_area_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;IsCellCountAllowed()
+<anchor xml:id="__cull_area_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;horizontalCells&#32;=&#32;1;
+<anchor xml:id="__cull_area_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;verticalCells&#32;=&#32;1;
+<anchor xml:id="__cull_area_8cs_source_1l00241"/>00241 
+<anchor xml:id="__cull_area_8cs_source_1l00242"/>00242 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(Vector2&#32;v&#32;<emphasis role="keywordflow">in</emphasis>&#32;this.Subdivisions)
+<anchor xml:id="__cull_area_8cs_source_1l00243"/>00243 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00244"/>00244 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;horizontalCells&#32;*=&#32;(int)v.x;
+<anchor xml:id="__cull_area_8cs_source_1l00245"/>00245 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;verticalCells&#32;*=&#32;(<emphasis role="keywordtype">int</emphasis>)v.y;
+<anchor xml:id="__cull_area_8cs_source_1l00246"/>00246 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00247"/>00247 
+<anchor xml:id="__cull_area_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae12f1e1f43cbf70e1009816a8c45e3e0">CellCount</link>&#32;=&#32;horizontalCells&#32;*&#32;verticalCells;
+<anchor xml:id="__cull_area_8cs_source_1l00249"/>00249 
+<anchor xml:id="__cull_area_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1ae12f1e1f43cbf70e1009816a8c45e3e0">CellCount</link>&#32;&lt;=&#32;(MAX_NUMBER_OF_ALLOWED_CELLS&#32;-&#32;this.FIRST_GROUP_ID));
+<anchor xml:id="__cull_area_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00252"/>00252 
+<anchor xml:id="__cull_area_8cs_source_1l00258"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a63382409c900dc34c2770029b9e07fe1">00258</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;byte&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cull_area_1a63382409c900dc34c2770029b9e07fe1">GetActiveCells</link>(Vector3&#32;position)
+<anchor xml:id="__cull_area_8cs_source_1l00259"/>00259 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00260"/>00260 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;List&lt;byte&gt;&#32;activeCells&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;byte&gt;(0);
+<anchor xml:id="__cull_area_8cs_source_1l00261"/>00261 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree">CellTree</link>.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">RootNode</link>.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1af28e9793abfacb2c8729d6399979e371">GetActiveCells</link>(activeCells,&#32;this.YIsUpAxis,&#32;position);
+<anchor xml:id="__cull_area_8cs_source_1l00262"/>00262 
+<anchor xml:id="__cull_area_8cs_source_1l00263"/>00263 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;it&#32;makes&#32;sense&#32;to&#32;sort&#32;the&#32;&quot;nearby&quot;&#32;cells.&#32;those&#32;are&#32;in&#32;the&#32;list&#32;in&#32;positions&#32;after&#32;the&#32;subdivisions&#32;the&#32;point&#32;is&#32;inside.&#32;2&#32;subdivisions&#32;result&#32;in&#32;3&#32;areas&#32;the&#32;point&#32;is&#32;in.</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00264"/>00264 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;cellsActive&#32;=&#32;this.NumberOfSubdivisions&#32;+&#32;1;
+<anchor xml:id="__cull_area_8cs_source_1l00265"/>00265 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;cellsNearby&#32;=&#32;activeCells.Count&#32;-&#32;cellsActive;
+<anchor xml:id="__cull_area_8cs_source_1l00266"/>00266 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(cellsNearby&#32;&gt;&#32;0)
+<anchor xml:id="__cull_area_8cs_source_1l00267"/>00267 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00268"/>00268 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;activeCells.Sort(cellsActive,&#32;cellsNearby,&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_byte_comparer">ByteComparer</link>());
+<anchor xml:id="__cull_area_8cs_source_1l00269"/>00269 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00270"/>00270 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;activeCells;
+<anchor xml:id="__cull_area_8cs_source_1l00271"/>00271 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00272"/>00272 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00273"/>00273 
+<anchor xml:id="__cull_area_8cs_source_1l00277"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree">00277</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree">CellTree</link>
+<anchor xml:id="__cull_area_8cs_source_1l00278"/>00278 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00282"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">00282</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">RootNode</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00283"/>00283 
+<anchor xml:id="__cull_area_8cs_source_1l00287"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1a2682cc51677535e89f7ec4dff2ecee8d">00287</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1a2682cc51677535e89f7ec4dff2ecee8d">CellTree</link>()
+<anchor xml:id="__cull_area_8cs_source_1l00288"/>00288 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00289"/>00289 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00290"/>00290 
+<anchor xml:id="__cull_area_8cs_source_1l00295"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1af3caa4c0b9f16ae6657dd6d129111183">00295</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1af3caa4c0b9f16ae6657dd6d129111183">CellTree</link>(<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;root)
+<anchor xml:id="__cull_area_8cs_source_1l00296"/>00296 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00297"/>00297 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_1aed70578e655104581d15532cf434f9ad">RootNode</link>&#32;=&#32;root;
+<anchor xml:id="__cull_area_8cs_source_1l00298"/>00298 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00299"/>00299 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00300"/>00300 
+<anchor xml:id="__cull_area_8cs_source_1l00304"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">00304</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>
+<anchor xml:id="__cull_area_8cs_source_1l00305"/>00305 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00306"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">00306</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">enum</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>&#32;:&#32;<emphasis role="keywordtype">byte</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00307"/>00307 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00308"/>00308 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Root&#32;=&#32;0,
+<anchor xml:id="__cull_area_8cs_source_1l00309"/>00309 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Node&#32;=&#32;1,
+<anchor xml:id="__cull_area_8cs_source_1l00310"/>00310 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Leaf&#32;=&#32;2
+<anchor xml:id="__cull_area_8cs_source_1l00311"/>00311 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00312"/>00312 
+<anchor xml:id="__cull_area_8cs_source_1l00316"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1afd6145fffd68769714b936047b2f58fe">00316</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">byte</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1afd6145fffd68769714b936047b2f58fe">Id</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00317"/>00317 
+<anchor xml:id="__cull_area_8cs_source_1l00322"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a0ead77db998d40e173c7118577a95789">00322</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;Vector3&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a228739b1e6798c0c59bf1396d6333156">Center</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ab30e2b26643adec2ce694176e76bf4fc">Size</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1af5a9886955ebedad02243af14abd454b">TopLeft</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a0ead77db998d40e173c7118577a95789">BottomRight</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00323"/>00323 
+<anchor xml:id="__cull_area_8cs_source_1l00327"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1abae39d4c051dc40d705d58e9eed238a6">00327</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1abae39d4c051dc40d705d58e9eed238a6">NodeType</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00328"/>00328 
+<anchor xml:id="__cull_area_8cs_source_1l00332"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a8d03239911dd328de94d1606923566bc">00332</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a8d03239911dd328de94d1606923566bc">Parent</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00333"/>00333 
+<anchor xml:id="__cull_area_8cs_source_1l00337"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac029b39bf7cddddc32b947a2d42563ad">00337</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;CellTreeNode&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac029b39bf7cddddc32b947a2d42563ad">Childs</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00338"/>00338 
+<anchor xml:id="__cull_area_8cs_source_1l00343"/>00343 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>&#32;maxDistance;
+<anchor xml:id="__cull_area_8cs_source_1l00344"/>00344 
+<anchor xml:id="__cull_area_8cs_source_1l00348"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a31e4ff80c7ac9f965c7bef268f58c312">00348</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a31e4ff80c7ac9f965c7bef268f58c312">CellTreeNode</link>()
+<anchor xml:id="__cull_area_8cs_source_1l00349"/>00349 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00350"/>00350 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00351"/>00351 
+<anchor xml:id="__cull_area_8cs_source_1l00358"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a61767473d6b70aed8a317901dce892cc">00358</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a61767473d6b70aed8a317901dce892cc">CellTreeNode</link>(<emphasis role="keywordtype">byte</emphasis>&#32;<emphasis role="keywordtype">id</emphasis>,&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>&#32;nodeType,&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;parent)
+<anchor xml:id="__cull_area_8cs_source_1l00359"/>00359 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00360"/>00360 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Id&#32;=&#32;id;
+<anchor xml:id="__cull_area_8cs_source_1l00361"/>00361 
+<anchor xml:id="__cull_area_8cs_source_1l00362"/>00362 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.NodeType&#32;=&#32;nodeType;
+<anchor xml:id="__cull_area_8cs_source_1l00363"/>00363 
+<anchor xml:id="__cull_area_8cs_source_1l00364"/>00364 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Parent&#32;=&#32;parent;
+<anchor xml:id="__cull_area_8cs_source_1l00365"/>00365 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00366"/>00366 
+<anchor xml:id="__cull_area_8cs_source_1l00371"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a78317fb3d1cfb3497364fef005176930">00371</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a78317fb3d1cfb3497364fef005176930">AddChild</link>(<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;child)
+<anchor xml:id="__cull_area_8cs_source_1l00372"/>00372 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00373"/>00373 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.Childs&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__cull_area_8cs_source_1l00374"/>00374 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00375"/>00375 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Childs&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;CellTreeNode&gt;(1);
+<anchor xml:id="__cull_area_8cs_source_1l00376"/>00376 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00377"/>00377 
+<anchor xml:id="__cull_area_8cs_source_1l00378"/>00378 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.Childs.Add(child);
+<anchor xml:id="__cull_area_8cs_source_1l00379"/>00379 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00380"/>00380 
+<anchor xml:id="__cull_area_8cs_source_1l00384"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a29ff0e593ea6718d04a9427fd5ef42bc">00384</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a29ff0e593ea6718d04a9427fd5ef42bc">Draw</link>()
+<anchor xml:id="__cull_area_8cs_source_1l00385"/>00385 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00386"/>00386 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00387"/>00387 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.Childs&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__cull_area_8cs_source_1l00388"/>00388 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00389"/>00389 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;node&#32;<emphasis role="keywordflow">in</emphasis>&#32;this.Childs)
+<anchor xml:id="__cull_area_8cs_source_1l00390"/>00390 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00391"/>00391 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a29ff0e593ea6718d04a9427fd5ef42bc">Draw</link>();
+<anchor xml:id="__cull_area_8cs_source_1l00392"/>00392 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00393"/>00393 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00394"/>00394 
+<anchor xml:id="__cull_area_8cs_source_1l00395"/>00395 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Gizmos.color&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Color((this.NodeType&#32;==&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>.Root)&#32;?&#32;1&#32;:&#32;0,&#32;(<emphasis role="keyword">this</emphasis>.NodeType&#32;==&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>.Node)&#32;?&#32;1&#32;:&#32;0,&#32;(<emphasis role="keyword">this</emphasis>.NodeType&#32;==&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>.Leaf)&#32;?&#32;1&#32;:&#32;0);
+<anchor xml:id="__cull_area_8cs_source_1l00396"/>00396 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Gizmos.DrawWireCube(this.Center,&#32;this.Size);
+<anchor xml:id="__cull_area_8cs_source_1l00397"/>00397 
+<anchor xml:id="__cull_area_8cs_source_1l00398"/>00398 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">byte</emphasis>&#32;offset&#32;=&#32;(byte)this.NodeType;
+<anchor xml:id="__cull_area_8cs_source_1l00399"/>00399 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUIStyle&#32;gs&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle()&#32;{&#32;fontStyle&#32;=&#32;FontStyle.Bold&#32;};
+<anchor xml:id="__cull_area_8cs_source_1l00400"/>00400 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;gs.normal.textColor&#32;=&#32;Gizmos.color;
+<anchor xml:id="__cull_area_8cs_source_1l00401"/>00401 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;UnityEditor.Handles.Label(this.Center+(Vector3.forward*offset*1f),&#32;<emphasis role="keyword">this</emphasis>.Id.ToString(),&#32;gs);
+<anchor xml:id="__cull_area_8cs_source_1l00402"/>00402 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00403"/>00403 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00404"/>00404 
+<anchor xml:id="__cull_area_8cs_source_1l00411"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1af28e9793abfacb2c8729d6399979e371">00411</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1af28e9793abfacb2c8729d6399979e371">GetActiveCells</link>(List&lt;byte&gt;&#32;activeCells,&#32;<emphasis role="keywordtype">bool</emphasis>&#32;yIsUpAxis,&#32;Vector3&#32;position)
+<anchor xml:id="__cull_area_8cs_source_1l00412"/>00412 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00413"/>00413 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.NodeType&#32;!=&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1ac5a575290315adc073c2c051469cbf2f">ENodeType</link>.Leaf)
+<anchor xml:id="__cull_area_8cs_source_1l00414"/>00414 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00415"/>00415 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;node&#32;<emphasis role="keywordflow">in</emphasis>&#32;this.Childs)
+<anchor xml:id="__cull_area_8cs_source_1l00416"/>00416 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00417"/>00417 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;node.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1af28e9793abfacb2c8729d6399979e371">GetActiveCells</link>(activeCells,&#32;yIsUpAxis,&#32;position);
+<anchor xml:id="__cull_area_8cs_source_1l00418"/>00418 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00419"/>00419 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00420"/>00420 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00421"/>00421 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00422"/>00422 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a68c3fb47028b8f0a5a34e22053e860b8">IsPointNearCell</link>(yIsUpAxis,&#32;position))
+<anchor xml:id="__cull_area_8cs_source_1l00423"/>00423 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00424"/>00424 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a2c550fbbf2ed973dc8c2f093721b2ccd">IsPointInsideCell</link>(yIsUpAxis,&#32;position))
+<anchor xml:id="__cull_area_8cs_source_1l00425"/>00425 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00426"/>00426 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;activeCells.Insert(0,&#32;this.Id);
+<anchor xml:id="__cull_area_8cs_source_1l00427"/>00427 
+<anchor xml:id="__cull_area_8cs_source_1l00428"/>00428 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node">CellTreeNode</link>&#32;p&#32;=&#32;this.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a8d03239911dd328de94d1606923566bc">Parent</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00429"/>00429 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">while</emphasis>&#32;(p&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__cull_area_8cs_source_1l00430"/>00430 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00431"/>00431 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;activeCells.Insert(0,&#32;p.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1afd6145fffd68769714b936047b2f58fe">Id</link>);
+<anchor xml:id="__cull_area_8cs_source_1l00432"/>00432 
+<anchor xml:id="__cull_area_8cs_source_1l00433"/>00433 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;p&#32;=&#32;p.<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a8d03239911dd328de94d1606923566bc">Parent</link>;
+<anchor xml:id="__cull_area_8cs_source_1l00434"/>00434 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00435"/>00435 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00436"/>00436 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00437"/>00437 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00438"/>00438 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;activeCells.Add(this.Id);
+<anchor xml:id="__cull_area_8cs_source_1l00439"/>00439 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00440"/>00440 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00441"/>00441 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00442"/>00442 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00443"/>00443 
+<anchor xml:id="__cull_area_8cs_source_1l00450"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a2c550fbbf2ed973dc8c2f093721b2ccd">00450</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a2c550fbbf2ed973dc8c2f093721b2ccd">IsPointInsideCell</link>(<emphasis role="keywordtype">bool</emphasis>&#32;yIsUpAxis,&#32;Vector3&#32;point)
+<anchor xml:id="__cull_area_8cs_source_1l00451"/>00451 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00452"/>00452 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((point.x&#32;&lt;&#32;<emphasis role="keyword">this</emphasis>.TopLeft.x)&#32;||&#32;(point.x&#32;&gt;&#32;<emphasis role="keyword">this</emphasis>.BottomRight.x))
+<anchor xml:id="__cull_area_8cs_source_1l00453"/>00453 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00454"/>00454 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00455"/>00455 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00456"/>00456 
+<anchor xml:id="__cull_area_8cs_source_1l00457"/>00457 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(yIsUpAxis)
+<anchor xml:id="__cull_area_8cs_source_1l00458"/>00458 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00459"/>00459 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((point.y&#32;&gt;=&#32;<emphasis role="keyword">this</emphasis>.TopLeft.y)&#32;&amp;&amp;&#32;(point.y&#32;&lt;=&#32;<emphasis role="keyword">this</emphasis>.BottomRight.y))
+<anchor xml:id="__cull_area_8cs_source_1l00460"/>00460 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00461"/>00461 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00462"/>00462 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00463"/>00463 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00464"/>00464 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__cull_area_8cs_source_1l00465"/>00465 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00466"/>00466 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;((point.z&#32;&gt;=&#32;<emphasis role="keyword">this</emphasis>.TopLeft.z)&#32;&amp;&amp;&#32;(point.z&#32;&lt;=&#32;<emphasis role="keyword">this</emphasis>.BottomRight.z))
+<anchor xml:id="__cull_area_8cs_source_1l00467"/>00467 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00468"/>00468 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00469"/>00469 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00470"/>00470 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00471"/>00471 
+<anchor xml:id="__cull_area_8cs_source_1l00472"/>00472 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__cull_area_8cs_source_1l00473"/>00473 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00474"/>00474 
+<anchor xml:id="__cull_area_8cs_source_1l00481"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a68c3fb47028b8f0a5a34e22053e860b8">00481</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree_node_1a68c3fb47028b8f0a5a34e22053e860b8">IsPointNearCell</link>(<emphasis role="keywordtype">bool</emphasis>&#32;yIsUpAxis,&#32;Vector3&#32;point)
+<anchor xml:id="__cull_area_8cs_source_1l00482"/>00482 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00483"/>00483 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.maxDistance&#32;==&#32;0.0f)
+<anchor xml:id="__cull_area_8cs_source_1l00484"/>00484 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00485"/>00485 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.maxDistance&#32;=&#32;(this.Size.x&#32;+&#32;this.Size.y&#32;+&#32;this.Size.z)&#32;/&#32;2.0f;
+<anchor xml:id="__cull_area_8cs_source_1l00486"/>00486 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00487"/>00487 
+<anchor xml:id="__cull_area_8cs_source_1l00488"/>00488 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;((point&#32;-&#32;this.Center).sqrMagnitude&#32;&lt;=&#32;(this.maxDistance&#32;*&#32;this.maxDistance));
+<anchor xml:id="__cull_area_8cs_source_1l00489"/>00489 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00490"/>00490 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00491"/>00491 
+<anchor xml:id="__cull_area_8cs_source_1l00492"/>00492 
+<anchor xml:id="__cull_area_8cs_source_1l00493"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_byte_comparer">00493</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_byte_comparer">ByteComparer</link>&#32;:&#32;IComparer&lt;byte&gt;
+<anchor xml:id="__cull_area_8cs_source_1l00494"/>00494 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00496"/><link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_byte_comparer_1ad3cfad615674e3b71bcfc08326ae5559">00496</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_utility_scripts_1_1_byte_comparer_1ad3cfad615674e3b71bcfc08326ae5559">Compare</link>(<emphasis role="keywordtype">byte</emphasis>&#32;x,&#32;<emphasis role="keywordtype">byte</emphasis>&#32;y)
+<anchor xml:id="__cull_area_8cs_source_1l00497"/>00497 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__cull_area_8cs_source_1l00498"/>00498 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;x&#32;==&#32;y&#32;?&#32;0&#32;:&#32;x&#32;&lt;&#32;y&#32;?&#32;-1&#32;:&#32;1;
+<anchor xml:id="__cull_area_8cs_source_1l00499"/>00499 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00500"/>00500 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__cull_area_8cs_source_1l00501"/>00501 }
+</programlisting></section>

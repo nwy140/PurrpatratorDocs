@@ -1,0 +1,315 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__player_8cs_source" xml:lang="en-US">
+<title>Player.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonRealtime/Code/Player.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__player_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;----------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__player_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&#32;file=&quot;Player.cs&quot;&#32;company=&quot;Exit&#32;Games&#32;GmbH&quot;&gt;</emphasis>
+<anchor xml:id="__player_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&#32;&#32;Loadbalancing&#32;Framework&#32;for&#32;Photon&#32;-&#32;Copyright&#32;(C)&#32;2018&#32;Exit&#32;Games&#32;GmbH</emphasis>
+<anchor xml:id="__player_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__player_8cs_source_1l00005"/>00005 <emphasis role="comment">//&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__player_8cs_source_1l00006"/>00006 <emphasis role="comment">//&#32;&#32;&#32;Per&#32;client&#32;in&#32;a&#32;room,&#32;a&#32;Player&#32;is&#32;created.&#32;This&#32;client&apos;s&#32;Player&#32;is&#32;also</emphasis>
+<anchor xml:id="__player_8cs_source_1l00007"/>00007 <emphasis role="comment">//&#32;&#32;&#32;known&#32;as&#32;PhotonClient.LocalPlayer&#32;and&#32;the&#32;only&#32;one&#32;you&#32;might&#32;change</emphasis>
+<anchor xml:id="__player_8cs_source_1l00008"/>00008 <emphasis role="comment">//&#32;&#32;&#32;properties&#32;for.</emphasis>
+<anchor xml:id="__player_8cs_source_1l00009"/>00009 <emphasis role="comment">//&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__player_8cs_source_1l00010"/>00010 <emphasis role="comment">//&#32;&lt;author&gt;developer@photonengine.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__player_8cs_source_1l00011"/>00011 <emphasis role="comment">//&#32;----------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__player_8cs_source_1l00012"/>00012 
+<anchor xml:id="__player_8cs_source_1l00013"/>00013 <emphasis role="preprocessor">#if&#32;UNITY_4_7&#32;||&#32;UNITY_5&#32;||&#32;UNITY_5_3_OR_NEWER</emphasis>
+<anchor xml:id="__player_8cs_source_1l00014"/>00014 <emphasis role="preprocessor">#define&#32;SUPPORTED_UNITY</emphasis>
+<anchor xml:id="__player_8cs_source_1l00015"/>00015 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__player_8cs_source_1l00016"/>00016 
+<anchor xml:id="__player_8cs_source_1l00017"/>00017 
+<anchor xml:id="__player_8cs_source_1l00018"/>00018 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_realtime">Photon.Realtime</link>
+<anchor xml:id="__player_8cs_source_1l00019"/>00019 {
+<anchor xml:id="__player_8cs_source_1l00020"/>00020 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__player_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System.<link linkend="_namespace_system_1_1_collections">Collections</link>;
+<anchor xml:id="__player_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__player_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;ExitGames.Client.Photon;
+<anchor xml:id="__player_8cs_source_1l00024"/>00024 
+<anchor xml:id="__player_8cs_source_1l00025"/>00025 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;#if&#32;SUPPORTED_UNITY</emphasis>
+<anchor xml:id="__player_8cs_source_1l00026"/>00026 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__player_8cs_source_1l00027"/>00027 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;#endif</emphasis>
+<anchor xml:id="__player_8cs_source_1l00028"/>00028 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;#if&#32;SUPPORTED_UNITY&#32;||&#32;NETFX_CORE</emphasis>
+<anchor xml:id="__player_8cs_source_1l00029"/>00029 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;=&#32;ExitGames.Client.Photon.Hashtable;
+<anchor xml:id="__player_8cs_source_1l00030"/>00030 &#32;&#32;&#32;&#32;<emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon_1_1_realtime_1aee53af119f47f74d4224e7b8dcb4ff4b">SupportClass</link>&#32;=&#32;ExitGames.Client.Photon.SupportClass;
+<anchor xml:id="__player_8cs_source_1l00031"/>00031 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;#endif</emphasis>
+<anchor xml:id="__player_8cs_source_1l00032"/>00032 
+<anchor xml:id="__player_8cs_source_1l00033"/>00033 
+<anchor xml:id="__player_8cs_source_1l00040"/><link linkend="_class_photon_1_1_realtime_1_1_player">00040</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>
+<anchor xml:id="__player_8cs_source_1l00041"/>00041 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00045"/>00045 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_room">Room</link>&#32;RoomReference&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__player_8cs_source_1l00046"/>00046 
+<anchor xml:id="__player_8cs_source_1l00047"/>00047 
+<anchor xml:id="__player_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;actorNumber&#32;=&#32;-1;
+<anchor xml:id="__player_8cs_source_1l00050"/>00050 
+<anchor xml:id="__player_8cs_source_1l00053"/><link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">00053</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>
+<anchor xml:id="__player_8cs_source_1l00054"/>00054 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.actorNumber;&#32;}
+<anchor xml:id="__player_8cs_source_1l00056"/>00056 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00057"/>00057 
+<anchor xml:id="__player_8cs_source_1l00058"/>00058 
+<anchor xml:id="__player_8cs_source_1l00060"/><link linkend="_class_photon_1_1_realtime_1_1_player_1aeff26d47f29a2f3ecaae7e4cdae85bff">00060</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;readonly&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1aeff26d47f29a2f3ecaae7e4cdae85bff">IsLocal</link>;
+<anchor xml:id="__player_8cs_source_1l00061"/>00061 
+<anchor xml:id="__player_8cs_source_1l00062"/>00062 
+<anchor xml:id="__player_8cs_source_1l00063"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a9fe7302ad508b4c21422eeeab0460307">00063</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a9fe7302ad508b4c21422eeeab0460307">HasRejoined</link>
+<anchor xml:id="__player_8cs_source_1l00064"/>00064 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00065"/>00065 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">set</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00067"/>00067 
+<anchor xml:id="__player_8cs_source_1l00068"/>00068 
+<anchor xml:id="__player_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;nickName&#32;=&#32;<emphasis role="keywordtype">string</emphasis>.Empty;
+<anchor xml:id="__player_8cs_source_1l00071"/>00071 
+<anchor xml:id="__player_8cs_source_1l00077"/><link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">00077</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">NickName</link>
+<anchor xml:id="__player_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__player_8cs_source_1l00080"/>00080 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.nickName;
+<anchor xml:id="__player_8cs_source_1l00082"/>00082 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">set</emphasis>
+<anchor xml:id="__player_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00085"/>00085 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<emphasis role="keywordtype">string</emphasis>.IsNullOrEmpty(this.nickName)&#32;&amp;&amp;&#32;this.nickName.Equals(value))
+<anchor xml:id="__player_8cs_source_1l00086"/>00086 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00087"/>00087 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00088"/>00088 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00089"/>00089 
+<anchor xml:id="__player_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.nickName&#32;=&#32;value;
+<anchor xml:id="__player_8cs_source_1l00091"/>00091 
+<anchor xml:id="__player_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;update&#32;a&#32;room,&#32;if&#32;we&#32;changed&#32;our&#32;nickName&#32;locally</emphasis>
+<anchor xml:id="__player_8cs_source_1l00093"/>00093 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.IsLocal)
+<anchor xml:id="__player_8cs_source_1l00094"/>00094 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.SetPlayerNameProperty();
+<anchor xml:id="__player_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00098"/>00098 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00099"/>00099 
+<anchor xml:id="__player_8cs_source_1l00102"/><link linkend="_class_photon_1_1_realtime_1_1_player_1ac012a3903d9dfd3e36b9a3d5bdf0d5e1">00102</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1ac012a3903d9dfd3e36b9a3d5bdf0d5e1">UserId</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__player_8cs_source_1l00103"/>00103 
+<anchor xml:id="__player_8cs_source_1l00107"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a650042ff3d147ed8cd559b6258ce238d">00107</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a650042ff3d147ed8cd559b6258ce238d">IsMasterClient</link>
+<anchor xml:id="__player_8cs_source_1l00108"/>00108 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00109"/>00109 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__player_8cs_source_1l00110"/>00110 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00112"/>00112 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00113"/>00113 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00115"/>00115 
+<anchor xml:id="__player_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>&#32;==&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1a56332f997a5d59eae6d21dcbc4751d83">MasterClientId</link>;
+<anchor xml:id="__player_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00118"/>00118 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00119"/>00119 
+<anchor xml:id="__player_8cs_source_1l00126"/><link linkend="_class_photon_1_1_realtime_1_1_player_1acccf96319b4f5998beef8574f3244795">00126</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1acccf96319b4f5998beef8574f3244795">IsInactive</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__player_8cs_source_1l00127"/>00127 
+<anchor xml:id="__player_8cs_source_1l00135"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">00135</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>&#32;{&#32;<emphasis role="keyword">get</emphasis>;&#32;<emphasis role="keyword">set</emphasis>;&#32;}
+<anchor xml:id="__player_8cs_source_1l00136"/>00136 
+<anchor xml:id="__player_8cs_source_1l00139"/><link linkend="_class_photon_1_1_realtime_1_1_player_1af38b93c2d8d8eebbe447b60b8036bf8d">00139</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">object</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1af38b93c2d8d8eebbe447b60b8036bf8d">TagObject</link>;
+<anchor xml:id="__player_8cs_source_1l00140"/>00140 
+<anchor xml:id="__player_8cs_source_1l00141"/>00141 
+<anchor xml:id="__player_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>(<emphasis role="keywordtype">string</emphasis>&#32;nickName,&#32;<emphasis role="keywordtype">int</emphasis>&#32;actorNumber,&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isLocal)&#32;:&#32;this(nickName,&#32;actorNumber,&#32;isLocal,&#32;null)
+<anchor xml:id="__player_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00152"/>00152 
+<anchor xml:id="__player_8cs_source_1l00161"/>00161 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>(<emphasis role="keywordtype">string</emphasis>&#32;nickName,&#32;<emphasis role="keywordtype">int</emphasis>&#32;actorNumber,&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isLocal,&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;playerProperties)
+<anchor xml:id="__player_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.IsLocal&#32;=&#32;isLocal;
+<anchor xml:id="__player_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.actorNumber&#32;=&#32;actorNumber;
+<anchor xml:id="__player_8cs_source_1l00165"/>00165 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">NickName</link>&#32;=&#32;nickName;
+<anchor xml:id="__player_8cs_source_1l00166"/>00166 
+<anchor xml:id="__player_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>();
+<anchor xml:id="__player_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.InternalCacheProperties(playerProperties);
+<anchor xml:id="__player_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00170"/>00170 
+<anchor xml:id="__player_8cs_source_1l00171"/>00171 
+<anchor xml:id="__player_8cs_source_1l00177"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a678ee1c286da04b799c6c6f95972fb4b">00177</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a678ee1c286da04b799c6c6f95972fb4b">Get</link>(<emphasis role="keywordtype">int</emphasis>&#32;<emphasis role="keywordtype">id</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00183"/>00183 
+<anchor xml:id="__player_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1a267b83eaa30e0f7486830dd25e07479c">GetPlayer</link>(<emphasis role="keywordtype">id</emphasis>);
+<anchor xml:id="__player_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00186"/>00186 
+<anchor xml:id="__player_8cs_source_1l00189"/><link linkend="_class_photon_1_1_realtime_1_1_player_1ab5093beeac6de1f78e33908e8b9bc937">00189</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1ab5093beeac6de1f78e33908e8b9bc937">GetNext</link>()
+<anchor xml:id="__player_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1af48b6a3ca70efacd6ff7df6dcc3739c5">GetNextFor</link>(this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>);
+<anchor xml:id="__player_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00193"/>00193 
+<anchor xml:id="__player_8cs_source_1l00198"/><link linkend="_class_photon_1_1_realtime_1_1_player_1af48b6a3ca70efacd6ff7df6dcc3739c5">00198</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1af48b6a3ca70efacd6ff7df6dcc3739c5">GetNextFor</link>(<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;currentPlayer)
+<anchor xml:id="__player_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(currentPlayer&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00203"/>00203 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1af48b6a3ca70efacd6ff7df6dcc3739c5">GetNextFor</link>(currentPlayer.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>);
+<anchor xml:id="__player_8cs_source_1l00205"/>00205 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00206"/>00206 
+<anchor xml:id="__player_8cs_source_1l00211"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a3d5162487f9d313625b214619a1c568f">00211</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a3d5162487f9d313625b214619a1c568f">GetNextFor</link>(<emphasis role="keywordtype">int</emphasis>&#32;currentPlayerId)
+<anchor xml:id="__player_8cs_source_1l00212"/>00212 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;||&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1ad1ed20ddc14c6ec0c9a74aff4eb201fa">Players</link>&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;||&#32;<emphasis role="keyword">this</emphasis>.RoomReference.Players.Count&#32;&lt;&#32;2)
+<anchor xml:id="__player_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00216"/>00216 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00217"/>00217 
+<anchor xml:id="__player_8cs_source_1l00218"/>00218 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Dictionary&lt;int,&#32;Player&gt;&#32;players&#32;=&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1ad1ed20ddc14c6ec0c9a74aff4eb201fa">Players</link>;
+<anchor xml:id="__player_8cs_source_1l00219"/>00219 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;nextHigherId&#32;=&#32;<emphasis role="keywordtype">int</emphasis>.MaxValue;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;we&#32;look&#32;for&#32;the&#32;next&#32;higher&#32;ID</emphasis>
+<anchor xml:id="__player_8cs_source_1l00220"/>00220 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;lowestId&#32;=&#32;currentPlayerId;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;if&#32;we&#32;are&#32;the&#32;player&#32;with&#32;the&#32;highest&#32;ID,&#32;there&#32;is&#32;no&#32;higher&#32;and&#32;we&#32;return&#32;to&#32;the&#32;lowest&#32;player&apos;s&#32;id</emphasis>
+<anchor xml:id="__player_8cs_source_1l00221"/>00221 
+<anchor xml:id="__player_8cs_source_1l00222"/>00222 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">foreach</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;playerid&#32;<emphasis role="keywordflow">in</emphasis>&#32;players.Keys)
+<anchor xml:id="__player_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(playerid&#32;&lt;&#32;lowestId)
+<anchor xml:id="__player_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;lowestId&#32;=&#32;playerid;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;less&#32;than&#32;any&#32;other&#32;ID&#32;(which&#32;must&#32;be&#32;at&#32;least&#32;less&#32;than&#32;this&#32;player&apos;s&#32;id).</emphasis>
+<anchor xml:id="__player_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00228"/>00228 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(playerid&#32;&gt;&#32;currentPlayerId&#32;&amp;&amp;&#32;playerid&#32;&lt;&#32;nextHigherId)
+<anchor xml:id="__player_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;nextHigherId&#32;=&#32;playerid;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;more&#32;than&#32;our&#32;ID&#32;and&#32;less&#32;than&#32;those&#32;found&#32;so&#32;far.</emphasis>
+<anchor xml:id="__player_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00232"/>00232 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00233"/>00233 
+<anchor xml:id="__player_8cs_source_1l00234"/>00234 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//UnityEngine.Debug.LogWarning(&quot;Debug.&#32;&quot;&#32;+&#32;currentPlayerId&#32;+&#32;&quot;&#32;lower:&#32;&quot;&#32;+&#32;lowestId&#32;+&#32;&quot;&#32;higher:&#32;&quot;&#32;+&#32;nextHigherId&#32;+&#32;&quot;&#32;&quot;);</emphasis>
+<anchor xml:id="__player_8cs_source_1l00235"/>00235 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(currentPlayerId));</emphasis>
+<anchor xml:id="__player_8cs_source_1l00236"/>00236 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(lowestId));</emphasis>
+<anchor xml:id="__player_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//if&#32;(nextHigherId&#32;!=&#32;int.MaxValue)&#32;UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(nextHigherId));</emphasis>
+<anchor xml:id="__player_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(nextHigherId&#32;!=&#32;<emphasis role="keywordtype">int</emphasis>.MaxValue)&#32;?&#32;players[nextHigherId]&#32;:&#32;players[lowestId];
+<anchor xml:id="__player_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00240"/>00240 
+<anchor xml:id="__player_8cs_source_1l00241"/>00241 
+<anchor xml:id="__player_8cs_source_1l00247"/>00247 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keyword">virtual</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;InternalCacheProperties(<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;properties)
+<anchor xml:id="__player_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(properties&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;||&#32;properties.Count&#32;==&#32;0&#32;||&#32;<emphasis role="keyword">this</emphasis>.CustomProperties.Equals(properties))
+<anchor xml:id="__player_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00252"/>00252 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00253"/>00253 
+<anchor xml:id="__player_8cs_source_1l00254"/>00254 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(properties.ContainsKey(ActorProperties.PlayerName))
+<anchor xml:id="__player_8cs_source_1l00255"/>00255 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00256"/>00256 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">string</emphasis>&#32;nameInServersProperties&#32;=&#32;(string)properties[ActorProperties.PlayerName];
+<anchor xml:id="__player_8cs_source_1l00257"/>00257 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(nameInServersProperties&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00258"/>00258 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00259"/>00259 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.IsLocal)
+<anchor xml:id="__player_8cs_source_1l00260"/>00260 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00261"/>00261 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;the&#32;local&#32;playername&#32;is&#32;different&#32;than&#32;in&#32;the&#32;properties&#32;coming&#32;from&#32;the&#32;server</emphasis>
+<anchor xml:id="__player_8cs_source_1l00262"/>00262 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;so&#32;the&#32;local&#32;nickName&#32;was&#32;changed&#32;and&#32;the&#32;server&#32;is&#32;outdated&#32;-&gt;&#32;update&#32;server</emphasis>
+<anchor xml:id="__player_8cs_source_1l00263"/>00263 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;update&#32;property&#32;instead&#32;of&#32;using&#32;the&#32;outdated&#32;nickName&#32;coming&#32;from&#32;server</emphasis>
+<anchor xml:id="__player_8cs_source_1l00264"/>00264 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!nameInServersProperties.Equals(<emphasis role="keyword">this</emphasis>.nickName))
+<anchor xml:id="__player_8cs_source_1l00265"/>00265 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00266"/>00266 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.SetPlayerNameProperty();
+<anchor xml:id="__player_8cs_source_1l00267"/>00267 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00268"/>00268 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00269"/>00269 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__player_8cs_source_1l00270"/>00270 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00271"/>00271 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">NickName</link>&#32;=&#32;nameInServersProperties;
+<anchor xml:id="__player_8cs_source_1l00272"/>00272 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00273"/>00273 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00274"/>00274 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00275"/>00275 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(properties.ContainsKey(ActorProperties.UserId))
+<anchor xml:id="__player_8cs_source_1l00276"/>00276 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00277"/>00277 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ac012a3903d9dfd3e36b9a3d5bdf0d5e1">UserId</link>&#32;=&#32;(string)properties[ActorProperties.UserId];
+<anchor xml:id="__player_8cs_source_1l00278"/>00278 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00279"/>00279 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(properties.ContainsKey(ActorProperties.IsInactive))
+<anchor xml:id="__player_8cs_source_1l00280"/>00280 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00281"/>00281 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1acccf96319b4f5998beef8574f3244795">IsInactive</link>&#32;=&#32;(bool)properties[ActorProperties.IsInactive];&#32;<emphasis role="comment">//TURNBASED&#32;new&#32;well-known&#32;propery&#32;for&#32;players</emphasis>
+<anchor xml:id="__player_8cs_source_1l00282"/>00282 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00283"/>00283 
+<anchor xml:id="__player_8cs_source_1l00284"/>00284 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.MergeStringKeys(properties);
+<anchor xml:id="__player_8cs_source_1l00285"/>00285 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.StripKeysWithNullValues();
+<anchor xml:id="__player_8cs_source_1l00286"/>00286 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00287"/>00287 
+<anchor xml:id="__player_8cs_source_1l00288"/>00288 
+<anchor xml:id="__player_8cs_source_1l00292"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a2a55642ca272d649e8e4ea35afc66d6b">00292</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a2a55642ca272d649e8e4ea35afc66d6b">ToString</link>()
+<anchor xml:id="__player_8cs_source_1l00293"/>00293 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00294"/>00294 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(<emphasis role="stringliteral">&quot;#{0:00}&#32;&apos;{1}&apos;&quot;</emphasis>,this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>,&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">NickName</link>);
+<anchor xml:id="__player_8cs_source_1l00295"/>00295 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00296"/>00296 
+<anchor xml:id="__player_8cs_source_1l00304"/><link linkend="_class_photon_1_1_realtime_1_1_player_1adc2ee499bb90ef7ca85999f8f01a6dac">00304</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1adc2ee499bb90ef7ca85999f8f01a6dac">ToStringFull</link>()
+<anchor xml:id="__player_8cs_source_1l00305"/>00305 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00306"/>00306 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(<emphasis role="stringliteral">&quot;#{0:00}&#32;&apos;{1}&apos;{2}&#32;{3}&quot;</emphasis>,&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>,&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1adf7350041e899cf8138dc2c31e2bbb62">NickName</link>,&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1acccf96319b4f5998beef8574f3244795">IsInactive</link>&#32;?&#32;<emphasis role="stringliteral">&quot;&#32;(inactive)&quot;</emphasis>&#32;:&#32;<emphasis role="stringliteral">&quot;&quot;</emphasis>,&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.ToStringFull());
+<anchor xml:id="__player_8cs_source_1l00307"/>00307 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00308"/>00308 
+<anchor xml:id="__player_8cs_source_1l00312"/><link linkend="_class_photon_1_1_realtime_1_1_player_1af5a7ae0f4573b2611cfa0f6babae2fdf">00312</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1af5a7ae0f4573b2611cfa0f6babae2fdf">Equals</link>(<emphasis role="keywordtype">object</emphasis>&#32;p)
+<anchor xml:id="__player_8cs_source_1l00313"/>00313 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00314"/>00314 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>&#32;pp&#32;=&#32;p&#32;as&#32;<link linkend="_class_photon_1_1_realtime_1_1_player">Player</link>;
+<anchor xml:id="__player_8cs_source_1l00315"/>00315 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(pp&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a0914a0d737a4f64aa310eaa94e8f5a6e">GetHashCode</link>()&#32;==&#32;pp.<link linkend="_class_photon_1_1_realtime_1_1_player_1a0914a0d737a4f64aa310eaa94e8f5a6e">GetHashCode</link>());
+<anchor xml:id="__player_8cs_source_1l00316"/>00316 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00317"/>00317 
+<anchor xml:id="__player_8cs_source_1l00321"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a0914a0d737a4f64aa310eaa94e8f5a6e">00321</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a0914a0d737a4f64aa310eaa94e8f5a6e">GetHashCode</link>()
+<anchor xml:id="__player_8cs_source_1l00322"/>00322 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00323"/>00323 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>;
+<anchor xml:id="__player_8cs_source_1l00324"/>00324 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00325"/>00325 
+<anchor xml:id="__player_8cs_source_1l00329"/>00329 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">internal</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;ChangeLocalID(<emphasis role="keywordtype">int</emphasis>&#32;newID)
+<anchor xml:id="__player_8cs_source_1l00330"/>00330 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00331"/>00331 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!this.IsLocal)
+<anchor xml:id="__player_8cs_source_1l00332"/>00332 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00333"/>00333 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//Debug.LogError(&quot;ERROR&#32;You&#32;should&#32;never&#32;change&#32;Player&#32;IDs!&quot;);</emphasis>
+<anchor xml:id="__player_8cs_source_1l00334"/>00334 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00335"/>00335 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00336"/>00336 
+<anchor xml:id="__player_8cs_source_1l00337"/>00337 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.actorNumber&#32;=&#32;newID;
+<anchor xml:id="__player_8cs_source_1l00338"/>00338 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00339"/>00339 
+<anchor xml:id="__player_8cs_source_1l00340"/>00340 
+<anchor xml:id="__player_8cs_source_1l00341"/>00341 
+<anchor xml:id="__player_8cs_source_1l00390"/><link linkend="_class_photon_1_1_realtime_1_1_player_1a73de822cb4ab788e9dce94795566a656">00390</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_class_photon_1_1_realtime_1_1_player_1a73de822cb4ab788e9dce94795566a656">SetCustomProperties</link>(<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;propertiesToSet,&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;expectedValues&#32;=&#32;<emphasis role="keyword">null</emphasis>,&#32;<link linkend="_class_photon_1_1_realtime_1_1_web_flags">WebFlags</link>&#32;webFlags&#32;=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00391"/>00391 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00392"/>00392 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(propertiesToSet&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;||&#32;propertiesToSet.Count&#32;==&#32;0)
+<anchor xml:id="__player_8cs_source_1l00393"/>00393 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00394"/>00394 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00395"/>00395 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00396"/>00396 
+<anchor xml:id="__player_8cs_source_1l00397"/>00397 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;customProps&#32;=&#32;propertiesToSet.StripToStringKeys()&#32;as&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>;
+<anchor xml:id="__player_8cs_source_1l00398"/>00398 
+<anchor xml:id="__player_8cs_source_1l00399"/>00399 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference&#32;!=&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00400"/>00400 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00401"/>00401 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1af0073760bb6821f6bdeb7ff05fa9ea11">IsOffline</link>)
+<anchor xml:id="__player_8cs_source_1l00402"/>00402 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00403"/>00403 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(customProps.Count&#32;==&#32;0)
+<anchor xml:id="__player_8cs_source_1l00404"/>00404 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00405"/>00405 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00406"/>00406 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00407"/>00407 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.Merge(customProps);
+<anchor xml:id="__player_8cs_source_1l00408"/>00408 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.StripKeysWithNullValues();
+<anchor xml:id="__player_8cs_source_1l00409"/>00409 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;invoking&#32;callbacks</emphasis>
+<anchor xml:id="__player_8cs_source_1l00410"/>00410 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1a2738258e04aeed075fbd8ad8e1e9363c">LoadBalancingClient</link>.InRoomCallbackTargets.OnPlayerPropertiesUpdate(<emphasis role="keyword">this</emphasis>,&#32;customProps);
+<anchor xml:id="__player_8cs_source_1l00411"/>00411 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00412"/>00412 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00413"/>00413 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__player_8cs_source_1l00414"/>00414 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00415"/>00415 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;customPropsToCheck&#32;=&#32;expectedValues.StripToStringKeys()&#32;as&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>;
+<anchor xml:id="__player_8cs_source_1l00416"/>00416 
+<anchor xml:id="__player_8cs_source_1l00417"/>00417 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//&#32;send&#32;(sync)&#32;these&#32;new&#32;values&#32;if&#32;in&#32;online&#32;room</emphasis>
+<anchor xml:id="__player_8cs_source_1l00418"/>00418 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1a2738258e04aeed075fbd8ad8e1e9363c">LoadBalancingClient</link>.OpSetPropertiesOfActor(this.actorNumber,&#32;customProps,&#32;customPropsToCheck,&#32;webFlags);
+<anchor xml:id="__player_8cs_source_1l00419"/>00419 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00420"/>00420 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00421"/>00421 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.IsLocal)
+<anchor xml:id="__player_8cs_source_1l00422"/>00422 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00423"/>00423 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(customProps.Count&#32;==&#32;0)
+<anchor xml:id="__player_8cs_source_1l00424"/>00424 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00425"/>00425 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00426"/>00426 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00427"/>00427 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(expectedValues&#32;==&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;webFlags&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__player_8cs_source_1l00428"/>00428 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00429"/>00429 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.Merge(customProps);
+<anchor xml:id="__player_8cs_source_1l00430"/>00430 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.<link linkend="_class_photon_1_1_realtime_1_1_player_1a813cf3bb802339d81c408e022cecaf0f">CustomProperties</link>.StripKeysWithNullValues();
+<anchor xml:id="__player_8cs_source_1l00431"/>00431 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00432"/>00432 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00433"/>00433 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00434"/>00434 
+<anchor xml:id="__player_8cs_source_1l00435"/>00435 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00436"/>00436 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00437"/>00437 
+<anchor xml:id="__player_8cs_source_1l00438"/>00438 
+<anchor xml:id="__player_8cs_source_1l00440"/>00440 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;SetPlayerNameProperty()
+<anchor xml:id="__player_8cs_source_1l00441"/>00441 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00442"/>00442 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(this.RoomReference&#32;!=&#32;<emphasis role="keyword">null</emphasis>&#32;&amp;&amp;&#32;!this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1af0073760bb6821f6bdeb7ff05fa9ea11">IsOffline</link>)
+<anchor xml:id="__player_8cs_source_1l00443"/>00443 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__player_8cs_source_1l00444"/>00444 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>&#32;properties&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="__player_controller_8cs_1afa613ef589c02dbd94acc273b62cdcfd">Hashtable</link>();
+<anchor xml:id="__player_8cs_source_1l00445"/>00445 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;properties[<link linkend="_class_photon_1_1_realtime_1_1_actor_properties">ActorProperties</link>.<link linkend="_class_photon_1_1_realtime_1_1_actor_properties_1ad054fdd60c1cebe161355330c73744b0">PlayerName</link>]&#32;=&#32;this.nickName;
+<anchor xml:id="__player_8cs_source_1l00446"/>00446 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;this.RoomReference.<link linkend="_class_photon_1_1_realtime_1_1_room_1a2738258e04aeed075fbd8ad8e1e9363c">LoadBalancingClient</link>.OpSetPropertiesOfActor(this.<link linkend="_class_photon_1_1_realtime_1_1_player_1ab06642bd6b1e192ed22a48832cd1b28a">ActorNumber</link>,&#32;properties);
+<anchor xml:id="__player_8cs_source_1l00447"/>00447 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00448"/>00448 
+<anchor xml:id="__player_8cs_source_1l00449"/>00449 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__player_8cs_source_1l00450"/>00450 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00451"/>00451 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__player_8cs_source_1l00452"/>00452 }
+</programlisting></section>

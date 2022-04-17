@@ -1,0 +1,162 @@
+\doxysection{Versa\+Mask\+Drawer.\+cs}
+\label{_versa_mask_drawer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/EditorTools/VersaMaskDrawer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/EditorTools/VersaMaskDrawer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [CanEditMultipleObjects]}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }VersaMaskDrawer : PropertyDrawer}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017         \textcolor{keyword}{protected} \textcolor{keyword}{static} GUIContent reuseGC = \textcolor{keyword}{new} GUIContent();}
+\DoxyCodeLine{00018         \textcolor{keyword}{protected} \textcolor{keyword}{abstract} \textcolor{keywordtype}{bool} FirstIsZero \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00019         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} ShowMaskBits \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string}[] GetStringNames(SerializedProperty property)}
+\DoxyCodeLine{00022         \{}
+\DoxyCodeLine{00023             var maskattr = attribute as VersaMaskAttribute;}
+\DoxyCodeLine{00024             \textcolor{keywordflow}{if} (maskattr.castTo != \textcolor{keyword}{null})}
+\DoxyCodeLine{00025                 \textcolor{keywordflow}{return} System.Enum.GetNames(maskattr.castTo);}
+\DoxyCodeLine{00026             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00027                 \textcolor{keywordflow}{return} \textcolor{keyword}{property}.enumDisplayNames;}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{protected} \textcolor{keyword}{const} \textcolor{keywordtype}{float} PAD = 4;}
+\DoxyCodeLine{00031         \textcolor{keyword}{protected} \textcolor{keyword}{const} \textcolor{keywordtype}{float} LINE\_SPACING = 18;}
+\DoxyCodeLine{00032         \textcolor{keyword}{protected} \textcolor{keyword}{const} \textcolor{keywordtype}{float} BOX\_INDENT = 0; \textcolor{comment}{//16 -\/ PAD;}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{protected} \textcolor{keyword}{static} SerializedProperty currentProperty;}
+\DoxyCodeLine{00035         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} maskValue;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             currentProperty = property;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             \textcolor{keywordtype}{bool} usefoldout = UseFoldout(label);}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (usefoldout)}
+\DoxyCodeLine{00044             \{}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046                 \textcolor{keyword}{property}.isExpanded = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin, height = LINE\_SPACING, width = EditorGUIUtility.labelWidth \}, \textcolor{keyword}{property}.isExpanded, (GUIStyle)\textcolor{stringliteral}{"{}Foldout"{}});}
+\DoxyCodeLine{00047             \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             label = EditorGUI.BeginProperty(r, label, property);}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00053             var mask = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}mask"{}});}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (mask == \textcolor{keyword}{null})}
+\DoxyCodeLine{00057                 mask = property;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             maskValue = mask.intValue;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordtype}{int} tempmask;}
+\DoxyCodeLine{00062             Rect br = \textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + BOX\_INDENT \};}
+\DoxyCodeLine{00063             Rect ir = \textcolor{keyword}{new} Rect(br) \{ height = LINE\_SPACING \};}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             Rect labelRect = \textcolor{keyword}{new} Rect(r) \{ xMin = usefoldout ? r.xMin + 14 : r.xMin, height = LINE\_SPACING \};}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             var stringNames = GetStringNames(property);}
+\DoxyCodeLine{00069             var namearray = \textcolor{keyword}{new} \textcolor{keywordtype}{string}[FirstIsZero ? stringNames.Length -\/ 1 : stringNames.Length];}
+\DoxyCodeLine{00070             \textcolor{keywordtype}{int} len = namearray.Length;}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < len; i++)}
+\DoxyCodeLine{00072                 namearray[i] = stringNames[FirstIsZero ? (i + 1) : i];}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (usefoldout \&\& property.isExpanded)}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 tempmask = 0;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(br) \{ yMin = br.yMin + LINE\_SPACING \}, \textcolor{stringliteral}{"{}"{}}, (GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00079                 ir.xMin += PAD;}
+\DoxyCodeLine{00080                 ir.y += PAD;}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082                 \textcolor{keywordtype}{string} drawmask = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < len; ++i)}
+\DoxyCodeLine{00085                 \{}
+\DoxyCodeLine{00086                     ir.y += LINE\_SPACING;}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                     \textcolor{keywordtype}{int} offsetbit = 1 << i;}
+\DoxyCodeLine{00089                     EditorGUI.LabelField(ir, \textcolor{keyword}{new} GUIContent(namearray[i]));}
+\DoxyCodeLine{00090                     \textcolor{keywordflow}{if} (EditorGUI.Toggle(\textcolor{keyword}{new} Rect(ir) \{ xMin = r.xMin \}, \textcolor{stringliteral}{"{} "{}}, ((mask.intValue \& offsetbit) != 0)))}
+\DoxyCodeLine{00091                         \{}
+\DoxyCodeLine{00092                         tempmask |= offsetbit;}
+\DoxyCodeLine{00093                         \textcolor{keywordflow}{if} (ShowMaskBits)}
+\DoxyCodeLine{00094                             drawmask = \textcolor{stringliteral}{"{}1"{}} + drawmask;}
+\DoxyCodeLine{00095                     \}}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (ShowMaskBits)}
+\DoxyCodeLine{00097                         drawmask = \textcolor{stringliteral}{"{}0"{}} + drawmask;}
+\DoxyCodeLine{00098                 \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 reuseGC.text = (ShowMaskBits) ?( \textcolor{stringliteral}{"{}["{}} + drawmask + \textcolor{stringliteral}{"{}]"{}}) : \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00101                 EditorGUI.LabelField(labelRect, label, (GUIStyle)\textcolor{stringliteral}{"{}label"{}});}
+\DoxyCodeLine{00102                 EditorGUI.LabelField(labelRect, \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{} "{}}), reuseGC);}
+\DoxyCodeLine{00103             \}}
+\DoxyCodeLine{00104             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 tempmask = EditorGUI.MaskField(r, usefoldout ? \textcolor{stringliteral}{"{} "{}} : \textcolor{stringliteral}{"{}"{}}, mask.intValue, namearray);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{if} (usefoldout)}
+\DoxyCodeLine{00109                     EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + 14 \}, label, (GUIStyle)\textcolor{stringliteral}{"{}label"{}});}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (tempmask != mask.intValue)}
+\DoxyCodeLine{00113             \{}
+\DoxyCodeLine{00114                 Undo.RecordObject(property.serializedObject.targetObject, \textcolor{stringliteral}{"{}Change Mask Selection"{}});}
+\DoxyCodeLine{00115                 mask.intValue = tempmask;}
+\DoxyCodeLine{00116                 maskValue = tempmask;}
+\DoxyCodeLine{00117                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             EditorGUI.EndProperty();}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} UseFoldout(GUIContent label)}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{return} label.text != \textcolor{keyword}{null} \&\& label.text != \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{comment}{//protected void EnsureHasEnumtype()}}
+\DoxyCodeLine{00129         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00130         \textcolor{comment}{//    /// Set the attribute enum type if it wasn't set by user in attribute arguments.}}
+\DoxyCodeLine{00131         \textcolor{comment}{//    if (attribute == null)}}
+\DoxyCodeLine{00132         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00133         \textcolor{comment}{//        Debug.LogWarning("{}Null Attribute"{});}}
+\DoxyCodeLine{00134         \textcolor{comment}{//        return;}}
+\DoxyCodeLine{00135         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00136         \textcolor{comment}{//    var attr = attribute as VersaMaskAttribute;}}
+\DoxyCodeLine{00137         \textcolor{comment}{//    var type = attr.castTo;}}
+\DoxyCodeLine{00138         \textcolor{comment}{//    if (type == null)}}
+\DoxyCodeLine{00139         \textcolor{comment}{//        attr.castTo = fieldInfo.FieldType;}}
+\DoxyCodeLine{00140         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144             currentProperty = property;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{keywordtype}{bool} expanded = (\textcolor{keyword}{property}.isExpanded \&\& UseFoldout(label));}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (expanded)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 var stringNames = GetStringNames(property);}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{return} LINE\_SPACING * (stringNames.Length + (FirstIsZero ? 0 : 1)) + PAD * 2;}
+\DoxyCodeLine{00152             \}}
+\DoxyCodeLine{00153             \textcolor{keywordflow}{else} }
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{return} base.GetPropertyHeight(property, label);}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156     \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158 \}}
+\DoxyCodeLine{00159 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

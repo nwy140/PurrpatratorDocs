@@ -1,0 +1,324 @@
+\doxysection{Chat\+Peer.\+cs}
+\label{_chat_peer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatPeer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatPeer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <summary>The Photon Chat Api enables clients to connect to a chat server and communicate with other clients.</summary>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <remarks>ChatClient is the main class of this api.</remarks>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <copyright company="{}Exit Games GmbH"{}>Photon Chat Api -\/ Copyright (C) 2014 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Chat}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00021 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{class }ChatPeer : PhotonPeer}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{string} NameServerHost = \textcolor{stringliteral}{"{}ns.photonengine.io"{}};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Dictionary<ConnectionProtocol, int> ProtocolToNameServerPort = \textcolor{keyword}{new} Dictionary<ConnectionProtocol, int>() \{ \{ ConnectionProtocol.Udp, 5058 \}, \{ ConnectionProtocol.Tcp, 4533 \}, \{ ConnectionProtocol.WebSocket, 9093 \}, \{ ConnectionProtocol.WebSocketSecure, 19093 \} \}; \textcolor{comment}{//, \{ ConnectionProtocol.RHttp, 6063 \} \};}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{string} NameServerAddress \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.GetNameServerAddress(); \} \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{virtual} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} IsProtocolSecure \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.UsedProtocol == ConnectionProtocol.WebSocketSecure; \} \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} ChatPeer(IPhotonPeerListener listener, ConnectionProtocol protocol) : base(listener, protocol)}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             this.ConfigUnitySockets();}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{comment}{// Sets up the socket implementations to use, depending on platform}}
+\DoxyCodeLine{00051         [System.Diagnostics.Conditional(\textcolor{stringliteral}{"{}SUPPORTED\_UNITY"{}})]}
+\DoxyCodeLine{00052         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConfigUnitySockets()}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             Type websocketType = \textcolor{keyword}{null};}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{            \#if (UNITY\_XBOXONE || UNITY\_GAMECORE) \&\& !UNITY\_EDITOR}}
+\DoxyCodeLine{00056             websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, Assembly-\/CSharp"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, Assembly-\/CSharp-\/firstpass"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, PhotonRealtime"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065             \textcolor{keywordflow}{if} (websocketType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00066             \{}
+\DoxyCodeLine{00067                 this.SocketImplementationConfig[ConnectionProtocol.Udp] = websocketType;    \textcolor{comment}{// on Xbox, the native socket plugin supports UDP as well}}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00070             \textcolor{comment}{// to support WebGL export in Unity, we find and assign the SocketWebTcp class (if it's in the project).}}
+\DoxyCodeLine{00071             \textcolor{comment}{// alternatively class SocketWebTcp might be in the Photon3Unity3D.dll}}
+\DoxyCodeLine{00072             websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, PhotonWebSocket"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00074             \{}
+\DoxyCodeLine{00075                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, Assembly-\/CSharp-\/firstpass"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, Assembly-\/CSharp"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             \textcolor{keywordflow}{if} (websocketType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00084             \{}
+\DoxyCodeLine{00085                 this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = websocketType;}
+\DoxyCodeLine{00086                 this.SocketImplementationConfig[ConnectionProtocol.WebSocketSecure] = websocketType;}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 \textcolor{preprocessor}{            \#if NET\_4\_6 \&\& (UNITY\_EDITOR || !ENABLE\_IL2CPP) \&\& !NETFX\_CORE}}
+\DoxyCodeLine{00090             this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpAsync);}
+\DoxyCodeLine{00091             this.SocketImplementationConfig[ConnectionProtocol.Tcp] = typeof(SocketTcpAsync);}
+\DoxyCodeLine{00092 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} ushort NameServerPortOverride;}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00103         \textcolor{keyword}{private} \textcolor{keywordtype}{string} GetNameServerAddress()}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             var protocolPort = 0;}
+\DoxyCodeLine{00106             ProtocolToNameServerPort.TryGetValue(this.TransportProtocol, out protocolPort);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (this.NameServerPortOverride != 0)}
+\DoxyCodeLine{00109             \{}
+\DoxyCodeLine{00110                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Using NameServerPortInAppSettings as port for Name Server: \{0\}"{}}, \textcolor{keyword}{this}.NameServerPortOverride));}
+\DoxyCodeLine{00111                 protocolPort = this.NameServerPortOverride;}
+\DoxyCodeLine{00112             \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             \textcolor{keywordflow}{switch} (this.TransportProtocol)}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 \textcolor{keywordflow}{case} ConnectionProtocol.Udp:}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{case} ConnectionProtocol.Tcp:}
+\DoxyCodeLine{00118                     \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}:\{1\}"{}}, NameServerHost, protocolPort);}
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{case} ConnectionProtocol.WebSocket:}
+\DoxyCodeLine{00120                     \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}ws://\{0\}:\{1\}"{}}, NameServerHost, protocolPort);}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{case} ConnectionProtocol.WebSocketSecure:}
+\DoxyCodeLine{00122                     \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}wss://\{0\}:\{1\}"{}}, NameServerHost, protocolPort);}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00124                     \textcolor{keywordflow}{throw} \textcolor{keyword}{new} ArgumentOutOfRangeException();}
+\DoxyCodeLine{00125             \}}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00130         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Connect()}
+\DoxyCodeLine{00131         \{}
+\DoxyCodeLine{00132             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00133             \{}
+\DoxyCodeLine{00134                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}Connecting to nameserver "{}} + \textcolor{keyword}{this}.NameServerAddress);}
+\DoxyCodeLine{00135             \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordflow}{return} this.Connect(this.NameServerAddress, \textcolor{stringliteral}{"{}NameServer"{}});}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AuthenticateOnNameServer(\textcolor{keywordtype}{string} appId, \textcolor{keywordtype}{string} appVersion, \textcolor{keywordtype}{string} region, AuthenticationValues authValues)}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00145             \{}
+\DoxyCodeLine{00146                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpAuthenticate()"{}});}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             var opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             opParameters[ParameterCode.AppVersion] = appVersion;}
+\DoxyCodeLine{00152             opParameters[ParameterCode.ApplicationId] = appId;}
+\DoxyCodeLine{00153             opParameters[ParameterCode.Region] = region;}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.UserId))}
+\DoxyCodeLine{00158                 \{}
+\DoxyCodeLine{00159                     opParameters[ParameterCode.UserId] = authValues.UserId;}
+\DoxyCodeLine{00160                 \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{if} (authValues.AuthType != CustomAuthenticationType.None)}
+\DoxyCodeLine{00163                 \{}
+\DoxyCodeLine{00164                     opParameters[ParameterCode.ClientAuthenticationType] = (byte) authValues.AuthType;}
+\DoxyCodeLine{00165                     if (authValues.Token != \textcolor{keyword}{null})}
+\DoxyCodeLine{00166                     \{}
+\DoxyCodeLine{00167                         opParameters[ParameterCode.Secret] = authValues.Token;}
+\DoxyCodeLine{00168                     \}}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.AuthGetParameters))}
+\DoxyCodeLine{00172                         \{}
+\DoxyCodeLine{00173                             opParameters[ParameterCode.ClientAuthenticationParams] = authValues.AuthGetParameters;}
+\DoxyCodeLine{00174                         \}}
+\DoxyCodeLine{00175                         \textcolor{keywordflow}{if} (authValues.AuthPostData != \textcolor{keyword}{null})}
+\DoxyCodeLine{00176                         \{}
+\DoxyCodeLine{00177                             opParameters[ParameterCode.ClientAuthenticationData] = authValues.AuthPostData;}
+\DoxyCodeLine{00178                         \}}
+\DoxyCodeLine{00179                     \}}
+\DoxyCodeLine{00180                 \}}
+\DoxyCodeLine{00181             \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183             \textcolor{keywordflow}{return} this.SendOperation(ChatOperationCode.Authenticate, opParameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = \textcolor{keyword}{true}, Encrypt = this.IsEncryptionAvailable \});}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185     \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00190     \textcolor{keyword}{public} \textcolor{keyword}{enum} CustomAuthenticationType : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{00191     \{}
+\DoxyCodeLine{00193         Custom = 0,}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00196         Steam = 1,}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00199         Facebook = 2,}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00202         Oculus = 3,}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00205         PlayStation4 = 4,}
+\DoxyCodeLine{00206         [Obsolete(\textcolor{stringliteral}{"{}Use PlayStation4 or PlayStation5 as needed"{}})]}
+\DoxyCodeLine{00207         PlayStation = 4,}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00210         Xbox = 5,}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00213         Viveport = 10,}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00216         NintendoSwitch = 11,}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00219         PlayStation5 = 12,}
+\DoxyCodeLine{00220         [Obsolete(\textcolor{stringliteral}{"{}Use PlayStation4 or PlayStation5 as needed"{}})]}
+\DoxyCodeLine{00221         Playstation5 = 12,}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00224         Epic = 13,}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00227         FacebookGaming = 15,}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00230         None = \textcolor{keywordtype}{byte}.MaxValue}
+\DoxyCodeLine{00231     \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00253     \textcolor{keyword}{public} \textcolor{keyword}{class }AuthenticationValues}
+\DoxyCodeLine{00254     \{}
+\DoxyCodeLine{00256         \textcolor{keyword}{private} CustomAuthenticationType authType = CustomAuthenticationType.None;}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00260         \textcolor{keyword}{public} CustomAuthenticationType AuthType}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} authType; \}}
+\DoxyCodeLine{00263             \textcolor{keyword}{set} \{ authType = value; \}}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AuthGetParameters \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00275         \textcolor{keyword}{public} \textcolor{keywordtype}{object} AuthPostData \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keywordtype}{object} Token \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00283         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00287         \textcolor{keyword}{public} AuthenticationValues()}
+\DoxyCodeLine{00288         \{}
+\DoxyCodeLine{00289         \}}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00293         \textcolor{keyword}{public} AuthenticationValues(\textcolor{keywordtype}{string} userId)}
+\DoxyCodeLine{00294         \{}
+\DoxyCodeLine{00295             this.UserId = userId;}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00301         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(\textcolor{keywordtype}{string} stringData)}
+\DoxyCodeLine{00302         \{}
+\DoxyCodeLine{00303             this.AuthPostData = (\textcolor{keywordtype}{string}.IsNullOrEmpty(stringData)) ? \textcolor{keyword}{null} : stringData;}
+\DoxyCodeLine{00304         \}}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00309         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(\textcolor{keywordtype}{byte}[] byteData)}
+\DoxyCodeLine{00310         \{}
+\DoxyCodeLine{00311             this.AuthPostData = byteData;}
+\DoxyCodeLine{00312         \}}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00317         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(Dictionary<string, object> dictData)}
+\DoxyCodeLine{00318         \{}
+\DoxyCodeLine{00319             this.AuthPostData = dictData;}
+\DoxyCodeLine{00320         \}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00326         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} AddAuthParameter(\textcolor{keywordtype}{string} key, \textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{00327         \{}
+\DoxyCodeLine{00328             \textcolor{keywordtype}{string} ampersand = \textcolor{keywordtype}{string}.IsNullOrEmpty(this.AuthGetParameters) ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{}\&"{}};}
+\DoxyCodeLine{00329             this.AuthGetParameters = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\{1\}\{2\}=\{3\}"{}}, this.AuthGetParameters, ampersand, System.Uri.EscapeDataString(key), System.Uri.EscapeDataString(value));}
+\DoxyCodeLine{00330         \}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00336         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00337         \{}
+\DoxyCodeLine{00338             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}AuthenticationValues Type: \{3\} UserId: \{0\}, GetParameters: \{1\} Token available: \{2\}"{}}, this.UserId, this.AuthGetParameters, this.Token != \textcolor{keyword}{null}, this.AuthType);}
+\DoxyCodeLine{00339         \}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00346         \textcolor{keyword}{public} AuthenticationValues CopyTo(AuthenticationValues copy)}
+\DoxyCodeLine{00347         \{}
+\DoxyCodeLine{00348             copy.AuthType = this.AuthType;}
+\DoxyCodeLine{00349             copy.AuthGetParameters = this.AuthGetParameters;}
+\DoxyCodeLine{00350             copy.AuthPostData = this.AuthPostData;}
+\DoxyCodeLine{00351             copy.UserId = this.UserId;}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{return} copy;}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00354     \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00358     \textcolor{keyword}{public} \textcolor{keyword}{class }ParameterCode}
+\DoxyCodeLine{00359     \{}
+\DoxyCodeLine{00361         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ApplicationId = 224;}
+\DoxyCodeLine{00363         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Secret = 221;}
+\DoxyCodeLine{00365         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AppVersion = 220;}
+\DoxyCodeLine{00367         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationType = 217;}
+\DoxyCodeLine{00369         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationParams = 216;}
+\DoxyCodeLine{00371         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationData = 214;}
+\DoxyCodeLine{00373         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Region = 210;}
+\DoxyCodeLine{00375         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Address = 230;}
+\DoxyCodeLine{00377         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} UserId = 225;}
+\DoxyCodeLine{00378     \}}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00383     \textcolor{keyword}{public} \textcolor{keyword}{class }ErrorCode}
+\DoxyCodeLine{00384     \{}
+\DoxyCodeLine{00386         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} Ok = 0;}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388         \textcolor{comment}{// server -\/ Photon low(er) level: <= 0}}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00397         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} OperationNotAllowedInCurrentState = -\/3;}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00400         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidOperationCode = -\/2;}
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00403         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InternalServerError = -\/1;}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405         \textcolor{comment}{// server -\/ PhotonNetwork: 0x7FFF and down}}
+\DoxyCodeLine{00406         \textcolor{comment}{// logic-\/level error codes start with short.max}}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00409         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidAuthentication = 0x7FFF;}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00412         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameIdAlreadyExists = 0x7FFF -\/ 1;}
+\DoxyCodeLine{00413 }
+\DoxyCodeLine{00415         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameFull = 0x7FFF -\/ 2;}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00418         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameClosed = 0x7FFF -\/ 3;}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00421         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} ServerFull = 0x7FFF -\/ 5;}
+\DoxyCodeLine{00422 }
+\DoxyCodeLine{00424         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} UserBlocked = 0x7FFF -\/ 6;}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00427         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} NoRandomMatchFound = 0x7FFF -\/ 7;}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00430         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameDoesNotExist = 0x7FFF -\/ 9;}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00443         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MaxCcuReached = 0x7FFF -\/ 10;}
+\DoxyCodeLine{00444 }
+\DoxyCodeLine{00454         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidRegion = 0x7FFF -\/ 11;}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00459         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} CustomAuthenticationFailed = 0x7FFF -\/ 12;}
+\DoxyCodeLine{00460 }
+\DoxyCodeLine{00462         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} AuthenticationTicketExpired = 0x7FF1;}
+\DoxyCodeLine{00463     \}}
+\DoxyCodeLine{00464 }
+\DoxyCodeLine{00465 \}}
+
+\end{DoxyCode}

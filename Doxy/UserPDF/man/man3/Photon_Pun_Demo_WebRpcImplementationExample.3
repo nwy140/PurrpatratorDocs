@@ -1,0 +1,113 @@
+.TH "Photon.Pun.Demo.WebRpcImplementationExample" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Pun.Demo.WebRpcImplementationExample \- This class is a sample of how to implement WebRPCs calling & callbacks\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits MonoBehaviour, and \fBPhoton\&.Realtime\&.IWebRpcCallback\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBOnWebRpcResponse\fP (OperationResponse response)"
+.br
+.RI "Called when the response to a WebRPC is available\&. "
+.ti -1c
+.RI "void \fBWebRpcExampleCall\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBWebRpcCall\fP (string methodName, object parameters=null, bool sendAuthCookieIfAny=false)"
+.br
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "const string \fBGetGameListWebRpcMethodName\fP = 'GetGameList'"
+.br
+.RI "example of WebRPC method name, add yours as enum or constants to avoid typos and have them in one place "
+.in -1c
+.SH "Detailed Description"
+.PP 
+This class is a sample of how to implement WebRPCs calling & callbacks\&. 
+
+
+.PP
+Definition at line \fB21\fP of file \fBWebRpcImplementationExample\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Pun\&.Demo\&.WebRpcImplementationExample\&.OnWebRpcResponse (OperationResponse response)"
+
+.PP
+Called when the response to a WebRPC is available\&. See \fBLoadBalancingClient\&.OpWebRpc\fP\&. 
+.PP
+Important: The response\&.ReturnCode is 0 if \fBPhoton\fP was able to reach your web-service\&.
+.br
+ The content of the response is what your web-service sent\&. You can create a WebRpcResponse from it\&.
+.br
+ \fBExample\fP: WebRpcResponse webResponse = new WebRpcResponse(operationResponse);
+.br
+.PP
+Please note: Class OperationResponse is in a namespace which needs to be 'used':
+.br
+ using ExitGames\&.Client\&.Photon; // includes OperationResponse (and other classes) 
+.PP
+public void \fBOnWebRpcResponse(OperationResponse response)\fP { Debug\&.LogFormat('WebRPC operation response {0}', response\&.ToStringFull()); switch (response\&.ReturnCode) { case \fBErrorCode\&.Ok\fP: WebRpcResponse webRpcResponse = new WebRpcResponse(response); Debug\&.LogFormat('Parsed WebRPC response {0}', response\&.ToStringFull()); if (string\&.IsNullOrEmpty(webRpcResponse\&.Name)) { Debug\&.LogError('Unexpected: WebRPC response did not contain WebRPC method name'); } if (webRpcResponse\&.ResultCode == 0) // success { switch (webRpcResponse\&.Name) { // todo: add your code here case GetGameListWebRpcMethodName: // example // \&.\&.\&. break; } } else if (webRpcResponse\&.ResultCode == -1) { Debug\&.LogErrorFormat('Web server did not return ResultCode for WebRPC method=\\'{0}", Message={1}', webRpcResponse\&.Name, webRpcResponse\&.Message);
+           }
+           else
+           {
+               Debug\&.LogErrorFormat('Web server returned ResultCode={0} for WebRPC method="{1}", Message={2}', webRpcResponse\&.ResultCode, webRpcResponse\&.Name, webRpcResponse\&.Message);
+           }
+           break;
+       case ErrorCode\&.ExternalHttpCallFailed: // web service unreachable
+           Debug\&.LogErrorFormat('WebRPC call failed as request could not be sent to the server\&. {0}', response\&.DebugMessage);
+           break;
+       case ErrorCode\&.HttpLimitReached: // too many WebRPCs in a short period of time
+                                        // the debug message should contain the limit exceeded
+          Debug\&.LogErrorFormat('WebRPCs rate limit exceeded: {0}', response\&.DebugMessage);
+           break;
+      case ErrorCode\&.InvalidOperation: // WebRPC not configured at all OR not configured properly OR trying to send on name server
+         if (PhotonNetwork\&.Server == ServerConnection\&.NameServer)
+        {
+            Debug\&.LogErrorFormat('WebRPC not supported on NameServer\&. {0}', response\&.DebugMessage);
+        }
+        else
+        {
+            Debug\&.LogErrorFormat('WebRPC not properly configured or not configured at all\&. {0}', response\&.DebugMessage);
+        }
+        break;
+    default:
+        // other unknown error, unexpected
+        Debug\&.LogErrorFormat('Unexpected error, {0} {1}", response\&.ReturnCode, response\&.DebugMessage); break; } }
+.PP
+Implements \fBPhoton\&.Realtime\&.IWebRpcCallback\fP\&.
+.PP
+Definition at line \fB28\fP of file \fBWebRpcImplementationExample\&.cs\fP\&.
+.SS "static void Photon\&.Pun\&.Demo\&.WebRpcImplementationExample\&.WebRpcCall (string methodName, object parameters = \fCnull\fP, bool sendAuthCookieIfAny = \fCfalse\fP)\fC [static]\fP"
+
+.PP
+Definition at line \fB88\fP of file \fBWebRpcImplementationExample\&.cs\fP\&.
+.SS "void Photon\&.Pun\&.Demo\&.WebRpcImplementationExample\&.WebRpcExampleCall ()"
+
+.PP
+Definition at line \fB83\fP of file \fBWebRpcImplementationExample\&.cs\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "const string Photon\&.Pun\&.Demo\&.WebRpcImplementationExample\&.GetGameListWebRpcMethodName = 'GetGameList'\fC [static]\fP"
+
+.PP
+example of WebRPC method name, add yours as enum or constants to avoid typos and have them in one place 
+.PP
+Definition at line \fB26\fP of file \fBWebRpcImplementationExample\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

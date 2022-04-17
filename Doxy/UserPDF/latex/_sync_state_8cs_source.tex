@@ -1,0 +1,1014 @@
+\doxysection{Sync\+State.\+cs}
+\label{_sync_state_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncState.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncState.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     [DisallowMultipleComponent]}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncState : SyncObject<SyncState.Frame>}
+\DoxyCodeLine{00023         , IMountable}
+\DoxyCodeLine{00024         , IOnCaptureState}
+\DoxyCodeLine{00025         , IOnNetSerialize}
+\DoxyCodeLine{00026         , IOnSnapshot}
+\DoxyCodeLine{00027         \textcolor{comment}{//, IOnCriticallyLateFrame}}
+\DoxyCodeLine{00028         , IReadyable}
+\DoxyCodeLine{00029         , IOnNetObjReady}
+\DoxyCodeLine{00030         , IUseKeyframes}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.STATES; \} \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))] \textcolor{keyword}{public} ObjState initialState = ObjState.Despawned;}
+\DoxyCodeLine{00037         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))] \textcolor{keyword}{public} ObjState respawnState = ObjState.Visible;}
+\DoxyCodeLine{00038         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))] \textcolor{keyword}{public} ObjState readyState = ObjState.Visible;}
+\DoxyCodeLine{00039         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))] \textcolor{keyword}{public} ObjState unreadyState = ObjState.Despawned;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         [Tooltip(\textcolor{stringliteral}{"{}Mount types this NetObject can be attached to."{}})]}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} MountMaskSelector mountableTo;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [Tooltip(\textcolor{stringliteral}{"{}Automatically return this object to its starting position and attach to original parent when ObjState changes from Despawned to any other state."{}})]}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoReset = \textcolor{keyword}{true};}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [Tooltip(\textcolor{stringliteral}{"{}Automatically will request ownership transfer to the owner of NetObjects this becomes attached to."{}})]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoOwnerChange = \textcolor{keyword}{true};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         [Tooltip(\textcolor{stringliteral}{"{}Parent Mount changes will force the entire update from this client to send Reliable. This ensures a keyframe of parenting and position reaches all clients (which isn't certain with packetloss), but can cause a visible hanging if packetloss is present on the network."{}})]}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} mountReliable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         [System.NonSerialized] \textcolor{keyword}{protected} Frame currentState = \textcolor{keyword}{new} Frame();}
+\DoxyCodeLine{00056         [System.NonSerialized] \textcolor{keyword}{protected} Mount currentMount = \textcolor{keyword}{null};}
+\DoxyCodeLine{00057         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} netObjIsReady;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059 \textcolor{preprocessor}{        \#region IMountable Requirements}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} Mount CurrentMount \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} currentMount; \} \textcolor{keyword}{set} \{ currentMount = value; \} \}}
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsThrowable \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsDroppable \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00064         \textcolor{keyword}{public} Rigidbody Rb \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} netObj.Rb; \} \}}
+\DoxyCodeLine{00065         \textcolor{keyword}{public} Rigidbody2D Rb2d \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} netObj.Rb2D; \} \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{comment}{// Cached Values}}
+\DoxyCodeLine{00070         \textcolor{comment}{//protected bool foundExternalISpawnControl;}}
+\DoxyCodeLine{00071         \textcolor{keyword}{protected} MountsManager mountsLookup;}
+\DoxyCodeLine{00072         \textcolor{keyword}{protected} SyncTransform syncTransform;}
+\DoxyCodeLine{00073         \textcolor{keyword}{protected} SyncOwner syncOwner;}
+\DoxyCodeLine{00074         \textcolor{keyword}{protected} ISpawnController iSpawnController;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00079         \textcolor{keyword}{protected} Dictionary<int, int> mountTypeIdToIndex = \textcolor{keyword}{new} Dictionary<int, int>();}
+\DoxyCodeLine{00080         \textcolor{keyword}{protected} \textcolor{keywordtype}{int}[] indexToMountTypeId;}
+\DoxyCodeLine{00081         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} bitsForMountType;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AllowReconstructionOfEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00088         \textcolor{keyword}{protected} StateChangeInfo respawnStateInfo;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         [System.NonSerialized] \textcolor{keyword}{public} List<IOnStateChange> onStateChangeCallbacks = \textcolor{keyword}{new} List<IOnStateChange>();}
+\DoxyCodeLine{00091         [System.NonSerialized] \textcolor{keyword}{public} List<IFlagTeleport> flagTeleportCallbacks = \textcolor{keyword}{new} List<IFlagTeleport>();}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00094         \{}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             \textcolor{keyword}{public} \textcolor{keyword}{enum} Changes \{ None, MountIdChange \}}
+\DoxyCodeLine{00097             \textcolor{keyword}{public} ObjState state;}
+\DoxyCodeLine{00098             \textcolor{comment}{//public bool respawn;}}
+\DoxyCodeLine{00099             \textcolor{keyword}{public} \textcolor{keywordtype}{int}? mountToViewID;}
+\DoxyCodeLine{00100             \textcolor{keyword}{public} \textcolor{keywordtype}{int}? mountTypeId;}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId) \{ \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00109                 Frame src = sourceFrame as Frame;}
+\DoxyCodeLine{00110                 state = src.state;}
+\DoxyCodeLine{00111                 \textcolor{comment}{//respawn = false;}}
+\DoxyCodeLine{00112                 mountToViewID = src.mountToViewID;}
+\DoxyCodeLine{00113                 mountTypeId = src.mountTypeId;}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00117             \{}
+\DoxyCodeLine{00118                 base.Clear();}
+\DoxyCodeLine{00119                 state = 0;}
+\DoxyCodeLine{00120                 mountToViewID = \textcolor{keyword}{null};}
+\DoxyCodeLine{00121                 mountTypeId = \textcolor{keyword}{null};}
+\DoxyCodeLine{00122                 \textcolor{comment}{//respawn = false;}}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare(Frame otherFrame)}
+\DoxyCodeLine{00126             \{}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{if} (\textcolor{comment}{/*respawn != otherFrame.respawn ||*/}}
+\DoxyCodeLine{00128                     state != otherFrame.state ||}
+\DoxyCodeLine{00129                     mountToViewID != otherFrame.mountToViewID ||}
+\DoxyCodeLine{00130                     mountTypeId != otherFrame.mountTypeId)}
+\DoxyCodeLine{00131                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00134             \}}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00140         \{}
+\DoxyCodeLine{00141             base.Reset();}
+\DoxyCodeLine{00142             \_alwaysReady = \textcolor{keyword}{false};}
+\DoxyCodeLine{00143             mountableTo = \textcolor{keyword}{new} MountMaskSelector(\textcolor{keyword}{true});}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             base.OnAwake();}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             iSpawnController = GetComponent<ISpawnController>();}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             syncTransform = GetComponent<SyncTransform>();}
+\DoxyCodeLine{00155             syncOwner = GetComponent<SyncOwner>();}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             transform.GetNestedComponentsInChildren<IOnStateChange, NetObject>(onStateChangeCallbacks);}
+\DoxyCodeLine{00158             transform.GetComponents(flagTeleportCallbacks);}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160             mountsLookup = netObj.GetComponent<MountsManager>();}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00167             ChangeState(\textcolor{keyword}{new} StateChangeInfo(initialState, transform.parent ? transform.parent.GetComponent<Mount>() : \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             base.OnStart();}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             respawnStateInfo = \textcolor{keyword}{new} StateChangeInfo(}
+\DoxyCodeLine{00172                respawnState,}
+\DoxyCodeLine{00173                transform.parent ? transform.parent.GetComponent<Mount>() : \textcolor{keyword}{null},}
+\DoxyCodeLine{00174                transform.localPosition,}
+\DoxyCodeLine{00175                transform.localRotation,}
+\DoxyCodeLine{00176                \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00179             var mountableToCount = (mountableTo.mask).CountTrueBits(out indexToMountTypeId, MountSettings.mountTypeCount);}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             bitsForMountType = mountableToCount.GetBitsForMaxValue();}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < mountableToCount; ++i)}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{if} (mountTypeIdToIndex.ContainsKey(indexToMountTypeId[i]))}
+\DoxyCodeLine{00188                     Debug.LogError(name + \textcolor{stringliteral}{"{} "{}} + photonView.OwnerActorNr + \textcolor{stringliteral}{"{} Mount Key Exists: "{}} + indexToMountTypeId[i] + \textcolor{stringliteral}{"{} i:"{}} + i + \textcolor{stringliteral}{"{} count: "{}} + mountableToCount);}
+\DoxyCodeLine{00189 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191                 mountTypeIdToIndex.Add(indexToMountTypeId[i], i);}
+\DoxyCodeLine{00192             \}}
+\DoxyCodeLine{00193         \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             base.OnJoinedRoom();}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             \textcolor{keywordflow}{if} (iSpawnController != \textcolor{keyword}{null})}
+\DoxyCodeLine{00200                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             \textcolor{comment}{// Intentionally first. NetObj start may want to change this immediately.}}
+\DoxyCodeLine{00203             ChangeState(\textcolor{keyword}{new} StateChangeInfo(initialState, transform.parent ? transform.parent.GetComponent<Mount>() : \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00208         \{}
+\DoxyCodeLine{00209             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00212             stateChangeQueue.Clear();}
+\DoxyCodeLine{00214             prevSerializedFrame = \textcolor{keyword}{null};}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnNetObjReadyChange(\textcolor{keywordtype}{bool} ready)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             \textcolor{comment}{//Debug.Log(name + "{} "{} + photonView.OwnerActorNr + "{} <color=purple>OnNetObjReadyChange</color> "{} + ready);}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             netObjIsReady = ready;}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (IsMine \&\& iSpawnController != \textcolor{keyword}{null} \&\& !iSpawnController.AllowNetObjectReadyCallback(ready))}
+\DoxyCodeLine{00227             \{}
+\DoxyCodeLine{00228                 \textcolor{comment}{//Debug.Log(name + "{} Supressing NetObjReady, object still counting down to respawn"{});}}
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00230             \}}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232             \textcolor{keywordflow}{if} (ready)}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 \textcolor{comment}{//if (!photonView.IsMine)}}
+\DoxyCodeLine{00235                 \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} <color><b>Ready</b></color> "{} + readyState + "{} currState: "{} + currentState.state +}}
+\DoxyCodeLine{00236                 \textcolor{comment}{//                "{} par: "{} + currentMount + "{} tr: "{} + transform.position + "{} rb: "{} + Rb.position);}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00239                 \textcolor{comment}{//if (currentState.state == unreadyState)}}
+\DoxyCodeLine{00240                 ChangeState(\textcolor{keyword}{new} StateChangeInfo(readyState, currentMount, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00241                 \textcolor{comment}{//ChangeState(new StateChangeInfo(currentState.state | ObjState.Visible, currentMount, false, true));}}
+\DoxyCodeLine{00242             \}}
+\DoxyCodeLine{00243             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00244             \{}
+\DoxyCodeLine{00245                 \textcolor{comment}{//if (!photonView.IsMine)}}
+\DoxyCodeLine{00246                 \textcolor{comment}{//    Debug.Log(name + "{} <b>UnReady</b> "{} + readyState + "{} currState: "{} + currentState.state);}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248                 ChangeState(\textcolor{keyword}{new} StateChangeInfo(unreadyState, currentMount, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00249                 \textcolor{comment}{//ChangeState(new StateChangeInfo(currentState.state \& \string~ObjState.Visible, currentMount, false, true));}}
+\DoxyCodeLine{00250             \}}
+\DoxyCodeLine{00251         \}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253 \textcolor{preprocessor}{        \#region State Change Shortcuts}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{comment}{//public void Attach(Mount mount)}}
+\DoxyCodeLine{00256         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00257         \textcolor{comment}{//  /// Keep the current visibile state, change all others to just Attached}}
+\DoxyCodeLine{00258         \textcolor{comment}{//  var currentVisibleFlag = (currentState.state \& ObjState.Visible);}}
+\DoxyCodeLine{00259         \textcolor{comment}{//  //Debug.Log(name + "{}<b> QUE Attach </b>"{});}}
+\DoxyCodeLine{00260         \textcolor{comment}{//  stateChangeQueue.Enqueue(new StateChangeInfo(currentVisibleFlag | ObjState.Attached, mount, true));}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SoftMount(Mount attachTo)}
+\DoxyCodeLine{00267         \{}
+\DoxyCodeLine{00268             \textcolor{keyword}{const} ObjState MOUNT\_ADD\_FLAGS = ObjState.Mounted;}
+\DoxyCodeLine{00269             \textcolor{keyword}{const} ObjState MOUNT\_REM\_FLAGS = ObjState.Dropped | ObjState.Transit;}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271             ObjState newstate = attachTo ? (currentState.state \& \string~MOUNT\_REM\_FLAGS) | MOUNT\_ADD\_FLAGS : currentState.state \& \string~MOUNT\_ADD\_FLAGS;}
+\DoxyCodeLine{00272             \textcolor{comment}{//QueueStateChange(newstate, attachTo, false);}}
+\DoxyCodeLine{00273             ChangeState(\textcolor{keyword}{new} StateChangeInfo(newstate, attachTo, \textcolor{keyword}{false}));}
+\DoxyCodeLine{00274         \}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00280         \textcolor{keyword}{public} \textcolor{keywordtype}{void} HardMount(Mount mountTo)}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keyword}{const} ObjState MOUNT\_ADD\_FLAGS = ObjState.Mounted | ObjState.Anchored;}
+\DoxyCodeLine{00283             \textcolor{keyword}{const} ObjState MOUNT\_REM\_FLAGS = ObjState.Dropped | ObjState.Transit;}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285             ObjState newstate = mountTo ? (currentState.state \& \string~MOUNT\_REM\_FLAGS) | MOUNT\_ADD\_FLAGS : currentState.state \& \string~MOUNT\_ADD\_FLAGS;}
+\DoxyCodeLine{00286             \textcolor{comment}{//QueueStateChange(newstate, mountTo, false);}}
+\DoxyCodeLine{00287             ChangeState(\textcolor{keyword}{new} StateChangeInfo(newstate, mountTo, \textcolor{keyword}{false}));}
+\DoxyCodeLine{00288         \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Spawn()}
+\DoxyCodeLine{00292         \{}
+\DoxyCodeLine{00293             \textcolor{comment}{// Not Implemented... put a generic just works Spawn call here for making an Object pop back to life where it originated}}
+\DoxyCodeLine{00294         \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Respawn(\textcolor{keywordtype}{bool} immediate)}
+\DoxyCodeLine{00297         \{}
+\DoxyCodeLine{00298             \textcolor{comment}{//Debug.LogError(Time.time + "{} Respawn "{} + immediate);}}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300             \textcolor{comment}{//Debug.Log(Time.time + "{} "{} + name + "{}<b> QUE Respawn </b> curr state = "{} + currentState.state);}}
+\DoxyCodeLine{00301             \textcolor{keywordflow}{if} (immediate)}
+\DoxyCodeLine{00302                 ChangeState(respawnStateInfo);}
+\DoxyCodeLine{00303             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00304                 stateChangeQueue.Enqueue(respawnStateInfo);}
+\DoxyCodeLine{00305         \}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Despawn(\textcolor{keywordtype}{bool} immediate)}
+\DoxyCodeLine{00308         \{}
+\DoxyCodeLine{00309             \textcolor{comment}{//Debug.LogError(Time.time + "{} Despawn "{} + immediate);}}
+\DoxyCodeLine{00310             \textcolor{keywordflow}{if} (immediate)}
+\DoxyCodeLine{00311                 ChangeState(\textcolor{keyword}{new} StateChangeInfo(ObjState.Despawned, \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00313                 stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(ObjState.Despawned, \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00314         \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00320         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ImmediateUnmount()}
+\DoxyCodeLine{00321         \{}
+\DoxyCodeLine{00322             \textcolor{comment}{//Debug.Log(name + "{}<b> IMMEDIATE UNMOUNT </b>"{});}}
+\DoxyCodeLine{00323             stateChangeQueue.Clear();}
+\DoxyCodeLine{00324             ChangeState(\textcolor{keyword}{new} StateChangeInfo(ObjState.Visible | ObjState.Transit | ObjState.Dropped, \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00325         \}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Drop(Mount newMount, \textcolor{keywordtype}{bool} force = \textcolor{keyword}{false})}
+\DoxyCodeLine{00328         \{}
+\DoxyCodeLine{00329             \textcolor{keyword}{const} ObjState state = ObjState.Visible | ObjState.Dropped;}
+\DoxyCodeLine{00330             stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(state, newMount, force));}
+\DoxyCodeLine{00331         \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Throw(Vector3 position, Quaternion rotation, Vector3 velocity)}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             \textcolor{keyword}{const} ObjState state = ObjState.Visible | ObjState.Dropped | ObjState.Transit;}
+\DoxyCodeLine{00336             stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(state, \textcolor{keyword}{null}, position, rotation, velocity, \textcolor{keyword}{false}));}
+\DoxyCodeLine{00337         \}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ThrowLocal(Transform origin, Vector3 offset, Vector3 velocity)}
+\DoxyCodeLine{00340         \{}
+\DoxyCodeLine{00341             \textcolor{keyword}{const} ObjState state = ObjState.Visible | ObjState.Dropped | ObjState.Transit;}
+\DoxyCodeLine{00342             stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(state, \textcolor{keyword}{null}, origin.TransformPoint(offset), origin.TransformPoint(velocity), \textcolor{keyword}{false}));}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348         \textcolor{keyword}{protected} Queue<StateChangeInfo> stateChangeQueue = \textcolor{keyword}{new} Queue<StateChangeInfo>();}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350         \textcolor{comment}{//bool teleportNeeded = false;}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} QueueStateChange(ObjState newState, Mount newMount, \textcolor{keywordtype}{bool} force)}
+\DoxyCodeLine{00353         \{}
+\DoxyCodeLine{00354             \textcolor{comment}{//if (IsMine)}}
+\DoxyCodeLine{00355             \textcolor{comment}{//  Debug.Log(Time.time + "{} "{} + name + "{}<b> QUE STATE </b>"{} + newState);}}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357             stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(newState, newMount, \textcolor{keyword}{null}, \textcolor{keyword}{null}, force));}
+\DoxyCodeLine{00358         \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} QueueStateChange(ObjState newState, Mount newMount, Vector3 offset, Vector3 velocity, \textcolor{keywordtype}{bool} force)}
+\DoxyCodeLine{00361         \{}
+\DoxyCodeLine{00362             \textcolor{comment}{//if (IsMine)}}
+\DoxyCodeLine{00363             \textcolor{comment}{//  Debug.Log(Time.time + "{} "{} + name + "{}<b> QUE STATE </b>"{} + newState);}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365             stateChangeQueue.Enqueue(\textcolor{keyword}{new} StateChangeInfo(newState, newMount, offset, velocity, force));}
+\DoxyCodeLine{00366         \}}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DequeueStateChanges()}
+\DoxyCodeLine{00369         \{}
+\DoxyCodeLine{00370             \textcolor{comment}{//int newOwnerId = -\/1;}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00372             \textcolor{keywordflow}{while} (stateChangeQueue.Count > 0)}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374                 var stateChangeInfo = stateChangeQueue.Dequeue();}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376                 \textcolor{comment}{/*newOwnerId = */}}
+\DoxyCodeLine{00377                 ChangeState(stateChangeInfo);}
+\DoxyCodeLine{00378             \}}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00381             \textcolor{comment}{//if (autoOwnerChange \&\& newOwnerId != -\/1)}}
+\DoxyCodeLine{00382             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00383             \textcolor{comment}{//  Debug.LogError("{}DISABLED"{});}}
+\DoxyCodeLine{00384             \textcolor{comment}{//  pv.TransferOwnership(newOwnerId);}}
+\DoxyCodeLine{00385             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00386         \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00393         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ChangeState(StateChangeInfo stateChangeInfo)}
+\DoxyCodeLine{00394         \{}
+\DoxyCodeLine{00395             \textcolor{keywordflow}{if} (!gameObject)}
+\DoxyCodeLine{00396             \{}
+\DoxyCodeLine{00397                 Debug.LogWarning(name + \textcolor{stringliteral}{"{} has been destroyed. Will not try to change state."{}});}
+\DoxyCodeLine{00398                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00399             \}}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401             \textcolor{comment}{//if (photonView.IsMine \&\& iSpawnController != null \&\& iSpawnController.SupressStateMask != \string~ObjState.Despawned)}}
+\DoxyCodeLine{00402             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00403             \textcolor{comment}{//    Debug.Log("{}<color=red>Suppressing State change due to spawn timer</color>"{});}}
+\DoxyCodeLine{00404             \textcolor{comment}{//    stateChangeInfo.objState \&= iSpawnController.SupressStateMask;}}
+\DoxyCodeLine{00405             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00406 }
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00409             \textcolor{comment}{//    Debug.LogError(Time.time + "{} "{} + name + "{} <b>ChangeState "{} + stateChangeInfo + "{}</b> par: "{} + currentMount + "{} tr: "{} + transform.position + "{} rb: "{} + Rb.position);}}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411             var oldState = currentState.state;}
+\DoxyCodeLine{00412             var oldMount = currentMount;}
+\DoxyCodeLine{00413             var newState = stateChangeInfo.objState;}
+\DoxyCodeLine{00414             var newMount = stateChangeInfo.mount;}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00416             \textcolor{keywordtype}{bool} respawn;}
+\DoxyCodeLine{00418             \textcolor{keywordflow}{if} (autoReset \&\& oldState == ObjState.Despawned \&\& newState != ObjState.Despawned \&\& (newState \& ObjState.Anchored) == 0)}
+\DoxyCodeLine{00419             \{}
+\DoxyCodeLine{00420                 stateChangeInfo = \textcolor{keyword}{new} StateChangeInfo(respawnStateInfo) \{ objState = stateChangeInfo.objState \};}
+\DoxyCodeLine{00421                 respawn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00422             \}}
+\DoxyCodeLine{00423             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00424                 respawn = \textcolor{keyword}{false};}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00426             var force = stateChangeInfo.force;}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428             \textcolor{keywordtype}{bool} stateChanged = newState != oldState;}
+\DoxyCodeLine{00429             \textcolor{keywordtype}{bool} mountChanged = oldMount != newMount;}
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00431             var prevParent = transform.parent;}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{if} (!force \&\& !stateChanged \&\& !mountChanged)}
+\DoxyCodeLine{00436             \{}
+\DoxyCodeLine{00437                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00438                 \textcolor{comment}{//    Debug.LogError("{}NO CHANGE"{});}}
+\DoxyCodeLine{00439                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00440             \}}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00443             currentState.state = newState;}
+\DoxyCodeLine{00444             var prevMount = currentMount;}
+\DoxyCodeLine{00445             currentMount = newMount;}
+\DoxyCodeLine{00446 }
+\DoxyCodeLine{00447             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00448             \textcolor{comment}{//    Debug.LogError("{}<b>ChangeState </b>"{} + currentState + "{} par: "{} + currentMount);}}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450             \textcolor{keywordtype}{bool} nowMounted = (newState \& ObjState.Mounted) != 0;}
+\DoxyCodeLine{00451             \textcolor{keywordtype}{bool} mountInfoWasCulled = nowMounted \&\& ReferenceEquals(newMount, \textcolor{keyword}{null});}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453             \textcolor{comment}{// TODO: Might not be needed.}}
+\DoxyCodeLine{00455 \textcolor{comment}{}            \textcolor{keywordflow}{if} (nowMounted \&\& !mountInfoWasCulled \&\& newMount == \textcolor{keyword}{null})}
+\DoxyCodeLine{00456             \{}
+\DoxyCodeLine{00457                 Debug.LogError(\textcolor{stringliteral}{"{}Invalid Mount!"{}});}
+\DoxyCodeLine{00458                 InvalidMountHandler(newState, newMount, force);}
+\DoxyCodeLine{00459                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00460             \}}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00463                 \textcolor{keywordflow}{if} (mountChanged || respawn)}
+\DoxyCodeLine{00464                 \{}
+\DoxyCodeLine{00465                     \textcolor{comment}{//Debug.LogError("{}TELEPORT"{});}}
+\DoxyCodeLine{00466                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < flagTeleportCallbacks.Count; ++i)}
+\DoxyCodeLine{00467                         flagTeleportCallbacks[i].FlagTeleport();}
+\DoxyCodeLine{00468                 \}}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00471             \textcolor{comment}{/*else*/}}
+\DoxyCodeLine{00472             \textcolor{keywordflow}{if} (mountChanged)}
+\DoxyCodeLine{00473             \{}
+\DoxyCodeLine{00475                 \textcolor{comment}{// If Attached bit is true}}
+\DoxyCodeLine{00476                 \textcolor{keywordflow}{if} (nowMounted)}
+\DoxyCodeLine{00477                 \{}
+\DoxyCodeLine{00478 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00479                     \textcolor{comment}{//if (GetComponent<SyncPickup>() /*\&\& newState == (ObjState)(15)*/)}}
+\DoxyCodeLine{00480                     \textcolor{comment}{//    Debug.LogError(Time.time + "{} "{} + name + "{} "{} + newState + "{} ATTACH "{} + newMount.name + "{} "{});}}
+\DoxyCodeLine{00481 }
+\DoxyCodeLine{00482                     currentState.mountToViewID = newMount.ViewID;}
+\DoxyCodeLine{00483                     currentState.mountTypeId = newMount.mountType.id;}
+\DoxyCodeLine{00484 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00485                     transform.parent = newMount.transform;}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487                     \textcolor{comment}{// If anchor bit is true}}
+\DoxyCodeLine{00488                     \textcolor{keywordflow}{if} ((newState \& ObjState.AnchoredPosition) != 0)}
+\DoxyCodeLine{00489                     \{}
+\DoxyCodeLine{00490                         transform.localPosition = \textcolor{keyword}{new} Vector3();}
+\DoxyCodeLine{00491                         \textcolor{comment}{//Debug.LogError("{}<b>Anchor Pos</b> "{} + transform.parent.name + "{} "{} + transform.localPosition);}}
+\DoxyCodeLine{00492                     \}}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494                     \textcolor{comment}{// If anchor bit is true}}
+\DoxyCodeLine{00495                     \textcolor{keywordflow}{if} ((newState \& ObjState.AnchoredRotation) != 0)}
+\DoxyCodeLine{00496                     \{}
+\DoxyCodeLine{00497                         transform.localRotation = \textcolor{keyword}{new} Quaternion();}
+\DoxyCodeLine{00498                         \textcolor{comment}{//Debug.Log("{}<b>Anchor Rot</b>"{});}}
+\DoxyCodeLine{00499                     \}}
+\DoxyCodeLine{00500                 \}}
+\DoxyCodeLine{00501 }
+\DoxyCodeLine{00503                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00504                 \{}
+\DoxyCodeLine{00505                     \textcolor{comment}{//if (GetComponent<SyncPickup>() /*\&\& newState == (ObjState)(15)*/)}}
+\DoxyCodeLine{00506                     \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} "{} + newState + "{} DETTACH "{} + (newMount ? newMount.name : "{} null"{}));}}
+\DoxyCodeLine{00507 }
+\DoxyCodeLine{00508                     currentState.mountToViewID = \textcolor{keyword}{null};}
+\DoxyCodeLine{00509                     currentState.mountTypeId = \textcolor{keyword}{null};}
+\DoxyCodeLine{00510                     transform.parent = \textcolor{keyword}{null};}
+\DoxyCodeLine{00511                 \}}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513                 \textcolor{comment}{// TODO: Add handling for dismounting returning ownership to scene?}}
+\DoxyCodeLine{00514                 \textcolor{comment}{// Ownership changes are deferred, to let the current tick finish processing before changing Owner/Controller.}}
+\DoxyCodeLine{00515                 \textcolor{keywordflow}{if} (autoOwnerChange \&\& newMount \&\& !ReferenceEquals(oldMount, newMount))}
+\DoxyCodeLine{00516                 \{}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518                     ChangeOwnerToParentMountsOwner();}
+\DoxyCodeLine{00519 }
+\DoxyCodeLine{00520                 \}}
+\DoxyCodeLine{00521                 Mount.ChangeMounting(\textcolor{keyword}{this}, prevMount, newMount);}
+\DoxyCodeLine{00522             \}}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524             var pos = stateChangeInfo.offsetPos;}
+\DoxyCodeLine{00525             var rot = stateChangeInfo.offsetRot;}
+\DoxyCodeLine{00526             var vel = stateChangeInfo.velocity;}
+\DoxyCodeLine{00527 }
+\DoxyCodeLine{00528             \textcolor{keywordflow}{if} (rot.HasValue)}
+\DoxyCodeLine{00529             \{}
+\DoxyCodeLine{00530                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00531                 \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} STATE ROT APPLY "{} + rot.Value);}}
+\DoxyCodeLine{00532 }
+\DoxyCodeLine{00533                 transform.rotation = rot.Value;}
+\DoxyCodeLine{00534             \}}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536             \textcolor{comment}{// TODO: Move pos/rot handling to virtual method}}
+\DoxyCodeLine{00537             \textcolor{keywordflow}{if} (pos.HasValue)}
+\DoxyCodeLine{00538             \{}
+\DoxyCodeLine{00539                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00540                 \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} STATE POS APPLY "{} + pos.Value);}}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542                 transform.position = pos.Value;}
+\DoxyCodeLine{00543 }
+\DoxyCodeLine{00544             \}}
+\DoxyCodeLine{00545 }
+\DoxyCodeLine{00546             \textcolor{keywordflow}{if} (vel.HasValue)}
+\DoxyCodeLine{00547             \{}
+\DoxyCodeLine{00548 }
+\DoxyCodeLine{00549                 var rb = netObj.Rb;}
+\DoxyCodeLine{00550                 \textcolor{keywordflow}{if} (rb)}
+\DoxyCodeLine{00551                 \{}
+\DoxyCodeLine{00552                     rb.velocity = vel.Value;}
+\DoxyCodeLine{00553                 \}}
+\DoxyCodeLine{00554                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00555                 \{}
+\DoxyCodeLine{00556                     var rb2d = netObj.Rb2D;}
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558                     \textcolor{keywordflow}{if} (rb2d)}
+\DoxyCodeLine{00559                     \{}
+\DoxyCodeLine{00560 }
+\DoxyCodeLine{00561                         rb2d.velocity = vel.Value;}
+\DoxyCodeLine{00562                     \}}
+\DoxyCodeLine{00563                 \}}
+\DoxyCodeLine{00564             \}}
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00567             \textcolor{comment}{//this.ApplyVectors(stateChangeInfo, prevParent, onTeleportCallbacks);}}
+\DoxyCodeLine{00568 }
+\DoxyCodeLine{00569             \textcolor{comment}{//Debug.Log(Time.time + "{} "{} + stateChangeInfo + "{} mountisactive? "{} + (currentMount ? currentMount.isActiveAndEnabled.ToString() : "{}null"{}));}}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00571             \textcolor{keywordflow}{if} (mountChanged || stateChanged || force)}
+\DoxyCodeLine{00572             \{}
+\DoxyCodeLine{00573                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00574                 \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name +  "{} "{} + photonView.OwnerActorNr + "{} <b>NEW STATE: "{} + newState + "{}</b> ready? "{} + netObj.AllObjsAreReady);}}
+\DoxyCodeLine{00575 }
+\DoxyCodeLine{00577                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < onStateChangeCallbacks.Count; ++i)}
+\DoxyCodeLine{00578                     onStateChangeCallbacks[i].OnStateChange(newState, oldState, transform, currentMount, netObjIsReady);}
+\DoxyCodeLine{00579             \}}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581         \}}
+\DoxyCodeLine{00582 }
+\DoxyCodeLine{00583         \textcolor{comment}{//        private void TransferToMountOwner(Mount mount)}}
+\DoxyCodeLine{00584         \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00585         \textcolor{comment}{//\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00586 }
+\DoxyCodeLine{00587 }
+\DoxyCodeLine{00588         \textcolor{comment}{//            //Debug.LogWarning(Time.time + name + "{} <b>TransferToMountOwner</b> "{} + mountPV.IsMine + "{} "{} + pv.OwnerActorNr + "{} "{} + mountOwnerId);}}
+\DoxyCodeLine{00589 }
+\DoxyCodeLine{00590         \textcolor{comment}{//            //if (mountPV.IsMine \&\& photonView.OwnerActorNr != mountOwnerId)}}
+\DoxyCodeLine{00591         \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00592         \textcolor{comment}{//                //var ownershipTransfer = photonView.OwnershipTransfer;}}
+\DoxyCodeLine{00593         \textcolor{comment}{//                //if (ownershipTransfer == Photon.Pun.OwnershipOption.Takeover || (ownershipTransfer == Photon.Pun.OwnershipOption.Request \&\& photonView.IsMine))}}
+\DoxyCodeLine{00594         \textcolor{comment}{//                //\{}}
+\DoxyCodeLine{00595         \textcolor{comment}{//                //    photonView.TransferOwnership(mountOwnerId);}}
+\DoxyCodeLine{00596 }
+\DoxyCodeLine{00597         \textcolor{comment}{//                //\}}}
+\DoxyCodeLine{00598 }
+\DoxyCodeLine{00599         \textcolor{comment}{//                // TEST: Locally set ownership on apply rather than waiting for Pun2 to do it}}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601         \textcolor{comment}{//                // Ownership changes are deferred, to let the current tick finish processing before changing Owner/Controller.}}
+\DoxyCodeLine{00602         \textcolor{comment}{//                NetMasterCallbacks.onPostSimulationActions.Enqueue(ChangeOwnerToParentMountsOwner);}}
+\DoxyCodeLine{00603         \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00604         \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00605         \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00610         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ChangeOwnerToParentMountsOwner()}
+\DoxyCodeLine{00611         \{}
+\DoxyCodeLine{00612             \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00613                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615             \textcolor{keywordflow}{if} (!syncOwner)}
+\DoxyCodeLine{00616             \{}
+\DoxyCodeLine{00617                 Debug.LogWarning(name + \textcolor{stringliteral}{"{} cannot automatically change owner without a "{}} + typeof(SyncOwner).Name + \textcolor{stringliteral}{"{} component."{}});}
+\DoxyCodeLine{00618                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00619             \}}
+\DoxyCodeLine{00620 }
+\DoxyCodeLine{00621             \textcolor{comment}{// We are only changing ownership if there is a mount. }}
+\DoxyCodeLine{00622             \textcolor{comment}{// This null test is for the edge case of throwing at the same time as colliding with another players object creates a race condition and the owner ends up being null/0}}
+\DoxyCodeLine{00623             \textcolor{keywordflow}{if} (currentMount == \textcolor{keyword}{null})}
+\DoxyCodeLine{00624                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626             PhotonView mountView = currentMount.PhotonView;}
+\DoxyCodeLine{00627 }
+\DoxyCodeLine{00628             \textcolor{comment}{//Debug.LogError(Time.time + "{} DEFERRED New Owner "{} + (mountView ? mountView.name + "{}:"{} + mountView.Owner.ToString() : "{}null"{}));}}
+\DoxyCodeLine{00629 }
+\DoxyCodeLine{00630             \textcolor{keywordflow}{if} (mountView)}
+\DoxyCodeLine{00631             \{}
+\DoxyCodeLine{00632                 Realtime.Player pendingOwner = mountView.Owner;}
+\DoxyCodeLine{00633                 \textcolor{keywordtype}{int} pendingOwnerId = pendingOwner == \textcolor{keyword}{null} ? 0 : pendingOwner.ActorNumber;}
+\DoxyCodeLine{00634 }
+\DoxyCodeLine{00635                 \textcolor{comment}{//photonView.SetOwnerInternal(pendingOwner, pendingOwnerId);}}
+\DoxyCodeLine{00636                 \textcolor{keywordflow}{if} (this.autoOwnerChange)}
+\DoxyCodeLine{00637                     this.syncOwner.TransferOwner(pendingOwnerId);}
+\DoxyCodeLine{00638             \}}
+\DoxyCodeLine{00639             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00640             \{}
+\DoxyCodeLine{00641                 \textcolor{comment}{//photonView.SetOwnerInternal(null, 0);}}
+\DoxyCodeLine{00642                 \textcolor{keywordflow}{if} (this.autoOwnerChange)}
+\DoxyCodeLine{00643                     GetComponent<SyncOwner>().TransferOwner(0);}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00645             \}}
+\DoxyCodeLine{00646 }
+\DoxyCodeLine{00647             \textcolor{comment}{// TEST invalidate all netobj buffers on ownership change}}
+\DoxyCodeLine{00648             \textcolor{comment}{//netObj.frameValidMask.SetAllFalse();}}
+\DoxyCodeLine{00649         \}}
+\DoxyCodeLine{00650 }
+\DoxyCodeLine{00654         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} InvalidMountHandler(ObjState newState, Mount newMount, \textcolor{keywordtype}{bool} force)}
+\DoxyCodeLine{00655         \{}
+\DoxyCodeLine{00656             Debug.LogWarning(\textcolor{stringliteral}{"{}Invalid Mount Handled!!"{}});}
+\DoxyCodeLine{00657             ChangeState(\textcolor{keyword}{new} StateChangeInfo(ObjState.Visible, \textcolor{keyword}{null}, \textcolor{keyword}{true}));}
+\DoxyCodeLine{00658         \}}
+\DoxyCodeLine{00659 }
+\DoxyCodeLine{00664         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} ChangeMount(\textcolor{keywordtype}{int} newMountId)}
+\DoxyCodeLine{00665         \{}
+\DoxyCodeLine{00666             \textcolor{keywordflow}{if} (ReferenceEquals(currentMount, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00667             \{}
+\DoxyCodeLine{00668                 Debug.LogWarning(\textcolor{stringliteral}{"{}'"{}} + name + \textcolor{stringliteral}{"{}' is not currently mounted, so we cannot change to a different mount."{}});}
+\DoxyCodeLine{00669                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00670             \}}
+\DoxyCodeLine{00671 }
+\DoxyCodeLine{00672             \textcolor{keywordflow}{if} ((mountableTo \& (1 << newMountId)) == 0)}
+\DoxyCodeLine{00673             \{}
+\DoxyCodeLine{00674                 Debug.LogWarning(\textcolor{stringliteral}{"{}'"{}} + name + \textcolor{stringliteral}{"{}' is trying to switch to a mount '"{}} + MountSettings.GetName(newMountId) + \textcolor{stringliteral}{"{}' , but mount is not set as valid in SyncState."{}});}
+\DoxyCodeLine{00675                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00676             \}}
+\DoxyCodeLine{00677 }
+\DoxyCodeLine{00678             var lookup = currentMount.mountsLookup.mountIdLookup;}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680             \textcolor{keywordflow}{if} (!lookup.ContainsKey(newMountId))}
+\DoxyCodeLine{00681             \{}
+\DoxyCodeLine{00682                 Debug.LogWarning(\textcolor{stringliteral}{"{}'"{}} + name + \textcolor{stringliteral}{"{}' doesn't contain a mount for '"{}} + MountSettings.GetName(newMountId) + \textcolor{stringliteral}{"{}'."{}});}
+\DoxyCodeLine{00683                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00684             \}}
+\DoxyCodeLine{00685             var attachTo = lookup[newMountId];}
+\DoxyCodeLine{00686 }
+\DoxyCodeLine{00687             \textcolor{comment}{//Debug.Log("{}New Mount:"{} + attachTo + "{}:"{} + newMountId);}}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689             ChangeState(\textcolor{keyword}{new} StateChangeInfo(currentState.state, attachTo, \textcolor{keyword}{false}));}
+\DoxyCodeLine{00690 }
+\DoxyCodeLine{00691             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00692         \}}
+\DoxyCodeLine{00693 }
+\DoxyCodeLine{00694 }
+\DoxyCodeLine{00695         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00696         \{}
+\DoxyCodeLine{00697             DequeueStateChanges();}
+\DoxyCodeLine{00698 }
+\DoxyCodeLine{00699             Frame frame = frames[frameId];}
+\DoxyCodeLine{00700 }
+\DoxyCodeLine{00701             frame.CopyFrom(currentState);}
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00704             \textcolor{comment}{//    Debug.LogError(frameId + "{} <b>Capture </b>"{} + frame.state + "{} / "{} + currentState.state);}}
+\DoxyCodeLine{00705 }
+\DoxyCodeLine{00706             \textcolor{comment}{//if (currentState.respawn)}}
+\DoxyCodeLine{00707             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00708             \textcolor{comment}{//  frame.respawn = true;}}
+\DoxyCodeLine{00709             \textcolor{comment}{//  currentState.respawn = false;}}
+\DoxyCodeLine{00710             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00711         \}}
+\DoxyCodeLine{00712 }
+\DoxyCodeLine{00713 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00714 }
+\DoxyCodeLine{00715         \textcolor{comment}{// TODO: May not be needed due to has changed checks}}
+\DoxyCodeLine{00716         \textcolor{keyword}{protected} Frame prevSerializedFrame;}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00718         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00719         \{}
+\DoxyCodeLine{00720 }
+\DoxyCodeLine{00721             \textcolor{comment}{//if (false)}}
+\DoxyCodeLine{00724 \textcolor{comment}{}            \textcolor{keywordflow}{if} (!enabled) \textcolor{comment}{// This was ActiveAndEnabled... but that is a problem if mounting immediately to a spawned object, as it is disabled for some reason.}}
+\DoxyCodeLine{00725             \{}
+\DoxyCodeLine{00726                 \textcolor{comment}{// leading bool}}
+\DoxyCodeLine{00727                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00728                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00729             \}}
+\DoxyCodeLine{00730 }
+\DoxyCodeLine{00731             Frame frame = frames[frameId];}
+\DoxyCodeLine{00732 }
+\DoxyCodeLine{00733             \textcolor{keywordtype}{bool} iskeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00734             \textcolor{keywordtype}{bool} isNewConnection = (writeFlags \& SerializationFlags.NewConnection) != 0;}
+\DoxyCodeLine{00735             \textcolor{keywordtype}{bool} isFirstSend = ReferenceEquals(prevSerializedFrame, \textcolor{keyword}{null});}
+\DoxyCodeLine{00736             \textcolor{keywordtype}{bool} stateHasChanged = isFirstSend || frame.state != prevSerializedFrame.state;}
+\DoxyCodeLine{00737             \textcolor{comment}{//bool parentHasChanged = isFirstSend || frame.attachedToViewID != prevSerializedFrame.attachedToViewID;}}
+\DoxyCodeLine{00738             \textcolor{keywordtype}{bool} mountHasChanged = isFirstSend || frame.mountTypeId != prevSerializedFrame.mountTypeId || frame.mountToViewID != prevSerializedFrame.mountToViewID;}
+\DoxyCodeLine{00739             \textcolor{keywordtype}{bool} needsComplete = isNewConnection || iskeyframe || isFirstSend;}
+\DoxyCodeLine{00740             \textcolor{keywordtype}{bool} hasChanged = stateHasChanged || mountHasChanged;}
+\DoxyCodeLine{00741             \textcolor{keywordtype}{bool} hasContent = needsComplete || hasChanged;}
+\DoxyCodeLine{00742             \textcolor{keywordtype}{bool} forceReliable = isFirstSend || isNewConnection || (keyframeRate == 0 \&\& hasContent) || (mountReliable \&\& mountHasChanged);}
+\DoxyCodeLine{00743 }
+\DoxyCodeLine{00744             \textcolor{comment}{// If we determined there is nothing to send, first bit 0 and exit}}
+\DoxyCodeLine{00745             \textcolor{keywordflow}{if} (!hasContent \&\& !forceReliable)}
+\DoxyCodeLine{00746             \{}
+\DoxyCodeLine{00747                 \textcolor{comment}{// leading bool}}
+\DoxyCodeLine{00748                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00749                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00750             \}}
+\DoxyCodeLine{00751 }
+\DoxyCodeLine{00752             \textcolor{comment}{// Leading bool}}
+\DoxyCodeLine{00753             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00754 }
+\DoxyCodeLine{00755             var flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00756 }
+\DoxyCodeLine{00757             \textcolor{comment}{// Determine if anything requires this be made a Reliable send}}
+\DoxyCodeLine{00758             \textcolor{keywordflow}{if} (forceReliable)}
+\DoxyCodeLine{00759             \{}
+\DoxyCodeLine{00760                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00761                 \textcolor{comment}{//    Debug.LogError(Time.time + "{} <b>"{} +  frame.frameId + "{}:"{} + frameId + "{}</b> STATE "{} + isFirstSend + "{} "{} + isNewConnection + "{} "{} + (keyframeRate == 0 \&\& hasContent) + "{} "{} + (mountReliable \&\& mountHasChanged) + "{} "{} + frame.state);}}
+\DoxyCodeLine{00762 }
+\DoxyCodeLine{00763                 flags |= SerializationFlags.ForceReliable;}
+\DoxyCodeLine{00764             \}}
+\DoxyCodeLine{00765 }
+\DoxyCodeLine{00767             buffer.Write((ulong)frame.state, ref bitposition, 6);}
+\DoxyCodeLine{00768 }
+\DoxyCodeLine{00769             \textcolor{keywordflow}{if} ((frame.state \& ObjState.Mounted) != 0)}
+\DoxyCodeLine{00770             \{}
+\DoxyCodeLine{00771                 \textcolor{keywordflow}{if} (mountHasChanged || needsComplete)}
+\DoxyCodeLine{00772                 \{}
+\DoxyCodeLine{00774                     \textcolor{keywordflow}{if} (!iskeyframe)}
+\DoxyCodeLine{00775                         buffer.Write(1, ref bitposition, 1);}
+\DoxyCodeLine{00776 }
+\DoxyCodeLine{00777                     \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00778                     \textcolor{comment}{//    Debug.LogError(frameId + "{} Write Parent "{} + frame.mountToViewID);}}
+\DoxyCodeLine{00779 }
+\DoxyCodeLine{00780                     \textcolor{comment}{// Write Parent viewId}}
+\DoxyCodeLine{00781                     buffer.WritePackedBytes((uint)frame.mountToViewID, ref bitposition, 32);}
+\DoxyCodeLine{00782 }
+\DoxyCodeLine{00783                     \textcolor{comment}{// If there is more than one mount type this is allowed to mount to, indicate the mount type index (not the index on the parent, the index from allowed types for this SyncState)}}
+\DoxyCodeLine{00784                     \textcolor{keywordflow}{if} (bitsForMountType > 0)}
+\DoxyCodeLine{00785                     \{}
+\DoxyCodeLine{00786                         var mountidx = mountTypeIdToIndex[frame.mountTypeId.Value];}
+\DoxyCodeLine{00787                         buffer.Write((uint)mountidx, ref bitposition, bitsForMountType);}
+\DoxyCodeLine{00788                     \}}
+\DoxyCodeLine{00789                 \}}
+\DoxyCodeLine{00790                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00791                 \{}
+\DoxyCodeLine{00793                     \textcolor{keywordflow}{if} (!iskeyframe)}
+\DoxyCodeLine{00794                         buffer.Write(0, ref bitposition, 1);}
+\DoxyCodeLine{00795                 \}}
+\DoxyCodeLine{00796             \}}
+\DoxyCodeLine{00797 }
+\DoxyCodeLine{00798             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00799             \textcolor{comment}{//    Debug.Log(frameId + "{} <b>SER</b> "{} + flags + "{} "{} + frame.state + "{} "{} + frame.attachedToViewID + "{} : "{} + frame.attachedToMountTypeId + "{} mounthaschagned: "{} + mountHasChanged + "{} needscomplete: "{} + needsComplete );}}
+\DoxyCodeLine{00800 }
+\DoxyCodeLine{00801             prevSerializedFrame = frame;}
+\DoxyCodeLine{00802             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00803         \}}
+\DoxyCodeLine{00804 }
+\DoxyCodeLine{00805         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00806         \{}
+\DoxyCodeLine{00807 }
+\DoxyCodeLine{00808             Frame frame = frames[originFrameId];}
+\DoxyCodeLine{00809 }
+\DoxyCodeLine{00810             \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00811             \{}
+\DoxyCodeLine{00812                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00813                 \textcolor{comment}{//    Debug.LogError(originFrameId + "{} No Content"{});}}
+\DoxyCodeLine{00814 }
+\DoxyCodeLine{00815                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00816             \}}
+\DoxyCodeLine{00817 }
+\DoxyCodeLine{00818             SerializationFlags flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00819 }
+\DoxyCodeLine{00821             frame.state = (ObjState)buffer.Read(ref bitposition, 6);}
+\DoxyCodeLine{00822 }
+\DoxyCodeLine{00823             \textcolor{keywordtype}{bool} isAttached = (frame.state \& ObjState.Mounted) != 0;}
+\DoxyCodeLine{00824 }
+\DoxyCodeLine{00825             \textcolor{keywordflow}{if} (!isAttached)}
+\DoxyCodeLine{00826             \{}
+\DoxyCodeLine{00827                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00828             \}}
+\DoxyCodeLine{00829             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (IsKeyframe(originFrameId) || buffer.Read(ref bitposition, 1) == 1)}
+\DoxyCodeLine{00830             \{}
+\DoxyCodeLine{00832                 \textcolor{keywordflow}{if} ((frame.state \& ObjState.Mounted) != 0)}
+\DoxyCodeLine{00833                 \{}
+\DoxyCodeLine{00834                     frame.mountToViewID = (\textcolor{keywordtype}{int}?)buffer.ReadPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00835                     \textcolor{keywordflow}{if} (bitsForMountType > 0)}
+\DoxyCodeLine{00836                     \{}
+\DoxyCodeLine{00837                         \textcolor{keywordtype}{int} mountidx = (int)buffer.Read(ref bitposition, bitsForMountType);}
+\DoxyCodeLine{00838                         \textcolor{keywordtype}{int} mountTypeId = indexToMountTypeId[mountidx];}
+\DoxyCodeLine{00839                         frame.mountTypeId = (\textcolor{keywordtype}{int}?)mountTypeId;}
+\DoxyCodeLine{00840                     \}}
+\DoxyCodeLine{00841                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00842                         frame.mountTypeId = 0;}
+\DoxyCodeLine{00843                 \}}
+\DoxyCodeLine{00844                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00845             \}}
+\DoxyCodeLine{00846 }
+\DoxyCodeLine{00848             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00849             \{}
+\DoxyCodeLine{00850                 frame.mountToViewID = \textcolor{keyword}{null};}
+\DoxyCodeLine{00851                 frame.mountTypeId = \textcolor{keyword}{null};}
+\DoxyCodeLine{00852                 frame.content = FrameContents.Partial;}
+\DoxyCodeLine{00853             \}}
+\DoxyCodeLine{00854 }
+\DoxyCodeLine{00855             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00856             \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + flags + "{} "{} + name + "{} <b> fr: "{} + frame.frameId + "{} <color=purple>DES STATE</color></b> "{} + frame.content + "{} "{} + frame.state +}}
+\DoxyCodeLine{00857             \textcolor{comment}{//        ((frame.state \& ObjState.Visible) != 0 ? "{} VISIBLE "{} : "{} "{}) +}}
+\DoxyCodeLine{00858             \textcolor{comment}{//        ((frame.state \& ObjState.Mounted) != 0 ? "{} MOUNTED "{} + frame.mountToViewID : "{} "{})}}
+\DoxyCodeLine{00859             \textcolor{comment}{//        );}}
+\DoxyCodeLine{00860 }
+\DoxyCodeLine{00861             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00862         \}}
+\DoxyCodeLine{00863 }
+\DoxyCodeLine{00864 \textcolor{preprocessor}{        \#endregion Serialization}}
+\DoxyCodeLine{00865 }
+\DoxyCodeLine{00866         \textcolor{comment}{//public void HandleCriticallyLateFrame(int frameId)}}
+\DoxyCodeLine{00867         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00868         \textcolor{comment}{//    return;}}
+\DoxyCodeLine{00869 }
+\DoxyCodeLine{00870         \textcolor{comment}{//    if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00871         \textcolor{comment}{//        Debug.LogWarning("{}<b>APPLY CRIT LATE ?</b>"{} + frameId);}}
+\DoxyCodeLine{00872 }
+\DoxyCodeLine{00873         \textcolor{comment}{//    var frame = frames[frameId];}}
+\DoxyCodeLine{00874         \textcolor{comment}{//    var state = frame.state;}}
+\DoxyCodeLine{00875         \textcolor{comment}{//    var mount = GetMount(frame.mountToViewID, frame.mountTypeId);}}
+\DoxyCodeLine{00876 }
+\DoxyCodeLine{00877         \textcolor{comment}{//    // Late mount change messages we are applying}}
+\DoxyCodeLine{00878         \textcolor{comment}{//    if (mount != currentMount)}}
+\DoxyCodeLine{00879         \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00880         \textcolor{comment}{//        Debug.LogWarning("{}<b>APPLY CRIT LATE </b>"{} + frameId);}}
+\DoxyCodeLine{00881         \textcolor{comment}{//        ApplyFrame(frame);}}
+\DoxyCodeLine{00882 }
+\DoxyCodeLine{00883         \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00884         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00885 }
+\DoxyCodeLine{00886         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00887         \{}
+\DoxyCodeLine{00888 }
+\DoxyCodeLine{00889             \textcolor{keywordflow}{if} (snapframe.content == FrameContents.Empty)}
+\DoxyCodeLine{00890             \{}
+\DoxyCodeLine{00891                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00892             \}}
+\DoxyCodeLine{00893 }
+\DoxyCodeLine{00896             \textcolor{keywordflow}{if} (targframe.content == FrameContents.Complete) \textcolor{comment}{// \& FrameContents.Partial) != 0)}}
+\DoxyCodeLine{00897             \{}
+\DoxyCodeLine{00898                 Transform par;}
+\DoxyCodeLine{00899                 \textcolor{keywordflow}{if} (targframe.mountToViewID.HasValue)}
+\DoxyCodeLine{00900                 \{}
+\DoxyCodeLine{00901                     var targmount = GetMount(targframe.mountToViewID, targframe.mountTypeId);}
+\DoxyCodeLine{00902                     par = targmount ? targmount.transform.parent : \textcolor{keyword}{null};}
+\DoxyCodeLine{00903                 \}}
+\DoxyCodeLine{00904                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00905                     par = \textcolor{keyword}{null};}
+\DoxyCodeLine{00906 }
+\DoxyCodeLine{00907                 \textcolor{keywordflow}{if} (syncTransform)}
+\DoxyCodeLine{00908                     syncTransform.UpdateParent(targframe.state, par);}
+\DoxyCodeLine{00909             \}}
+\DoxyCodeLine{00910 }
+\DoxyCodeLine{00911             \textcolor{comment}{//if (GetComponent<SyncPickup>() /*\&\& snapFrame.state == (ObjState)15*/)}}
+\DoxyCodeLine{00912             \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} <color=green><b>APPLY STATE</b></color> content :"{} + snapFrame.content +}}
+\DoxyCodeLine{00913             \textcolor{comment}{//        "{}\(\backslash\)n<b>snap: fid: "{} + snapFrame.frameId + "{}</b> snapState: "{} + (snapFrame.state + "{}  attchTo: "{} + snapFrame.mountToViewID + "{}:"{} + snapFrame.mountTypeId) +}}
+\DoxyCodeLine{00914             \textcolor{comment}{//        "{} <b>Targ: fid: "{} + targFrame.frameId + "{}</b> targState: "{} +}}
+\DoxyCodeLine{00915             \textcolor{comment}{//        (targFrame.content != 0 ? (targFrame.state + "{}  attchTo: "{} + targFrame.mountToViewID + "{}:"{} + targFrame.mountTypeId) : "{} lost"{}) + "{} "{} + transform.localPosition + "{} "{} +}}
+\DoxyCodeLine{00916             \textcolor{comment}{//        netObj.AllObjsAreReady}}
+\DoxyCodeLine{00917             \textcolor{comment}{//        );}}
+\DoxyCodeLine{00918 }
+\DoxyCodeLine{00919             \textcolor{keywordflow}{if} (snapframe.content >= FrameContents.Extrapolated)}
+\DoxyCodeLine{00920                 ApplyFrame(snapframe);}
+\DoxyCodeLine{00921         \}}
+\DoxyCodeLine{00922 }
+\DoxyCodeLine{00923 }
+\DoxyCodeLine{00924         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ApplyFrame(Frame frame)}
+\DoxyCodeLine{00925         \{}
+\DoxyCodeLine{00926 }
+\DoxyCodeLine{00927 }
+\DoxyCodeLine{00928             var state = frame.state;}
+\DoxyCodeLine{00929 }
+\DoxyCodeLine{00930             Mount applyMount;}
+\DoxyCodeLine{00931 }
+\DoxyCodeLine{00932             \textcolor{keywordtype}{bool} mounted = ((state \& ObjState.Mounted) != 0);}
+\DoxyCodeLine{00933             \textcolor{keywordtype}{bool} force = \textcolor{keyword}{false};}
+\DoxyCodeLine{00934 }
+\DoxyCodeLine{00935             \textcolor{keywordflow}{if} (mounted)}
+\DoxyCodeLine{00936             \{}
+\DoxyCodeLine{00937                 \textcolor{keywordtype}{int}? snapAttachedToViewID = frame.mountToViewID;}
+\DoxyCodeLine{00938 }
+\DoxyCodeLine{00940                 \textcolor{keywordflow}{if} (snapAttachedToViewID.HasValue)}
+\DoxyCodeLine{00941                 \{}
+\DoxyCodeLine{00942                     \textcolor{keywordtype}{int}? snapAttachedToMountId = frame.mountTypeId;}
+\DoxyCodeLine{00943 }
+\DoxyCodeLine{00944                     var mount = GetMount(snapAttachedToViewID, snapAttachedToMountId);}
+\DoxyCodeLine{00945 }
+\DoxyCodeLine{00946                     \textcolor{comment}{// Exit if state has not changed.}}
+\DoxyCodeLine{00947                     \textcolor{keywordflow}{if} (ReferenceEquals(mount, currentMount) \&\& state == currentState.state)}
+\DoxyCodeLine{00948                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00949 }
+\DoxyCodeLine{00950                     \textcolor{keywordflow}{if} (mount)}
+\DoxyCodeLine{00951                     \{}
+\DoxyCodeLine{00952                         \textcolor{comment}{//if (autoOwnerChange \&\& !ReferenceEquals(currentMount, mount))}}
+\DoxyCodeLine{00953                         \textcolor{comment}{//    TransferToMountOwner(mount);}}
+\DoxyCodeLine{00954 }
+\DoxyCodeLine{00955                         applyMount = mount;}
+\DoxyCodeLine{00956                         ReadyState = ReadyStateEnum.Ready;}
+\DoxyCodeLine{00957                         force = \textcolor{keyword}{true};}
+\DoxyCodeLine{00958                     \}}
+\DoxyCodeLine{00959                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00960                         applyMount = currentMount;}
+\DoxyCodeLine{00961 }
+\DoxyCodeLine{00962                     \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00963                     \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} snapMount: "{} + snapMount);}}
+\DoxyCodeLine{00964 }
+\DoxyCodeLine{00965                 \}}
+\DoxyCodeLine{00967                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00968                 \{}
+\DoxyCodeLine{00970                     \textcolor{keywordflow}{if} (currentMount == \textcolor{keyword}{null})}
+\DoxyCodeLine{00971                     \{}
+\DoxyCodeLine{00972                         \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00973                         \textcolor{comment}{//  Debug.Log("{}<color=red>UNREADY</color>"{});}}
+\DoxyCodeLine{00974 }
+\DoxyCodeLine{00975                         \textcolor{comment}{//ReadyState = ReadyStateEnum.Unready;}}
+\DoxyCodeLine{00976                         applyMount = \textcolor{keyword}{null};}
+\DoxyCodeLine{00977                     \}}
+\DoxyCodeLine{00978                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00979                     \{}
+\DoxyCodeLine{00980                         ReadyState = ReadyStateEnum.Ready;}
+\DoxyCodeLine{00981                         applyMount = currentMount;}
+\DoxyCodeLine{00982                         force = \textcolor{keyword}{true};}
+\DoxyCodeLine{00983                     \}}
+\DoxyCodeLine{00984                 \}}
+\DoxyCodeLine{00985             \}}
+\DoxyCodeLine{00987             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00988             \{}
+\DoxyCodeLine{00989                 ReadyState = ReadyStateEnum.Ready;}
+\DoxyCodeLine{00990                 force = \textcolor{keyword}{true};}
+\DoxyCodeLine{00991                 applyMount = \textcolor{keyword}{null};}
+\DoxyCodeLine{00992             \}}
+\DoxyCodeLine{00993 }
+\DoxyCodeLine{00994             \textcolor{comment}{//if (syncTransform \&\& attach || snapMount != null)}}
+\DoxyCodeLine{00995             \textcolor{comment}{//  syncTransform.UpdateParent(targFrame.state, null);}}
+\DoxyCodeLine{00996             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00997             \textcolor{comment}{//    Debug.Log("{}Snap "{} + snapState + "{} "{} + snapFrame.attachedToViewID + "{}:"{} + snapFrame.attachedToMountTypeId + "{} -\/-\/-\/ "{} + snapMount);}}
+\DoxyCodeLine{00998 }
+\DoxyCodeLine{00999             ChangeState(\textcolor{keyword}{new} StateChangeInfo(state, applyMount, force\textcolor{comment}{/*snapFrame.content == FrameContents.Complete*/}));}
+\DoxyCodeLine{01000         \}}
+\DoxyCodeLine{01001 }
+\DoxyCodeLine{01002 }
+\DoxyCodeLine{01003         \textcolor{keyword}{public} \textcolor{keyword}{static} Mount GetMount(\textcolor{keywordtype}{int}? viewID, \textcolor{keywordtype}{int}? mountId)}
+\DoxyCodeLine{01004         \{}
+\DoxyCodeLine{01005             \textcolor{keywordflow}{if} (!viewID.HasValue || !mountId.HasValue)}
+\DoxyCodeLine{01006                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01007 }
+\DoxyCodeLine{01008             var pv = PhotonNetwork.GetPhotonView(viewID.Value);}
+\DoxyCodeLine{01009             var mounts = pv ? pv.GetComponent<MountsManager>() : \textcolor{keyword}{null};}
+\DoxyCodeLine{01010 }
+\DoxyCodeLine{01011             \textcolor{keywordflow}{if} (mounts)}
+\DoxyCodeLine{01012                 \textcolor{keywordflow}{return} mounts.mountIdLookup[mountId.Value];}
+\DoxyCodeLine{01013 }
+\DoxyCodeLine{01014             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{01015         \}}
+\DoxyCodeLine{01016 }
+\DoxyCodeLine{01017         \textcolor{comment}{//protected override void ConstructMissingFrame(Frame prevFrame, Frame snapFrame, Frame targFrame)}}
+\DoxyCodeLine{01018         \textcolor{comment}{//\{}}
+\DoxyCodeLine{01019         \textcolor{comment}{//    //base.ConstructMissingFrame(prevFrame, snapFrame, targFrame);}}
+\DoxyCodeLine{01020         \textcolor{comment}{//\}}}
+\DoxyCodeLine{01021 }
+\DoxyCodeLine{01022 }
+\DoxyCodeLine{01023 }
+\DoxyCodeLine{01024     \}}
+\DoxyCodeLine{01025 }
+\DoxyCodeLine{01026 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{01027 }
+\DoxyCodeLine{01028     [CustomEditor(typeof(SyncState))]}
+\DoxyCodeLine{01029     [CanEditMultipleObjects]}
+\DoxyCodeLine{01030     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncStateEditor : SyncObjectEditor}
+\DoxyCodeLine{01031     \{}
+\DoxyCodeLine{01032         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{01033         \{}
+\DoxyCodeLine{01034             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SYNCCOMPS\_PATH + \textcolor{stringliteral}{"{}\#syncstate\_component"{}}; \}}
+\DoxyCodeLine{01035         \}}
+\DoxyCodeLine{01036 }
+\DoxyCodeLine{01037         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{01038         \{}
+\DoxyCodeLine{01039             \textcolor{keyword}{get}}
+\DoxyCodeLine{01040             \{}
+\DoxyCodeLine{01041                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncStateText"{}};}
+\DoxyCodeLine{01042             \}}
+\DoxyCodeLine{01043         \}}
+\DoxyCodeLine{01044 }
+\DoxyCodeLine{01045         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{01046         \{}
+\DoxyCodeLine{01047             \textcolor{keyword}{get}}
+\DoxyCodeLine{01048             \{}
+\DoxyCodeLine{01049                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Manages and syncs the State (Visibility, Attachment, Dropped, etc) of this NetObject. "{}} +}
+\DoxyCodeLine{01050                     \textcolor{stringliteral}{"{}Calls to <b>syncState.ChangeState()</b> will replicate, and "{}} +}
+\DoxyCodeLine{01051                     \textcolor{stringliteral}{"{}Components with <b>"{}} +}
+\DoxyCodeLine{01052 }
+\DoxyCodeLine{01053                     typeof(IOnStateChange).Name + \textcolor{stringliteral}{"{}</b> will receive callbacks."{}};}
+\DoxyCodeLine{01054             \}}
+\DoxyCodeLine{01055         \}}
+\DoxyCodeLine{01056 }
+\DoxyCodeLine{01057         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{01058         \{}
+\DoxyCodeLine{01059             base.OnInspectorGUI();}
+\DoxyCodeLine{01060 }
+\DoxyCodeLine{01061             EditorGUILayout.Space();}
+\DoxyCodeLine{01062             MountSettings.Single.DrawGui(target, \textcolor{keyword}{true}, \textcolor{keyword}{false}, \textcolor{keyword}{false}, \textcolor{keyword}{false});}
+\DoxyCodeLine{01063         \}}
+\DoxyCodeLine{01064 }
+\DoxyCodeLine{01065     \}}
+\DoxyCodeLine{01066 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01067 \}}
+\DoxyCodeLine{01068 }
+
+\end{DoxyCode}

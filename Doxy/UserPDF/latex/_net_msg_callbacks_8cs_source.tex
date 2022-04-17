@@ -1,0 +1,147 @@
+\doxysection{Net\+Msg\+Callbacks.\+cs}
+\label{_net_msg_callbacks_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetAdapters/NetMsgCallbacks.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetAdapters/NetMsgCallbacks.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple.Internal}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NetMsgCallbacks}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} ByteBufferCallback(\textcolor{keywordtype}{object} conn, \textcolor{keywordtype}{int} connId, \textcolor{keywordtype}{byte}[] buffer);}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, CallbackLists> callbacks = \textcolor{keyword}{new} Dictionary<int, CallbackLists>();}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{class }CallbackLists}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{keyword}{public} List<ByteBufferCallback> bufferCallbacks;}
+\DoxyCodeLine{00027         \}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} DEF\_MSG\_ID = 215;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterOnEventListener()}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             PhotonNetwork.NetworkingClient.EventReceived += OnEvent;}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OnEvent(EventData photonEvent)}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             \textcolor{keywordtype}{byte} msgId = photonEvent.Code;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             \textcolor{keywordflow}{if} (!callbacks.ContainsKey(msgId))}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047 \textcolor{preprocessor}{\#if PUN\_2\_19\_OR\_NEWER}}
+\DoxyCodeLine{00048             ByteArraySlice slice;}
+\DoxyCodeLine{00049             \textcolor{keywordtype}{byte}[] buffer;}
+\DoxyCodeLine{00050             var peer = PhotonNetwork.NetworkingClient.LoadBalancingPeer;}
+\DoxyCodeLine{00051             \textcolor{keywordtype}{bool} useSlices = peer.UseByteArraySlicePoolForEvents \&\& peer.SerializationProtocolType != SerializationProtocol.GpBinaryV16;}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{if} (useSlices)}
+\DoxyCodeLine{00053             \{}
+\DoxyCodeLine{00054                 slice = photonEvent.CustomData as ByteArraySlice;}
+\DoxyCodeLine{00055                 buffer = slice.Buffer;}
+\DoxyCodeLine{00056             \}}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 slice = \textcolor{keyword}{null};}
+\DoxyCodeLine{00060                 buffer = (photonEvent.CustomData as \textcolor{keywordtype}{byte}[]);}
+\DoxyCodeLine{00061             \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00064             \textcolor{keywordtype}{byte}[] buffer = (photonEvent.CustomData as \textcolor{keywordtype}{byte}[]);}
+\DoxyCodeLine{00065 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             var cbs = callbacks[msgId];}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (cbs.bufferCallbacks != \textcolor{keyword}{null} \&\& cbs.bufferCallbacks.Count > 0)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{foreach} (var cb \textcolor{keywordflow}{in} cbs.bufferCallbacks)}
+\DoxyCodeLine{00071                     cb(\textcolor{keyword}{null}, photonEvent.Sender, buffer);}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#if PUN\_2\_19\_OR\_NEWER}}
+\DoxyCodeLine{00075             \textcolor{comment}{// Release our nonalloc slice to the pool.}}
+\DoxyCodeLine{00076             \textcolor{keywordflow}{if} (useSlices)}
+\DoxyCodeLine{00077                 slice.Release();}
+\DoxyCodeLine{00078 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082 \textcolor{preprocessor}{        \#region Handler Registration}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         [System.Obsolete(\textcolor{stringliteral}{"{}Removed the asServer from UNET side, killing it here as well."{}})]}
+\DoxyCodeLine{00085         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterCallback(\textcolor{keywordtype}{byte} msgid, ByteBufferCallback callback, \textcolor{keywordtype}{bool} asServer)}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (!callbacks.ContainsKey(msgid))}
+\DoxyCodeLine{00088                 callbacks.Add(msgid, \textcolor{keyword}{new} CallbackLists());}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (callbacks[msgid].bufferCallbacks == \textcolor{keyword}{null})}
+\DoxyCodeLine{00091                 callbacks[msgid].bufferCallbacks = \textcolor{keyword}{new} List<ByteBufferCallback>();}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             var cbs = callbacks[msgid].bufferCallbacks;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (!cbs.Contains(callback))}
+\DoxyCodeLine{00096                 cbs.Add(callback);}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterCallback(ByteBufferCallback callback)}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             RegisterCallback(DEF\_MSG\_ID, callback);}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterCallback(\textcolor{keywordtype}{byte} msgid, ByteBufferCallback callback)}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (!callbacks.ContainsKey(msgid))}
+\DoxyCodeLine{00106                 callbacks.Add(msgid, \textcolor{keyword}{new} CallbackLists());}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (callbacks[msgid].bufferCallbacks == \textcolor{keyword}{null})}
+\DoxyCodeLine{00109                 callbacks[msgid].bufferCallbacks = \textcolor{keyword}{new} List<ByteBufferCallback>();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             var cbs = callbacks[msgid].bufferCallbacks;}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (!cbs.Contains(callback))}
+\DoxyCodeLine{00114                 cbs.Add(callback);}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         [System.Obsolete(\textcolor{stringliteral}{"{}Removed the asServer from UNET side, killing it here as well."{}})]}
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} UnregisterCallback(\textcolor{keywordtype}{byte} msgid, ByteBufferCallback callback, \textcolor{keywordtype}{bool} asServer)}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{if} (callbacks.ContainsKey(msgid))}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 var cbs = callbacks[msgid];}
+\DoxyCodeLine{00123                 cbs.bufferCallbacks.Remove(callback);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{if} (cbs.bufferCallbacks.Count == 0)}
+\DoxyCodeLine{00126                     callbacks.Remove(msgid);}
+\DoxyCodeLine{00127             \}}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} UnregisterCallback(ByteBufferCallback callback)}
+\DoxyCodeLine{00131         \{}
+\DoxyCodeLine{00132             UnregisterCallback(DEF\_MSG\_ID, callback);}
+\DoxyCodeLine{00133         \}}
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} UnregisterCallback(\textcolor{keywordtype}{byte} msgid, ByteBufferCallback callback)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if} (callbacks.ContainsKey(msgid))}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138                 var cbs = callbacks[msgid];}
+\DoxyCodeLine{00139                 cbs.bufferCallbacks.Remove(callback);}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141                 \textcolor{keywordflow}{if} (cbs.bufferCallbacks.Count == 0)}
+\DoxyCodeLine{00142                     callbacks.Remove(msgid);}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146 \textcolor{preprocessor}{        \#endregion  }\textcolor{comment}{// END HANDLERS}}
+\DoxyCodeLine{00147     \}}
+\DoxyCodeLine{00148 \}}
+
+\end{DoxyCode}

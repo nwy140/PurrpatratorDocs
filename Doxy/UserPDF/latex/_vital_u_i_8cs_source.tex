@@ -1,0 +1,236 @@
+\doxysection{Vital\+UI.\+cs}
+\label{_vital_u_i_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/UI/VitalUI.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/UI/VitalUI.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00017     [CanEditMultipleObjects]}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalUI : VitalUIBase}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{keyword}{protected} \textcolor{keyword}{static} GameObject vitalBarDefaultPrefab;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoOffset = \textcolor{keyword}{true};}
+\DoxyCodeLine{00024         [Tooltip(\textcolor{stringliteral}{"{}Found children elements are nudged (value * vitalIndex). This is to automatically stagger multiple VitalUIs"{}})]}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} Vector3 offset = \textcolor{keyword}{new} Vector3(0, .1f, 0);}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{float} widthMultiplier = 1f;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{comment}{//[Tooltip("{}If a Canvas is supplied in the inspector, this will attempt to find the first Text / Image in its children and use that."{})]}}
+\DoxyCodeLine{00030         \textcolor{comment}{//[HideInInspector] public Canvas canvas;}}
+\DoxyCodeLine{00031         [Tooltip(\textcolor{stringliteral}{"{}Search for UI elements in children of this GameObject."{}})]}
+\DoxyCodeLine{00032         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} searchChildren = \textcolor{keyword}{true};}
+\DoxyCodeLine{00033         [HideInInspector] \textcolor{keyword}{public} Text UIText;}
+\DoxyCodeLine{00034         [HideInInspector] \textcolor{keyword}{public} Image UIImage;}
+\DoxyCodeLine{00035         [HideInInspector] \textcolor{keyword}{public} TextMesh textMesh;}
+\DoxyCodeLine{00036         [HideInInspector] \textcolor{keyword}{public} SpriteRenderer barSprite;}
+\DoxyCodeLine{00037         [HideInInspector] \textcolor{keyword}{public} SpriteRenderer backSprite;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{comment}{//[HideInInspector] public GameObject defaultPrefabInstance;}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} billboard = \textcolor{keyword}{true};}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PLACEHOLDER\_CANVAS\_NAME = \textcolor{stringliteral}{"{}PLACEHOLDER\_VITALS\_CANVAS"{}};}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             base.Reset();}
+\DoxyCodeLine{00048             FindUIElements();}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             base.OnValidate();}
+\DoxyCodeLine{00056             AutoAlign();}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddDefaultUIPrefab()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (vitalBarDefaultPrefab == \textcolor{keyword}{null})}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 var aid = AssetDatabase.FindAssets(\textcolor{stringliteral}{"{}VitalBarPrefab"{}});}
+\DoxyCodeLine{00065                 var path = AssetDatabase.GUIDToAssetPath(aid[0]);}
+\DoxyCodeLine{00066                 vitalBarDefaultPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);}
+\DoxyCodeLine{00067             \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{if} (vitalBarDefaultPrefab == \textcolor{keyword}{null})}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 Debug.LogWarning(\textcolor{stringliteral}{"{}Default VitalBar prefab could not be found."{}});}
+\DoxyCodeLine{00072                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             Instantiate(vitalBarDefaultPrefab, transform);}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             Recalculate();}
+\DoxyCodeLine{00078         \}}
+\DoxyCodeLine{00079 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             base.Awake();}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             FindUIElements();}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             enabled = billboard;}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Recalculate()}
+\DoxyCodeLine{00091         \{}
+\DoxyCodeLine{00092             AutoAlign();}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (backSprite)}
+\DoxyCodeLine{00095                 backSprite.size = \textcolor{keyword}{new} Vector2(widthMultiplier, backSprite.size.y);}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             UpdateGraphics(vital);}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} AutoAlign()}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00103             \textcolor{keywordflow}{if} (autoOffset \&\& transform.parent)}
+\DoxyCodeLine{00104                 transform.localPosition = offset * vitalIndex;}
+\DoxyCodeLine{00105         \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107         \textcolor{keyword}{private} \textcolor{keyword}{static} List<SpriteRenderer> resuableFindSpriteRend = \textcolor{keyword}{new} List<SpriteRenderer>();}
+\DoxyCodeLine{00112         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} FindUIElements()}
+\DoxyCodeLine{00113         \{}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{keywordflow}{if} (textMesh == \textcolor{keyword}{null})}
+\DoxyCodeLine{00116                 textMesh = (searchChildren) ? GetComponentInChildren<TextMesh>() : GetComponent<TextMesh>();}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (searchChildren)}
+\DoxyCodeLine{00120                 GetComponentsInChildren(resuableFindSpriteRend);}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00122                 GetComponents(resuableFindSpriteRend);}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{comment}{//Debug.Log(name + "{} Find Rends "{} + resuableFindSpriteRend.Count);}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (resuableFindSpriteRend.Count > 0 \&\& barSprite == \textcolor{keyword}{null})}
+\DoxyCodeLine{00127                 barSprite = resuableFindSpriteRend[0];}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (resuableFindSpriteRend.Count > 1 \&\& backSprite == \textcolor{keyword}{null})}
+\DoxyCodeLine{00129                 backSprite = resuableFindSpriteRend[1];}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (UIText == \textcolor{keyword}{null})}
+\DoxyCodeLine{00132                 UIText = (searchChildren) ? GetComponentInChildren<Text>() : GetComponent<Text>();}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (UIImage == \textcolor{keyword}{null})}
+\DoxyCodeLine{00135                 UIImage = (searchChildren) ? GetComponentInChildren<Image>() : GetComponent<Image>();}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordflow}{return} textMesh || barSprite || UIText || UIImage;}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} UpdateGraphics(Vital vital)}
+\DoxyCodeLine{00142         \{}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (vital == \textcolor{keyword}{null})}
+\DoxyCodeLine{00144                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             var vitalDef = vital.VitalDef;}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordtype}{double} val = \textcolor{comment}{/*(vital == null) ? 1 :*/}}
+\DoxyCodeLine{00149                 (targetField == TargetField.Value) ? vital.VitalData.Value :}
+\DoxyCodeLine{00150                 (targetField == TargetField.Max) ? vitalDef.FullValue :}
+\DoxyCodeLine{00151                 vitalDef.MaxValue;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00154             \textcolor{keywordflow}{if} (val == \textcolor{keywordtype}{float}.NegativeInfinity)}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (textMesh)}
+\DoxyCodeLine{00158                 textMesh.text = ((int)val).ToString();}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160             \textcolor{keywordflow}{if} (barSprite)}
+\DoxyCodeLine{00161                 barSprite.size = \textcolor{keyword}{new} Vector2((\textcolor{keywordtype}{float})((val / vitalDef.MaxValue) * widthMultiplier), barSprite.size.y);}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163             \textcolor{keywordflow}{if} (UIText != \textcolor{keyword}{null})}
+\DoxyCodeLine{00164             \{}
+\DoxyCodeLine{00165                 UIText.text = ((int)val).ToString();}
+\DoxyCodeLine{00166             \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168             \textcolor{comment}{// Resize the healthbar}}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (UIImage != \textcolor{keyword}{null})}
+\DoxyCodeLine{00170             \{}
+\DoxyCodeLine{00171                 \textcolor{keywordtype}{double} fullval = vitalDef.MaxValue;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{if} (UIImage.type == Image.Type.Filled \&\& UIImage.sprite != \textcolor{keyword}{null})}
+\DoxyCodeLine{00174                     UIImage.fillAmount = (float)((val / fullval) * widthMultiplier);}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176                     UIImage.rectTransform.localScale = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00177                         (\textcolor{keywordtype}{float})((val / fullval) * widthMultiplier),}
+\DoxyCodeLine{00178                         UIImage.rectTransform.localScale.y,}
+\DoxyCodeLine{00179                         UIImage.rectTransform.localScale.z);}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00184         \{}
+\DoxyCodeLine{00185             var cam = Camera.main;}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{if} (!cam)}
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189             transform.LookAt(cam.transform, \textcolor{keyword}{new} Vector3(0, 1, 0));}
+\DoxyCodeLine{00190             var curr = transform.eulerAngles;}
+\DoxyCodeLine{00191             transform.eulerAngles = \textcolor{keyword}{new} Vector3(0, curr.y + 180f, 0);}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193     \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198     [CustomEditor(typeof(VitalUI))]}
+\DoxyCodeLine{00199     [CanEditMultipleObjects]}
+\DoxyCodeLine{00200     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalUIEditor : VitalUIBaseEditor}
+\DoxyCodeLine{00201     \{}
+\DoxyCodeLine{00202         \textcolor{keywordtype}{bool} uiElementsExpanded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206             base.OnInspectorGUI();}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             VitalUI \_target = (VitalUI)target;}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210             \_target.FindUIElements();}
+\DoxyCodeLine{00211             \_target.Recalculate();}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             uiElementsExpanded = EditorGUILayout.Foldout(uiElementsExpanded, \textcolor{stringliteral}{"{}UI Elements"{}});}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215             \textcolor{keywordflow}{if} (uiElementsExpanded)}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 BeginVerticalBox();}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221                 var sp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}searchChildren"{}});}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223                 EditorGUILayout.PropertyField(sp);}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{while} (sp.Next(\textcolor{keyword}{false}))}
+\DoxyCodeLine{00227                     EditorGUILayout.PropertyField(sp);}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00230                     serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232                 EndVerticalBox();}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235     \}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239 \}}
+
+\end{DoxyCode}

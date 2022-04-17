@@ -1,0 +1,150 @@
+\doxysection{Room\+List\+View.\+cs}
+\label{_room_list_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/RoomListView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/RoomListView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}RoomListView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }RoomListView : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         [System.Serializable]}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keyword}{class }OnJoinRoomEvent : UnityEvent<string> \{ \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} OnJoinRoomEvent OnJoinRoom;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} RoomListCell CellPrototype;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Text UpdateStatusText;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} Text ContentFeedback;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} InputField LobbyNameInputField;}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} InputField SqlQueryInputField;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keywordtype}{bool} \_firstUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         Dictionary<string, RoomListCell> roomCellList = \textcolor{keyword}{new} Dictionary<string, RoomListCell>();}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             base.OnEnable();}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             ResetList();}
+\DoxyCodeLine{00048             CellPrototype.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00049             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00050             ContentFeedback.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomCellJoinButtonClick(\textcolor{keywordtype}{string} roomName)}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             OnJoinRoom.Invoke(roomName);}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomListUpdate(List<RoomInfo> roomList)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             UpdateStatusText.text = \textcolor{stringliteral}{"{}Updated"{}};}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (roomList.Count == 0 \&\& !PhotonNetwork.InLobby) \{}
+\DoxyCodeLine{00065                 ContentFeedback.text = \textcolor{stringliteral}{"{}No Room found in lobby "{}}+LobbyNameInputField.text+\textcolor{stringliteral}{"{} Matching: "{}}+SqlQueryInputField.text;}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067         }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{foreach} (RoomInfo entry \textcolor{keywordflow}{in} roomList)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{if} (roomCellList.ContainsKey(entry.Name))}
+\DoxyCodeLine{00071                 \{}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{if} (entry.RemovedFromList)}
+\DoxyCodeLine{00073                     \{}
+\DoxyCodeLine{00074                         \textcolor{comment}{// we delete the cell}}
+\DoxyCodeLine{00075                         roomCellList[entry.Name].RemoveFromList();}
+\DoxyCodeLine{00076                         roomCellList.Remove(entry.Name);}
+\DoxyCodeLine{00077                     \}}
+\DoxyCodeLine{00078                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00079                     \{}
+\DoxyCodeLine{00080                         \textcolor{comment}{// we update the cell}}
+\DoxyCodeLine{00081                         roomCellList[entry.Name].RefreshInfo(entry);}
+\DoxyCodeLine{00082                     \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00086                 \{}
+\DoxyCodeLine{00087                     \textcolor{keywordflow}{if} (!entry.RemovedFromList)}
+\DoxyCodeLine{00088                     \{}
+\DoxyCodeLine{00089                         \textcolor{comment}{// we create the cell}}
+\DoxyCodeLine{00090                         roomCellList[entry.Name] = Instantiate(CellPrototype);}
+\DoxyCodeLine{00091                         roomCellList[entry.Name].gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00092                         roomCellList[entry.Name].transform.SetParent(CellPrototype.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00093                         roomCellList[entry.Name].AddToList(entry, !\_firstUpdate);}
+\DoxyCodeLine{00094                     \}}
+\DoxyCodeLine{00095                 \}}
+\DoxyCodeLine{00096             \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098             StartCoroutine(\textcolor{stringliteral}{"{}clearStatus"{}});}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \_firstUpdate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         IEnumerator clearStatus()}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(1f);}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinedLobbyCallBack()}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             \_firstUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00113             ContentFeedback.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00114         \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116         \textcolor{keyword}{public} \textcolor{keywordtype}{void} GetRoomList()}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             ResetList ();}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         }
+\DoxyCodeLine{00121             TypedLobby sqlLobby = \textcolor{keyword}{new} TypedLobby(LobbyNameInputField.text, LobbyType.SqlLobby);}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             Debug.Log (\textcolor{stringliteral}{"{}Cockpit: GetCustomRoomList() matchmaking against '"{}}+LobbyNameInputField.text+\textcolor{stringliteral}{"{}' SqlLobby using query :  "{}}+SqlQueryInputField.text);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             PhotonNetwork.GetCustomRoomList(sqlLobby, SqlQueryInputField.text ); \textcolor{comment}{//"{}C0 = 'Hello'"{}}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             ContentFeedback.text = \textcolor{stringliteral}{"{}looking for Rooms in Lobby '"{}}+LobbyNameInputField.text+\textcolor{stringliteral}{"{}' Matching: '"{}}+SqlQueryInputField.text;}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetList()}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \_firstUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{keywordflow}{foreach} (KeyValuePair<string, RoomListCell> entry \textcolor{keywordflow}{in} roomCellList)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{if} (entry.Value != \textcolor{keyword}{null})}
+\DoxyCodeLine{00139                 \{}
+\DoxyCodeLine{00140                     Destroy(entry.Value.gameObject);}
+\DoxyCodeLine{00141                 \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144             roomCellList = \textcolor{keyword}{new} Dictionary<string, RoomListCell>();}
+\DoxyCodeLine{00145         \}}
+\DoxyCodeLine{00146     \}}
+\DoxyCodeLine{00147 \}}
+
+\end{DoxyCode}

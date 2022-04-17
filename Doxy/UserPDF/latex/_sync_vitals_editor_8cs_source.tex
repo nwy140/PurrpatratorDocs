@@ -1,0 +1,99 @@
+\doxysection{Sync\+Vitals\+Editor.\+cs}
+\label{_sync_vitals_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Editor/SyncVitalsEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Editor/SyncVitalsEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     [CustomEditor(typeof(SyncVitals))]}
+\DoxyCodeLine{00015     [CanEditMultipleObjects]}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncVitalsEditor : SyncObjectEditor}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00019         \{}
+\DoxyCodeLine{00020             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} SimpleDocsURLS.SUBSYS\_PATH + \textcolor{stringliteral}{"{}\#syncvitals\_component"{}}; \}}
+\DoxyCodeLine{00021         \}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00024         \{}
+\DoxyCodeLine{00025             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncVitalsText"{}}; \}}
+\DoxyCodeLine{00026         \}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00029         \{}
+\DoxyCodeLine{00030             \textcolor{keyword}{get}}
+\DoxyCodeLine{00031             \{}
+\DoxyCodeLine{00032                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Collection of Vital types used for handling more complex health systems, accounting for layers of vitals. The default creates a base Health, with a Shield and Armor layer. "{}} +}
+\DoxyCodeLine{00033                     \textcolor{stringliteral}{"{}Vitals reactors can affect these vitals."{}};}
+\DoxyCodeLine{00034             \}}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} readonly \textcolor{keyword}{static} List<Rigidbody> reusableRBList = \textcolor{keyword}{new} List<Rigidbody>();}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} readonly \textcolor{keyword}{static} List<Rigidbody2D> reusableRB2DList = \textcolor{keyword}{new} List<Rigidbody2D>();}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUIInjectMiddle()}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             base.OnInspectorGUIInjectMiddle();}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00046 ;}
+\DoxyCodeLine{00047             SyncVitals sshealth = target as SyncVitals;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00050             sshealth.transform.root.transform.GetNestedComponentsInChildren<Rigidbody, NetObject>(reusableRBList);}
+\DoxyCodeLine{00051             sshealth.transform.root.transform.GetNestedComponentsInChildren<Rigidbody2D, NetObject>(reusableRB2DList);}
+\DoxyCodeLine{00052 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{keywordtype}{int} rbCount = reusableRBList.Count;}
+\DoxyCodeLine{00055             \textcolor{keywordtype}{int} rb2dCount = reusableRB2DList.Count;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             \textcolor{keywordtype}{bool} isRigidBody = rbCount > 0 || rb2dCount > 0;}
+\DoxyCodeLine{00058             \textcolor{keywordtype}{bool} isOnRigidbody = (rbCount > 0 \&\& sshealth.GetComponent<Rigidbody>()) || (rb2dCount > 0 \&\& sshealth.GetComponent<Rigidbody2D>());}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             \textcolor{keywordflow}{if} (isRigidBody)}
+\DoxyCodeLine{00061             \{}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{if} (isOnRigidbody)}
+\DoxyCodeLine{00064                 \{}
+\DoxyCodeLine{00065                     \textcolor{keywordtype}{int} colliderCount = sshealth.transform.CountChildCollider(\textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00066                     \textcolor{keywordflow}{if} (colliderCount < 1)}
+\DoxyCodeLine{00067                         EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Cannot locate any non-\/trigger Collider/Collider2D on this GameObject. Will not be able to detect RB collisions."{}}, MessageType.Warning);}
+\DoxyCodeLine{00068                 \}}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00071                 \{}
+\DoxyCodeLine{00072                     EditorGUILayout.HelpBox(sshealth.GetType().Name +}
+\DoxyCodeLine{00073                         \textcolor{stringliteral}{"{} must be on same child as a RigidBody to detect Rigidbody collisions."{}}, MessageType.Warning);}
+\DoxyCodeLine{00074                 \}}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (!isOnRigidbody)}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 \textcolor{keywordtype}{int} triggerCount = sshealth.transform.CountChildCollider(\textcolor{keyword}{true}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{if} (triggerCount < 1)}
+\DoxyCodeLine{00082                     EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Cannot locate a Collider/Collider2D on this object and/or children. Hitscans and triggers will not work."{}}, MessageType.Warning);}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (triggerCount > 1)}
+\DoxyCodeLine{00085                     EditorGUILayout.HelpBox(triggerCount + \textcolor{stringliteral}{"{} colliders were found on this object and/or children. "{}} +}
+\DoxyCodeLine{00086                         \textcolor{stringliteral}{"{}More than one may cause multiple trigger events."{}}, MessageType.Warning);}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00090                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092     \}}
+\DoxyCodeLine{00093 \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095 }
+
+\end{DoxyCode}

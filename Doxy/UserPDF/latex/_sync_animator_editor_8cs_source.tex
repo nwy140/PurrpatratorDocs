@@ -1,0 +1,537 @@
+\doxysection{Sync\+Animator\+Editor.\+cs}
+\label{_sync_animator_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Editor/SyncAnimatorEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Editor/SyncAnimatorEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     [CustomEditor(typeof(SyncAnimator))]}
+\DoxyCodeLine{00020     [CanEditMultipleObjects]}
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncAnimatorEditor : SyncObjectEditor}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00026         \{}
+\DoxyCodeLine{00027             \textcolor{keyword}{get}}
+\DoxyCodeLine{00028             \{}
+\DoxyCodeLine{00029                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Attach this component to any root or child GameObject with an Animator to sync its AnimatorController over the network."{}} +}
+\DoxyCodeLine{00030                     \textcolor{stringliteral}{"{}\(\backslash\)nThe GameObject must be networked (has a PhotonView).\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00031                     passThruHelpText;}
+\DoxyCodeLine{00032             \}}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} SimpleDocsURLS.SYNCCOMPS\_PATH + \textcolor{stringliteral}{"{}\#syncanimator\_component"{}}; \}}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncAnimatorText"{}}; \}}
+\DoxyCodeLine{00044         \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         SyncAnimator t;}
+\DoxyCodeLine{00048         Animator a;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent passthruLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00051             \textcolor{stringliteral}{"{}Sync Pass Thru Methods"{}},}
+\DoxyCodeLine{00052             \textcolor{stringliteral}{"{}'this.SetTrigger()', 'this.Play()', 'this.CrossFadeInFixedTime()', etc methods are provided by this class, and will pass through the same named commands to the Animator. "{}} +}
+\DoxyCodeLine{00053             \textcolor{stringliteral}{"{}When enabled, these methods will be sent and triggered over the network. Disabling this allows these methods to act as if they were called directly on the Animator without any networking, which is convenient for testing."{}});}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent statesLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00056             \textcolor{stringliteral}{"{}Sync States"{}},}
+\DoxyCodeLine{00057             \textcolor{stringliteral}{"{}When enabled, changes in the animator current state are transmitted."{}});}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent layerWeightsLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00060             \textcolor{stringliteral}{"{}Sync Layer Weights"{}},}
+\DoxyCodeLine{00061             \textcolor{stringliteral}{"{}When enabled, changes to all layer weights will be synced."{}});}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent paramsLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00064             \textcolor{stringliteral}{"{}Sync Parameters"{}},}
+\DoxyCodeLine{00065             \textcolor{stringliteral}{"{}When enabled, animator parameters will be networked and synced."{}});}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00068         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent ikFeetLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00069             \textcolor{stringliteral}{"{}Sync IK Feet"{}},}
+\DoxyCodeLine{00070             \textcolor{stringliteral}{"{}When enabled, Feet IK will be synced."{}});}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent ikHandsLabel = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00073             \textcolor{stringliteral}{"{}Sync IK Hands"{}},}
+\DoxyCodeLine{00074             \textcolor{stringliteral}{"{}When enabled, Hands IK will be synced."{}});}
+\DoxyCodeLine{00075 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent label\_syncLayers = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00078             \textcolor{stringliteral}{"{}Sync Layers"{}},}
+\DoxyCodeLine{00079             \textcolor{stringliteral}{"{}State syncs for all layers, rather than just the root layer."{}});}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         }
+\DoxyCodeLine{00082         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent label\_Interp = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00083             \textcolor{stringliteral}{"{}Interp"{}},}
+\DoxyCodeLine{00084             \textcolor{stringliteral}{"{}Interpolation enables lerping(tweening) of values on clients between network updates."{}});}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent label\_Extrap = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00087             \textcolor{stringliteral}{"{}Extrap"{}},}
+\DoxyCodeLine{00088             \textcolor{stringliteral}{"{}Extrapolation replicates previous values if new values from the network fail to arrive in time. When disabled, values default to default value for that parameter as defined in the Animator"{}});}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent label\_Default = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00091             \textcolor{stringliteral}{"{}Defs"{}},}
+\DoxyCodeLine{00092             \textcolor{stringliteral}{"{}Default value used for initial values and extrapolation."{}});}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUIContent index\_Default = \textcolor{keyword}{new} GUIContent(}
+\DoxyCodeLine{00095             \textcolor{stringliteral}{"{}Index Animator Names"{}},}
+\DoxyCodeLine{00096             \textcolor{stringliteral}{"{}Polls Animator Controller for all State, Trigger and Transition hashes. Indexed values require a tiny fraction of bandwidth to send compared to raw 32 hashes. This happens often automatically, but it never hurts to press this button after making changes to your Animator Controller."{}});}
+\DoxyCodeLine{00097         }
+\DoxyCodeLine{00098             }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string}[] passThruTypeNames = System.Enum.GetNames(typeof(PassThruType));}
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} passThruHelpText;}
+\DoxyCodeLine{00101         \textcolor{keyword}{static} SyncAnimatorEditor()}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             passThruHelpText = \textcolor{stringliteral}{"{}<b>BE SURE</b> to call "{}} + typeof(SyncAnimator).Name + \textcolor{stringliteral}{"{} commands using the Pass Thru methods:\(\backslash\)n\(\backslash\)n"{}};}
+\DoxyCodeLine{00104             \textcolor{keywordflow}{foreach} (var s \textcolor{keywordflow}{in} passThruTypeNames)}
+\DoxyCodeLine{00105                 passThruHelpText += \textcolor{stringliteral}{"{}syncAnimator."{}} + s + \textcolor{stringliteral}{"{}()\(\backslash\)n"{}};}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             passThruHelpText += \textcolor{stringliteral}{"{}\(\backslash\)n...to network them as events.\(\backslash\)nThis is especially useful for triggers, as SetTrigger() often happens too quickly to sync as a parameter."{}};}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             base.OnEnable();}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             t = target as SyncAnimator;}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             \textcolor{keywordflow}{if} (!t)}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (t)}
+\DoxyCodeLine{00120                 a = t.GetComponent<Animator>();}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             \textcolor{keywordflow}{if} (a)}
+\DoxyCodeLine{00123                 t.RebuildIndexedNames();}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             }
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             uid = t.GetInstanceID();}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130             \textcolor{keywordflow}{if} (!showSummary.ContainsKey(uid))}
+\DoxyCodeLine{00131                 showSummary[uid] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (!showAdvancedParams.ContainsKey(uid))}
+\DoxyCodeLine{00134                 showAdvancedParams[uid] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         }
+\DoxyCodeLine{00139         \textcolor{keyword}{private} \textcolor{keywordtype}{int} uid;}
+\DoxyCodeLine{00140         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, bool> showSummary = \textcolor{keyword}{new} Dictionary<int, bool>();}
+\DoxyCodeLine{00141         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<int, bool> showAdvancedParams = \textcolor{keyword}{new} Dictionary<int, bool>();}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             base.OnInspectorGUI();}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             serializedObject.Update();}
+\DoxyCodeLine{00148             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             EditorGUILayout.Space();}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             Rect r = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (GUI.Button(r, index\_Default))}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 t.RebuildIndexedNames();}
+\DoxyCodeLine{00156                 showSummary[uid] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             showSummary[uid] = IndentedFoldout(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Indexed Name Summary"{}}), showSummary[uid], 1);}
+\DoxyCodeLine{00160             }
+\DoxyCodeLine{00161             \textcolor{keywordflow}{if} (showSummary[uid])}
+\DoxyCodeLine{00162             \{}
+\DoxyCodeLine{00163                 sb.Length = 0;}
+\DoxyCodeLine{00164                 sb.Append((uint)t.sharedTriggIndexes.Count).Append(\textcolor{stringliteral}{"{} Triggers found.\(\backslash\)n"{}});}
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.sharedTriggIndexes.Count; ++i)}
+\DoxyCodeLine{00166                     sb.Append(t.sharedTriggNames[i]).Append(\textcolor{stringliteral}{"{} : "{}}).Append(t.sharedTriggIndexes[i]).Append(\textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00167                 sb.Append(((uint)t.sharedTriggIndexes.Count -\/ 1).GetBitsForMaxValue() + 1).Append(\textcolor{stringliteral}{"{} bits per indexed Trigger.\(\backslash\)n33 bits per non-\/indexed Trigger.\(\backslash\)n\(\backslash\)n"{}});}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                 sb.Append((uint)t.sharedStateIndexes.Count).Append(\textcolor{stringliteral}{"{} States found.\(\backslash\)n"{}});}
+\DoxyCodeLine{00170                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.sharedStateIndexes.Count; ++i)}
+\DoxyCodeLine{00171                     sb.Append(t.sharedStateNames[i]).Append(\textcolor{stringliteral}{"{} : "{}}).Append(t.sharedStateIndexes[i]).Append(\textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00172                 sb.Append(((uint)t.sharedStateIndexes.Count -\/ 1).GetBitsForMaxValue() + 1).Append(\textcolor{stringliteral}{"{} bits per indexed State.\(\backslash\)n33 bits per non-\/indexed State.\(\backslash\)n\(\backslash\)n"{}});}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174                 \textcolor{comment}{//sb.Append((uint)t.sharedTransIndexes.Count).Append("{} Transitions found.\(\backslash\)n"{});}}
+\DoxyCodeLine{00175                 \textcolor{comment}{//for (int i = 0; i < t.sharedTransIndexes.Count; ++i)}}
+\DoxyCodeLine{00176                 \textcolor{comment}{//  sb.Append(t.sharedTransNames[i]).Append("{} : "{}).Append(t.sharedTransIndexes[i].hash).Append("{}\(\backslash\)n"{});}}
+\DoxyCodeLine{00177                 \textcolor{comment}{//sb.Append(FloatCrusher.GetBitsForMaxValue((uint)t.sharedTransIndexes.Count -\/ 1) + 1).Append("{} bits per indexed Transition.\(\backslash\)n33 bits per non-\/indexed Transitions."{});}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179                 EditorGUILayout.HelpBox(sb.ToString(), MessageType.None);}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             Divider();}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00185             t.syncPassThrus = EditorGUILayout.BeginToggleGroup(passthruLabel, t.syncPassThrus);}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{if} (t.syncPassThrus)}
+\DoxyCodeLine{00187             \{}
+\DoxyCodeLine{00188                 NormTimeCompressEnum(EditorGUILayout.GetControlRect(), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Compress NormalizedTime"{}}), ref t.passthruNormTimeCompress);}
+\DoxyCodeLine{00189                 \textcolor{comment}{//EditorGUILayout.HelpBox(passThruHelpText, MessageType.None);}}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             Divider();}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00196             t.syncStates = EditorGUILayout.BeginToggleGroup(statesLabel, t.syncStates);}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{if} (t.syncStates)}
+\DoxyCodeLine{00198                 StatesSection();}
+\DoxyCodeLine{00199             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201             Divider();}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00204             t.syncLayerWeights = EditorGUILayout.BeginToggleGroup(layerWeightsLabel, t.syncLayerWeights);}
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (t.syncLayerWeights)}
+\DoxyCodeLine{00206                 LayerWeightsSection();}
+\DoxyCodeLine{00207             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             Divider();}
+\DoxyCodeLine{00210             }
+\DoxyCodeLine{00212             t.syncParams = EditorGUILayout.BeginToggleGroup(paramsLabel, t.syncParams);}
+\DoxyCodeLine{00213             \textcolor{keywordflow}{if} (t.syncParams)}
+\DoxyCodeLine{00214                 ParamSection();}
+\DoxyCodeLine{00215             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217             Divider();}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219 \textcolor{preprocessor}{\#if SNS\_SYNCIK}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00222             t.syncIKFeet = EditorGUILayout.BeginToggleGroup(ikFeetLabel, t.syncIKFeet);}
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (t.syncIKFeet)}
+\DoxyCodeLine{00224                 IKFeetSection();}
+\DoxyCodeLine{00225             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             Divider();}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             t.syncIKHands = EditorGUILayout.BeginToggleGroup(ikHandsLabel, t.syncIKHands);}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{if} (t.syncIKHands)}
+\DoxyCodeLine{00231                 IKHandsSection();}
+\DoxyCodeLine{00232             EditorGUILayout.EndToggleGroup();}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             EditorGUILayout.Space();}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00239                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00240         \}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         \textcolor{keyword}{private} \textcolor{keywordtype}{void} StatesSection()}
+\DoxyCodeLine{00243         \{}
+\DoxyCodeLine{00244             NormTimeCompressEnum(EditorGUILayout.GetControlRect(), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Compress NormalizedTime"{}}), ref t.normalizedTimeCompress);}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             InspectorWidgets.MiniToggle(t, EditorGUILayout.GetControlRect(), label\_syncLayers, ref t.syncLayers);}
+\DoxyCodeLine{00247         \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249         \textcolor{keyword}{private} \textcolor{keywordtype}{void} LayerWeightsSection()}
+\DoxyCodeLine{00250         \{}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if} (t.syncLayerWeights)}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 NormTimeCompressEnum(EditorGUILayout.GetControlRect(), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Compress LayerWeight"{}}), ref t.layerWeightCompress);}
+\DoxyCodeLine{00255             \}}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \textcolor{keyword}{private} \textcolor{keywordtype}{void} NormTimeCompressEnum(Rect r, GUIContent gc, ref NormalizedFloatCompression compression)}
+\DoxyCodeLine{00259         \{}
+\DoxyCodeLine{00260             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + 16 \}, gc, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}});}
+\DoxyCodeLine{00261             Rect enumrect = \textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + 170, y = r.y + 1 \};}
+\DoxyCodeLine{00262             var newweight = (NormalizedFloatCompression)EditorGUI.EnumPopup(enumrect, GUIContent.none, compression\textcolor{comment}{/*, (GUIStyle)"{}GV Gizmo DropDown"{}*/});}
+\DoxyCodeLine{00263             \textcolor{keywordflow}{if} (newweight != compression)}
+\DoxyCodeLine{00264             \{}
+\DoxyCodeLine{00265                 Undo.RecordObject(t, \textcolor{stringliteral}{"{}Change Normalized Float Compression"{}});}
+\DoxyCodeLine{00266                 compression = newweight;}
+\DoxyCodeLine{00267             \}}
+\DoxyCodeLine{00268         \}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270 \textcolor{preprocessor}{        \#region Parameters}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272         \textcolor{keyword}{static} GUIContent triggerLabel = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Triggers"{}}, \textcolor{stringliteral}{"{}WARNING: Triggers tend to fire and clear instantly, resulting in a failure to sync. Use the this.Trigger() pass through call instead."{}});}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274         \textcolor{keyword}{static} GUIStyle PaddedBoxGS;}
+\DoxyCodeLine{00275         \textcolor{keyword}{static} GUIStyle PaddedGS;}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277         \textcolor{keyword}{const} \textcolor{keywordtype}{float} COL1 = 40;}
+\DoxyCodeLine{00278         \textcolor{keyword}{const} \textcolor{keywordtype}{float} COL2 = 64;}
+\DoxyCodeLine{00279         \textcolor{keyword}{const} \textcolor{keywordtype}{float} COL3 = 60;}
+\DoxyCodeLine{00280         \textcolor{keyword}{const} \textcolor{keywordtype}{float} COL4 = 32;}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ParamSection()}
+\DoxyCodeLine{00283         \{}
+\DoxyCodeLine{00284             \textcolor{keywordflow}{if} (PaddedBoxGS == \textcolor{keyword}{null})}
+\DoxyCodeLine{00285                 PaddedBoxGS = \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}}) \{ normal = ((GUIStyle)\textcolor{stringliteral}{"{}GroupBox"{}}).normal, padding = \textcolor{keyword}{new} RectOffset(4, 4, 4, 4) \};}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             \textcolor{keywordflow}{if} (PaddedGS == \textcolor{keyword}{null})}
+\DoxyCodeLine{00288                 PaddedGS = \textcolor{keyword}{new} GUIStyle(PaddedBoxGS) \{ normal = ((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}).normal \};}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             t.useGlobalParamSettings = EditorGUILayout.ToggleLeft(\textcolor{stringliteral}{"{}Use Global Settings"{}}, t.useGlobalParamSettings);}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292             showAdvancedParams[uid] = IndentedFoldout(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Adv. Parameter Settings"{}}), showAdvancedParams[uid], 1);}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294             \textcolor{keywordflow}{if} (showAdvancedParams[uid])}
+\DoxyCodeLine{00295             \{}
+\DoxyCodeLine{00296                 var indenthold = EditorGUI.indentLevel;}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                 EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00299                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00300                 EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1));}
+\DoxyCodeLine{00301                 EditorGUILayout.LabelField(label\_Interp, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}, GUILayout.MaxWidth(COL2));}
+\DoxyCodeLine{00302                 EditorGUILayout.LabelField(label\_Extrap, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}, GUILayout.MaxWidth(COL3));}
+\DoxyCodeLine{00303                 EditorGUILayout.LabelField(label\_Default, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}, GUILayout.MaxWidth(COL4));}
+\DoxyCodeLine{00304                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306                 ParameterDefaults defs = t.sharedParamDefaults;}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308                 \textcolor{keywordflow}{if} (t.useGlobalParamSettings)}
+\DoxyCodeLine{00309                 \{}
+\DoxyCodeLine{00310                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00311                     InspectorWidgets.MiniToggle(t, EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1)), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Ints"{}}), ref defs.includeInts);}
+\DoxyCodeLine{00312                     DrawInterp(AnimatorControllerParameterType.Int, ref defs.interpolateInts);}
+\DoxyCodeLine{00313                     DrawExtrap(AnimatorControllerParameterType.Int, ref defs.extrapolateInts);}
+\DoxyCodeLine{00314                     DrawDefaults(AnimatorControllerParameterType.Int, ref defs.defaultInt);}
+\DoxyCodeLine{00315                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00318                     InspectorWidgets.MiniToggle(t, EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1)), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Floats"{}}), ref defs.includeFloats);}
+\DoxyCodeLine{00319                     DrawInterp(AnimatorControllerParameterType.Float, ref defs.interpolateFloats);}
+\DoxyCodeLine{00320                     DrawExtrap(AnimatorControllerParameterType.Float, ref defs.extrapolateFloats);}
+\DoxyCodeLine{00321                     DrawDefaults(AnimatorControllerParameterType.Float, ref defs.defaultFloat);}
+\DoxyCodeLine{00322                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00325                     InspectorWidgets.MiniToggle(t, EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1)), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Bools"{}}), ref defs.includeBools);}
+\DoxyCodeLine{00326                     EditorGUILayout.GetControlRect(GUILayout.MaxWidth(COL2));}
+\DoxyCodeLine{00327                     DrawExtrap(AnimatorControllerParameterType.Bool, ref defs.extrapolateBools);}
+\DoxyCodeLine{00328                     DrawDefaults(AnimatorControllerParameterType.Bool, ref defs.defaultBool);}
+\DoxyCodeLine{00329                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00332                     var tr = EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1));}
+\DoxyCodeLine{00333                     InspectorWidgets.MiniToggle(t, tr, triggerLabel, ref defs.includeTriggers);}
+\DoxyCodeLine{00334                     \textcolor{keywordflow}{if} (t.sharedParamDefaults.includeTriggers)}
+\DoxyCodeLine{00335                     \{}
+\DoxyCodeLine{00336                         GUI.DrawTexture(\textcolor{keyword}{new} Rect(tr) \{ x = 2, width = 16 \}, EditorGUIUtility.FindTexture(\textcolor{stringliteral}{"{}console.warnicon"{}}));}
+\DoxyCodeLine{00337                     \}}
+\DoxyCodeLine{00338                     EditorGUILayout.GetControlRect(GUILayout.MaxWidth(COL2));}
+\DoxyCodeLine{00339                     DrawExtrap(AnimatorControllerParameterType.Trigger, ref defs.extrapolateTriggers);}
+\DoxyCodeLine{00340                     DrawDefaults(AnimatorControllerParameterType.Trigger, ref defs.defaultTrigger);}
+\DoxyCodeLine{00341                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343                 \}}
+\DoxyCodeLine{00344                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00345                 \{}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347                     var names = ParameterSettings.RebuildParamSettings(a, ref t.sharedParamSettings, ref t.paramCount, t.sharedParamDefaults);}
+\DoxyCodeLine{00348                     serializedObject.Update();}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350                     var pms = t.sharedParamSettings;}
+\DoxyCodeLine{00351                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.paramCount; ++i)}
+\DoxyCodeLine{00352                     \{}
+\DoxyCodeLine{00353                         var pm = pms[i];}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355                         EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357                         \textcolor{comment}{// Type Letter Box (left vertical)}}
+\DoxyCodeLine{00358                         EditorGUILayout.BeginVertical(PaddedBoxGS, GUILayout.MaxWidth(8));}
+\DoxyCodeLine{00359                         TypeLabel(EditorGUILayout.GetControlRect(GUILayout.MaxWidth(12)), pm.paramType);}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361                         EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363                         \textcolor{comment}{// Main Vertical (Right)}}
+\DoxyCodeLine{00364                         EditorGUILayout.BeginVertical((pm.include) ? PaddedBoxGS : PaddedGS);}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366                         EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368                         InspectorWidgets.MiniToggle(t, EditorGUILayout.GetControlRect(GUILayout.MinWidth(COL1)), \textcolor{keyword}{new} GUIContent(names[i]), ref pm.include);}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370                         EditorGUI.BeginDisabledGroup(!pm.include);}
+\DoxyCodeLine{00371                         DrawInterp(pm.paramType, ref pm.interpolate);}
+\DoxyCodeLine{00372                         DrawExtrap(pm.paramType, ref pm.extrapolate);}
+\DoxyCodeLine{00373                         DrawDefaults(pm.paramType, ref pm.defaultValue);}
+\DoxyCodeLine{00374                         EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376                         EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378                         \textcolor{comment}{// Compression Row}}
+\DoxyCodeLine{00379                         \textcolor{keywordflow}{if} (pm.include)}
+\DoxyCodeLine{00380                         \{}
+\DoxyCodeLine{00381                             \textcolor{keywordflow}{if} (pm.paramType == AnimatorControllerParameterType.Float || pm.paramType == AnimatorControllerParameterType.Int)}
+\DoxyCodeLine{00382                             \{}
+\DoxyCodeLine{00383                                 var sharedPSs = serializedObject.FindProperty(\textcolor{stringliteral}{"{}sharedParamSettings"{}});}
+\DoxyCodeLine{00384                                 var ps = sharedPSs.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386                                 var fcrusher = (pm.paramType == AnimatorControllerParameterType.Float) ? ps.FindPropertyRelative(\textcolor{stringliteral}{"{}fcrusher"{}}) : ps.FindPropertyRelative(\textcolor{stringliteral}{"{}icrusher"{}});}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388                                 var r = EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, EditorGUI.GetPropertyHeight(fcrusher));}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390                                 Rect rectCrusher = \textcolor{keyword}{new} Rect(r) \{ height = 16 \};}
+\DoxyCodeLine{00391                                 EditorGUI.PropertyField(rectCrusher, fcrusher);}
+\DoxyCodeLine{00392                             \}}
+\DoxyCodeLine{00393                         \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395                         \textcolor{comment}{// End Right Vertical}}
+\DoxyCodeLine{00396                         EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398                         \textcolor{comment}{// End Parameter}}
+\DoxyCodeLine{00399                         EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401                     \}}
+\DoxyCodeLine{00402                 \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404                 EditorGUI.indentLevel = indenthold;}
+\DoxyCodeLine{00405             \}}
+\DoxyCodeLine{00406         \}}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TypeLabel(Rect r, AnimatorControllerParameterType ptype)}
+\DoxyCodeLine{00409         \{}
+\DoxyCodeLine{00410             \textcolor{keywordtype}{string} typeinit =}
+\DoxyCodeLine{00411                         ptype == AnimatorControllerParameterType.Bool ? \textcolor{stringliteral}{"{}B"{}} :}
+\DoxyCodeLine{00412                         ptype == AnimatorControllerParameterType.Int ? \textcolor{stringliteral}{"{}I"{}} :}
+\DoxyCodeLine{00413                         ptype == AnimatorControllerParameterType.Float ? \textcolor{stringliteral}{"{}F"{}} :}
+\DoxyCodeLine{00414                         \textcolor{stringliteral}{"{}T"{}};}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00416             EditorGUI.LabelField(r, typeinit, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}});}
+\DoxyCodeLine{00417         \}}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00419         \textcolor{keyword}{private} Rect ColLabel(\textcolor{keywordtype}{string} label, ref \textcolor{keywordtype}{bool} use)}
+\DoxyCodeLine{00420         \{}
+\DoxyCodeLine{00421             Rect r = ColLabel(\textcolor{keyword}{new} GUIContent(label));}
+\DoxyCodeLine{00422             Rect toggleR = r;}
+\DoxyCodeLine{00423             toggleR.width = 16;}
+\DoxyCodeLine{00424             InspectorWidgets.MiniToggle(t, r, GUIContent.none, ref use, \textcolor{keyword}{false});}
+\DoxyCodeLine{00425             }
+\DoxyCodeLine{00426             \textcolor{keywordflow}{return} r;}
+\DoxyCodeLine{00427         \}}
+\DoxyCodeLine{00428         \textcolor{keyword}{private} Rect ColLabel(GUIContent label, ref \textcolor{keywordtype}{bool} use)}
+\DoxyCodeLine{00429         \{}
+\DoxyCodeLine{00430             Rect r = ColLabel(label);}
+\DoxyCodeLine{00431             Rect toggleR = r;}
+\DoxyCodeLine{00432             toggleR.width = 16;}
+\DoxyCodeLine{00433             InspectorWidgets.MiniToggle(t, r, GUIContent.none, ref use, \textcolor{keyword}{false});}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{return} r;}
+\DoxyCodeLine{00436         \}}
+\DoxyCodeLine{00437         \textcolor{keyword}{private} Rect ColLabel(GUIContent label)}
+\DoxyCodeLine{00438         \{}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440             Rect r = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00441             r.xMin -\/= 2;}
+\DoxyCodeLine{00442             Rect labelrect = \textcolor{keyword}{new} Rect(r.xMin + 16, r.yMin, r.width, r.height);}
+\DoxyCodeLine{00443             EditorGUI.LabelField(labelrect, label, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}});}
+\DoxyCodeLine{00444 }
+\DoxyCodeLine{00445             \textcolor{keywordflow}{return} r;}
+\DoxyCodeLine{00446         \}}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent intGC = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}"{}}, \textcolor{stringliteral}{"{}How interpolaton is handed for this parameter. Interpolation occurs in Update() between application of net updates."{}});}
+\DoxyCodeLine{00449         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawInterp(AnimatorControllerParameterType type, ref ParameterInterpolation i)}
+\DoxyCodeLine{00450         \{}
+\DoxyCodeLine{00451             Rect r = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(COL2));}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453             \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Bool || type == AnimatorControllerParameterType.Trigger)}
+\DoxyCodeLine{00454                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456             var newi = (ParameterInterpolation)EditorGUI.EnumPopup(r, intGC, i, (GUIStyle)\textcolor{stringliteral}{"{}MiniPopup"{}});}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458             \textcolor{keywordflow}{if} (newi != i)}
+\DoxyCodeLine{00459             \{}
+\DoxyCodeLine{00460                 Undo.RecordObject(target, \textcolor{stringliteral}{"{}Modify Sync Animator"{}});}
+\DoxyCodeLine{00461                 i = newi;}
+\DoxyCodeLine{00462             \}}
+\DoxyCodeLine{00463         \}}
+\DoxyCodeLine{00464 }
+\DoxyCodeLine{00465         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent extGC = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}"{}}, \textcolor{stringliteral}{"{}How extrapolation is handed for this parameter. Extrapolation occurs when an update fails to arrive and a guess needs to be made for this value."{}});}
+\DoxyCodeLine{00466         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawExtrap(AnimatorControllerParameterType type, ref ParameterExtrapolation e)}
+\DoxyCodeLine{00467         \{}
+\DoxyCodeLine{00468             Rect r = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(COL3));}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470             ParameterExtrapolation newe;}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472             }
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474             \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Bool || type == AnimatorControllerParameterType.Trigger)}
+\DoxyCodeLine{00475                 newe = (ParameterExtrapolation)EditorGUI.EnumPopup(r, extGC, (ParameterMissingHold)e, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}MiniPopup"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0,0,0,0) \});}
+\DoxyCodeLine{00476             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00477                 newe = (ParameterExtrapolation)EditorGUI.EnumPopup(r, extGC, e, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}MiniPopup"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0) \});}
+\DoxyCodeLine{00478 }
+\DoxyCodeLine{00479             \textcolor{keywordflow}{if} (newe != e)}
+\DoxyCodeLine{00480             \{}
+\DoxyCodeLine{00481                 Undo.RecordObject(target, \textcolor{stringliteral}{"{}Modify Sync Animator"{}});}
+\DoxyCodeLine{00482                 e = newe;}
+\DoxyCodeLine{00483             \}}
+\DoxyCodeLine{00484             }
+\DoxyCodeLine{00485         \}}
+\DoxyCodeLine{00486         }
+\DoxyCodeLine{00487         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent defGC = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}"{}}, \textcolor{stringliteral}{"{}The default value for this parameter when extropation occurs."{}});}
+\DoxyCodeLine{00488         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawDefaults(AnimatorControllerParameterType type, ref SmartVar v)}
+\DoxyCodeLine{00489         \{}
+\DoxyCodeLine{00490             Rect r = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(COL4));}
+\DoxyCodeLine{00491 }
+\DoxyCodeLine{00492             \textcolor{comment}{//EditorGUI.LabelField(r, defGC, (GUIStyle)"{}MiniLabel"{});}}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494             \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Float)}
+\DoxyCodeLine{00495             \{}
+\DoxyCodeLine{00496                 var newv = EditorGUI.FloatField(r, defGC, v.Float, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}MiniTextField"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0,0,0,0) \});}
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{if} (newv != v)}
+\DoxyCodeLine{00498                 \{}
+\DoxyCodeLine{00499                     Undo.RecordObject(target, \textcolor{stringliteral}{"{}Modify Sync Animator"{}});}
+\DoxyCodeLine{00500                     v = newv;}
+\DoxyCodeLine{00501                 \}}
+\DoxyCodeLine{00502             \}}
+\DoxyCodeLine{00503             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (type == AnimatorControllerParameterType.Int)}
+\DoxyCodeLine{00504             \{}
+\DoxyCodeLine{00505                 var newv = EditorGUI.IntField(r, defGC, v.Int, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}MiniTextField"{}}) \{ margin = \textcolor{keyword}{new} RectOffset(0, 0, 0, 0) \});}
+\DoxyCodeLine{00506                 \textcolor{keywordflow}{if} (newv != v)}
+\DoxyCodeLine{00507                 \{}
+\DoxyCodeLine{00508                     Undo.RecordObject(target, \textcolor{stringliteral}{"{}Modify Sync Animator"{}});}
+\DoxyCodeLine{00509                     v = newv;}
+\DoxyCodeLine{00510                 \}}
+\DoxyCodeLine{00511             \}}
+\DoxyCodeLine{00512             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00513             \{}
+\DoxyCodeLine{00514                 var newv = EditorGUI.Toggle(r, defGC, v.Bool);}
+\DoxyCodeLine{00515                 \textcolor{keywordflow}{if} (newv != v)}
+\DoxyCodeLine{00516                 \{}
+\DoxyCodeLine{00517                     Undo.RecordObject(target, \textcolor{stringliteral}{"{}Modify Sync Animator"{}});}
+\DoxyCodeLine{00518                     v = newv;}
+\DoxyCodeLine{00519                 \}}
+\DoxyCodeLine{00520             \}}
+\DoxyCodeLine{00521 }
+\DoxyCodeLine{00522         \}}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524 \textcolor{preprocessor}{\#endregion}}
+\DoxyCodeLine{00525 }
+\DoxyCodeLine{00526         \textcolor{keyword}{private} \textcolor{keywordtype}{void} IKFeetSection()}
+\DoxyCodeLine{00527         \{}
+\DoxyCodeLine{00528             EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}ikFeetPosCrusher"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}IK Hand Position"{}}));}
+\DoxyCodeLine{00529             EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}ikFeetRotCrusher"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}IK Hand Rotation"{}}));}
+\DoxyCodeLine{00530         \}}
+\DoxyCodeLine{00531 }
+\DoxyCodeLine{00532         \textcolor{keyword}{private} \textcolor{keywordtype}{void} IKHandsSection()}
+\DoxyCodeLine{00533         \{}
+\DoxyCodeLine{00534             EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}ikHandPosCrusher"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}IK Foot Position"{}}));}
+\DoxyCodeLine{00535             EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}ikHandRotCrusher"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}IK Foot Rotation"{}}));}
+\DoxyCodeLine{00536         \}}
+\DoxyCodeLine{00537     \}}
+\DoxyCodeLine{00538 \}}
+\DoxyCodeLine{00539 }
+
+\end{DoxyCode}

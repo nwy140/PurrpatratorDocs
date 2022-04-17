@@ -1,0 +1,85 @@
+\doxysection{Breakable\+Furniture.\+cs}
+\label{_breakable_furniture_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/BreakableFurniture.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/BreakableFurniture.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} SInt.MissionObjectives;}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{keyword}{public} \textcolor{keyword}{class }BreakableFurniture : MonoBehaviourPun, IPunObservable}
+\DoxyCodeLine{00008 \{}
+\DoxyCodeLine{00009     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isBroken;}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} GameObject destroyedObject;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isBrokenSpawned;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keywordtype}{float} breakTime;}
+\DoxyCodeLine{00015     PhotonView PV;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     [SerializeField] \textcolor{keyword}{private} SoundGeneralDynamicsMultiplayerPhoton soundHost; \textcolor{comment}{//15-\/3-\/2022 -\/ Chan Kwok Chun}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         isBroken = \textcolor{keyword}{false};}
+\DoxyCodeLine{00022         isBrokenSpawned = \textcolor{keyword}{false};}
+\DoxyCodeLine{00023     \}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027         TryGetComponent(out PV);}
+\DoxyCodeLine{00028     \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032         \textcolor{keywordflow}{if} (isBroken)}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             isBrokenSpawned = \textcolor{keyword}{false};}
+\DoxyCodeLine{00035             \textcolor{comment}{//rend.sharedMaterial = material[1];}}
+\DoxyCodeLine{00036             \textcolor{keywordflow}{if}(isBrokenSpawned == \textcolor{keyword}{false})}
+\DoxyCodeLine{00037             \{}
+\DoxyCodeLine{00038                 }
+\DoxyCodeLine{00039                 PV.RPC(nameof(SpawnBrokenVersion), RpcTarget.AllBuffered);}
+\DoxyCodeLine{00040             \}}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042     \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044     [PunRPC]}
+\DoxyCodeLine{00045     \textcolor{keyword}{public} \textcolor{keywordtype}{void} SpawnBrokenVersion()}
+\DoxyCodeLine{00046     \{}
+\DoxyCodeLine{00047         \textcolor{keywordflow}{if} (isBrokenSpawned == \textcolor{keyword}{true})}
+\DoxyCodeLine{00048             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00049         \textcolor{keywordflow}{if} (soundHost != \textcolor{keyword}{null})}
+\DoxyCodeLine{00050             soundHost.multiplayerSoundPiece(0); \textcolor{comment}{//15-\/3-\/2022 -\/ Chan Kwok Chun}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         isBrokenSpawned = \textcolor{keyword}{true};}
+\DoxyCodeLine{00053         \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{00054         \{ }
+\DoxyCodeLine{00055             PhotonNetwork.InstantiateRoomObject(destroyedObject.name, transform.position, transform.rotation);}
+\DoxyCodeLine{00056             PhotonNetwork.Destroy(PV.gameObject);}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{comment}{//Add Score}}
+\DoxyCodeLine{00060         \textcolor{keywordtype}{int} score = ScoreManager.instance.furniture1;}
+\DoxyCodeLine{00061         ScoreManager.instance.SetBrokenFurnitureScore(score);}
+\DoxyCodeLine{00062         \textcolor{comment}{// Mo Stands for Mission Objective}}
+\DoxyCodeLine{00063         MoManager.instance.TryProgressMoByID(\textcolor{stringliteral}{"{}C2"{}});}
+\DoxyCodeLine{00064     \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067     \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00068     \{}
+\DoxyCodeLine{00069         \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             stream.SendNext(isBrokenSpawned);}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075             isBrokenSpawned = (bool)stream.ReceiveNext();}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077     \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 \}}
+
+\end{DoxyCode}

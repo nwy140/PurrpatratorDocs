@@ -1,0 +1,452 @@
+\doxysection{Sync\+Contact.\+cs}
+\label{_sync_contact_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncContact.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncContact.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncContact : SyncObject<SyncContact.Frame>}
+\DoxyCodeLine{00024         , ISyncContact}
+\DoxyCodeLine{00025         , IOnSnapshot}
+\DoxyCodeLine{00026         , IOnNetSerialize}
+\DoxyCodeLine{00027         , IOnAuthorityChanged}
+\DoxyCodeLine{00028         , IOnCaptureState}
+\DoxyCodeLine{00029         , ISerializationOptional}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00033         [EnumMask(\textcolor{keyword}{true})]}
+\DoxyCodeLine{00034 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035         \textcolor{comment}{//public ContactType triggerOn = ContactType.Enter | ContactType.Hitscan;}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{comment}{//[System.NonSerialized] public List<IOnContact> OnTriggerCallbacks = new List<IOnContact>();}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{keyword}{protected} Frame currentState = \textcolor{keyword}{new} Frame();}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{protected} IContactTrigger contactTrigger;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{protected} Rigidbody rb;}
+\DoxyCodeLine{00044         \textcolor{keyword}{protected} Rigidbody2D rb2d;}
+\DoxyCodeLine{00045         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} \_hasRigidbody;}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} HasRigidbody \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_hasRigidbody; \} \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} GameObject VisiblePickupObj}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             \textcolor{keyword}{get}}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} gameObject;}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00057         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             base.Reset();}
+\DoxyCodeLine{00060             serializeThis = \textcolor{keyword}{true};}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064 \textcolor{preprocessor}{        \#region Frame}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keyword}{struct }ContactRecord}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             \textcolor{keyword}{public} ContactType contactType;}
+\DoxyCodeLine{00069             \textcolor{keyword}{public} \textcolor{keywordtype}{int} contactSystemViewID;}
+\DoxyCodeLine{00070             \textcolor{keyword}{public} \textcolor{keywordtype}{byte} contactSystemIndex;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{keyword}{public} ContactRecord(\textcolor{keywordtype}{int} contactSystemViewID, \textcolor{keywordtype}{byte} contactSystemIndex, ContactType contactType)}
+\DoxyCodeLine{00073             \{}
+\DoxyCodeLine{00074                 this.contactSystemViewID = contactSystemViewID;}
+\DoxyCodeLine{00075                 this.contactSystemIndex = contactSystemIndex;}
+\DoxyCodeLine{00076                 this.contactType = contactType;}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{return} contactType + \textcolor{stringliteral}{"{} view: "{}} + contactSystemViewID + \textcolor{stringliteral}{"{} index:"{}} + contactSystemIndex;}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keyword}{public} List<ContactRecord> contactRecords = \textcolor{keyword}{new} List<ContactRecord>(1);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId)}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             \textcolor{comment}{// triggers are events, not states, so they don't extrapolate.}}
+\DoxyCodeLine{00097             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00100                 this.content = FrameContents.Empty;}
+\DoxyCodeLine{00101                 this.contactRecords.Clear();}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keyword}{public} \textcolor{keyword}{static} Frame Construct(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Frame(frameId);}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 base.Clear();}
+\DoxyCodeLine{00112                 contactRecords.Clear();}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114         \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116 \textcolor{preprocessor}{        \#endregion Frame}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118 \textcolor{preprocessor}{        \#region Startup}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             base.OnAwake();}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             contactTrigger = GetComponent<IContactTrigger>();}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             rb = GetComponentInParent<Rigidbody>();}
+\DoxyCodeLine{00127             rb2d = GetComponentInParent<Rigidbody2D>();}
+\DoxyCodeLine{00128             \_hasRigidbody = rb || rb2d;}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130             \textcolor{comment}{//transform.GetNestedComponentsInChildren<IOnContact, NetObject>(this.OnTriggerCallbacks);}}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133 \textcolor{preprocessor}{        \#endregion Startup}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135 \textcolor{preprocessor}{        \#region Triggers}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{protected} Queue<ContactEvent> queuedContactEvents = \textcolor{keyword}{new} Queue<ContactEvent>();}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139 \textcolor{preprocessor}{        \#region OnEnter}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         \textcolor{comment}{// Step \#1}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SyncContactEvent(ContactEvent contactEvent)}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00149             \textcolor{comment}{//if (triggerOn != 0 \&\& (triggerOn \& contactType) == 0)}}
+\DoxyCodeLine{00150             \textcolor{comment}{//    return;}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{comment}{//Debug.Log(name + "{} OnContactEvent <b>ENQUEUE</b> "{} + "{} "{} + contactEvent.contactSystem.GetType().Name + "{}  trigon:"{} + triggerOn + "{}/"{} + contactType);}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             EnqueueEvent(contactEvent);}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} EnqueueEvent(ContactEvent contactEvent)}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00161             \textcolor{comment}{//IContactSystem ics = contactEvent.contactSystem;}}
+\DoxyCodeLine{00162             \textcolor{comment}{//if (ReferenceEquals(ics, null))}}
+\DoxyCodeLine{00163             \textcolor{comment}{//    return false;}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             queuedContactEvents.Enqueue(contactEvent);}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             Frame frame = frames[frameId];}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             ContactEvent contactEvent;}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{while} (queuedContactEvents.Count > 0)}
+\DoxyCodeLine{00189             \{}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191                 contactEvent = queuedContactEvents.Dequeue();}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                 var consumed = Contact(contactEvent);}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                 \textcolor{comment}{//Debug.Log(name + "{} fid:"{} + frameId + "{} CAP "{} + "{} "{} + contactEvent.contactType);}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197                 \textcolor{comment}{//Debug.Log(name + "{} <b>OnCapture:</b> "{} + consumed);}}
+\DoxyCodeLine{00198                 \textcolor{keywordflow}{if} (consumed != Consumption.None)}
+\DoxyCodeLine{00199                 \{}
+\DoxyCodeLine{00200                     frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00201                     var tes = frame.contactRecords;}
+\DoxyCodeLine{00202                     var te = \textcolor{keyword}{new} ContactRecord( }
+\DoxyCodeLine{00203                         contactEvent.contactSystem.ViewID, }
+\DoxyCodeLine{00204                         contactEvent.contactSystem.SystemIndex,}
+\DoxyCodeLine{00205                         contactEvent.contactType}
+\DoxyCodeLine{00206                     );}
+\DoxyCodeLine{00207                     tes.Add(te);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209                     \textcolor{comment}{//Consume(frame, contactEvent, consumed);}}
+\DoxyCodeLine{00210                     \textcolor{comment}{//OnTriggerSuccess(frame, contactEvent, consumed);}}
+\DoxyCodeLine{00211                 \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213                 \textcolor{comment}{// Stop testing if has been consumed.}}
+\DoxyCodeLine{00214                 \textcolor{keywordflow}{if} (consumed == Consumption.All)}
+\DoxyCodeLine{00215                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             queuedContactEvents.Clear();}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220         \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222         \textcolor{comment}{//protected virtual void OnTriggerSuccess(Frame frame, ContactEvent contactEvent, Consumption consumed)}}
+\DoxyCodeLine{00223         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00230         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} Consumption Contact(ContactEvent contactEvent)}
+\DoxyCodeLine{00231         \{}
+\DoxyCodeLine{00232             \textcolor{comment}{//Debug.Log(name + "{} CONTACTS "{} + this.OnTriggerCallbacks.Count);}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{keywordflow}{return} contactTrigger.ContactCallbacks(contactEvent);}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             \textcolor{comment}{//for (int i = 0, cnt = this.OnTriggerCallbacks.Count; i < cnt; ++i)}}
+\DoxyCodeLine{00238             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00239             \textcolor{comment}{//    Consumption consumed = this.OnTriggerCallbacks[i].OnContact(contactEvent);}}
+\DoxyCodeLine{00240             \textcolor{comment}{//    if (consumed != Consumption.None)}}
+\DoxyCodeLine{00241             \textcolor{comment}{//        return consumed;}}
+\DoxyCodeLine{00242             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244             \textcolor{comment}{//return Consumption.None;}}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Consume(Frame frame, ContactEvent contactEvent, Consumption consumed)}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keyword}{virtual} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258             \textcolor{comment}{//if (!IsMine)}}
+\DoxyCodeLine{00259             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00260             \textcolor{comment}{//    /// attached bool}}
+\DoxyCodeLine{00261             \textcolor{comment}{//    buffer.WriteBool(false, ref bitposition);}}
+\DoxyCodeLine{00262             \textcolor{comment}{//    return SerializationFlags.None;}}
+\DoxyCodeLine{00263             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265             Frame frame = frames[frameId];}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             SerializationFlags flags;}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269             var tes = frame.contactRecords;}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (frame.content == FrameContents.Complete)}
+\DoxyCodeLine{00274             \{}
+\DoxyCodeLine{00275                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = tes.Count; i < cnt; ++i)}
+\DoxyCodeLine{00276                 \{}
+\DoxyCodeLine{00277                     var te = tes[i];}
+\DoxyCodeLine{00278                     }
+\DoxyCodeLine{00279                     \textcolor{comment}{//Debug.LogError("{}fid: "{} + frameId + "{} Send Pickup "{} + te.contactSystemViewID + "{} "{} + te.contactType + "{} "{} + te.contactSystemIndex);}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00282                     buffer.Write(1, ref bitposition, 1);}
+\DoxyCodeLine{00283                     buffer.WritePackedBytes((uint)te.contactSystemViewID, ref bitposition, 32);}
+\DoxyCodeLine{00284                     \textcolor{comment}{// TODO: this requires a proper bitcount, not 8}}
+\DoxyCodeLine{00285                     buffer.WritePackedBits(te.contactSystemIndex, ref bitposition, 8);}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287                     \textcolor{comment}{// Convert the mask into an index, since only one bit should ever be true.}}
+\DoxyCodeLine{00288                     var contactType = te.contactType;}
+\DoxyCodeLine{00289                     \textcolor{keywordtype}{int} maskindex = contactType == ContactType.Enter ? 0 : contactType == ContactType.Hitscan ? 3 : contactType == ContactType.Stay ? 1 : 2;}
+\DoxyCodeLine{00290                     buffer.Write((uint)maskindex, ref bitposition, 2);}
+\DoxyCodeLine{00291                 \}}
+\DoxyCodeLine{00292                 buffer.Write(0, ref bitposition, 1);}
+\DoxyCodeLine{00293                 flags = SerializationFlags.HasContent | SerializationFlags.ForceReliable;}
+\DoxyCodeLine{00294             \}}
+\DoxyCodeLine{00295             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00296             \{}
+\DoxyCodeLine{00298                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00299                 flags = SerializationFlags.None;}
+\DoxyCodeLine{00300             \}}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00303         \}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00306         \{}
+\DoxyCodeLine{00307             Frame frame = frames[originFrameId];}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{comment}{// Get first content bool to see if we have any contacts at all.}}
+\DoxyCodeLine{00310             \textcolor{keywordtype}{bool} hasContent = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (hasContent)}
+\DoxyCodeLine{00312             \{}
+\DoxyCodeLine{00314                 \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00315                 \{}
+\DoxyCodeLine{00316                     var tes = frame.contactRecords;}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318                     var te = \textcolor{keyword}{new} ContactRecord(}
+\DoxyCodeLine{00319                         (\textcolor{keywordtype}{int})buffer.ReadPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00320                         (\textcolor{keywordtype}{byte})buffer.ReadPackedBits(ref bitposition, 8),}
+\DoxyCodeLine{00321                         (ContactType)(1 << (\textcolor{keywordtype}{int})buffer.Read(ref bitposition, 2))}
+\DoxyCodeLine{00322                         );}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324                     \textcolor{comment}{//Debug.LogError(name + "{} DES: "{} + te);}}
+\DoxyCodeLine{00325                     tes.Add(te);}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327                 \}}
+\DoxyCodeLine{00328                 \textcolor{comment}{// Loop for all contact records.}}
+\DoxyCodeLine{00329                 \textcolor{keywordflow}{while} (buffer.ReadBool(ref bitposition));}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331                 frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00332                 \textcolor{keywordflow}{return} SerializationFlags.HasContent \textcolor{comment}{/*| SerializationFlags.ForceReliable*/};}
+\DoxyCodeLine{00333             \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335             \textcolor{comment}{// No contact records}}
+\DoxyCodeLine{00336             frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00337             \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340 \textcolor{preprocessor}{        \#endregion Serialization}}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00343         \{}
+\DoxyCodeLine{00344             base.ApplySnapshot(snapframe, targframe, snapIsValid, targIsValid);}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346             \textcolor{keywordflow}{if} (snapframe.content == FrameContents.Complete)}
+\DoxyCodeLine{00347             \{}
+\DoxyCodeLine{00348                 List<ContactRecord> contacts = snapframe.contactRecords;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = contacts.Count; i < cnt; ++i)}
+\DoxyCodeLine{00351                 \{}
+\DoxyCodeLine{00352                     ContactRecord contact = contacts[i];}
+\DoxyCodeLine{00353                     var pv = PhotonNetwork.GetPhotonView(contact.contactSystemViewID);}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355                     \textcolor{keywordflow}{if} (pv \&\& pv.IsMine)}
+\DoxyCodeLine{00356                     \{}
+\DoxyCodeLine{00357                         var cm = pv.GetComponent<ContactManager>();}
+\DoxyCodeLine{00358                         \textcolor{keywordflow}{if} (cm)}
+\DoxyCodeLine{00359                         \{}
+\DoxyCodeLine{00360                             var currentAttachedICS = cm.GetContacting(contact.contactSystemIndex);}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362                             \textcolor{comment}{// Retry the trigger and see if this will consume it, if so run pickup to apply it.}}
+\DoxyCodeLine{00363                             var contactevent = \textcolor{keyword}{new} ContactEvent(currentAttachedICS, contactTrigger, contact.contactType);}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365                             var consumed = Contact(contactevent);}
+\DoxyCodeLine{00366                             \textcolor{keywordflow}{if} (consumed != Consumption.None)}
+\DoxyCodeLine{00367                                 Consume(snapframe, contactevent, consumed);}
+\DoxyCodeLine{00368                         \}}
+\DoxyCodeLine{00369                     \}}
+\DoxyCodeLine{00370                 \}}
+\DoxyCodeLine{00371             \}}
+\DoxyCodeLine{00372         \}}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374        }
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376 \textcolor{preprocessor}{        \#region Utilities}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378         \textcolor{comment}{// TODO: move this to a utility for use elsewhere}}
+\DoxyCodeLine{00379         \textcolor{keyword}{protected} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ConvertMaskToIndex(\textcolor{keywordtype}{int} mask)}
+\DoxyCodeLine{00380         \{}
+\DoxyCodeLine{00381             \textcolor{keywordtype}{int} bits = 0;}
+\DoxyCodeLine{00382             \textcolor{keywordflow}{if} (mask > 32767)}
+\DoxyCodeLine{00383             \{}
+\DoxyCodeLine{00384                 mask >>= 16;}
+\DoxyCodeLine{00385                 bits += 16;}
+\DoxyCodeLine{00386             \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388             \textcolor{keywordflow}{if} (mask > 127)}
+\DoxyCodeLine{00389             \{}
+\DoxyCodeLine{00390                 mask >>= 8;}
+\DoxyCodeLine{00391                 bits += 8;}
+\DoxyCodeLine{00392             \}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394             \textcolor{keywordflow}{if} (mask > 7)}
+\DoxyCodeLine{00395             \{}
+\DoxyCodeLine{00396                 mask >>= 4;}
+\DoxyCodeLine{00397                 bits += 4;}
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400             \textcolor{keywordflow}{if} (mask > 1)}
+\DoxyCodeLine{00401             \{}
+\DoxyCodeLine{00402                 mask >>= 2;}
+\DoxyCodeLine{00403                 bits += 2;}
+\DoxyCodeLine{00404             \}}
+\DoxyCodeLine{00405 }
+\DoxyCodeLine{00406             \textcolor{keywordflow}{if} (mask > 0)}
+\DoxyCodeLine{00407             \{}
+\DoxyCodeLine{00408                 bits++;}
+\DoxyCodeLine{00409             \}}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411             \textcolor{keywordflow}{return} bits;}
+\DoxyCodeLine{00412         \}}
+\DoxyCodeLine{00413 }
+\DoxyCodeLine{00414         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ConvertIndexToMask(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00415         \{}
+\DoxyCodeLine{00416             \textcolor{keywordflow}{if} (index == 0)}
+\DoxyCodeLine{00417                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00419             \textcolor{keywordflow}{return} 1 << (index -\/ 1);}
+\DoxyCodeLine{00420         \}}
+\DoxyCodeLine{00421 }
+\DoxyCodeLine{00422 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424     \}}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00426 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428     [CustomEditor(typeof(SyncContact))]}
+\DoxyCodeLine{00429     [CanEditMultipleObjects]}
+\DoxyCodeLine{00430     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncContactEditor : SyncObjectEditor}
+\DoxyCodeLine{00431     \{}
+\DoxyCodeLine{00432         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00433         \{}
+\DoxyCodeLine{00434             \textcolor{keyword}{get}}
+\DoxyCodeLine{00435             \{}
+\DoxyCodeLine{00436                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Operates in tandem with a "{}} + typeof(IContactTrigger).Name + \textcolor{stringliteral}{"{} component to handle "{}} + typeof(IOnContactEvent).Name + \textcolor{stringliteral}{"{} events, and defer them for serialization."{}} +}
+\DoxyCodeLine{00437                     \textcolor{stringliteral}{"{}This allows unowned "{}} + typeof(IContactSystem).Name + \textcolor{stringliteral}{"{}s to react to "{}}+ typeof(IOnContactEvent).Name +\textcolor{stringliteral}{"{}s on their controlling client.\(\backslash\)n"{}};}
+\DoxyCodeLine{00438             \}}
+\DoxyCodeLine{00439         \}}
+\DoxyCodeLine{00440 }
+\DoxyCodeLine{00441         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00442         \{}
+\DoxyCodeLine{00443             \textcolor{keyword}{get}}
+\DoxyCodeLine{00444             \{}
+\DoxyCodeLine{00445                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/SyncContactText"{}};}
+\DoxyCodeLine{00446             \}}
+\DoxyCodeLine{00447         \}}
+\DoxyCodeLine{00448         \textcolor{comment}{//public override void OnInspectorGUI()}}
+\DoxyCodeLine{00449         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00450         \textcolor{comment}{//  base.OnInspectorGUI();}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452         \textcolor{comment}{//  var \_target = (target as SyncPickup);}}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454         \textcolor{comment}{//  //ListFoundInterfaces(\_target.gameObject, \_target.onTriggerCallbacks);}}
+\DoxyCodeLine{00455         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00456 }
+\DoxyCodeLine{00457         \textcolor{comment}{//protected override void OnInspectorGUIInjectMiddle()}}
+\DoxyCodeLine{00458         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00459         \textcolor{comment}{//  base.OnInspectorGUIInjectMiddle();}}
+\DoxyCodeLine{00460         \textcolor{comment}{//  EditorGUILayout.LabelField("{}Generates OnTrigger()"{}, richLabel);}}
+\DoxyCodeLine{00461         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00462     \}}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466 \}}
+
+\end{DoxyCode}

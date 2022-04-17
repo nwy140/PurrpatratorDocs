@@ -1,0 +1,268 @@
+\doxysection{Bit\+Counter.\+cs}
+\label{_bit_counter_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/BitCounter.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/BitCounter.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{/*}}
+\DoxyCodeLine{00002 \textcolor{comment}{* The MIT License (MIT)}}
+\DoxyCodeLine{00003 \textcolor{comment}{* }}
+\DoxyCodeLine{00004 \textcolor{comment}{* Copyright (c) 2018-\/2019 Davin Carten (emotitron) (davincarten@gmail.com)}}
+\DoxyCodeLine{00005 \textcolor{comment}{* }}
+\DoxyCodeLine{00006 \textcolor{comment}{* Permission is hereby granted, free of charge, to any person obtaining a copy}}
+\DoxyCodeLine{00007 \textcolor{comment}{* of this software and associated documentation files (the "{}Software"{}), to deal}}
+\DoxyCodeLine{00008 \textcolor{comment}{* in the Software without restriction, including without limitation the rights}}
+\DoxyCodeLine{00009 \textcolor{comment}{* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell}}
+\DoxyCodeLine{00010 \textcolor{comment}{* copies of the Software, and to permit persons to whom the Software is}}
+\DoxyCodeLine{00011 \textcolor{comment}{* furnished to do so, subject to the following conditions:}}
+\DoxyCodeLine{00012 \textcolor{comment}{* }}
+\DoxyCodeLine{00013 \textcolor{comment}{* The above copyright notice and this permission notice shall be included in}}
+\DoxyCodeLine{00014 \textcolor{comment}{* all copies or substantial portions of the Software.}}
+\DoxyCodeLine{00015 \textcolor{comment}{* }}
+\DoxyCodeLine{00016 \textcolor{comment}{* THE SOFTWARE IS PROVIDED "{}AS IS"{}, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR}}
+\DoxyCodeLine{00017 \textcolor{comment}{* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,}}
+\DoxyCodeLine{00018 \textcolor{comment}{* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE}}
+\DoxyCodeLine{00019 \textcolor{comment}{* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER}}
+\DoxyCodeLine{00020 \textcolor{comment}{* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,}}
+\DoxyCodeLine{00021 \textcolor{comment}{* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN}}
+\DoxyCodeLine{00022 \textcolor{comment}{* THE SOFTWARE.}}
+\DoxyCodeLine{00023 \textcolor{comment}{*/}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00028 \{}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030     \textcolor{keyword}{public} \textcolor{keyword}{enum} PackedBitsSize \{ UInt8 = 4, UInt16 = 5, UInt32 = 6, UInt64 = 7 \}}
+\DoxyCodeLine{00031     \textcolor{keyword}{public} \textcolor{keyword}{enum} PackedBytesSize \{ UInt8 = 1, UInt16 = 2, UInt32 = 3, UInt64 = 4 \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00036     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }BitCounter}
+\DoxyCodeLine{00037     \{}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{        \#region Count Used Bit Utils}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int}[] bitPatternToLog2 = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[128] \{}
+\DoxyCodeLine{00041             0, \textcolor{comment}{// change to 1 if you want bitSize(0) = 1}}
+\DoxyCodeLine{00042             48, -\/1, -\/1, 31, -\/1, 15, 51, -\/1, 63, 5, -\/1, -\/1, -\/1, 19, -\/1,}
+\DoxyCodeLine{00043             23, 28, -\/1, -\/1, -\/1, 40, 36, 46, -\/1, 13, -\/1, -\/1, -\/1, 34, -\/1, 58,}
+\DoxyCodeLine{00044             -\/1, 60, 2, 43, 55, -\/1, -\/1, -\/1, 50, 62, 4, -\/1, 18, 27, -\/1, 39,}
+\DoxyCodeLine{00045             45, -\/1, -\/1, 33, 57, -\/1, 1, 54, -\/1, 49, -\/1, 17, -\/1, -\/1, 32, -\/1,}
+\DoxyCodeLine{00046             53, -\/1, 16, -\/1, -\/1, 52, -\/1, -\/1, -\/1, 64, 6, 7, 8, -\/1, 9, -\/1,}
+\DoxyCodeLine{00047             -\/1, -\/1, 20, 10, -\/1, -\/1, 24, -\/1, 29, -\/1, -\/1, 21, -\/1, 11, -\/1, -\/1,}
+\DoxyCodeLine{00048             41, -\/1, 25, 37, -\/1, 47, -\/1, 30, 14, -\/1, -\/1, -\/1, -\/1, 22, -\/1, -\/1,}
+\DoxyCodeLine{00049             35, 12, -\/1, -\/1, -\/1, 59, 42, -\/1, -\/1, 61, 3, 26, 38, 44, -\/1, 56}
+\DoxyCodeLine{00050         \};}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{const} ulong MULTIPLICATOR = 0x6c04f118e9966f6bUL;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedBitCount(\textcolor{keyword}{this} ulong val)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             val |= val >> 1;}
+\DoxyCodeLine{00059             val |= val >> 2;}
+\DoxyCodeLine{00060             val |= val >> 4;}
+\DoxyCodeLine{00061             val |= val >> 8;}
+\DoxyCodeLine{00062             val |= val >> 16;}
+\DoxyCodeLine{00063             val |= val >> 32;}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{return} bitPatternToLog2[(ulong)(val * MULTIPLICATOR) >> 57];}
+\DoxyCodeLine{00065         \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00070         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedBitCount(\textcolor{keyword}{this} uint val)}
+\DoxyCodeLine{00071         \{}
+\DoxyCodeLine{00072             val |= val >> 1;}
+\DoxyCodeLine{00073             val |= val >> 2;}
+\DoxyCodeLine{00074             val |= val >> 4;}
+\DoxyCodeLine{00075             val |= val >> 8;}
+\DoxyCodeLine{00076             val |= val >> 16;}
+\DoxyCodeLine{00077             \textcolor{comment}{//v |= v >> 32;}}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{return} bitPatternToLog2[(ulong)(val * MULTIPLICATOR) >> 57];}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedBitCount(\textcolor{keyword}{this} \textcolor{keywordtype}{int} val)}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             val |= val >> 1;}
+\DoxyCodeLine{00087             val |= val >> 2;}
+\DoxyCodeLine{00088             val |= val >> 4;}
+\DoxyCodeLine{00089             val |= val >> 8;}
+\DoxyCodeLine{00090             val |= val >> 16;}
+\DoxyCodeLine{00091             \textcolor{comment}{//v |= v >> 32;}}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{return} bitPatternToLog2[((ulong)val * MULTIPLICATOR) >> 57];}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00098         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedBitCount(\textcolor{keyword}{this} ushort val)}
+\DoxyCodeLine{00099         \{}
+\DoxyCodeLine{00100             uint v = val;}
+\DoxyCodeLine{00101             v |= v >> 1;}
+\DoxyCodeLine{00102             v |= v >> 2;}
+\DoxyCodeLine{00103             v |= v >> 4;}
+\DoxyCodeLine{00104             v |= v >> 8;}
+\DoxyCodeLine{00105             \textcolor{comment}{//val |= val >> 16;}}
+\DoxyCodeLine{00106             \textcolor{comment}{//v |= v >> 32;}}
+\DoxyCodeLine{00107             \textcolor{keywordflow}{return} bitPatternToLog2[(ulong)(v * MULTIPLICATOR) >> 57];}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedBitCount(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} val)}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             uint v = val;}
+\DoxyCodeLine{00116             v |= v >> 1;}
+\DoxyCodeLine{00117             v |= v >> 2;}
+\DoxyCodeLine{00118             v |= v >> 4;}
+\DoxyCodeLine{00119             \textcolor{comment}{//v |= v >> 8;}}
+\DoxyCodeLine{00120             \textcolor{comment}{//v |= v >> 16;}}
+\DoxyCodeLine{00121             \textcolor{comment}{//v |= v >> 32;}}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{return} bitPatternToLog2[(ulong)(v * MULTIPLICATOR) >> 57];}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{preprocessor}{        \#region Count Used Bytes Utils}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedByteCount(\textcolor{keyword}{this} ulong val)}
+\DoxyCodeLine{00130         \{}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (val == 0)}
+\DoxyCodeLine{00132                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} ((val \& 0x000000FF00000000) != 0)}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{if} ((val \& 0x00FF000000000000) != 0)}
+\DoxyCodeLine{00137                 \{}
+\DoxyCodeLine{00138                     \textcolor{keywordflow}{if} ((val \& 0xFF00000000000000) != 0)}
+\DoxyCodeLine{00139                         \textcolor{keywordflow}{return} 8;}
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00141                         \textcolor{keywordflow}{return} 7;}
+\DoxyCodeLine{00142                 \}}
+\DoxyCodeLine{00143                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00144                 \{}
+\DoxyCodeLine{00145                     \textcolor{keywordflow}{if} ((val \& 0x0000FF0000000000) != 0)}
+\DoxyCodeLine{00146                         \textcolor{keywordflow}{return} 6;}
+\DoxyCodeLine{00147                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00148                         \textcolor{keywordflow}{return} 5;}
+\DoxyCodeLine{00149                 \}}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} ((val \& 0x0000000000FF0000) != 0)}
+\DoxyCodeLine{00154                 \{}
+\DoxyCodeLine{00155                     \textcolor{keywordflow}{if} ((val \& 0x00000000FF000000) != 0)}
+\DoxyCodeLine{00156                         \textcolor{keywordflow}{return} 4;}
+\DoxyCodeLine{00157                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00158                         \textcolor{keywordflow}{return} 3;}
+\DoxyCodeLine{00159                 \}}
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00161                 \{}
+\DoxyCodeLine{00162                     \textcolor{keywordflow}{if} ((val \& 0x000000000000FF00) != 0)}
+\DoxyCodeLine{00163                         \textcolor{keywordflow}{return} 2;}
+\DoxyCodeLine{00164                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165                         \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00166                 \}}
+\DoxyCodeLine{00167             \}}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedByteCount(\textcolor{keyword}{this} uint val)}
+\DoxyCodeLine{00171         \{}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{if} (val == 0)}
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175             \textcolor{keywordflow}{if} ((val \& 0x00FF0000) != 0)}
+\DoxyCodeLine{00176             \{}
+\DoxyCodeLine{00177                 \textcolor{keywordflow}{if} ((val \& 0xFF000000) != 0)}
+\DoxyCodeLine{00178                     \textcolor{keywordflow}{return} 4;}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{return} 3;}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00182             \{}
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{if} ((val \& 0x0000FF00) != 0)}
+\DoxyCodeLine{00184                     \textcolor{keywordflow}{return} 2;}
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00186                     \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00187             \}}
+\DoxyCodeLine{00188         \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} UsedByteCount(\textcolor{keyword}{this} ushort val)}
+\DoxyCodeLine{00191         \{}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{if} (val == 0)}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195             \textcolor{keywordflow}{if} ((val \& 0xFF00) != 0)}
+\DoxyCodeLine{00196                 \textcolor{keywordflow}{return} 2;}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00198                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountTrueBits(\textcolor{keyword}{this} \textcolor{keywordtype}{int} val, \textcolor{keywordtype}{int} range = 32)}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordtype}{int} truecount = 0;}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < range; ++i)}
+\DoxyCodeLine{00207             \{}
+\DoxyCodeLine{00208                 \textcolor{keywordtype}{int} tmp = val >> i;}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{if} (tmp == 0)}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00213                 \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{if} ((tmp \& 1) != 0)}
+\DoxyCodeLine{00216                 \{}
+\DoxyCodeLine{00217                     truecount++;}
+\DoxyCodeLine{00218                 \}}
+\DoxyCodeLine{00219             \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224         \textcolor{keyword}{private} \textcolor{keyword}{static} List<int> reusableList = \textcolor{keyword}{new} List<int>(32);}
+\DoxyCodeLine{00225         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountTrueBits(\textcolor{keyword}{this} \textcolor{keywordtype}{int} val, out \textcolor{keywordtype}{int}[] mountTypeIndex, \textcolor{keywordtype}{int} range = 32)}
+\DoxyCodeLine{00226         \{}
+\DoxyCodeLine{00227             reusableList.Clear();}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229             \textcolor{keywordtype}{int} truecount = 0;}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < range; ++i)}
+\DoxyCodeLine{00231             \{}
+\DoxyCodeLine{00232                 \textcolor{keywordtype}{int} tmp = val >> i;}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234                 \textcolor{keywordflow}{if} (tmp == 0)}
+\DoxyCodeLine{00235                 \{}
+\DoxyCodeLine{00236                     mountTypeIndex = reusableList.ToArray();}
+\DoxyCodeLine{00237                     \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00238                 \}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{if} ((tmp \& 1) != 0)}
+\DoxyCodeLine{00241                 \{}
+\DoxyCodeLine{00242                     truecount++;}
+\DoxyCodeLine{00243                     reusableList.Add(i);}
+\DoxyCodeLine{00244                 \}}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             mountTypeIndex = reusableList.ToArray();}
+\DoxyCodeLine{00248             \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00249         \}}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountTrueBits(\textcolor{keyword}{this} uint val, out \textcolor{keywordtype}{int}[] mountTypeIndex, \textcolor{keywordtype}{int} range = 32)}
+\DoxyCodeLine{00252         \{}
+\DoxyCodeLine{00253             reusableList.Clear();}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keywordtype}{int} truecount = 0;}
+\DoxyCodeLine{00256             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < range; ++i)}
+\DoxyCodeLine{00257             \{}
+\DoxyCodeLine{00258                 uint tmp = val >> i;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{if} (tmp == 0)}
+\DoxyCodeLine{00261                 \{}
+\DoxyCodeLine{00262                     mountTypeIndex = reusableList.ToArray();}
+\DoxyCodeLine{00263                     \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00264                 \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266                 \textcolor{keywordflow}{if} ((tmp \& 1) != 0)}
+\DoxyCodeLine{00267                 \{}
+\DoxyCodeLine{00268                     truecount++;}
+\DoxyCodeLine{00269                     reusableList.Add(i);}
+\DoxyCodeLine{00270                 \}}
+\DoxyCodeLine{00271             \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273             mountTypeIndex = reusableList.ToArray();}
+\DoxyCodeLine{00274             \textcolor{keywordflow}{return} truecount;}
+\DoxyCodeLine{00275         \}}
+\DoxyCodeLine{00276     \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279 \}}
+\DoxyCodeLine{00280 }
+
+\end{DoxyCode}

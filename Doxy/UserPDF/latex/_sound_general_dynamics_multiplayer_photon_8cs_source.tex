@@ -1,0 +1,828 @@
+\doxysection{Sound\+General\+Dynamics\+Multiplayer\+Photon.\+cs}
+\label{_sound_general_dynamics_multiplayer_photon_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Chan Kwok Chun/Scripts/SoundGeneralDynamicsMultiplayerPhoton.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Chan Kwok Chun/Scripts/SoundGeneralDynamicsMultiplayerPhoton.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine.Audio;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00035 \textcolor{keyword}{public} \textcolor{keyword}{class }SoundGeneralDynamicsMultiplayerPhoton : MonoBehaviour}
+\DoxyCodeLine{00036 \{}
+\DoxyCodeLine{00037     [SerializeField] SoundChain[] soundChains;}
+\DoxyCodeLine{00038     [SerializeField] SoundChunk[] soundChunks;}
+\DoxyCodeLine{00039     [SerializeField] SoundPiece[] soundPieces;}
+\DoxyCodeLine{00040     [SerializeField] SoundCastDynamics[] soundCasts;}
+\DoxyCodeLine{00041     [SerializeField] SoundVisualizer[] soundVisualUI;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043     PhotonView photonView;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045     \textcolor{keyword}{private} GameObject ears;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047     \textcolor{keywordtype}{void} soundVisualUIInitialization()}
+\DoxyCodeLine{00048     \{}
+\DoxyCodeLine{00049         \textcolor{keywordtype}{int} VisualizerCounter = 0;}
+\DoxyCodeLine{00050         \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualUI)}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             \textcolor{comment}{//Create or hold the canvas that is specified}}
+\DoxyCodeLine{00053             GameObject canvas;}
+\DoxyCodeLine{00054             \textcolor{keywordflow}{if} (soundVisualizer.canvas == \textcolor{keyword}{null})}
+\DoxyCodeLine{00055             \{}
+\DoxyCodeLine{00056                 canvas = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Visualizer Canvas "{}} + VisualizerCounter++ + \textcolor{stringliteral}{"{}: "{}} + soundVisualizer.visualizerName);}
+\DoxyCodeLine{00057                 Canvas c = canvas.AddComponent<Canvas>();}
+\DoxyCodeLine{00058                 c.renderMode = RenderMode.ScreenSpaceOverlay;}
+\DoxyCodeLine{00059                 CanvasScaler s = canvas.AddComponent<CanvasScaler>();}
+\DoxyCodeLine{00060                 s.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;}
+\DoxyCodeLine{00061                 canvas.AddComponent<GraphicRaycaster>();}
+\DoxyCodeLine{00062                 canvas.transform.SetParent(gameObject.transform);}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (soundVisualizer.canvas.scene.name == \textcolor{keyword}{null}) \textcolor{comment}{// Check if it's prefab}}
+\DoxyCodeLine{00066             \{}
+\DoxyCodeLine{00067                 canvas = Instantiate(soundVisualizer.canvas);}
+\DoxyCodeLine{00068                 canvas.transform.SetParent(gameObject.transform);}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070             \textcolor{keywordflow}{else} canvas = soundVisualizer.canvas;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{keywordtype}{int} VisualizerDynamicPartCounter = 0;}
+\DoxyCodeLine{00073             \textcolor{keywordtype}{int} VisualizerStaticPartCounter = 0;}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} soundVisualizer.VisualizerDynamicPart)}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 GameObject Image = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Visualizer Dynamic Asset "{}} + VisualizerDynamicPartCounter++);}
+\DoxyCodeLine{00077                 Image image = Image.AddComponent<Image>();}
+\DoxyCodeLine{00078                 image.sprite = soundVisualAssets.VisualSprite;}
+\DoxyCodeLine{00079                 RectTransform transform = Image.GetComponent<RectTransform>();}
+\DoxyCodeLine{00080                 transform.sizeDelta = \textcolor{keyword}{new} Vector2(soundVisualAssets.XSize, soundVisualAssets.YSize);}
+\DoxyCodeLine{00081                 Color changeVisibility = image.color;}
+\DoxyCodeLine{00082                 changeVisibility.a = 0;}
+\DoxyCodeLine{00083                 image.color = changeVisibility;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085                 Image.transform.SetParent(canvas.transform);}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087                 soundVisualAssets.ObjectImage = Image;}
+\DoxyCodeLine{00088                 soundVisualAssets.RectImage = Image.GetComponent<RectTransform>();}
+\DoxyCodeLine{00089                 soundVisualAssets.ComponentImage = image;}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} soundVisualizer.VisualizerStaticPart)}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 GameObject Image = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Visualizer Static Asset "{}} + VisualizerStaticPartCounter++);}
+\DoxyCodeLine{00094                 Image image = Image.AddComponent<Image>();}
+\DoxyCodeLine{00095                 image.sprite = soundVisualAssets.VisualSprite;}
+\DoxyCodeLine{00096                 RectTransform transform = Image.GetComponent<RectTransform>();}
+\DoxyCodeLine{00097                 transform.sizeDelta = \textcolor{keyword}{new} Vector2(soundVisualAssets.XSize, soundVisualAssets.YSize);}
+\DoxyCodeLine{00098                 Color changeVisibility = image.color;}
+\DoxyCodeLine{00099                 changeVisibility.a = 0;}
+\DoxyCodeLine{00100                 image.color = changeVisibility;}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102                 Image.transform.SetParent(canvas.transform);}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104                 soundVisualAssets.ObjectImage = Image;}
+\DoxyCodeLine{00105                 soundVisualAssets.RectImage = Image.GetComponent<RectTransform>();}
+\DoxyCodeLine{00106                 soundVisualAssets.ComponentImage = image;}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109             soundVisualizer.canvas = canvas;}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111     \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113     \textcolor{keyword}{public} \textcolor{keywordtype}{void} Initialization() \textcolor{comment}{//Public so outside sources can reach this if needed}}
+\DoxyCodeLine{00114     \{}
+\DoxyCodeLine{00115         \{}
+\DoxyCodeLine{00116             \textcolor{keywordtype}{int} CurrentChainID = 0; \textcolor{comment}{//In C\#, there is no way to mark the instance of which the current Index is for an foreach...unless you instantiate a counter or use a for loop.}}
+\DoxyCodeLine{00117             \textcolor{keywordtype}{int} CurrentChunkID = 0; \textcolor{comment}{//In C\#, there is no way to mark the instance of which the current Index is for an foreach...unless you instantiate a counter or use a for loop.}}
+\DoxyCodeLine{00118             \textcolor{keywordtype}{int} CurrentPieceID = 0; \textcolor{comment}{//In C\#, there is no way to mark the instance of which the current Index is for an foreach...unless you instantiate a counter or use a for loop.}}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{foreach} (SoundChain SoundChain \textcolor{keywordflow}{in} soundChains)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{foreach} (SoundChunk SoundChunk \textcolor{keywordflow}{in} SoundChain.soundChunks)}
+\DoxyCodeLine{00122                     \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} SoundChunk.soundPieces)}
+\DoxyCodeLine{00123                     \{}
+\DoxyCodeLine{00124                         \textcolor{keywordflow}{if} (SoundPiece.soundCastName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the cast sets}}
+\DoxyCodeLine{00125                         \{}
+\DoxyCodeLine{00126                             List<SoundCast> \_CommonCasts = \textcolor{keyword}{new} List<SoundCast>();}
+\DoxyCodeLine{00127                             \textcolor{keywordflow}{foreach} (SoundCastDynamics SoundCastDynamics \textcolor{keywordflow}{in} soundCasts)}
+\DoxyCodeLine{00128                             \{}
+\DoxyCodeLine{00129                                 \textcolor{keywordflow}{foreach} (SoundCast SoundCasts \textcolor{keywordflow}{in} SoundCastDynamics.soundCasts)}
+\DoxyCodeLine{00130                                 \{}
+\DoxyCodeLine{00131                                     \textcolor{keywordflow}{if} (SoundCasts.castName == SoundPiece.soundCastName)}
+\DoxyCodeLine{00132                                     \{}
+\DoxyCodeLine{00133                                         \_CommonCasts.Add(SoundCasts);}
+\DoxyCodeLine{00134                                     \}}
+\DoxyCodeLine{00135                                 \}}
+\DoxyCodeLine{00136                             \}}
+\DoxyCodeLine{00137                             SoundPiece.soundCastSource = \_CommonCasts.ToArray();}
+\DoxyCodeLine{00138                         \}}
+\DoxyCodeLine{00139                         \textcolor{keywordflow}{if} (SoundPiece.soundVisualizerName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the visual sets}}
+\DoxyCodeLine{00140                         \{}
+\DoxyCodeLine{00141                             List<SoundVisualizer> \_CommonVisuals = \textcolor{keyword}{new} List<SoundVisualizer>();}
+\DoxyCodeLine{00142                             \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualUI)}
+\DoxyCodeLine{00143                             \{}
+\DoxyCodeLine{00144                                 \textcolor{keywordflow}{if} (soundVisualizer.visualizerName == SoundPiece.soundVisualizerName)}
+\DoxyCodeLine{00145                                 \{}
+\DoxyCodeLine{00146                                     \_CommonVisuals.Add(soundVisualizer);}
+\DoxyCodeLine{00147                                 \}}
+\DoxyCodeLine{00148                             \}}
+\DoxyCodeLine{00149                             SoundPiece.soundVisualSource = \_CommonVisuals.ToArray();}
+\DoxyCodeLine{00150                         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                         SoundPiece.source = gameObject.AddComponent<AudioSource>();}
+\DoxyCodeLine{00153                         SoundPiece.source.clip = SoundPiece.Audio;}
+\DoxyCodeLine{00154                         SoundPiece.source.volume = SoundPiece.originalMaxVolume = SoundChain.Volume * SoundChunk.Volume * SoundPiece.Volume;}
+\DoxyCodeLine{00155                         SoundPiece.source.pitch = SoundPiece.originalPitch = SoundChain.Pitch * SoundChunk.Pitch * SoundPiece.Pitch;}
+\DoxyCodeLine{00156                         SoundPiece.source.playOnAwake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00157                         \textcolor{keywordflow}{if} (SoundPiece.AudioMixer != \textcolor{keyword}{null})}
+\DoxyCodeLine{00158                             SoundPiece.source.outputAudioMixerGroup = SoundPiece.AudioMixer;}
+\DoxyCodeLine{00159                         SoundPiece.delayBeforeWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayBefore); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00160                         SoundPiece.delayDuringWait = \textcolor{keyword}{new} WaitWhile(() => SoundPiece.source.isPlaying); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00161                         SoundPiece.delayAfterWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayAfter); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00162                     \}}
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{if} (SoundChain.playOnStart) PlayChain(CurrentChainID++);}
+\DoxyCodeLine{00164                 CurrentChainID++;}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{foreach} (SoundChunk SoundChunk \textcolor{keywordflow}{in} soundChunks)}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} SoundChunk.soundPieces)}
+\DoxyCodeLine{00169                 \{}
+\DoxyCodeLine{00170                     \textcolor{keywordflow}{if} (SoundPiece.soundCastName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the cast sets}}
+\DoxyCodeLine{00171                     \{}
+\DoxyCodeLine{00172                         List<SoundCast> \_CommonCasts = \textcolor{keyword}{new} List<SoundCast>();}
+\DoxyCodeLine{00173                         \textcolor{keywordflow}{foreach} (SoundCastDynamics SoundCastDynamics \textcolor{keywordflow}{in} soundCasts)}
+\DoxyCodeLine{00174                         \{}
+\DoxyCodeLine{00175                             \textcolor{keywordflow}{foreach} (SoundCast SoundCasts \textcolor{keywordflow}{in} SoundCastDynamics.soundCasts)}
+\DoxyCodeLine{00176                             \{}
+\DoxyCodeLine{00177                                 \textcolor{keywordflow}{if} (SoundCasts.castName == SoundPiece.soundCastName)}
+\DoxyCodeLine{00178                                 \{}
+\DoxyCodeLine{00179                                     \_CommonCasts.Add(SoundCasts);}
+\DoxyCodeLine{00180                                 \}}
+\DoxyCodeLine{00181                             \}}
+\DoxyCodeLine{00182                         \}}
+\DoxyCodeLine{00183                         SoundPiece.soundCastSource = \_CommonCasts.ToArray();}
+\DoxyCodeLine{00184                     \}}
+\DoxyCodeLine{00185                     \textcolor{keywordflow}{if} (SoundPiece.soundVisualizerName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the visual sets}}
+\DoxyCodeLine{00186                     \{}
+\DoxyCodeLine{00187                         List<SoundVisualizer> \_CommonVisuals = \textcolor{keyword}{new} List<SoundVisualizer>();}
+\DoxyCodeLine{00188                         \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualUI)}
+\DoxyCodeLine{00189                         \{}
+\DoxyCodeLine{00190                             \textcolor{keywordflow}{if} (soundVisualizer.visualizerName == SoundPiece.soundVisualizerName)}
+\DoxyCodeLine{00191                             \{}
+\DoxyCodeLine{00192                                 \_CommonVisuals.Add(soundVisualizer);}
+\DoxyCodeLine{00193                             \}}
+\DoxyCodeLine{00194                         \}}
+\DoxyCodeLine{00195                         SoundPiece.soundVisualSource = \_CommonVisuals.ToArray();}
+\DoxyCodeLine{00196                     \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198                     SoundPiece.source = gameObject.AddComponent<AudioSource>();}
+\DoxyCodeLine{00199                     SoundPiece.source.clip = SoundPiece.Audio;}
+\DoxyCodeLine{00200                     SoundPiece.source.volume = SoundPiece.originalMaxVolume = SoundChunk.Volume * SoundPiece.Volume;}
+\DoxyCodeLine{00201                     SoundPiece.source.pitch = SoundPiece.originalPitch = SoundChunk.Pitch * SoundPiece.Pitch;}
+\DoxyCodeLine{00202                     SoundPiece.source.playOnAwake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00203                     \textcolor{keywordflow}{if} (SoundPiece.AudioMixer != \textcolor{keyword}{null})}
+\DoxyCodeLine{00204                         SoundPiece.source.outputAudioMixerGroup = SoundPiece.AudioMixer;}
+\DoxyCodeLine{00205                     SoundPiece.delayBeforeWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayBefore); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00206                     SoundPiece.delayDuringWait = \textcolor{keyword}{new} WaitWhile(() => SoundPiece.source.isPlaying); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00207                     SoundPiece.delayAfterWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayAfter); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00208                 \}}
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{if} (SoundChunk.playOnStart) PlayChunk(CurrentChunkID);}
+\DoxyCodeLine{00210                 CurrentChunkID++;}
+\DoxyCodeLine{00211             \}}
+\DoxyCodeLine{00212             \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} soundPieces)}
+\DoxyCodeLine{00213             \{}
+\DoxyCodeLine{00214                 \textcolor{keywordflow}{if} (SoundPiece.soundCastName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the cast sets}}
+\DoxyCodeLine{00215                 \{}
+\DoxyCodeLine{00216                     List<SoundCast> \_CommonCasts = \textcolor{keyword}{new} List<SoundCast>();}
+\DoxyCodeLine{00217                     \textcolor{keywordflow}{foreach} (SoundCastDynamics SoundCastDynamics \textcolor{keywordflow}{in} soundCasts)}
+\DoxyCodeLine{00218                     \{}
+\DoxyCodeLine{00219                         \textcolor{keywordflow}{foreach} (SoundCast SoundCasts \textcolor{keywordflow}{in} SoundCastDynamics.soundCasts)}
+\DoxyCodeLine{00220                         \{}
+\DoxyCodeLine{00221                             \textcolor{keywordflow}{if} (SoundCasts.castName == SoundPiece.soundCastName)}
+\DoxyCodeLine{00222                             \{}
+\DoxyCodeLine{00223                                 \_CommonCasts.Add(SoundCasts);}
+\DoxyCodeLine{00224                             \}}
+\DoxyCodeLine{00225                         \}}
+\DoxyCodeLine{00226                     \}}
+\DoxyCodeLine{00227                     SoundPiece.soundCastSource = \_CommonCasts.ToArray();}
+\DoxyCodeLine{00228                 \}}
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{if} (SoundPiece.soundVisualizerName != \textcolor{stringliteral}{"{}"{}}) \textcolor{comment}{//Initializes the visual sets}}
+\DoxyCodeLine{00230                 \{}
+\DoxyCodeLine{00231                     List<SoundVisualizer> \_CommonVisuals = \textcolor{keyword}{new} List<SoundVisualizer>();}
+\DoxyCodeLine{00232                     \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualUI)}
+\DoxyCodeLine{00233                     \{}
+\DoxyCodeLine{00234                         \textcolor{keywordflow}{if} (soundVisualizer.visualizerName == SoundPiece.soundVisualizerName)}
+\DoxyCodeLine{00235                         \{}
+\DoxyCodeLine{00236                             \_CommonVisuals.Add(soundVisualizer);}
+\DoxyCodeLine{00237                         \}}
+\DoxyCodeLine{00238                     \}}
+\DoxyCodeLine{00239                     SoundPiece.soundVisualSource = \_CommonVisuals.ToArray();}
+\DoxyCodeLine{00240                 \}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242                 SoundPiece.source = gameObject.AddComponent<AudioSource>();}
+\DoxyCodeLine{00243                 SoundPiece.source.clip = SoundPiece.Audio;}
+\DoxyCodeLine{00244                 SoundPiece.source.volume = SoundPiece.originalMaxVolume = SoundPiece.Volume;}
+\DoxyCodeLine{00245                 SoundPiece.source.pitch = SoundPiece.originalPitch = SoundPiece.Pitch;}
+\DoxyCodeLine{00246                 SoundPiece.source.playOnAwake = \textcolor{keyword}{false};}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{if} (SoundPiece.AudioMixer != \textcolor{keyword}{null})}
+\DoxyCodeLine{00248                     SoundPiece.source.outputAudioMixerGroup = SoundPiece.AudioMixer;}
+\DoxyCodeLine{00249                 SoundPiece.delayBeforeWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayBefore); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00250                 SoundPiece.delayDuringWait = \textcolor{keyword}{new} WaitWhile(() => SoundPiece.source.isPlaying); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00251                 SoundPiece.delayAfterWait = \textcolor{keyword}{new} WaitForSeconds(SoundPiece.delayAfter); \textcolor{comment}{//Create and Cache all wait for second objects.}}
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{if} (SoundPiece.playOnStart) PlayPiece(CurrentPieceID);}
+\DoxyCodeLine{00253                 CurrentPieceID++;}
+\DoxyCodeLine{00254             \}}
+\DoxyCodeLine{00255         \} \textcolor{comment}{// Setting values to each sound Pieces}}
+\DoxyCodeLine{00256     \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258     \textcolor{comment}{// Awake is a preload}}
+\DoxyCodeLine{00259     \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00260     \{}
+\DoxyCodeLine{00261         Initialization();}
+\DoxyCodeLine{00262         soundVisualUIInitialization();}
+\DoxyCodeLine{00263     \}}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00266     \{}
+\DoxyCodeLine{00267         photonView = gameObject.AddComponent<PhotonView>();}
+\DoxyCodeLine{00268         ears = FindObjectOfType<AudioListener>().gameObject;}
+\DoxyCodeLine{00269     \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateCalculate()}
+\DoxyCodeLine{00272     \{}
+\DoxyCodeLine{00273         \textcolor{keywordflow}{foreach} (SoundChain soundChain \textcolor{keywordflow}{in} soundChains)}
+\DoxyCodeLine{00274         \{}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{foreach} (SoundChunk soundChunk \textcolor{keywordflow}{in} soundChain.soundChunks)}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00277                 \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} soundChunk.soundPieces)}
+\DoxyCodeLine{00278                 \{}
+\DoxyCodeLine{00279                     CalculateSoundSourceCast(SoundPiece, soundChain.Volume * soundChunk.Volume * SoundPiece.Volume, soundChain.Pitch * soundChunk.Pitch * SoundPiece.Pitch);}
+\DoxyCodeLine{00280                 \}}
+\DoxyCodeLine{00281             \}}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283         \textcolor{keywordflow}{foreach} (SoundChunk soundChunk \textcolor{keywordflow}{in} soundChunks)}
+\DoxyCodeLine{00284         \{}
+\DoxyCodeLine{00285             \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} soundChunk.soundPieces)}
+\DoxyCodeLine{00286             \{}
+\DoxyCodeLine{00287                 CalculateSoundSourceCast(SoundPiece, soundChunk.Volume * SoundPiece.Volume, soundChunk.Pitch * SoundPiece.Pitch);}
+\DoxyCodeLine{00288             \}}
+\DoxyCodeLine{00289         \}}
+\DoxyCodeLine{00290         \textcolor{keywordflow}{foreach} (SoundPiece SoundPiece \textcolor{keywordflow}{in} soundPieces)}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292             CalculateSoundSourceCast(SoundPiece, SoundPiece.Volume, SoundPiece.Pitch);}
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294     \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296     \textcolor{keyword}{private} \textcolor{keywordtype}{void} CalculateSoundSourceCast(SoundPiece SoundPiece, \textcolor{keywordtype}{float} MaxVolume, \textcolor{keywordtype}{float} MaxPitch)}
+\DoxyCodeLine{00297     \{}
+\DoxyCodeLine{00298         \textcolor{keywordflow}{if} (SoundPiece.source != \textcolor{keyword}{null} \&\& SoundPiece.source.isPlaying \&\& SoundPiece.soundCastSource != \textcolor{keyword}{null} \&\& SoundPiece.soundCastName != \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00299         \{}
+\DoxyCodeLine{00300             \textcolor{keywordtype}{float} \_tempVolume = 1f; \textcolor{comment}{//Cannot be 0 in this min calculation...}}
+\DoxyCodeLine{00301             Vector3 totalBalance = Vector3.zero;}
+\DoxyCodeLine{00302             \textcolor{keywordtype}{int} releventPosNum = 0;}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304             SoundPiece.originalMaxVolume = MaxVolume;}
+\DoxyCodeLine{00305             SoundPiece.originalPitch = MaxPitch;}
+\DoxyCodeLine{00306             SoundPiece.source.volume = 0f;}
+\DoxyCodeLine{00307             \textcolor{keywordflow}{foreach} (SoundCast SoundCast \textcolor{keywordflow}{in} SoundPiece.soundCastSource)}
+\DoxyCodeLine{00308             \{}
+\DoxyCodeLine{00309                 \textcolor{keywordtype}{float} distance = Vector3.Distance(ears.transform.position, SoundCast.soundDynamic.gameObject.transform.position);}
+\DoxyCodeLine{00310                 \textcolor{keywordflow}{if} (distance < SoundCast.soundRange)}
+\DoxyCodeLine{00311                 \{}
+\DoxyCodeLine{00312                     \_tempVolume = Mathf.Min(\_tempVolume, distance / SoundCast.soundRange);}
+\DoxyCodeLine{00313                     totalBalance += SoundCast.soundDynamic.gameObject.transform.position; \textcolor{comment}{//Originally, this was gonna be an multiply each, add and divide but that is not needed}}
+\DoxyCodeLine{00314                     releventPosNum++;}
+\DoxyCodeLine{00315                 \}}
+\DoxyCodeLine{00316             \}}
+\DoxyCodeLine{00317             SoundPiece.source.volume = (1f -\/ \_tempVolume) * SoundPiece.originalMaxVolume;}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319             Vector3 soundDirection = (totalBalance -\/ ears.transform.position * releventPosNum).normalized;}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321             \textcolor{keywordflow}{if} (SoundPiece.soundVisualizerName != \textcolor{keyword}{null} \&\& SoundPiece.soundVisualSource != \textcolor{keyword}{null})}
+\DoxyCodeLine{00322             \{}
+\DoxyCodeLine{00323                 \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} SoundPiece.soundVisualSource)}
+\DoxyCodeLine{00324                 \{}
+\DoxyCodeLine{00325                     soundVisualizer.LastKnownSoundPoint = soundDirection;}
+\DoxyCodeLine{00326                 \}}
+\DoxyCodeLine{00327             \}}
+\DoxyCodeLine{00328             \textcolor{keywordtype}{float} DifferenciationY = Vector3.Dot(soundDirection, ears.transform.right);}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330             SoundPiece.source.panStereo = DifferenciationY;}
+\DoxyCodeLine{00331         \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333         \textcolor{keywordflow}{if} (SoundPiece.soundVisualizerName != \textcolor{keyword}{null} \&\& SoundPiece.soundVisualSource != \textcolor{keyword}{null})}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} SoundPiece.soundVisualSource)}
+\DoxyCodeLine{00336             \{}
+\DoxyCodeLine{00337                 \textcolor{keywordtype}{float} DifferenciationY = Vector3.Dot(soundVisualizer.LastKnownSoundPoint, ears.transform.right);}
+\DoxyCodeLine{00338                 \textcolor{keywordtype}{float} DifferenciationX = Vector3.Dot(soundVisualizer.LastKnownSoundPoint, ears.transform.forward);}
+\DoxyCodeLine{00339                 \textcolor{keywordtype}{float} DifferenciationZ = Vector3.Dot(soundVisualizer.LastKnownSoundPoint, ears.transform.up);}
+\DoxyCodeLine{00340                 CalculateVisualPositioning(soundVisualizer, DifferenciationX, DifferenciationY, DifferenciationZ);}
+\DoxyCodeLine{00341             \}}
+\DoxyCodeLine{00342         \}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344     \}}
+\DoxyCodeLine{00345 \textcolor{preprocessor}{    \#region DebugCalls}}
+\DoxyCodeLine{00346     \textcolor{comment}{//Debug Calls List}}
+\DoxyCodeLine{00347     \textcolor{comment}{//Debug.Log("{}0"{});}}
+\DoxyCodeLine{00348     \textcolor{comment}{//float ImaginaryXPos = 0;}}
+\DoxyCodeLine{00349     \textcolor{comment}{//float ImaginaryYPos = 0;}}
+\DoxyCodeLine{00350     \textcolor{comment}{//float ImaginaryZPos = 0;}}
+\DoxyCodeLine{00351     \textcolor{comment}{//Debug.Log("{}distance"{} + distance);}}
+\DoxyCodeLine{00352     \textcolor{comment}{//SoundPiece.source.pitch = (1f -\/ (distance / SC.soundRange)) * SoundPiece.originalPitch;}}
+\DoxyCodeLine{00353     \textcolor{comment}{//Debug.Log("{}\_tempVolume"{} + \_tempVolume);}}
+\DoxyCodeLine{00354     \textcolor{comment}{//Vector3 soundPoint = new Vector3(ImaginaryXPos / releventPosNum, ImaginaryYPos / releventPosNum, ImaginaryZPos / releventPosNum);}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356     \textcolor{comment}{//Vector3 NormalizedSpeculation = Vector3.Normalize(ears.transform.position);}}
+\DoxyCodeLine{00357     \textcolor{comment}{//float staticVolume = ( SoundCast.soundRange -\/ distance ) / SoundCast.soundRange; //The futher away something is, the less it's impact becomes.}}
+\DoxyCodeLine{00358     \textcolor{comment}{//float SpeculativeXPos = NormalizedSpeculation.x * staticVolume;}}
+\DoxyCodeLine{00359     \textcolor{comment}{//float SpeculativeYPos = NormalizedSpeculation.y * staticVolume;}}
+\DoxyCodeLine{00360     \textcolor{comment}{//float SpeculativeZPos = NormalizedSpeculation.z * staticVolume;}}
+\DoxyCodeLine{00361     \textcolor{comment}{//ImaginaryXPos += SpeculativeXPos;}}
+\DoxyCodeLine{00362     \textcolor{comment}{//ImaginaryYPos += SpeculativeYPos;}}
+\DoxyCodeLine{00363     \textcolor{comment}{//ImaginaryZPos += SpeculativeZPos;}}
+\DoxyCodeLine{00364     \textcolor{comment}{//Debug.Log("{}releventPosNum"{} + releventPosNum);}}
+\DoxyCodeLine{00365     \textcolor{comment}{//SoundPiece.source.panStereo = (SoundCast.soundDynamic.gameObject.transform.position.x -\/ ears.transform.position.x) / SoundCast.soundRange;}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367     \textcolor{comment}{//Vector3 soundDirectionAngle = Quaternion.FromToRotation(Vector3.forward, soundDirection).eulerAngles;}}
+\DoxyCodeLine{00368     \textcolor{comment}{//Vector3 soundDirectionAngleX = Quaternion.FromToRotation(Vector3.up, new Vector3(0, soundDirection.y, soundDirection.z)).eulerAngles;}}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370     \textcolor{comment}{//float soundDirectionAngleX = Vector3.SignedAngle(Vector3.up, new Vector3(0, soundDirection.y, soundDirection.z), Vector3.up);}}
+\DoxyCodeLine{00371     \textcolor{comment}{//float soundDirectionAngleY = Vector3.SignedAngle(Vector3.forward, new Vector3(soundDirection.x, 0, soundDirection.z), Vector3.forward);}}
+\DoxyCodeLine{00372     \textcolor{comment}{//float soundDirectionAngleZ = Vector3.SignedAngle(Vector3.up, new Vector3(soundDirection.x, soundDirection.y, 0), Vector3.up);}}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374     \textcolor{comment}{//Debug.Log("{}head.x"{} + head.x);}}
+\DoxyCodeLine{00375     \textcolor{comment}{//Debug.Log("{}head.y"{} + head.y);}}
+\DoxyCodeLine{00376     \textcolor{comment}{//Debug.Log("{}head.z"{} + head.z);}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378     \textcolor{comment}{//Debug.Log("{}soundDirection.x"{} + soundDirection.x);}}
+\DoxyCodeLine{00379     \textcolor{comment}{//Debug.Log("{}soundDirection.y"{} + soundDirection.y);}}
+\DoxyCodeLine{00380     \textcolor{comment}{//Debug.Log("{}soundDirection.z"{} + soundDirection.z);}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383     \textcolor{comment}{//float soundDirectionAngleY = Quaternion.FromToRotation(Vector3.forward, soundDirection).eulerAngles.y;}}
+\DoxyCodeLine{00384     \textcolor{comment}{//float soundDirectionAngleZ = Quaternion.FromToRotation(Vector3.up, soundDirection).eulerAngles.z;}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleX"{} + soundDirectionAngleX.x);}}
+\DoxyCodeLine{00387     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleY"{} + soundDirectionAngleY.y);}}
+\DoxyCodeLine{00388     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleZ"{} + soundDirectionAngleZ.z);}}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleX"{} + soundDirectionAngleX);}}
+\DoxyCodeLine{00391     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleY"{} + soundDirectionAngleY);}}
+\DoxyCodeLine{00392     \textcolor{comment}{//Debug.Log("{}soundDirectionAngleZ"{} + soundDirectionAngleZ);}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396     \textcolor{comment}{//Debug.Log("{}soundDirectionAngle.x"{} + soundDirectionAngle.x);}}
+\DoxyCodeLine{00397     \textcolor{comment}{//Debug.Log("{}soundDirectionAngle.y"{} + soundDirectionAngle.y);}}
+\DoxyCodeLine{00398     \textcolor{comment}{//Debug.Log("{}soundDirectionAngle.z"{} + soundDirectionAngle.z);}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400     \textcolor{comment}{//float DifferenciationX = soundDirectionAngleX.x -\/ head.x;}}
+\DoxyCodeLine{00401     \textcolor{comment}{//Debug.LogFormat("{}DifferenciationX"{} + DifferenciationX);}}
+\DoxyCodeLine{00402     \textcolor{comment}{//Debug.LogFormat("{}DifferenciationY"{} + DifferenciationY);}}
+\DoxyCodeLine{00403     \textcolor{comment}{//Debug.LogFormat("{}DifferenciationZ"{} + DifferenciationZ);}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00405     \textcolor{comment}{//float EncircleX = Mathf.Abs(Mathf.Cos(DifferenciationX * Mathf.PI / 180));}}
+\DoxyCodeLine{00406 }
+\DoxyCodeLine{00407     \textcolor{comment}{//Debug.LogFormat("{}panStereo"{} + SoundPiece.source.panStereo);}}
+\DoxyCodeLine{00408     \textcolor{comment}{//Debug.LogFormat("{}EncircleX"{} + EncircleX);}}
+\DoxyCodeLine{00409     \textcolor{comment}{//Debug.LogFormat("{}EncircleY"{} + EncircleY);}}
+\DoxyCodeLine{00410     \textcolor{comment}{//Debug.LogFormat("{}EncircleZ"{} + EncircleZ);}}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412     \textcolor{comment}{//float look = Vector3.Dot(ears.transform.forward, soundDirection);}}
+\DoxyCodeLine{00413     \textcolor{comment}{//Debug.LogFormat("{}look"{} + look);}}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00415     \textcolor{comment}{//if(look < 0f \&\& Mathf.Abs(normalizedEncircles.z) > Mathf.Abs(normalizedEncircles.y))}}
+\DoxyCodeLine{00416     \textcolor{comment}{//    SoundPiece.source.panStereo = (normalizedEncircles.y + normalizedEncircles.z) * -\/1;}}
+\DoxyCodeLine{00417     \textcolor{comment}{//else}}
+\DoxyCodeLine{00418     \textcolor{comment}{//if (SoundPiece.source != null \&\& SoundPiece.source.isPlaying \&\& SoundPiece.soundCastSource != null)}}
+\DoxyCodeLine{00419     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00420     \textcolor{comment}{//    float \_tempVolume = 0;}}
+\DoxyCodeLine{00421 }
+\DoxyCodeLine{00422     \textcolor{comment}{//    SoundPiece.originalMaxVolume = SoundPiece.Volume;}}
+\DoxyCodeLine{00423     \textcolor{comment}{//    SoundPiece.originalPitch = SoundPiece.Pitch;}}
+\DoxyCodeLine{00424     \textcolor{comment}{//    SoundPiece.source.volume = 0f;}}
+\DoxyCodeLine{00425     \textcolor{comment}{//    foreach (SoundCast SoundCast in SoundPiece.soundCastSource)}}
+\DoxyCodeLine{00426     \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00427     \textcolor{comment}{//        float distance = Vector3.Distance(ears.transform.position, SoundCast.soundDynamic.gameObject.transform.position);}}
+\DoxyCodeLine{00428     \textcolor{comment}{//        \_tempVolume = Mathf.Min(\_tempVolume, distance / SoundCast.soundRange);}}
+\DoxyCodeLine{00429     \textcolor{comment}{//        SoundPiece.source.panStereo = (SoundCast.soundDynamic.gameObject.transform.position.x -\/ ears.transform.position.x) / SoundCast.soundRange;}}
+\DoxyCodeLine{00430     \textcolor{comment}{//        //SoundPiece.source.pitch = (1f -\/ (distance / SC.soundRange)) * SoundPiece.originalPitch;}}
+\DoxyCodeLine{00431     \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00432     \textcolor{comment}{//    SoundPiece.source.volume = (1f -\/ \_tempVolume) * SoundPiece.originalMaxVolume;}}
+\DoxyCodeLine{00433     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00434     \textcolor{comment}{//Quaternion.FromToRotation}}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436 \textcolor{preprocessor}{    \#endregion DebugCalls}}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438 \textcolor{preprocessor}{    \#region CalculateVisualPositioningBackupCodes}}
+\DoxyCodeLine{00439     \textcolor{comment}{//private void CalculateVisualPositioning(float DifferenciationY, float DifferenciationZ) //Sets a normalized Vector2 for the positional direction the sprite should be within the Canvas screen, after that, a multiplier for how far they should be from the center.}}
+\DoxyCodeLine{00440     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00441     \textcolor{comment}{//    float EncircleForwardBack = Mathf.Cos(DifferenciationY * Mathf.PI / 180); //Returns 1 for forward, and -\/1 for back.}}
+\DoxyCodeLine{00442     \textcolor{comment}{//    float EncircleLeftRight = Mathf.Sin(DifferenciationY * Mathf.PI / 180); //Returns 1 for right, -\/1 for left.}}
+\DoxyCodeLine{00443     \textcolor{comment}{//    float EncircleUpDown = Mathf.Cos(DifferenciationZ * Mathf.PI / 180); //Returns 1 for up, -\/1 for down.}}
+\DoxyCodeLine{00444     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00445 \textcolor{preprocessor}{    \#endregion CalculateVisualPositioningBackupCodes}}
+\DoxyCodeLine{00446     \textcolor{keyword}{private} \textcolor{keywordtype}{void} CalculateVisualPositioning(SoundVisualizer soundVisualizer, \textcolor{keywordtype}{float} fowardBack, \textcolor{keywordtype}{float} leftRight, \textcolor{keywordtype}{float} upDown) \textcolor{comment}{//Sets a normalized Vector2 for the positional direction the sprite should be within the Canvas screen, after that, a multiplier for how far they should be from the center.}}
+\DoxyCodeLine{00447     \{}
+\DoxyCodeLine{00448         Vector2 EncircleVector = \textcolor{keyword}{new} Vector2(leftRight, upDown).normalized;}
+\DoxyCodeLine{00449         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} soundVisualizer.VisualizerDynamicPart)}
+\DoxyCodeLine{00450         \{}
+\DoxyCodeLine{00451             \textcolor{keywordflow}{if} (soundVisualAssets.currentTime > 0)}
+\DoxyCodeLine{00452             \{}
+\DoxyCodeLine{00453                 soundVisualAssets.currentTime -\/= Time.deltaTime;}
+\DoxyCodeLine{00454                 Vector2 RealVector = \textcolor{keyword}{new} Vector2(EncircleVector.x * soundVisualAssets.XVisualDistanceFromCenter, EncircleVector.y * soundVisualAssets.YVisualDistanceFromCenter);}
+\DoxyCodeLine{00455                 soundVisualAssets.RectImage.localPosition = RealVector;}
+\DoxyCodeLine{00456                 soundVisualAssets.ObjectImage.transform.up = RealVector;}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458                 \textcolor{keywordtype}{float} a = Mathf.Min(Mathf.Max(1 -\/ fowardBack -\/ soundVisualAssets.VisualAngle, 0) / soundVisualAssets.VisualAngleBuffer, 1); \textcolor{comment}{//Calculate Visibility of UI Based on how close you are looking at them.}}
+\DoxyCodeLine{00459                 \textcolor{keywordtype}{float} b = Mathf.Min(soundVisualAssets.currentTime / soundVisualAssets.BufferTime, 1); \textcolor{comment}{//Calculate Visibility based on how much longer the visual will remain active.}}
+\DoxyCodeLine{00460                 Color changeVisibility = soundVisualAssets.ComponentImage.color;}
+\DoxyCodeLine{00461                 changeVisibility.a = a * b;}
+\DoxyCodeLine{00462                 soundVisualAssets.ComponentImage.color = changeVisibility;}
+\DoxyCodeLine{00463             \}}
+\DoxyCodeLine{00464         \}}
+\DoxyCodeLine{00465         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} soundVisualizer.VisualizerStaticPart)}
+\DoxyCodeLine{00466         \{}
+\DoxyCodeLine{00467             \textcolor{keywordflow}{if} (soundVisualAssets.currentTime > 0)}
+\DoxyCodeLine{00468             \{}
+\DoxyCodeLine{00469                 soundVisualAssets.currentTime -\/= Time.deltaTime;}
+\DoxyCodeLine{00470                 Vector2 RealVector = \textcolor{keyword}{new} Vector2(EncircleVector.x * soundVisualAssets.XVisualDistanceFromCenter, EncircleVector.y * soundVisualAssets.YVisualDistanceFromCenter);}
+\DoxyCodeLine{00471                 soundVisualAssets.RectImage.localPosition = RealVector;}
+\DoxyCodeLine{00472                 soundVisualAssets.ObjectImage.transform.localPosition = RealVector;}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474                 \textcolor{keywordtype}{float} a = Mathf.Min(Mathf.Max(1 -\/ fowardBack -\/ soundVisualAssets.VisualAngle, 0) / soundVisualAssets.VisualAngleBuffer, 1); \textcolor{comment}{//Calculate Visibility of UI Based on how close you are looking at them.}}
+\DoxyCodeLine{00475                 \textcolor{keywordtype}{float} b = Mathf.Min(soundVisualAssets.currentTime / soundVisualAssets.BufferTime, 1); \textcolor{comment}{//Calculate Visibility based on how much longer the visual will remain active.}}
+\DoxyCodeLine{00476                 Color changeVisibility = soundVisualAssets.ComponentImage.color;}
+\DoxyCodeLine{00477                 changeVisibility.a = a * b;}
+\DoxyCodeLine{00478                 soundVisualAssets.ComponentImage.color = changeVisibility;}
+\DoxyCodeLine{00479             \}}
+\DoxyCodeLine{00480         \}}
+\DoxyCodeLine{00481     \}}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00483     \textcolor{comment}{// Update is called once per frame}}
+\DoxyCodeLine{00484     \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00485     \{}
+\DoxyCodeLine{00486         \textcolor{keywordflow}{if} (ears == \textcolor{keyword}{null})}
+\DoxyCodeLine{00487         \{}
+\DoxyCodeLine{00488             ears = FindObjectOfType<AudioListener>().gameObject;}
+\DoxyCodeLine{00489         \}}
+\DoxyCodeLine{00490         UpdateCalculate();}
+\DoxyCodeLine{00491     \}}
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493     \textcolor{keywordtype}{void} OnDrawGizmosSelected()}
+\DoxyCodeLine{00494     \{}
+\DoxyCodeLine{00495         \textcolor{keywordflow}{foreach} (SoundCastDynamics SoundCastDynamics \textcolor{keywordflow}{in} soundCasts)}
+\DoxyCodeLine{00496         \{}
+\DoxyCodeLine{00497             \textcolor{keywordflow}{foreach} (SoundCast SoundCast \textcolor{keywordflow}{in} SoundCastDynamics.soundCasts)}
+\DoxyCodeLine{00498             \{}
+\DoxyCodeLine{00499                 Gizmos.DrawWireSphere(SoundCastDynamics.gameObject.transform.position, SoundCast.soundRange);}
+\DoxyCodeLine{00500             \}}
+\DoxyCodeLine{00501         \}}
+\DoxyCodeLine{00502     \}}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00504     \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/ !!!Code Divider to Keep it clean}}
+\DoxyCodeLine{00505     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundChain(\textcolor{keywordtype}{int} soundChainID)}
+\DoxyCodeLine{00506     \{}
+\DoxyCodeLine{00507         photonView.RPC(\textcolor{stringliteral}{"{}PlayChain"{}}, RpcTarget.All, soundChainID);}
+\DoxyCodeLine{00508     \}}
+\DoxyCodeLine{00509     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundChunk(\textcolor{keywordtype}{int} soundChunkID)}
+\DoxyCodeLine{00510     \{}
+\DoxyCodeLine{00511         photonView.RPC(\textcolor{stringliteral}{"{}PlayChunk"{}}, RpcTarget.All, soundChunkID);}
+\DoxyCodeLine{00512     \}}
+\DoxyCodeLine{00513     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundPiece(\textcolor{keywordtype}{int} soundPieceID)}
+\DoxyCodeLine{00514     \{}
+\DoxyCodeLine{00515         photonView.RPC(\textcolor{stringliteral}{"{}PlayPiece"{}}, RpcTarget.All, soundPieceID);}
+\DoxyCodeLine{00516     \}}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundChain(\textcolor{keywordtype}{string} soundChainName)}
+\DoxyCodeLine{00520     \{}
+\DoxyCodeLine{00521         photonView.RPC(\textcolor{stringliteral}{"{}PlayChain"{}}, RpcTarget.All, soundChainName);}
+\DoxyCodeLine{00522     \}}
+\DoxyCodeLine{00523     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundChunk(\textcolor{keywordtype}{string} soundChunkName)}
+\DoxyCodeLine{00524     \{}
+\DoxyCodeLine{00525         photonView.RPC(\textcolor{stringliteral}{"{}PlayChunk"{}}, RpcTarget.All, soundChunkName);}
+\DoxyCodeLine{00526     \}}
+\DoxyCodeLine{00527     \textcolor{keyword}{public} \textcolor{keywordtype}{void} multiplayerSoundPiece(\textcolor{keywordtype}{string} soundPieceName)}
+\DoxyCodeLine{00528     \{}
+\DoxyCodeLine{00529         photonView.RPC(\textcolor{stringliteral}{"{}PlayPiece"{}}, RpcTarget.All, soundPieceName);}
+\DoxyCodeLine{00530     \}}
+\DoxyCodeLine{00531 }
+\DoxyCodeLine{00532     \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/ !!!Code Divider to Keep it clean}}
+\DoxyCodeLine{00533     [PunRPC]}
+\DoxyCodeLine{00534     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayChain(\textcolor{keywordtype}{int} soundChainID) \textcolor{comment}{//Chain plays chunks of sound until there is no more in that chain, set the delay to 0 on the sound chunk to make them play together}}
+\DoxyCodeLine{00535     \{}
+\DoxyCodeLine{00536         \textcolor{comment}{//Debug.Log(soundChainID);}}
+\DoxyCodeLine{00537         StartCoroutine(playSoundChain(soundChainID));}
+\DoxyCodeLine{00538     \}}
+\DoxyCodeLine{00539     [PunRPC]}
+\DoxyCodeLine{00540     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayChunk(\textcolor{keywordtype}{int} soundChunkID) \textcolor{comment}{//Chunk randomizes 1 sound from the list to create uniqueness}}
+\DoxyCodeLine{00541     \{}
+\DoxyCodeLine{00542         \textcolor{comment}{//Debug.Log(soundChunkID);}}
+\DoxyCodeLine{00543         StartCoroutine(playSoundChunk(soundChunkID));}
+\DoxyCodeLine{00544     \}}
+\DoxyCodeLine{00545     [PunRPC]}
+\DoxyCodeLine{00546     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayPiece(\textcolor{keywordtype}{int} soundPieceID) \textcolor{comment}{//Piece plays a sound based on volume and pitch}}
+\DoxyCodeLine{00547     \{}
+\DoxyCodeLine{00548         \textcolor{comment}{//soundPieces[soundPieceID].source.PlayDelayed(soundPieces[soundPieceID].delayBefore);}}
+\DoxyCodeLine{00549         \textcolor{comment}{//Debug.Log(soundPieceID);}}
+\DoxyCodeLine{00550         StartCoroutine(playSoundPiece(soundPieceID));}
+\DoxyCodeLine{00551     \}}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00553     \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/ !!!Code Divider to Keep it clean}}
+\DoxyCodeLine{00554     [PunRPC]}
+\DoxyCodeLine{00555     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayChain(\textcolor{keywordtype}{string} soundChainName) \textcolor{comment}{//Chain plays chunks of sound until there is no more in that chain, set the delay to 0 on the sound chunk to make them play together, overload for name instead of id}}
+\DoxyCodeLine{00556     \{}
+\DoxyCodeLine{00557         \textcolor{comment}{//System.Array.Find(soundChains, soundChains => soundChains.chainName == soundChainName); !!!Note Possible usable system method, very useful}}
+\DoxyCodeLine{00558         \textcolor{comment}{//int i = System.Array.IndexOf(soundChains, System.Array.FindIndex(soundChains, soundChains => soundChains.chainName == soundChainName));}}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560         \textcolor{keywordtype}{int} currentIndex = 0; \textcolor{comment}{//manually indicate the selected index, the one provided by System doesn't seem to work}}
+\DoxyCodeLine{00561         \textcolor{keywordflow}{foreach} (SoundChain soundChain \textcolor{keywordflow}{in} soundChains)}
+\DoxyCodeLine{00562         \{}
+\DoxyCodeLine{00563             \textcolor{keywordflow}{if} (soundChain.chainName == soundChainName)}
+\DoxyCodeLine{00564             \{}
+\DoxyCodeLine{00565                 StartCoroutine(playSoundChain(currentIndex));}
+\DoxyCodeLine{00566                 \textcolor{comment}{//Debug.Log(currentIndex);}}
+\DoxyCodeLine{00567             \}}
+\DoxyCodeLine{00568             currentIndex++;}
+\DoxyCodeLine{00569         \}}
+\DoxyCodeLine{00570         \textcolor{comment}{//int i = System.Array.FindIndex(soundChains, soundChains => soundChains.chainName == soundChainName);}}
+\DoxyCodeLine{00571         \textcolor{comment}{//Debug.Log(i);}}
+\DoxyCodeLine{00572         \textcolor{comment}{//StartCoroutine(playSoundChain(i)); //Using system to search for the instance value of array with the desired name, and pick it's instance index for array call usage}}
+\DoxyCodeLine{00573     \}}
+\DoxyCodeLine{00574     [PunRPC]}
+\DoxyCodeLine{00575     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayChunk(\textcolor{keywordtype}{string} soundChunkName) \textcolor{comment}{//Chunk randomizes 1 sound from the list to create uniqueness, overload for name instead of id}}
+\DoxyCodeLine{00576     \{}
+\DoxyCodeLine{00577         \textcolor{keywordtype}{int} currentIndex = 0; \textcolor{comment}{//manually indicate the selected index, the one provided by System doesn't seem to work}}
+\DoxyCodeLine{00578         \textcolor{keywordflow}{foreach} (SoundChunk soundChunk \textcolor{keywordflow}{in} soundChunks)}
+\DoxyCodeLine{00579         \{}
+\DoxyCodeLine{00580             \textcolor{keywordflow}{if} (soundChunk.chunkName == soundChunkName)}
+\DoxyCodeLine{00581             \{}
+\DoxyCodeLine{00582                 StartCoroutine(playSoundChunk(currentIndex));}
+\DoxyCodeLine{00583                 \textcolor{comment}{//Debug.Log(currentIndex);}}
+\DoxyCodeLine{00584             \}}
+\DoxyCodeLine{00585             currentIndex++;}
+\DoxyCodeLine{00586         \}}
+\DoxyCodeLine{00587         \textcolor{comment}{//int i = System.Array.FindIndex(soundChunks, soundChunks => soundChunks.chunkName == soundChunkName);}}
+\DoxyCodeLine{00588         \textcolor{comment}{//Debug.Log(i);}}
+\DoxyCodeLine{00589         \textcolor{comment}{//StartCoroutine(playSoundChunk(i)); //Using system to search for the instance value of array with the desired name, and pick it's instance index for array call usage}}
+\DoxyCodeLine{00590     \}}
+\DoxyCodeLine{00591     [PunRPC]}
+\DoxyCodeLine{00592     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PlayPiece(\textcolor{keywordtype}{string} soundPieceName) \textcolor{comment}{//Piece plays a sound based on volume and pitch, overload for name instead of id}}
+\DoxyCodeLine{00593     \{}
+\DoxyCodeLine{00594         \textcolor{keywordtype}{int} currentIndex = 0; \textcolor{comment}{//manually indicate the selected index, the one provided by System doesn't seem to work}}
+\DoxyCodeLine{00595         \textcolor{keywordflow}{foreach} (SoundPiece soundPiece \textcolor{keywordflow}{in} soundPieces)}
+\DoxyCodeLine{00596         \{}
+\DoxyCodeLine{00597             Debug.Log(\textcolor{stringliteral}{"{}Foreach1"{}});}
+\DoxyCodeLine{00598             \textcolor{keywordflow}{if} (soundPiece.pieceName == soundPieceName)}
+\DoxyCodeLine{00599             \{}
+\DoxyCodeLine{00600                 StartCoroutine(playSoundPiece(currentIndex));}
+\DoxyCodeLine{00601                 Debug.Log(currentIndex);}
+\DoxyCodeLine{00602             \}}
+\DoxyCodeLine{00603             currentIndex++;}
+\DoxyCodeLine{00604             Debug.Log(\textcolor{stringliteral}{"{}Index Log"{}} + currentIndex);}
+\DoxyCodeLine{00605         \}}
+\DoxyCodeLine{00606         \textcolor{comment}{//Debug.Log(currentIndex);}}
+\DoxyCodeLine{00607         \textcolor{comment}{//int i = System.Array.FindIndex(soundPieces, soundPieces => soundPieces.pieceName == soundPieceName);}}
+\DoxyCodeLine{00608         \textcolor{comment}{//Debug.Log(i);}}
+\DoxyCodeLine{00609         \textcolor{comment}{//StartCoroutine(playSoundPiece(i)); //Using system to search for the instance value of array with the desired name, and pick it's instance index for array call usage}}
+\DoxyCodeLine{00610     \}}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612 }
+\DoxyCodeLine{00613     \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/ !!!Code Divider to Keep it clean}}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615     IEnumerator playSoundChain(\textcolor{keywordtype}{int} soundChainID) \textcolor{comment}{//An IEnumerator to play the specific sound(Chain, Chunk or Piece) by ID}}
+\DoxyCodeLine{00616     \{}
+\DoxyCodeLine{00617         \textcolor{keywordtype}{int} tempLooper = soundChains[soundChainID].loopNum;}
+\DoxyCodeLine{00618         \textcolor{keywordflow}{while} (tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00619         \{}
+\DoxyCodeLine{00620             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < soundChains[soundChainID].soundChunks.Length; i++)}
+\DoxyCodeLine{00621             \{}
+\DoxyCodeLine{00622                 \textcolor{keywordtype}{int} \_tempLooper = soundChains[soundChainID].soundChunks[i].loopNum;}
+\DoxyCodeLine{00623                 \textcolor{keywordflow}{while} (\_tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00624                 \{}
+\DoxyCodeLine{00625                     \textcolor{keywordtype}{int} rand = Random.Range(0, soundChains[soundChainID].soundChunks[i].soundPieces.Length); \textcolor{comment}{//Produce the random instance of the choosen chunk in the chain, picked and used to check for the following array.}}
+\DoxyCodeLine{00626                     \textcolor{keywordtype}{int} \_\_tempLooper = soundChains[soundChainID].soundChunks[i].soundPieces[rand].loopNum;}
+\DoxyCodeLine{00627                     \textcolor{keywordflow}{while} (\_\_tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00628                     \{}
+\DoxyCodeLine{00629                         yield \textcolor{keywordflow}{return} soundChains[soundChainID].soundChunks[i].soundPieces[rand].delayBeforeWait; \textcolor{comment}{//Delay the sound until as stated duration later, used for timing}}
+\DoxyCodeLine{00630                         soundChains[soundChainID].soundChunks[i].soundPieces[rand].source.Play(); \textcolor{comment}{//Play the attributed sound source}}
+\DoxyCodeLine{00631                         soundChains[soundChainID].soundChunks[i].soundPieces[rand].ActivateTime(); \textcolor{comment}{//Activate any existing visual assets}}
+\DoxyCodeLine{00632                         UpdateCalculate();}
+\DoxyCodeLine{00633                         \textcolor{keywordflow}{if} (soundChains[soundChainID].soundChunks[i].soundPieces[rand].waitForSoundFinish)}
+\DoxyCodeLine{00634                             yield \textcolor{keywordflow}{return} soundChains[soundChainID].soundChunks[i].soundPieces[rand].delayDuringWait;}
+\DoxyCodeLine{00635                         yield \textcolor{keywordflow}{return} soundChains[soundChainID].soundChunks[i].soundPieces[rand].delayAfterWait;}
+\DoxyCodeLine{00636                     \}}
+\DoxyCodeLine{00637                 \}}
+\DoxyCodeLine{00638                 \textcolor{comment}{//audioSource.PlayOneShot(soundChains[soundChainID].soundChunks[i].soundPieces[rand].Audio, soundChains[soundChainID].Volume * soundChains[soundChainID].soundChunks[i].Volume * soundChains[soundChainID].soundChunks[i].soundPieces[rand].Volume * Volume); //Play the sound stated following the Volume multipliers}}
+\DoxyCodeLine{00639             \}}
+\DoxyCodeLine{00640         \}}
+\DoxyCodeLine{00641     \}}
+\DoxyCodeLine{00642 }
+\DoxyCodeLine{00643     IEnumerator playSoundChunk(\textcolor{keywordtype}{int} soundChunkID) \textcolor{comment}{//An IEnumerator to play the specific sound(Chain, Chunk or Piece) by ID}}
+\DoxyCodeLine{00644     \{}
+\DoxyCodeLine{00645         \textcolor{keywordtype}{int} tempLooper = soundChunks[soundChunkID].loopNum;}
+\DoxyCodeLine{00646         \textcolor{keywordflow}{while} (tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00647         \{}
+\DoxyCodeLine{00648             \textcolor{keywordtype}{int} rand = Random.Range(0, soundChunks[soundChunkID].soundPieces.Length); \textcolor{comment}{//Produce the random instance of the choosen sound in the chunk, picked and used to check for the following arrays}}
+\DoxyCodeLine{00649             \textcolor{keywordtype}{int} \_tempLooper = soundChunks[soundChunkID].soundPieces[rand].loopNum;}
+\DoxyCodeLine{00650             \textcolor{keywordflow}{while} (\_tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00651             \{}
+\DoxyCodeLine{00652                 yield \textcolor{keywordflow}{return} soundChunks[soundChunkID].soundPieces[rand].delayBeforeWait; \textcolor{comment}{//Delay the sound until as stated duration later, used for timing}}
+\DoxyCodeLine{00653                 soundChunks[soundChunkID].soundPieces[rand].source.Play(); \textcolor{comment}{//Play the attributed sound source}}
+\DoxyCodeLine{00654                 soundChunks[soundChunkID].soundPieces[rand].ActivateTime(); \textcolor{comment}{//Activate any existing visual assets}}
+\DoxyCodeLine{00655                 UpdateCalculate();}
+\DoxyCodeLine{00656                 \textcolor{keywordflow}{if} (soundChunks[soundChunkID].soundPieces[rand].waitForSoundFinish)}
+\DoxyCodeLine{00657                     yield \textcolor{keywordflow}{return} soundChunks[soundChunkID].soundPieces[rand].delayDuringWait;}
+\DoxyCodeLine{00658                 yield \textcolor{keywordflow}{return} soundChunks[soundChunkID].soundPieces[rand].delayAfterWait;}
+\DoxyCodeLine{00659             \}}
+\DoxyCodeLine{00660 }
+\DoxyCodeLine{00661             \textcolor{comment}{//audioSource.PlayOneShot(soundChunks[soundChunkID].soundPieces[rand].Audio, soundChunks[soundChunkID].Volume * soundChunks[soundChunkID].soundPieces[rand].Volume * Volume); //Play the sound stated following the Volume multipliers}}
+\DoxyCodeLine{00662 }
+\DoxyCodeLine{00663         \}}
+\DoxyCodeLine{00664     \}}
+\DoxyCodeLine{00665 }
+\DoxyCodeLine{00666     IEnumerator playSoundPiece(\textcolor{keywordtype}{int} soundPieceID) \textcolor{comment}{//An IEnumerator to play the specific sound(Chain, Chunk or Piece) by ID}}
+\DoxyCodeLine{00667     \{}
+\DoxyCodeLine{00668         \textcolor{keywordtype}{int} tempLooper = soundPieces[soundPieceID].loopNum;}
+\DoxyCodeLine{00669         \textcolor{keywordflow}{while} (tempLooper-\/-\/ != 0)}
+\DoxyCodeLine{00670         \{}
+\DoxyCodeLine{00671             yield \textcolor{keywordflow}{return} soundPieces[soundPieceID].delayBeforeWait; \textcolor{comment}{//Delay the sound until as stated duration later, used for timing}}
+\DoxyCodeLine{00672             soundPieces[soundPieceID].source.Play(); \textcolor{comment}{//Play the attributed sound source}}
+\DoxyCodeLine{00673             soundPieces[soundPieceID].ActivateTime(); \textcolor{comment}{//Activate any existing visual assets}}
+\DoxyCodeLine{00674             UpdateCalculate();}
+\DoxyCodeLine{00675             \textcolor{comment}{//Debug.Log(soundPieces[soundPieceID].source.clip.length);}}
+\DoxyCodeLine{00676             \textcolor{keywordflow}{if} (soundPieces[soundPieceID].waitForSoundFinish)}
+\DoxyCodeLine{00677                 yield \textcolor{keywordflow}{return} soundPieces[soundPieceID].delayDuringWait;}
+\DoxyCodeLine{00678             yield \textcolor{keywordflow}{return} soundPieces[soundPieceID].delayAfterWait;}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680             \textcolor{comment}{//audioSource.PlayOneShot(soundPieces[soundPieceID].Audio, soundPieces[soundPieceID].Volume * Volume); //Play the sound stated following the Volume multipliers}}
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00682         \}}
+\DoxyCodeLine{00683     \}}
+\DoxyCodeLine{00684 }
+\DoxyCodeLine{00685     [System.Serializable]}
+\DoxyCodeLine{00686     \textcolor{keyword}{public} \textcolor{keyword}{class }SoundChain}
+\DoxyCodeLine{00687     \{}
+\DoxyCodeLine{00688         \textcolor{keyword}{public} \textcolor{keywordtype}{string} chainName;}
+\DoxyCodeLine{00689         \textcolor{keyword}{public} SoundChunk[] soundChunks;}
+\DoxyCodeLine{00690 }
+\DoxyCodeLine{00691         [Header(\textcolor{stringliteral}{"{}Sound Settings"{}})]}
+\DoxyCodeLine{00692         [Tooltip(\textcolor{stringliteral}{"{}Plays on start, this includes any loop if infinate or not."{}})]}
+\DoxyCodeLine{00693         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} playOnStart;}
+\DoxyCodeLine{00694         [Tooltip(\textcolor{stringliteral}{"{}This sets the number of looping before stopping, put the value below 0 for infinity.\(\backslash\)nIf infinity, please set some value of delay otherwise it crashes the game."{}})]}
+\DoxyCodeLine{00695         \textcolor{keyword}{public} \textcolor{keywordtype}{int} loopNum;}
+\DoxyCodeLine{00696         [Tooltip(\textcolor{stringliteral}{"{}This sets the volume, multiplicative of each of the volumes within the structures."{}})]}
+\DoxyCodeLine{00697         [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Volume = 1f;}
+\DoxyCodeLine{00698         [Tooltip(\textcolor{stringliteral}{"{}This sets the pitch, multiplicative of each of the pitches within the structures."{}})]}
+\DoxyCodeLine{00699         [Min(0.1f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Pitch = 1f;}
+\DoxyCodeLine{00700     \}}
+\DoxyCodeLine{00701 }
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703     [System.Serializable]}
+\DoxyCodeLine{00704     \textcolor{keyword}{public} \textcolor{keyword}{class }SoundChunk}
+\DoxyCodeLine{00705     \{}
+\DoxyCodeLine{00706         \textcolor{keyword}{public} \textcolor{keywordtype}{string} chunkName;}
+\DoxyCodeLine{00707         \textcolor{keyword}{public} SoundPiece[] soundPieces;}
+\DoxyCodeLine{00708 }
+\DoxyCodeLine{00709         [Header(\textcolor{stringliteral}{"{}Sound Settings"{}})]}
+\DoxyCodeLine{00710         [Tooltip(\textcolor{stringliteral}{"{}Plays on start, this includes any loop if infinate or not. \(\backslash\)nIf inside an soundChain, this does not happen."{}})]}
+\DoxyCodeLine{00711         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} playOnStart;}
+\DoxyCodeLine{00712         [Tooltip(\textcolor{stringliteral}{"{}This sets the number of looping before stopping, put the value below 0 for infinity.\(\backslash\)nIf infinity, please set some value of delay otherwise it crashes the game."{}})]}
+\DoxyCodeLine{00713         \textcolor{keyword}{public} \textcolor{keywordtype}{int} loopNum;}
+\DoxyCodeLine{00714         [Tooltip(\textcolor{stringliteral}{"{}This sets the volume, multiplicative of each of the volumes within the structures."{}})]}
+\DoxyCodeLine{00715         [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Volume = 1f;}
+\DoxyCodeLine{00716         [Tooltip(\textcolor{stringliteral}{"{}This sets the pitch, multiplicative of each of the pitches within the structures."{}})]}
+\DoxyCodeLine{00717         [Min(0.1f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Pitch = 1f;}
+\DoxyCodeLine{00718     \}}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720 }
+\DoxyCodeLine{00721     [System.Serializable]}
+\DoxyCodeLine{00722     \textcolor{keyword}{public} \textcolor{keyword}{class }SoundPiece}
+\DoxyCodeLine{00723     \{}
+\DoxyCodeLine{00724 }
+\DoxyCodeLine{00725         \textcolor{keyword}{public} \textcolor{keywordtype}{string} pieceName;}
+\DoxyCodeLine{00726         \textcolor{keyword}{public} AudioClip Audio;}
+\DoxyCodeLine{00727         \textcolor{keyword}{public} AudioMixerGroup AudioMixer;}
+\DoxyCodeLine{00728 }
+\DoxyCodeLine{00729         [Header(\textcolor{stringliteral}{"{}Sound Cast Settings"{}})]}
+\DoxyCodeLine{00730         [Tooltip(\textcolor{stringliteral}{"{}Within this sound general dynamics can have sound cast dynamics set as its array roots, using this sound cast name as the base for the targets to find the sources."{}})]}
+\DoxyCodeLine{00731         \textcolor{keyword}{public} \textcolor{keywordtype}{string} soundCastName;}
+\DoxyCodeLine{00732 }
+\DoxyCodeLine{00733         [Header(\textcolor{stringliteral}{"{}Sound Visualizer Settings"{}})]}
+\DoxyCodeLine{00734         [Tooltip(\textcolor{stringliteral}{"{}Within this sound general dynamics, you can set up multiple visualizer under the same name and each will be casted based on the stated name, if no cast is set, this does not go off."{}})]}
+\DoxyCodeLine{00735         \textcolor{keyword}{public} \textcolor{keywordtype}{string} soundVisualizerName;}
+\DoxyCodeLine{00736 }
+\DoxyCodeLine{00737         [Header(\textcolor{stringliteral}{"{}Sound Settings"{}})]}
+\DoxyCodeLine{00738         [Tooltip(\textcolor{stringliteral}{"{}Plays on start, this includes any loop if infinate or not. \(\backslash\)nIf inside an soundChunk, this does not happen."{}})]}
+\DoxyCodeLine{00739         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} playOnStart;}
+\DoxyCodeLine{00740         [Tooltip(\textcolor{stringliteral}{"{}This sets the number of looping before stopping, put the value below 0 for infinity. \(\backslash\)nIf infinity, please set some value of delay otherwise it crashes the game."{}})]}
+\DoxyCodeLine{00741         \textcolor{keyword}{public} \textcolor{keywordtype}{int} loopNum;}
+\DoxyCodeLine{00742         [Tooltip(\textcolor{stringliteral}{"{}Delay before will cause the sound to wait the set moment before being played, useful for timing chains of sound as well as making cooldown time."{}})]}
+\DoxyCodeLine{00743         [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} delayBefore = 0f;}
+\DoxyCodeLine{00744         [Tooltip(\textcolor{stringliteral}{"{}Causes the sound to finish playing before the next one can start, use this to make sure your loops don't play all at once, as well as delaying chains of sounds for timing."{}})]}
+\DoxyCodeLine{00745         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} waitForSoundFinish;}
+\DoxyCodeLine{00746         [Tooltip(\textcolor{stringliteral}{"{}Delay after will cause the sound to wait the set moment after being played, useful for timing chains of sound as well as making cooldown time."{}})]}
+\DoxyCodeLine{00747         [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} delayAfter = 0f;}
+\DoxyCodeLine{00748         [Tooltip(\textcolor{stringliteral}{"{}This sets the volume, multiplicative of each of the volumes within the structures."{}})]}
+\DoxyCodeLine{00749         [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Volume = 1f;}
+\DoxyCodeLine{00750         [Tooltip(\textcolor{stringliteral}{"{}This sets the pitch, multiplicative of each of the pitches within the structures."{}})]}
+\DoxyCodeLine{00751         [Min(0.1f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} Pitch = 1f;}
+\DoxyCodeLine{00752 }
+\DoxyCodeLine{00753         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} originalMaxVolume;}
+\DoxyCodeLine{00754         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} originalPitch;}
+\DoxyCodeLine{00755         [HideInInspector] \textcolor{keyword}{public} AudioSource source;}
+\DoxyCodeLine{00756         [HideInInspector] \textcolor{keyword}{public} SoundCast[] soundCastSource;}
+\DoxyCodeLine{00757         [HideInInspector] \textcolor{keyword}{public} SoundVisualizer[] soundVisualSource;}
+\DoxyCodeLine{00758 }
+\DoxyCodeLine{00759         [HideInInspector] \textcolor{keyword}{public} WaitForSeconds delayBeforeWait;}
+\DoxyCodeLine{00760         [HideInInspector] \textcolor{keyword}{public} WaitWhile delayDuringWait;}
+\DoxyCodeLine{00761         [HideInInspector] \textcolor{keyword}{public} WaitForSeconds delayAfterWait;}
+\DoxyCodeLine{00762 }
+\DoxyCodeLine{00763         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ActivateTime()}
+\DoxyCodeLine{00764         \{}
+\DoxyCodeLine{00765             \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualSource)}
+\DoxyCodeLine{00766             \{}
+\DoxyCodeLine{00767                 soundVisualizer.ApplyTime();}
+\DoxyCodeLine{00768             \}}
+\DoxyCodeLine{00769         \}}
+\DoxyCodeLine{00770         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ActivateSpecificTime(\textcolor{keywordtype}{float} time)}
+\DoxyCodeLine{00771         \{}
+\DoxyCodeLine{00772             \textcolor{keywordflow}{foreach} (SoundVisualizer soundVisualizer \textcolor{keywordflow}{in} soundVisualSource)}
+\DoxyCodeLine{00773             \{}
+\DoxyCodeLine{00774                 soundVisualizer.ApplySpecificTime(time);}
+\DoxyCodeLine{00775             \}}
+\DoxyCodeLine{00776         \}}
+\DoxyCodeLine{00777     \}}
+\DoxyCodeLine{00778 }
+\DoxyCodeLine{00779 \}}
+\DoxyCodeLine{00780 }
+\DoxyCodeLine{00781 }
+\DoxyCodeLine{00782 [System.Serializable]}
+\DoxyCodeLine{00783 \textcolor{keyword}{public} \textcolor{keyword}{class }SoundVisualizer}
+\DoxyCodeLine{00784 \{}
+\DoxyCodeLine{00785     [Header(\textcolor{stringliteral}{"{}Vanilla Settings"{}})]}
+\DoxyCodeLine{00786     [Tooltip(\textcolor{stringliteral}{"{}Sets the defaulting canvas, is none is set, one will be created, its recommended that you allow one to be created if the existing canvas already has a lot of UI."{}})]}
+\DoxyCodeLine{00787     \textcolor{keyword}{public} GameObject canvas;}
+\DoxyCodeLine{00788 }
+\DoxyCodeLine{00789     [Header(\textcolor{stringliteral}{"{}Sound Visualizer Settings"{}})]}
+\DoxyCodeLine{00790     [Tooltip(\textcolor{stringliteral}{"{}Sets the visualizer name."{}})]}
+\DoxyCodeLine{00791     \textcolor{keyword}{public} \textcolor{keywordtype}{string} visualizerName;}
+\DoxyCodeLine{00792     [Tooltip(\textcolor{stringliteral}{"{}Sets in the dynamic rotating part of the visual."{}})]}
+\DoxyCodeLine{00793     \textcolor{keyword}{public} SoundVisualAssets[] VisualizerDynamicPart;}
+\DoxyCodeLine{00794     [Tooltip(\textcolor{stringliteral}{"{}Sets in the static unrotating part of the visual."{}})]}
+\DoxyCodeLine{00795     \textcolor{keyword}{public} SoundVisualAssets[] VisualizerStaticPart;}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797     [HideInInspector] \textcolor{keyword}{public} Vector3 LastKnownSoundPoint;}
+\DoxyCodeLine{00798 }
+\DoxyCodeLine{00799     \textcolor{keyword}{public} \textcolor{keywordtype}{void} ApplyTime()}
+\DoxyCodeLine{00800     \{}
+\DoxyCodeLine{00801         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} VisualizerDynamicPart)}
+\DoxyCodeLine{00802         \{}
+\DoxyCodeLine{00803             soundVisualAssets.currentTime = soundVisualAssets.ActiveTime;}
+\DoxyCodeLine{00804         \}}
+\DoxyCodeLine{00805         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} VisualizerStaticPart)}
+\DoxyCodeLine{00806         \{}
+\DoxyCodeLine{00807             soundVisualAssets.currentTime = soundVisualAssets.ActiveTime;}
+\DoxyCodeLine{00808         \}}
+\DoxyCodeLine{00809     \}}
+\DoxyCodeLine{00810     \textcolor{keyword}{public} \textcolor{keywordtype}{void} ApplySpecificTime(\textcolor{keywordtype}{float} time)}
+\DoxyCodeLine{00811     \{}
+\DoxyCodeLine{00812         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} VisualizerDynamicPart)}
+\DoxyCodeLine{00813         \{}
+\DoxyCodeLine{00814             soundVisualAssets.currentTime = time;}
+\DoxyCodeLine{00815         \}}
+\DoxyCodeLine{00816         \textcolor{keywordflow}{foreach} (SoundVisualAssets soundVisualAssets \textcolor{keywordflow}{in} VisualizerStaticPart)}
+\DoxyCodeLine{00817         \{}
+\DoxyCodeLine{00818             soundVisualAssets.currentTime = time;}
+\DoxyCodeLine{00819         \}}
+\DoxyCodeLine{00820     \}}
+\DoxyCodeLine{00821 \}}
+\DoxyCodeLine{00822 }
+\DoxyCodeLine{00823 [System.Serializable]}
+\DoxyCodeLine{00824 \textcolor{keyword}{public} \textcolor{keyword}{class }SoundVisualAssets}
+\DoxyCodeLine{00825 \{}
+\DoxyCodeLine{00826     [Tooltip(\textcolor{stringliteral}{"{}Sets in the visual part of the visual."{}})]}
+\DoxyCodeLine{00827     \textcolor{keyword}{public} Sprite VisualSprite;}
+\DoxyCodeLine{00828     [Tooltip(\textcolor{stringliteral}{"{}How far should the X-\/cord visual be from the center."{}})]}
+\DoxyCodeLine{00829     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} XVisualDistanceFromCenter;}
+\DoxyCodeLine{00830     [Tooltip(\textcolor{stringliteral}{"{}How far should the Y-\/cord visual be from the center."{}})]}
+\DoxyCodeLine{00831     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} YVisualDistanceFromCenter;}
+\DoxyCodeLine{00832     [Tooltip(\textcolor{stringliteral}{"{}The X size of the UI element."{}})]}
+\DoxyCodeLine{00833     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} XSize;}
+\DoxyCodeLine{00834     [Tooltip(\textcolor{stringliteral}{"{}The Y size of the UI element."{}})]}
+\DoxyCodeLine{00835     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} YSize;}
+\DoxyCodeLine{00836     [Tooltip(\textcolor{stringliteral}{"{}How close you are to looking at the source before this would disappear. This value has to be between 0 to 1"{}})]}
+\DoxyCodeLine{00837     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} VisualAngle;}
+\DoxyCodeLine{00838     [Tooltip(\textcolor{stringliteral}{"{}A buffer of visual angle to soften the transition of vanish. This value has to be between 0 to 1."{}})]}
+\DoxyCodeLine{00839     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} VisualAngleBuffer;}
+\DoxyCodeLine{00840     [Tooltip(\textcolor{stringliteral}{"{}How long should the solid object exist since the trigger."{}})]}
+\DoxyCodeLine{00841     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} ActiveTime;}
+\DoxyCodeLine{00842     [Tooltip(\textcolor{stringliteral}{"{}Buffer for when the object should start to slowly vanish."{}})]}
+\DoxyCodeLine{00843     [Min(0f)] \textcolor{keyword}{public} \textcolor{keywordtype}{float} BufferTime;}
+\DoxyCodeLine{00844 }
+\DoxyCodeLine{00845     [HideInInspector] \textcolor{keyword}{public} GameObject ObjectImage;}
+\DoxyCodeLine{00846     [HideInInspector] \textcolor{keyword}{public} RectTransform RectImage;}
+\DoxyCodeLine{00847     [HideInInspector] \textcolor{keyword}{public} Image ComponentImage;}
+\DoxyCodeLine{00848     \textcolor{keyword}{public} \textcolor{keywordtype}{float} currentTime;}
+\DoxyCodeLine{00849 \}}
+
+\end{DoxyCode}

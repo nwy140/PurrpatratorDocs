@@ -1,0 +1,184 @@
+\doxysection{Pun\+Scene\+Settings.\+cs}
+\label{_pun_scene_settings_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PunSceneSettings.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PunSceneSettings.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PunSceneSettings.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Optional lowest-\/viewID setting per-\/scene. So PhotonViews don't get the same ID.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00020 \{}
+\DoxyCodeLine{00021     [Serializable]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }SceneSetting}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} SceneAsset sceneAsset;}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keywordtype}{string} sceneName;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{int} minViewId;}
+\DoxyCodeLine{00027     \}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029     [HelpURL(\textcolor{stringliteral}{"{}https://doc.photonengine.com/en-\/us/pun/current/getting-\/started/feature-\/overview\#scene\_photonviews\_in\_multiple\_scenes"{}})]}
+\DoxyCodeLine{00030     \textcolor{keyword}{public} \textcolor{keyword}{class }PunSceneSettings : ScriptableObject}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00034         \textcolor{comment}{// Suppressing compiler warning "{}this variable is never used"{}. Only used in the CustomEditor, only in Editor}}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{        \#pragma warning disable 0414}}
+\DoxyCodeLine{00036         [SerializeField]}
+\DoxyCodeLine{00037         \textcolor{keywordtype}{bool} SceneSettingsListFoldoutOpen = \textcolor{keyword}{true};}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{        \#pragma warning restore 0414}}
+\DoxyCodeLine{00039 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00040         }
+\DoxyCodeLine{00041         [SerializeField]}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} List<SceneSetting> MinViewIdPerScene = \textcolor{keyword}{new} List<SceneSetting>();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044       }
+\DoxyCodeLine{00045         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} SceneSettingsFileName = \textcolor{stringliteral}{"{}PunSceneSettingsFile.asset"{}};}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{comment}{// we use the path to PunSceneSettings.cs as path to create a scene settings file}}
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} punSceneSettingsCsPath;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} PunSceneSettingsCsPath}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             \textcolor{keyword}{get}}
+\DoxyCodeLine{00053             \{}
+\DoxyCodeLine{00054                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(punSceneSettingsCsPath))}
+\DoxyCodeLine{00055                 \{}
+\DoxyCodeLine{00056                     \textcolor{keywordflow}{return} punSceneSettingsCsPath;}
+\DoxyCodeLine{00057                 \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059                 \textcolor{comment}{// Unity 4.3.4 does not yet have AssetDatabase.FindAssets(). Would be easier.}}
+\DoxyCodeLine{00060                 var result = Directory.GetFiles(Application.dataPath, \textcolor{stringliteral}{"{}PunSceneSettings.cs"{}}, SearchOption.AllDirectories);}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{if} (result.Length >= 1)}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     punSceneSettingsCsPath = Path.GetDirectoryName(result[0]);}
+\DoxyCodeLine{00064                     punSceneSettingsCsPath = punSceneSettingsCsPath.Replace(\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'}, \textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00065                     punSceneSettingsCsPath = punSceneSettingsCsPath.Replace(Application.dataPath, \textcolor{stringliteral}{"{}Assets"{}});}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067                     \textcolor{comment}{// AssetDatabase paths have to use '/' and are relative to the project's folder. Always.}}
+\DoxyCodeLine{00068                     punSceneSettingsCsPath = punSceneSettingsCsPath + \textcolor{stringliteral}{"{}/"{}} + SceneSettingsFileName;}
+\DoxyCodeLine{00069                 \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{return} punSceneSettingsCsPath;}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{private} \textcolor{keyword}{static} PunSceneSettings instanceField;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{static} PunSceneSettings Instance}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             \textcolor{keyword}{get}}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (instanceField != \textcolor{keyword}{null})}
+\DoxyCodeLine{00083                 \{}
+\DoxyCodeLine{00084                     \textcolor{keywordflow}{return} instanceField;}
+\DoxyCodeLine{00085                 \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087                 instanceField = (PunSceneSettings)AssetDatabase.LoadAssetAtPath(PunSceneSettingsCsPath, typeof(PunSceneSettings));}
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{if} (instanceField == \textcolor{keyword}{null})}
+\DoxyCodeLine{00089                 \{}
+\DoxyCodeLine{00090                     instanceField = CreateInstance<PunSceneSettings>();}
+\DoxyCodeLine{00091 \textcolor{preprocessor}{                    \#pragma warning disable 0168}}
+\DoxyCodeLine{00092                     \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00093                     \{}
+\DoxyCodeLine{00094                         AssetDatabase.CreateAsset(instanceField, PunSceneSettingsCsPath);}
+\DoxyCodeLine{00095                     \}}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00097                     \{}
+\DoxyCodeLine{00098 \textcolor{preprocessor}{                        \#if PHOTON\_UNITY\_NETWORKING}}
+\DoxyCodeLine{00099                         Debug.LogError(\textcolor{stringliteral}{"{}-\/-\/ WARNING: PROJECT CLEANUP NECESSARY -\/-\/ If you delete pun from your project, make sure you also clean up the Scripting define symbols from any reference to PUN like 'PHOTON\_UNITY\_NETWORKING "{}});}
+\DoxyCodeLine{00100 \textcolor{preprocessor}{                        \#endif}}
+\DoxyCodeLine{00101                     \}}
+\DoxyCodeLine{00102 \textcolor{preprocessor}{                    \#pragma warning restore 0168}}
+\DoxyCodeLine{00103                 \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105                 \textcolor{keywordflow}{return} instanceField;}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MinViewIdForScene(\textcolor{keywordtype}{string} sceneName)}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(sceneName))}
+\DoxyCodeLine{00113             \{}
+\DoxyCodeLine{00114                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00115             \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             PunSceneSettings pss = Instance;}
+\DoxyCodeLine{00118             \textcolor{keywordflow}{if} (pss == \textcolor{keyword}{null})}
+\DoxyCodeLine{00119             \{}
+\DoxyCodeLine{00120                 Debug.LogError(\textcolor{stringliteral}{"{}pss cant be null"{}});}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordflow}{foreach} (SceneSetting setting \textcolor{keywordflow}{in} pss.MinViewIdPerScene)}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (setting.sceneName.Equals(sceneName))}
+\DoxyCodeLine{00127                 \{}
+\DoxyCodeLine{00128                     \textcolor{keywordflow}{return} setting.minViewId;}
+\DoxyCodeLine{00129                 \}}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SanitizeSceneSettings()}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if} (Instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00139             \}}
+\DoxyCodeLine{00140             }
+\DoxyCodeLine{00141 \textcolor{preprocessor}{            \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{foreach} (SceneSetting sceneSetting \textcolor{keywordflow}{in} Instance.MinViewIdPerScene)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 \textcolor{keywordflow}{if} (sceneSetting.sceneAsset == \textcolor{keyword}{null} \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(sceneSetting.sceneName))}
+\DoxyCodeLine{00145                 \{}
+\DoxyCodeLine{00146                     }
+\DoxyCodeLine{00147                     \textcolor{keywordtype}{string}[] guids = AssetDatabase.FindAssets(sceneSetting.sceneName + \textcolor{stringliteral}{"{} t:SceneAsset"{}});}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149                     \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} guid \textcolor{keywordflow}{in} guids)}
+\DoxyCodeLine{00150                     \{}
+\DoxyCodeLine{00151                         \textcolor{keywordtype}{string} path = AssetDatabase.GUIDToAssetPath(guid);}
+\DoxyCodeLine{00152                         \textcolor{keywordflow}{if} (Path.GetFileNameWithoutExtension(path) == sceneSetting.sceneName)}
+\DoxyCodeLine{00153                         \{}
+\DoxyCodeLine{00154                             sceneSetting.sceneAsset =}
+\DoxyCodeLine{00155                                 AssetDatabase.LoadAssetAtPath<SceneAsset>(}
+\DoxyCodeLine{00156                                     AssetDatabase.GUIDToAssetPath(guid));}
+\DoxyCodeLine{00157                             }
+\DoxyCodeLine{00158                         \textcolor{comment}{//    Debug.Log("{}SceneSettings : ''"{}+sceneSetting.sceneName+"{}'' scene is missing: Issue corrected"{},Instance);}}
+\DoxyCodeLine{00159                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00160                         \}}
+\DoxyCodeLine{00161                     \}}
+\DoxyCodeLine{00162                     }
+\DoxyCodeLine{00163                     \textcolor{comment}{//Debug.Log("{}SceneSettings : ''"{}+sceneSetting.sceneName+"{}'' scene is missing"{},Instance);}}
+\DoxyCodeLine{00164                     }
+\DoxyCodeLine{00165                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00166                 \}}
+\DoxyCodeLine{00167                 }
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{if} (sceneSetting.sceneAsset != \textcolor{keyword}{null} \&\& sceneSetting.sceneName!= sceneSetting.sceneAsset.name )}
+\DoxyCodeLine{00169                 \{}
+\DoxyCodeLine{00170                  \textcolor{comment}{//   Debug.Log("{}SceneSettings : '"{}+sceneSetting.sceneName+"{}' mismatch with sceneAsset: '"{}+sceneSetting.sceneAsset.name+"{}' : Issue corrected"{},Instance);}}
+\DoxyCodeLine{00171                     sceneSetting.sceneName = sceneSetting.sceneAsset.name;}
+\DoxyCodeLine{00172                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00173                 \}}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177     \}}
+\DoxyCodeLine{00178 \}}
+
+\end{DoxyCode}

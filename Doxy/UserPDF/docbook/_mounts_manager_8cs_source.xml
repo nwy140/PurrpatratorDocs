@@ -1,0 +1,305 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__mounts_manager_8cs_source" xml:lang="en-US">
+<title>MountsManager.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/Simple/Components/Mount/MountsManager.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__mounts_manager_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&gt;PhotonNetwork&#32;Framework&#32;for&#32;Unity&#32;-&#32;Copyright&#32;(C)&#32;2020&#32;Exit&#32;Games&#32;GmbH&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00005"/>00005 
+<anchor xml:id="__mounts_manager_8cs_source_1l00006"/>00006 <emphasis role="keyword">using</emphasis>&#32;System.Collections.Generic;
+<anchor xml:id="__mounts_manager_8cs_source_1l00007"/>00007 <emphasis role="keyword">using</emphasis>&#32;UnityEngine;
+<anchor xml:id="__mounts_manager_8cs_source_1l00008"/>00008 
+<anchor xml:id="__mounts_manager_8cs_source_1l00009"/>00009 <emphasis role="keyword">using</emphasis>&#32;<link linkend="_namespace_photon">Photon</link>.<link linkend="_namespace_photon_1_1_utilities">Utilities</link>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00010"/>00010 
+<anchor xml:id="__mounts_manager_8cs_source_1l00011"/>00011 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00012"/>00012 <emphasis role="keyword">using</emphasis>&#32;UnityEditor;
+<anchor xml:id="__mounts_manager_8cs_source_1l00013"/>00013 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00014"/>00014 
+<anchor xml:id="__mounts_manager_8cs_source_1l00015"/>00015 <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_pun_1_1_simple">Photon.Pun.Simple</link>
+<anchor xml:id="__mounts_manager_8cs_source_1l00016"/>00016 {
+<anchor xml:id="__mounts_manager_8cs_source_1l00017"/>00017 &#32;&#32;&#32;&#32;[AddComponentMenu(<emphasis role="stringliteral">&quot;&quot;</emphasis>)]
+<anchor xml:id="__mounts_manager_8cs_source_1l00018"/>00018 &#32;&#32;&#32;&#32;[DisallowMultipleComponent]
+<anchor xml:id="__mounts_manager_8cs_source_1l00019"/>00019 
+<anchor xml:id="__mounts_manager_8cs_source_1l00020"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">00020</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">MountsManager</link>&#32;:&#32;MonoBehaviour
+<anchor xml:id="__mounts_manager_8cs_source_1l00021"/>00021 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_awake">IOnAwake</link>
+<anchor xml:id="__mounts_manager_8cs_source_1l00022"/>00022 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;<link linkend="_interface_photon_1_1_pun_1_1_simple_1_1_i_on_pre_quit">IOnPreQuit</link>
+<anchor xml:id="__mounts_manager_8cs_source_1l00023"/>00023 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00024"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">00024</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;<emphasis role="keyword">public</emphasis>&#32;Dictionary&lt;int,&#32;Mount&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">mountIdLookup</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;Dictionary&lt;int,&#32;Mount&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00025"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">00025</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;Mount&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;List&lt;Mount&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00026"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a83c9f373a39e1c54fadb45722360377b">00026</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a83c9f373a39e1c54fadb45722360377b">bitsForMountId</link>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00027"/>00027 
+<anchor xml:id="__mounts_manager_8cs_source_1l00028"/>00028 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Startup&#32;/&#32;Shutdown</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00029"/>00029 
+<anchor xml:id="__mounts_manager_8cs_source_1l00030"/>00030 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00031"/>00031 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;Reset()
+<anchor xml:id="__mounts_manager_8cs_source_1l00032"/>00032 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(<emphasis role="keyword">this</emphasis>,&#32;<emphasis role="keyword">false</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00034"/>00034 
+<anchor xml:id="__mounts_manager_8cs_source_1l00035"/>00035 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EstablishMounts(gameObject);
+<anchor xml:id="__mounts_manager_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00037"/>00037 
+<anchor xml:id="__mounts_manager_8cs_source_1l00043"/>00043 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">MountsManager</link>&#32;EstablishMounts(GameObject&#32;go)
+<anchor xml:id="__mounts_manager_8cs_source_1l00044"/>00044 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00046"/>00046 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&#32;netObj&#32;=&#32;go.GetComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00047"/>00047 
+<anchor xml:id="__mounts_manager_8cs_source_1l00048"/>00048 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!netObj)
+<anchor xml:id="__mounts_manager_8cs_source_1l00049"/>00049 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;netObj&#32;=&#32;go.GetComponentInParent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00050"/>00050 
+<anchor xml:id="__mounts_manager_8cs_source_1l00051"/>00051 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!netObj)
+<anchor xml:id="__mounts_manager_8cs_source_1l00052"/>00052 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;netObj&#32;=&#32;go.transform.root.gameObject.AddComponent&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00053"/>00053 
+<anchor xml:id="__mounts_manager_8cs_source_1l00054"/>00054 <emphasis role="preprocessor">#if&#32;PUN_2_OR_NEWER</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00055"/>00055 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">MountsManager</link>&#32;mountsLookup&#32;=&#32;netObj.transform.GetNestedComponentInChildren&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">MountsManager</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;(<emphasis role="keyword">true</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00056"/>00056 <emphasis role="preprocessor">#else</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00057"/>00057 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager">MountsManager</link>&#32;mountsLookup&#32;=&#32;<emphasis role="keyword">null</emphasis>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00058"/>00058 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00060"/>00060 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(mountsLookup&#32;&amp;&amp;&#32;mountsLookup.gameObject&#32;!=&#32;go)
+<anchor xml:id="__mounts_manager_8cs_source_1l00061"/>00061 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00062"/>00062 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Object.DestroyImmediate(mountsLookup);
+<anchor xml:id="__mounts_manager_8cs_source_1l00063"/>00063 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00064"/>00064 
+<anchor xml:id="__mounts_manager_8cs_source_1l00066"/>00066 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!mountsLookup)
+<anchor xml:id="__mounts_manager_8cs_source_1l00067"/>00067 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mountsLookup&#32;=&#32;netObj.gameObject.AddComponent&lt;MountsManager&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00068"/>00068 
+<anchor xml:id="__mounts_manager_8cs_source_1l00070"/>00070 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;rootMount&#32;=&#32;netObj.gameObject.GetComponent&lt;Mount&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00071"/>00071 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(rootMount&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__mounts_manager_8cs_source_1l00072"/>00072 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00073"/>00073 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootMount&#32;=&#32;netObj.gameObject.gameObject.AddComponent&lt;Mount&gt;();
+<anchor xml:id="__mounts_manager_8cs_source_1l00074"/>00074 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootMount.mountType&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;MountSelector(0);
+<anchor xml:id="__mounts_manager_8cs_source_1l00075"/>00075 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00076"/>00076 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(rootMount.mountType.id&#32;!=&#32;0)
+<anchor xml:id="__mounts_manager_8cs_source_1l00077"/>00077 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00078"/>00078 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rootMount.mountType.id&#32;=&#32;0;
+<anchor xml:id="__mounts_manager_8cs_source_1l00079"/>00079 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00080"/>00080 
+<anchor xml:id="__mounts_manager_8cs_source_1l00081"/>00081 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mountsLookup.CollectMounts();
+<anchor xml:id="__mounts_manager_8cs_source_1l00082"/>00082 
+<anchor xml:id="__mounts_manager_8cs_source_1l00083"/>00083 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;mountsLookup;
+<anchor xml:id="__mounts_manager_8cs_source_1l00084"/>00084 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00085"/>00085 
+<anchor xml:id="__mounts_manager_8cs_source_1l00086"/>00086 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00087"/>00087 
+<anchor xml:id="__mounts_manager_8cs_source_1l00088"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1aa835e7692621f7dc6215f8fecde2dd28">00088</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1aa835e7692621f7dc6215f8fecde2dd28">OnAwake</link>()
+<anchor xml:id="__mounts_manager_8cs_source_1l00089"/>00089 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00090"/>00090 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a5315eacc8da6aeb458696eb0b2a3cfbc">CollectMounts</link>();
+<anchor xml:id="__mounts_manager_8cs_source_1l00091"/>00091 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a83c9f373a39e1c54fadb45722360377b">bitsForMountId</link>&#32;=&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>.Count&#32;==&#32;0)&#32;?&#32;0&#32;:&#32;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>.Count&#32;-&#32;1).GetBitsForMaxValue();
+<anchor xml:id="__mounts_manager_8cs_source_1l00092"/>00092 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00093"/>00093 
+<anchor xml:id="__mounts_manager_8cs_source_1l00094"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a503187a57817fc03fab456fd485669ba">00094</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a503187a57817fc03fab456fd485669ba">OnPreQuit</link>()
+<anchor xml:id="__mounts_manager_8cs_source_1l00095"/>00095 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00096"/>00096 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a75a09a2c69457efe6d712e805c252364">UnmountAll</link>();
+<anchor xml:id="__mounts_manager_8cs_source_1l00097"/>00097 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00098"/>00098 
+<anchor xml:id="__mounts_manager_8cs_source_1l00103"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a5315eacc8da6aeb458696eb0b2a3cfbc">00103</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;List&lt;Mount&gt;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a5315eacc8da6aeb458696eb0b2a3cfbc">CollectMounts</link>(<emphasis role="keywordtype">bool</emphasis>&#32;force&#32;=&#32;<emphasis role="keyword">false</emphasis>)
+<anchor xml:id="__mounts_manager_8cs_source_1l00104"/>00104 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00105"/>00105 
+<anchor xml:id="__mounts_manager_8cs_source_1l00106"/>00106 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>.Clear();
+<anchor xml:id="__mounts_manager_8cs_source_1l00107"/>00107 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">mountIdLookup</link>.Clear();
+<anchor xml:id="__mounts_manager_8cs_source_1l00108"/>00108 
+<anchor xml:id="__mounts_manager_8cs_source_1l00109"/>00109 <emphasis role="preprocessor">#if&#32;PUN_2_OR_NEWER</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00111"/>00111 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.GetNestedComponentsInChildren&lt;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mount">Mount</link>,&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_net_object">NetObject</link>&gt;(<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00112"/>00112 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00113"/>00113 
+<anchor xml:id="__mounts_manager_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0,&#32;cnt&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>.Count;&#32;i&#32;&lt;&#32;cnt;&#32;++i)
+<anchor xml:id="__mounts_manager_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;mount&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>[i];
+<anchor xml:id="__mounts_manager_8cs_source_1l00117"/>00117 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mount.componentIndex&#32;=&#32;i;
+<anchor xml:id="__mounts_manager_8cs_source_1l00118"/>00118 
+<anchor xml:id="__mounts_manager_8cs_source_1l00119"/>00119 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;mountTypeId&#32;=&#32;mount.mountType.id;
+<anchor xml:id="__mounts_manager_8cs_source_1l00120"/>00120 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">mountIdLookup</link>.ContainsKey(mountTypeId))
+<anchor xml:id="__mounts_manager_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">mountIdLookup</link>.Add(mountTypeId,&#32;mount);
+<anchor xml:id="__mounts_manager_8cs_source_1l00122"/>00122 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00123"/>00123 
+<anchor xml:id="__mounts_manager_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00126"/>00126 
+<anchor xml:id="__mounts_manager_8cs_source_1l00127"/>00127 <emphasis role="preprocessor">&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion&#32;Startup/Shutdown</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00128"/>00128 
+<anchor xml:id="__mounts_manager_8cs_source_1l00129"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a4c95febb72df995b5dba386b58141626">00129</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mount">Mount</link>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a4c95febb72df995b5dba386b58141626">GetMount</link>(<emphasis role="keywordtype">int</emphasis>&#32;mountId)
+<anchor xml:id="__mounts_manager_8cs_source_1l00130"/>00130 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00131"/>00131 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mount">Mount</link>&#32;mount;
+<anchor xml:id="__mounts_manager_8cs_source_1l00132"/>00132 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a6cbc21150808c765561c368a46b2ffcd">mountIdLookup</link>.TryGetValue(mountId,&#32;out&#32;mount);
+<anchor xml:id="__mounts_manager_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;mount;
+<anchor xml:id="__mounts_manager_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00135"/>00135 
+<anchor xml:id="__mounts_manager_8cs_source_1l00139"/><link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a75a09a2c69457efe6d712e805c252364">00139</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a75a09a2c69457efe6d712e805c252364">UnmountAll</link>()
+<anchor xml:id="__mounts_manager_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00141"/>00141 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0,&#32;cnt&#32;=&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>.Count;&#32;i&#32;&lt;&#32;cnt;&#32;i++)
+<anchor xml:id="__mounts_manager_8cs_source_1l00142"/>00142 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00143"/>00143 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_class_photon_1_1_pun_1_1_simple_1_1_mounts_manager_1a8c653c0f64ce815265a398763efdbf7f">indexedMounts</link>[i].DismountAll();
+<anchor xml:id="__mounts_manager_8cs_source_1l00144"/>00144 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00145"/>00145 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00146"/>00146 
+<anchor xml:id="__mounts_manager_8cs_source_1l00147"/>00147 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00148"/>00148 
+<anchor xml:id="__mounts_manager_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;GUIStyle&#32;mountlabelstyle;
+<anchor xml:id="__mounts_manager_8cs_source_1l00150"/>00150 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;GUIStyle&#32;mountHiliteStyle;
+<anchor xml:id="__mounts_manager_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;GUIStyle&#32;mountNoliteStyle;
+<anchor xml:id="__mounts_manager_8cs_source_1l00152"/>00152 
+<anchor xml:id="__mounts_manager_8cs_source_1l00153"/>00153 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;EnsureStylesExists()
+<anchor xml:id="__mounts_manager_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00155"/>00155 
+<anchor xml:id="__mounts_manager_8cs_source_1l00156"/>00156 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(mountlabelstyle&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__mounts_manager_8cs_source_1l00157"/>00157 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mountlabelstyle&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(<emphasis role="stringliteral">&quot;Label&quot;</emphasis>)&#32;{&#32;margin&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(0,&#32;0,&#32;0,&#32;0),&#32;alignment&#32;=&#32;TextAnchor.UpperLeft&#32;};
+<anchor xml:id="__mounts_manager_8cs_source_1l00158"/>00158 
+<anchor xml:id="__mounts_manager_8cs_source_1l00160"/>00160 
+<anchor xml:id="__mounts_manager_8cs_source_1l00161"/>00161 <emphasis role="preprocessor">#if&#32;UNITY_2019_3_OR_NEWER</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUIStyle&#32;basestyle&#32;=&#32;(GUIStyle)<emphasis role="stringliteral">&quot;FoldOutPreDrop&quot;</emphasis>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00163"/>00163 <emphasis role="preprocessor">#else</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GUIStyle&#32;basestyle&#32;=&#32;(GUIStyle)<emphasis role="stringliteral">&quot;WarningOverlay&quot;</emphasis>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00165"/>00165 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00166"/>00166 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(mountHiliteStyle,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__mounts_manager_8cs_source_1l00167"/>00167 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00168"/>00168 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mountHiliteStyle&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(basestyle)
+<anchor xml:id="__mounts_manager_8cs_source_1l00169"/>00169 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00170"/>00170 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;padding&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(0,&#32;0,&#32;0,&#32;0),
+<anchor xml:id="__mounts_manager_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;margin&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(0,&#32;0,&#32;0,&#32;0),
+<anchor xml:id="__mounts_manager_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;normal&#32;=&#32;((GUIStyle)<emphasis role="stringliteral">&quot;PR&#32;Ping&quot;</emphasis>).normal
+<anchor xml:id="__mounts_manager_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};
+<anchor xml:id="__mounts_manager_8cs_source_1l00174"/>00174 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00175"/>00175 
+<anchor xml:id="__mounts_manager_8cs_source_1l00177"/>00177 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(ReferenceEquals(mountNoliteStyle,&#32;<emphasis role="keyword">null</emphasis>))
+<anchor xml:id="__mounts_manager_8cs_source_1l00178"/>00178 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00179"/>00179 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mountNoliteStyle&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;GUIStyle(basestyle)
+<anchor xml:id="__mounts_manager_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;padding&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(0,&#32;0,&#32;0,&#32;0),
+<anchor xml:id="__mounts_manager_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;margin&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;RectOffset(0,&#32;0,&#32;0,&#32;0),
+<anchor xml:id="__mounts_manager_8cs_source_1l00183"/>00183 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;normal&#32;=&#32;((GUIStyle)<emphasis role="stringliteral">&quot;Label&quot;</emphasis>).normal
+<anchor xml:id="__mounts_manager_8cs_source_1l00184"/>00184 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};
+<anchor xml:id="__mounts_manager_8cs_source_1l00185"/>00185 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00186"/>00186 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00187"/>00187 
+<anchor xml:id="__mounts_manager_8cs_source_1l00188"/>00188 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;DrawAllMountMappings(Mount&#32;thismount,&#32;MountsManager&#32;mountsLookup)
+<anchor xml:id="__mounts_manager_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EnsureStylesExists();
+<anchor xml:id="__mounts_manager_8cs_source_1l00191"/>00191 
+<anchor xml:id="__mounts_manager_8cs_source_1l00192"/>00192 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;usedmask&#32;=&#32;0;
+<anchor xml:id="__mounts_manager_8cs_source_1l00193"/>00193 
+<anchor xml:id="__mounts_manager_8cs_source_1l00194"/>00194 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;cnt&#32;=&#32;mountsLookup.indexedMounts.Count;
+<anchor xml:id="__mounts_manager_8cs_source_1l00195"/>00195 
+<anchor xml:id="__mounts_manager_8cs_source_1l00196"/>00196 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.LabelField(<emphasis role="stringliteral">&quot;All&#32;Mounts&#32;On&#32;NetObject&quot;</emphasis>,&#32;(GUIStyle)<emphasis role="stringliteral">&quot;BoldLabel&quot;</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00197"/>00197 
+<anchor xml:id="__mounts_manager_8cs_source_1l00199"/>00199 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(mountsLookup.indexedMounts.Count&#32;&gt;&#32;MountSettings.mountTypeCount)
+<anchor xml:id="__mounts_manager_8cs_source_1l00200"/>00200 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.HelpBox(<emphasis role="stringliteral">&quot;NetObject&#32;has&#32;too&#32;many&#32;mounts.&#32;Mount&#32;count&#32;is&#32;limited&#32;to&#32;the&#32;count&#32;value&#32;in&#32;MountSettings.&quot;</emphasis>,&#32;MessageType.Error);
+<anchor xml:id="__mounts_manager_8cs_source_1l00201"/>00201 
+<anchor xml:id="__mounts_manager_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(cnt&#32;&gt;&#32;0)
+<anchor xml:id="__mounts_manager_8cs_source_1l00203"/>00203 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00204"/>00204 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.BeginVertical((GUIStyle)<emphasis role="stringliteral">&quot;HelpBox&quot;</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00205"/>00205 
+<anchor xml:id="__mounts_manager_8cs_source_1l00206"/>00206 
+<anchor xml:id="__mounts_manager_8cs_source_1l00207"/>00207 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;mountsLookup.indexedMounts.Count;&#32;++i)
+<anchor xml:id="__mounts_manager_8cs_source_1l00208"/>00208 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00209"/>00209 
+<anchor xml:id="__mounts_manager_8cs_source_1l00210"/>00210 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SerializedObject&#32;mount&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;SerializedObject(mountsLookup.indexedMounts[i]);
+<anchor xml:id="__mounts_manager_8cs_source_1l00211"/>00211 
+<anchor xml:id="__mounts_manager_8cs_source_1l00212"/>00212 
+<anchor xml:id="__mounts_manager_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;mountType&#32;=&#32;mount.FindProperty(<emphasis role="stringliteral">&quot;mountType&quot;</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;index&#32;=&#32;mountType.FindPropertyRelative(<emphasis role="stringliteral">&quot;id&quot;</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00215"/>00215 
+<anchor xml:id="__mounts_manager_8cs_source_1l00217"/>00217 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(i&#32;==&#32;0)
+<anchor xml:id="__mounts_manager_8cs_source_1l00218"/>00218 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00219"/>00219 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(index.intValue&#32;!=&#32;0)
+<anchor xml:id="__mounts_manager_8cs_source_1l00220"/>00220 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00221"/>00221 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;index.intValue&#32;=&#32;0;
+<anchor xml:id="__mounts_manager_8cs_source_1l00222"/>00222 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mount.ApplyModifiedProperties();
+<anchor xml:id="__mounts_manager_8cs_source_1l00223"/>00223 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00224"/>00224 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>&#32;<emphasis role="keywordflow">if</emphasis>&#32;(index.intValue&#32;==&#32;0)
+<anchor xml:id="__mounts_manager_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00228"/>00228 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;index.intValue&#32;=&#32;i;
+<anchor xml:id="__mounts_manager_8cs_source_1l00229"/>00229 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;mount.ApplyModifiedProperties();
+<anchor xml:id="__mounts_manager_8cs_source_1l00230"/>00230 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="__clones_manager_8cs_1a0100be52d45f14348918ea69ec09f959">Debug</link>.LogWarning(<emphasis role="stringliteral">&quot;Only&#32;the&#32;first&#32;root&#32;Mount&#32;on&#32;a&#32;NetOjbect&#32;can&#32;be&#32;set&#32;to&#32;mountType&#32;&apos;Root&apos;&quot;</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00231"/>00231 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00232"/>00232 
+<anchor xml:id="__mounts_manager_8cs_source_1l00233"/>00233 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;idx&#32;=&#32;index.intValue;
+<anchor xml:id="__mounts_manager_8cs_source_1l00234"/>00234 
+<anchor xml:id="__mounts_manager_8cs_source_1l00236"/>00236 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;idxmask&#32;=&#32;1&#32;&lt;&lt;&#32;idx;
+<anchor xml:id="__mounts_manager_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isAlreadyUsed&#32;=&#32;(idxmask&#32;&amp;&#32;usedmask)&#32;!=&#32;0;
+<anchor xml:id="__mounts_manager_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;usedmask&#32;|=&#32;idxmask;
+<anchor xml:id="__mounts_manager_8cs_source_1l00239"/>00239 
+<anchor xml:id="__mounts_manager_8cs_source_1l00240"/>00240 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;isthis&#32;=&#32;(ReferenceEquals(mount.targetObject,&#32;thismount));
+<anchor xml:id="__mounts_manager_8cs_source_1l00241"/>00241 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;CNT_WIDTH&#32;=&#32;30;
+<anchor xml:id="__mounts_manager_8cs_source_1l00242"/>00242 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;LABL_PAD&#32;=&#32;2;
+<anchor xml:id="__mounts_manager_8cs_source_1l00243"/>00243 
+<anchor xml:id="__mounts_manager_8cs_source_1l00245"/>00245 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.BeginHorizontal(isthis&#32;?&#32;mountHiliteStyle&#32;:&#32;mountNoliteStyle);
+<anchor xml:id="__mounts_manager_8cs_source_1l00246"/>00246 
+<anchor xml:id="__mounts_manager_8cs_source_1l00248"/>00248 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rect&#32;indexrect&#32;=&#32;EditorGUILayout.GetControlRect(GUILayout.MaxWidth(CNT_WIDTH),&#32;GUILayout.MinWidth(CNT_WIDTH));
+<anchor xml:id="__mounts_manager_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;indexrect.xMin&#32;+=&#32;8;
+<anchor xml:id="__mounts_manager_8cs_source_1l00250"/>00250 
+<anchor xml:id="__mounts_manager_8cs_source_1l00252"/>00252 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isAlreadyUsed)
+<anchor xml:id="__mounts_manager_8cs_source_1l00253"/>00253 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.LabelField(<emphasis role="keyword">new</emphasis>&#32;Rect(indexrect)&#32;{&#32;xMin&#32;=&#32;indexrect.xMin&#32;-&#32;3&#32;},&#32;<emphasis role="keyword">new</emphasis>&#32;GUIContent(EditorGUIUtility.FindTexture(<emphasis role="stringliteral">&quot;CollabError&quot;</emphasis>),&#32;<emphasis role="stringliteral">&quot;More&#32;than&#32;one&#32;Mount&#32;has&#32;the&#32;same&#32;compatible&#32;mount&#32;selection.&#32;Only&#32;the&#32;first&#32;will&#32;be&#32;used.&quot;</emphasis>));
+<anchor xml:id="__mounts_manager_8cs_source_1l00254"/>00254 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00255"/>00255 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00257"/>00257 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginDisabledGroup(!isthis);
+<anchor xml:id="__mounts_manager_8cs_source_1l00258"/>00258 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.LabelField(indexrect,&#32;i.ToString(),&#32;mountlabelstyle);
+<anchor xml:id="__mounts_manager_8cs_source_1l00259"/>00259 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.EndDisabledGroup();
+<anchor xml:id="__mounts_manager_8cs_source_1l00260"/>00260 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00261"/>00261 
+<anchor xml:id="__mounts_manager_8cs_source_1l00263"/>00263 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;selectorWidth&#32;=&#32;EditorGUIUtility.labelWidth&#32;-&#32;(CNT_WIDTH&#32;+&#32;LABL_PAD&#32;+&#32;8);
+<anchor xml:id="__mounts_manager_8cs_source_1l00264"/>00264 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginDisabledGroup(i&#32;==&#32;0);
+<anchor xml:id="__mounts_manager_8cs_source_1l00265"/>00265 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.PropertyField(mountType,&#32;GUIContent.none,&#32;GUILayout.MaxWidth(selectorWidth),&#32;GUILayout.MinWidth(selectorWidth));
+<anchor xml:id="__mounts_manager_8cs_source_1l00266"/>00266 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.EndDisabledGroup();
+<anchor xml:id="__mounts_manager_8cs_source_1l00267"/>00267 
+<anchor xml:id="__mounts_manager_8cs_source_1l00268"/>00268 
+<anchor xml:id="__mounts_manager_8cs_source_1l00269"/>00269 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(isthis)
+<anchor xml:id="__mounts_manager_8cs_source_1l00270"/>00270 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00272"/>00272 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rect&#32;thisrect&#32;=&#32;EditorGUILayout.GetControlRect(GUILayout.MinWidth(40));
+<anchor xml:id="__mounts_manager_8cs_source_1l00273"/>00273 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;thisrect.xMin&#32;+=&#32;16;
+<anchor xml:id="__mounts_manager_8cs_source_1l00274"/>00274 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.LabelField(thisrect,&#32;<emphasis role="stringliteral">&quot;This&quot;</emphasis>,&#32;mountlabelstyle);
+<anchor xml:id="__mounts_manager_8cs_source_1l00275"/>00275 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00276"/>00276 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">else</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00277"/>00277 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00278"/>00278 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.BeginDisabledGroup(!isthis);
+<anchor xml:id="__mounts_manager_8cs_source_1l00279"/>00279 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.ObjectField(mountsLookup.indexedMounts[i],&#32;typeof(Mount),&#32;<emphasis role="keyword">false</emphasis><emphasis role="comment">/*,&#32;GUILayout.MaxWidth(EditorGUIUtility.labelWidth&#32;-&#32;cntwidth),&#32;GUILayout.MinWidth(EditorGUIUtility.labelWidth&#32;-&#32;cntwidth)*/</emphasis>);
+<anchor xml:id="__mounts_manager_8cs_source_1l00280"/>00280 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUI.EndDisabledGroup();
+<anchor xml:id="__mounts_manager_8cs_source_1l00281"/>00281 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00282"/>00282 
+<anchor xml:id="__mounts_manager_8cs_source_1l00283"/>00283 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.EndHorizontal();
+<anchor xml:id="__mounts_manager_8cs_source_1l00284"/>00284 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00285"/>00285 
+<anchor xml:id="__mounts_manager_8cs_source_1l00286"/>00286 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;EditorGUILayout.EndVertical();
+<anchor xml:id="__mounts_manager_8cs_source_1l00287"/>00287 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00288"/>00288 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00289"/>00289 
+<anchor xml:id="__mounts_manager_8cs_source_1l00290"/>00290 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00291"/>00291 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00292"/>00292 
+<anchor xml:id="__mounts_manager_8cs_source_1l00293"/>00293 <emphasis role="preprocessor">#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00294"/>00294 
+<anchor xml:id="__mounts_manager_8cs_source_1l00295"/>00295 &#32;&#32;&#32;&#32;[CustomEditor(typeof(MountsManager))]
+<anchor xml:id="__mounts_manager_8cs_source_1l00296"/>00296 &#32;&#32;&#32;&#32;[CanEditMultipleObjects]
+<anchor xml:id="__mounts_manager_8cs_source_1l00297"/>00297 &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">class&#32;</emphasis>MountsManagerEditor&#32;:&#32;MountSystemHeaderEditor
+<anchor xml:id="__mounts_manager_8cs_source_1l00298"/>00298 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00299"/>00299 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;UseThinHeader&#32;{&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">true</emphasis>;&#32;}&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00300"/>00300 
+<anchor xml:id="__mounts_manager_8cs_source_1l00301"/>00301 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;Instructions
+<anchor xml:id="__mounts_manager_8cs_source_1l00302"/>00302 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00303"/>00303 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00304"/>00304 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00305"/>00305 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="stringliteral">&quot;Manager/Collection/Lookup&#32;for&#32;Mounts.&quot;</emphasis>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00306"/>00306 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00307"/>00307 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00308"/>00308 
+<anchor xml:id="__mounts_manager_8cs_source_1l00309"/>00309 
+<anchor xml:id="__mounts_manager_8cs_source_1l00310"/>00310 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">protected</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;BackTexturePath
+<anchor xml:id="__mounts_manager_8cs_source_1l00311"/>00311 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00312"/>00312 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00313"/>00313 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00314"/>00314 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="stringliteral">&quot;Header/GreenBack&quot;</emphasis>;
+<anchor xml:id="__mounts_manager_8cs_source_1l00315"/>00315 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00316"/>00316 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00317"/>00317 
+<anchor xml:id="__mounts_manager_8cs_source_1l00318"/>00318 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">void</emphasis>&#32;OnEnable()
+<anchor xml:id="__mounts_manager_8cs_source_1l00319"/>00319 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__mounts_manager_8cs_source_1l00320"/>00320 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;base.OnEnable();
+<anchor xml:id="__mounts_manager_8cs_source_1l00321"/>00321 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;_target&#32;=&#32;target&#32;as&#32;MountsManager;
+<anchor xml:id="__mounts_manager_8cs_source_1l00322"/>00322 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_target.CollectMounts();
+<anchor xml:id="__mounts_manager_8cs_source_1l00323"/>00323 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00324"/>00324 
+<anchor xml:id="__mounts_manager_8cs_source_1l00325"/>00325 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__mounts_manager_8cs_source_1l00326"/>00326 
+<anchor xml:id="__mounts_manager_8cs_source_1l00327"/>00327 <emphasis role="preprocessor">#endif</emphasis>
+<anchor xml:id="__mounts_manager_8cs_source_1l00328"/>00328 }
+<anchor xml:id="__mounts_manager_8cs_source_1l00329"/>00329 
+</programlisting></section>

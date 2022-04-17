@@ -1,0 +1,356 @@
+\doxysection{Net\+Object\+Assists.\+cs}
+\label{_net_object_assists_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/NetObjectAssists.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/NetObjectAssists.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} emotitron.Utilities.Networking;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun.Simple.Assists}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NetObjectAssists}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         [MenuItem(AssistHelpers.CONVERT\_TO\_FOLDER + \textcolor{stringliteral}{"{}Player"{}}, \textcolor{keyword}{false}, AssistHelpers.CONVERTTO\_PRIORITY)]}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ConvertToPlayer()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             var selection = ConvertToBasicNetObject(\textcolor{keyword}{null});}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028             \textcolor{keywordflow}{if} (selection == \textcolor{keyword}{null})}
+\DoxyCodeLine{00029                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             selection.transform.EnsureComponentExists<SyncAnimator, Animator>(\textcolor{keyword}{null}, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             selection.EnsureComponentExists<SyncTransform>();}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             \textcolor{keywordflow}{if} (selection.GetComponent<Animator>())}
+\DoxyCodeLine{00036                 selection.EnsureComponentExists<SyncAnimator>();}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038             VitalsAssists.AddVitalsSystem();}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00041             selection.EnsureComponentExists<AutoOwnerComponentEnable>();}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             selection.EnsureComponentExists<ContactTrigger>();}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00046             InventorySystemAssists.AddInventorySystem();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             StateAssists.AddSystem(selection, \textcolor{keyword}{true});}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             selection.EnsureComponentExists<AutoDestroyUnspawned>();}
+\DoxyCodeLine{00051         \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [MenuItem(AssistHelpers.CONVERT\_TO\_FOLDER + \textcolor{stringliteral}{"{}Platform"{}}, \textcolor{keyword}{false}, AssistHelpers.CONVERTTO\_PRIORITY)]}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ConvertToPlatform()}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             var go = GetSelectedGameObject();}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058             \textcolor{keywordflow}{if} (!go)}
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (go.transform.lossyScale != Vector3.one)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{if} (go.transform.parent \&\& go.transform.parent.lossyScale != Vector3.one)}
+\DoxyCodeLine{00064                 \{}
+\DoxyCodeLine{00065                     Debug.LogWarning(\textcolor{stringliteral}{"{}Aborted Convert To Platform. Parent object has a scale other than "{}} + Vector3.one + \textcolor{stringliteral}{"{} which would distort any object that mounts to it."{}});}
+\DoxyCodeLine{00066                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00067                 \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069                 Debug.LogWarning(\textcolor{stringliteral}{"{}Selected object as a scale other than "{}} + Vector3.one + \textcolor{stringliteral}{"{}. Creating a parent object for the platform and making the selected object a child."{}});}
+\DoxyCodeLine{00070                 var par = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Platform"{}});}
+\DoxyCodeLine{00071                 par.transform.position = go.transform.position;}
+\DoxyCodeLine{00072                 par.transform.rotation = go.transform.rotation;}
+\DoxyCodeLine{00073                 par.transform.parent = go.transform.parent;}
+\DoxyCodeLine{00074                 go.transform.parent = par.transform;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076                 go = par;}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             go.EnsureComponentExists<NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00080             go.EnsureComponentExists<Mount>();}
+\DoxyCodeLine{00081             var mover = go.EnsureComponentExists<SyncNodeMover>();}
+\DoxyCodeLine{00082             mover.posDef.includeAxes = AxisMask.Y;}
+\DoxyCodeLine{00083             mover.StartNode.Pos = \textcolor{keyword}{new} Vector3(0, -\/2f, 0);}
+\DoxyCodeLine{00084             mover.EndNode.Pos = \textcolor{keyword}{new} Vector3(0, 2f, 0);}
+\DoxyCodeLine{00085             mover.oscillatePeriod = 3;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             mover.rotDef.includeAxes = AxisMask.None;}
+\DoxyCodeLine{00088             mover.sclDef.includeAxes = AxisMask.None;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             Selection.activeGameObject = go;}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095 \textcolor{preprocessor}{        \#region Vitals System}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         [MenuItem(AssistHelpers.ADD\_TO\_OBJ\_FOLDER + \textcolor{stringliteral}{"{}Auto Mount Hitscan"{}}, \textcolor{keyword}{false}, AssistHelpers.PRIORITY)]}
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keyword}{static} AutoMountHitscan AddAutoMountHitscan()}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             GameObject par = AssistHelpers.GetSelectedGameObject();}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (!par)}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             GameObject go = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}AutoMount"{}});}
+\DoxyCodeLine{00109             go.transform.eulerAngles = \textcolor{keyword}{new} Vector3(90f, 0, 0);}
+\DoxyCodeLine{00110             go.transform.parent = par.transform;}
+\DoxyCodeLine{00111             go.transform.localPosition = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00112             Selection.activeGameObject = go;}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             go.EnsureComponentExists<OnStateChangeToggle>(\textcolor{keyword}{false});}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             \textcolor{keywordflow}{return} go.EnsureComponentExists<AutoMountHitscan>();}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject ConvertToBasicNetObject(GameObject selection = \textcolor{keyword}{null}, OwnershipOption ownershipOption = OwnershipOption.Fixed)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{if} (selection == \textcolor{keyword}{null})}
+\DoxyCodeLine{00123                 selection = Selection.activeGameObject;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{keywordflow}{if} (selection == \textcolor{keyword}{null})}
+\DoxyCodeLine{00126             \{}
+\DoxyCodeLine{00127                 Debug.LogWarning(\textcolor{stringliteral}{"{}No selected GameObject. Creating a dummy Player/NPC."{}});}
+\DoxyCodeLine{00128                 selection = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Empty Player"{}});}
+\DoxyCodeLine{00129                 selection.CreateChildStatePlaceholders(Space\_XD.SPACE\_3D, Dynamics.Variable, 2);}
+\DoxyCodeLine{00130                 \textcolor{comment}{//return null;}}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00134             var pv = selection.EnsureComponentExists<PhotonView>();}
+\DoxyCodeLine{00135             pv.OwnershipTransfer = ownershipOption;}
+\DoxyCodeLine{00136 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00137             selection.EnsureComponentExists<NetObject>();}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             \textcolor{keywordflow}{return} selection;}
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keyword}{static} SystemPresence GetSystemPresence(\textcolor{keyword}{this} GameObject go, params MonoBehaviour[] depends)}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             var netObj = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             PhotonView pv = go.transform.GetParentComponent<PhotonView>();}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (pv \&\& netObj)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (pv.gameObject == go)}
+\DoxyCodeLine{00154                     \textcolor{keywordflow}{return} SystemPresence.Complete;}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00156                     \textcolor{keywordflow}{return} SystemPresence.Nested;}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (pv || netObj)}
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{return} SystemPresence.Partial;}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{return} SystemPresence.Absent;}
+\DoxyCodeLine{00163 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00164             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00165 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddSystem(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} add, params MonoBehaviour[] depends)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (add)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 go.EnsureComponentExists<PhotonView>();}
+\DoxyCodeLine{00177                 go.EnsureComponentExists<NetObject>();}
+\DoxyCodeLine{00178             \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183                 var no = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00184                 \textcolor{keywordflow}{if} (no)}
+\DoxyCodeLine{00185                 \{}
+\DoxyCodeLine{00186                     var ml = go.GetComponent<MountsManager>();}
+\DoxyCodeLine{00187                     \textcolor{keywordflow}{if} (ml)}
+\DoxyCodeLine{00188                         GameObject.DestroyImmediate(ml);}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190                     GameObject.DestroyImmediate(no);}
+\DoxyCodeLine{00191                 \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                 var pv = go.transform.GetParentComponent<PhotonView>();}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{if} (pv)}
+\DoxyCodeLine{00195                     GameObject.DestroyImmediate(pv);}
+\DoxyCodeLine{00196 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \}}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject GetSelectedGameObject()}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             var selection = Selection.activeGameObject;}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (selection == \textcolor{keyword}{null})}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 Debug.LogWarning(\textcolor{stringliteral}{"{}No selected GameObject."{}});}
+\DoxyCodeLine{00208                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             \textcolor{keywordflow}{return} selection;}
+\DoxyCodeLine{00212         \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject GetSelectedReparentableGameObject()}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             var selection = GetSelectedGameObject();}
+\DoxyCodeLine{00217             \textcolor{keywordflow}{if} (!selection)}
+\DoxyCodeLine{00218                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             \textcolor{keywordflow}{return} selection.CheckReparentable() ? selection : \textcolor{keyword}{null};}
+\DoxyCodeLine{00221         \}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CheckReparentable(\textcolor{keyword}{this} GameObject go)}
+\DoxyCodeLine{00224         \{}
+\DoxyCodeLine{00225 \textcolor{preprocessor}{\#if UNITY\_2018\_3\_OR\_NEWER}}
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (PrefabUtility.IsPartOfPrefabAsset(go))}
+\DoxyCodeLine{00227 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00228             \textcolor{keywordflow}{if} (PrefabUtility.GetPrefabType(go) == PrefabType.Prefab)}
+\DoxyCodeLine{00229 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00230             \{}
+\DoxyCodeLine{00231                 Debug.LogWarning(\textcolor{stringliteral}{"{}Cannot add/reparent GameObjects on a Prefab Source Object. Make an instance of this prefab in the current scene and run this assistant on that, then save the changes to the prefab, or drag the scene instance into a Resource folder."{}});}
+\DoxyCodeLine{00232                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         \textcolor{keyword}{public} \textcolor{keyword}{static} Transform RecursiveFind(\textcolor{keyword}{this} Transform t, \textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00239         \{}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.childCount; ++i)}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242                 var child = t.GetChild(i);}
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{if} (\textcolor{comment}{/*child.name.Length == name.Length \&\& */}child.name == name)}
+\DoxyCodeLine{00244                 \{}
+\DoxyCodeLine{00245                     \textcolor{keywordflow}{return} child;}
+\DoxyCodeLine{00246                 \}}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248                 \{}
+\DoxyCodeLine{00249                     var found = RecursiveFind(child, name);}
+\DoxyCodeLine{00250                     \textcolor{keywordflow}{if} (found != \textcolor{keyword}{null})}
+\DoxyCodeLine{00251                         \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00252                 \}}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00261         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureComponentExists<T, TIfExists>(\textcolor{keyword}{this} Transform t, List<Component> created, List<Component> found, \textcolor{keywordtype}{bool} recursive) where TIfExists : Component where T : Component}
+\DoxyCodeLine{00262         \{}
+\DoxyCodeLine{00263             \textcolor{keywordflow}{if} (created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00264                 created.Clear();}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             \textcolor{keywordflow}{if} (found != \textcolor{keyword}{null})}
+\DoxyCodeLine{00267                 found.Clear();}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269             var existing = t.GetComponent<T>();}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271             \textcolor{keywordflow}{if} (!existing \&\& t.GetComponent<TIfExists>())}
+\DoxyCodeLine{00272             \{}
+\DoxyCodeLine{00273                 existing = t.gameObject.AddComponent<T>();}
+\DoxyCodeLine{00274                 \textcolor{keywordflow}{if} (created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00275                     created.Add(existing);}
+\DoxyCodeLine{00276             \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278             \textcolor{keywordflow}{if} (existing \&\& found != \textcolor{keyword}{null})}
+\DoxyCodeLine{00279                 found.Add(existing);}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281             \textcolor{keywordflow}{if} (recursive)}
+\DoxyCodeLine{00282                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.childCount; ++i)}
+\DoxyCodeLine{00283                     EnsureComponentExists<T, TIfExists>(t.GetChild(i), created, found, \textcolor{keyword}{true});}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00290         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureComponentExists(\textcolor{keyword}{this} Transform t, List<Component> created, List<Component> found, \textcolor{keywordtype}{string} addComponent, \textcolor{keywordtype}{string} ifCompnoent, \textcolor{keywordtype}{bool} recursive)}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293             Type aComp = Type.GetType(addComponent);}
+\DoxyCodeLine{00294             Type iComp = Type.GetType(ifCompnoent);}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296             \textcolor{keywordflow}{if} (created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00297                 created.Clear();}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (found != \textcolor{keyword}{null})}
+\DoxyCodeLine{00300                 found.Clear();}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             var existing = t.GetComponent(aComp);}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304             \textcolor{keywordflow}{if} (!existing \&\& t.GetComponent(iComp))}
+\DoxyCodeLine{00305             \{}
+\DoxyCodeLine{00306                 existing = t.gameObject.AddComponent(aComp);}
+\DoxyCodeLine{00307                 \textcolor{keywordflow}{if} (created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00308                     created.Add(existing);}
+\DoxyCodeLine{00309             \}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (existing \&\& created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00312                 found.Add(existing);}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314             \textcolor{keywordflow}{if} (recursive)}
+\DoxyCodeLine{00315                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.childCount; ++i)}
+\DoxyCodeLine{00316                     EnsureComponentExists(t.GetChild(i), created, found, aComp, iComp, \textcolor{keyword}{true});}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00323         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureComponentExists(\textcolor{keyword}{this} Transform t, List<Component> created, List<Component> found, Type aComp, Type iComp, \textcolor{keywordtype}{bool} recursive)}
+\DoxyCodeLine{00324         \{}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326             var existing = t.GetComponent(aComp);}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328             \textcolor{keywordflow}{if} (!existing \&\& t.GetComponent(iComp))}
+\DoxyCodeLine{00329             \{}
+\DoxyCodeLine{00330                 existing = t.gameObject.AddComponent(aComp);}
+\DoxyCodeLine{00331                 \textcolor{keywordflow}{if} (created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00332                     created.Add(existing);}
+\DoxyCodeLine{00333             \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335             \textcolor{keywordflow}{if} (existing \&\& created != \textcolor{keyword}{null})}
+\DoxyCodeLine{00336                 found.Add(existing);}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338             \textcolor{keywordflow}{if} (recursive)}
+\DoxyCodeLine{00339                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < t.childCount; ++i)}
+\DoxyCodeLine{00340                     EnsureComponentExists(t.GetChild(i), created, found, aComp, iComp, \textcolor{keyword}{true});}
+\DoxyCodeLine{00341         \}}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} HasComponent(\textcolor{keyword}{this} Transform t, \textcolor{keywordtype}{string} simpleName, \textcolor{keywordtype}{string} asmQualifiedName)}
+\DoxyCodeLine{00344         \{}
+\DoxyCodeLine{00345             Type SimpleCapsuleWithStickMovementType = Type.GetType(simpleName);}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347             \textcolor{keywordflow}{if} (SimpleCapsuleWithStickMovementType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00348                 SimpleCapsuleWithStickMovementType = Type.GetType(asmQualifiedName);}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             \textcolor{keywordflow}{if} (SimpleCapsuleWithStickMovementType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00351                 \textcolor{keywordflow}{if} (t.GetComponent(SimpleCapsuleWithStickMovementType))}
+\DoxyCodeLine{00352                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00355         \}}
+\DoxyCodeLine{00356     \}}
+\DoxyCodeLine{00357 \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

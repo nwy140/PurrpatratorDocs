@@ -1,0 +1,1111 @@
+\doxysection{Transform\+Crusher.\+cs}
+\label{_transform_crusher_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/TransformCrusher.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/TransformCrusher.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections.ObjectModel;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{interface }IHasTransformCrusher}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         TransformCrusher TC \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00020     \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     [System.Serializable]}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }TransformCrusher : Crusher<TransformCrusher>, \textcolor{comment}{/*IOnElementCrusherChange,*/} ICrusherCopy<TransformCrusher>}
+\DoxyCodeLine{00024     \{}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} VersionMajor = 3;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} VersionMinor = 5;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} VersionRevision = 3;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} Build = 3503;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{preprocessor}{        \#region Static Crushers}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<int, TransformCrusher> staticTransformCrushers = \textcolor{keyword}{new} Dictionary<int, TransformCrusher>();}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{static} TransformCrusher CheckAgainstStatics(TransformCrusher tc, \textcolor{keywordtype}{bool} CheckElementCrusherAsWell = \textcolor{keyword}{true})}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (ReferenceEquals(tc, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             \textcolor{keywordflow}{if} (CheckElementCrusherAsWell)}
+\DoxyCodeLine{00047             \{}
+\DoxyCodeLine{00048                 tc.posCrusher = ElementCrusher.CheckAgainstStatics(tc.posCrusher);}
+\DoxyCodeLine{00049                 tc.rotCrusher = ElementCrusher.CheckAgainstStatics(tc.rotCrusher);}
+\DoxyCodeLine{00050                 tc.sclCrusher = ElementCrusher.CheckAgainstStatics(tc.sclCrusher);}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{keywordtype}{int} hash = tc.GetHashCode();}
+\DoxyCodeLine{00054             \textcolor{keywordflow}{if} (staticTransformCrushers.ContainsKey(hash))}
+\DoxyCodeLine{00055             \{}
+\DoxyCodeLine{00056                 \textcolor{keywordflow}{return} staticTransformCrushers[hash];}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             staticTransformCrushers.Add(hash, tc);}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{return} tc;}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         [HideInInspector]}
+\DoxyCodeLine{00066         [System.Obsolete(\textcolor{stringliteral}{"{}Default Transform breaks crusher sharing across multiple instances and is now deprecated."{}})]}
+\DoxyCodeLine{00067         [Tooltip(\textcolor{stringliteral}{"{}This is the default assumed transform when no transform or gameobject is given to methods."{}})]}
+\DoxyCodeLine{00068         \textcolor{keyword}{public} Transform defaultTransform;}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{comment}{// Set up the default Crushers so they add up to 64 bits}}
+\DoxyCodeLine{00071         [SerializeField] \textcolor{keyword}{protected} ElementCrusher posCrusher;}
+\DoxyCodeLine{00072         [SerializeField] \textcolor{keyword}{protected} ElementCrusher rotCrusher;}
+\DoxyCodeLine{00073         [SerializeField] \textcolor{keyword}{protected} ElementCrusher sclCrusher;}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00079         \textcolor{keyword}{public} ElementCrusher PosCrusher}
+\DoxyCodeLine{00080         \{}
+\DoxyCodeLine{00081             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} posCrusher; \}}
+\DoxyCodeLine{00082             \textcolor{keyword}{set}}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{if} (ReferenceEquals(posCrusher, value))}
+\DoxyCodeLine{00085                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{if} (posCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00088                     posCrusher.OnRecalculated -\/= OnCrusherChange;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090                 posCrusher = value;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{if} (posCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00093                     posCrusher.OnRecalculated += OnCrusherChange;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095                 CacheValues();}
+\DoxyCodeLine{00096             \}}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00101         \textcolor{keyword}{public} ElementCrusher RotCrusher}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} rotCrusher; \}}
+\DoxyCodeLine{00104             \textcolor{keyword}{set}}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{if} (ReferenceEquals(rotCrusher, value))}
+\DoxyCodeLine{00107                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                 \textcolor{keywordflow}{if} (rotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00110                     rotCrusher.OnRecalculated -\/= OnCrusherChange;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 rotCrusher = value;}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 \textcolor{keywordflow}{if} (rotCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00115                     rotCrusher.OnRecalculated += OnCrusherChange;}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                 CacheValues();}
+\DoxyCodeLine{00118             \}}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00123         \textcolor{keyword}{public} ElementCrusher SclCrusher}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} sclCrusher; \}}
+\DoxyCodeLine{00126             \textcolor{keyword}{set}}
+\DoxyCodeLine{00127             \{}
+\DoxyCodeLine{00128                 \textcolor{keywordflow}{if} (ReferenceEquals(sclCrusher, value))}
+\DoxyCodeLine{00129                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{if} (sclCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00132                     sclCrusher.OnRecalculated -\/= OnCrusherChange;}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                 sclCrusher = value;}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{if} (sclCrusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00137                     sclCrusher.OnRecalculated += OnCrusherChange;}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                 CacheValues();}
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00147         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCrusherChange(ElementCrusher crusher)}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149             CacheValues();}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{public} TransformCrusher()}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             ConstructDefault(\textcolor{keyword}{false});}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00163         \textcolor{keyword}{public} TransformCrusher(\textcolor{keywordtype}{bool} isStatic = \textcolor{keyword}{false})}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165             ConstructDefault(isStatic);}
+\DoxyCodeLine{00166         \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ConstructDefault(\textcolor{keywordtype}{bool} isStatic = \textcolor{keyword}{false})}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170             \textcolor{keywordflow}{if} (isStatic)}
+\DoxyCodeLine{00171             \{}
+\DoxyCodeLine{00172                 \textcolor{comment}{// Statics initialize all crushers as null.}}
+\DoxyCodeLine{00173             \}}
+\DoxyCodeLine{00174             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 PosCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Position, \textcolor{keyword}{false});}
+\DoxyCodeLine{00177                 RotCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Euler, \textcolor{keyword}{false})}
+\DoxyCodeLine{00178                 \{}
+\DoxyCodeLine{00179                     XCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Bits12, -\/90f, 90f, Axis.X, TRSType.Euler, \textcolor{keyword}{true}),}
+\DoxyCodeLine{00180                     YCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Bits12, -\/180f, 180f, Axis.Y, TRSType.Euler, \textcolor{keyword}{true}),}
+\DoxyCodeLine{00181                     ZCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Disabled, -\/180f, 180f, Axis.Z, TRSType.Euler, \textcolor{keyword}{true})}
+\DoxyCodeLine{00182                 \};}
+\DoxyCodeLine{00183                 SclCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Scale, \textcolor{keyword}{false})}
+\DoxyCodeLine{00184                 \{}
+\DoxyCodeLine{00185                     uniformAxes = ElementCrusher.UniformAxes.XYZ,}
+\DoxyCodeLine{00186                     UCrusher = \textcolor{keyword}{new} FloatCrusher(8, 0f, 2f, Axis.Uniform, TRSType.Scale, \textcolor{keyword}{true})}
+\DoxyCodeLine{00187                 \};}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnBeforeSerialize() \{ \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAfterDeserialize()}
+\DoxyCodeLine{00194         \{}
+\DoxyCodeLine{00195             CacheValues();}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00200 \textcolor{preprocessor}{\#pragma warning disable 0414}}
+\DoxyCodeLine{00201         [SerializeField]}
+\DoxyCodeLine{00202         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} isExpanded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00203 \textcolor{preprocessor}{\#pragma warning restore 0414}}
+\DoxyCodeLine{00204 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00208         \textcolor{comment}{//public static readonly CompressedMatrix CompressedMatrix.reusable = new CompressedMatrix();}}
+\DoxyCodeLine{00209         \textcolor{comment}{//public static readonly Matrix Matrix.reusable = new Matrix();}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212 \textcolor{preprocessor}{        \#region Cached compression values}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215         [NonSerialized] \textcolor{keyword}{protected} readonly \textcolor{keywordtype}{int}[] cached\_pBits = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[4];}
+\DoxyCodeLine{00216         [NonSerialized] \textcolor{keyword}{protected} readonly \textcolor{keywordtype}{int}[] cached\_rBits = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[4];}
+\DoxyCodeLine{00217         [NonSerialized] \textcolor{keyword}{protected} readonly \textcolor{keywordtype}{int}[] cached\_sBits = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[4];}
+\DoxyCodeLine{00218         [NonSerialized] \textcolor{keyword}{protected} readonly \textcolor{keywordtype}{int}[] \_cached\_total = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[4];}
+\DoxyCodeLine{00219         \textcolor{keyword}{public} ReadOnlyCollection<int> cached\_total;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} cached;}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} CacheValues()}
+\DoxyCodeLine{00224         \{}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < 4; ++i)}
+\DoxyCodeLine{00226             \{}
+\DoxyCodeLine{00227                 cached\_pBits[i] = (posCrusher == \textcolor{keyword}{null}) ? 0 : posCrusher.Cached\_TotalBits[i];}
+\DoxyCodeLine{00228                 cached\_rBits[i] = (rotCrusher == \textcolor{keyword}{null}) ? 0 : rotCrusher.Cached\_TotalBits[i];  \textcolor{comment}{//TallyBits((BitCullingLevel)i);}}
+\DoxyCodeLine{00229                 cached\_sBits[i] = (sclCrusher == \textcolor{keyword}{null}) ? 0 : sclCrusher.Cached\_TotalBits[i];  \textcolor{comment}{//TallyBits((BitCullingLevel)i);}}
+\DoxyCodeLine{00230                 \_cached\_total[i] = cached\_pBits[i] + cached\_rBits[i] + cached\_sBits[i];}
+\DoxyCodeLine{00231                 cached\_total = Array.AsReadOnly(\_cached\_total);}
+\DoxyCodeLine{00232             \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{comment}{//TODO: cached likely no longer needed with bootstrapping and callbacks}}
+\DoxyCodeLine{00235             cached = \textcolor{keyword}{true};}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240 \textcolor{preprocessor}{        \#region Array Writers}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix cm, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00243         \{}
+\DoxyCodeLine{00244             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00245                 CacheValues();}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00248                 posCrusher.Write(cm.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00249             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00250                 rotCrusher.Write(cm.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00251             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00252                 sclCrusher.Write(cm.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix cm, uint[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00258                 CacheValues();}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00261                 posCrusher.Write(cm.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00262             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00263                 rotCrusher.Write(cm.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00265                 sclCrusher.Write(cm.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00266         \}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix cm, ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00269         \{}
+\DoxyCodeLine{00270             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00271                 CacheValues();}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00274                 posCrusher.Write(cm.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00276                 rotCrusher.Write(cm.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00277             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00278                 sclCrusher.Write(cm.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00279         \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix nonalloc, Transform transform, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00284                 CacheValues();}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00287             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00288                 posCrusher.Write(nonalloc.cPos, transform, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00289             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00290                 rotCrusher.Write(nonalloc.cRot, transform, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00292                 sclCrusher.Write(nonalloc.cScl, transform, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(Transform transform, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00295         \{}
+\DoxyCodeLine{00296             Write(CompressedMatrix.reusable, transform, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00297         \}}
+\DoxyCodeLine{00298         \textcolor{comment}{//[System.Obsolete("{}Removing the return value."{})]}}
+\DoxyCodeLine{00299         \textcolor{comment}{//public Bitstream Write(Transform transform, byte[] buffer, ref int bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}}
+\DoxyCodeLine{00300         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00301         \textcolor{comment}{//  Write(CompressedMatrix.reusable, transform, buffer, ref bitposition, bcl);}}
+\DoxyCodeLine{00302         \textcolor{comment}{//  return CompressedMatrix.reusable.ExtractBitstream();}}
+\DoxyCodeLine{00303         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309 \textcolor{preprocessor}{        \#region Array Readers}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311         \textcolor{comment}{//[System.Obsolete()]}}
+\DoxyCodeLine{00312         \textcolor{keyword}{public} Matrix ReadAndDecompress(ulong[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00313         \{}
+\DoxyCodeLine{00314             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00315             \textcolor{keywordflow}{return} ReadAndDecompress(array, ref bitposition, bcl);}
+\DoxyCodeLine{00316         \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318         \textcolor{keyword}{public} Matrix ReadAndDecompress(uint[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00319         \{}
+\DoxyCodeLine{00320             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00321             \textcolor{keywordflow}{return} ReadAndDecompress(array, ref bitposition, bcl);}
+\DoxyCodeLine{00322         \}}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324         \textcolor{keyword}{public} Matrix ReadAndDecompress(\textcolor{keywordtype}{byte}[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00325         \{}
+\DoxyCodeLine{00326             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00327             \textcolor{keywordflow}{return} ReadAndDecompress(array, ref bitposition, bcl);}
+\DoxyCodeLine{00328         \}}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330         \textcolor{comment}{// Skips intermediate step of creating a compressedMatrx}}
+\DoxyCodeLine{00331         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, ulong[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00332         \{}
+\DoxyCodeLine{00333             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00334             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00335         \}}
+\DoxyCodeLine{00336         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, uint[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00337         \{}
+\DoxyCodeLine{00338             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00339             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00340         \}}
+\DoxyCodeLine{00341         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, \textcolor{keywordtype}{byte}[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00342         \{}
+\DoxyCodeLine{00343             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00344             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00345         \}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347         \textcolor{keyword}{public} Matrix ReadAndDecompress(ulong[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00348         \{}
+\DoxyCodeLine{00349             ReadAndDecompress(Matrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00350             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00351         \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353         \textcolor{keyword}{public} Matrix ReadAndDecompress(uint[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00354         \{}
+\DoxyCodeLine{00355             ReadAndDecompress(Matrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00356             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00357         \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359         \textcolor{keyword}{public} Matrix ReadAndDecompress(\textcolor{keywordtype}{byte}[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00360         \{}
+\DoxyCodeLine{00361             ReadAndDecompress(Matrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00362             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365         \textcolor{comment}{// UNTESTED}}
+\DoxyCodeLine{00366         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, \textcolor{keywordtype}{byte}[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00367         \{}
+\DoxyCodeLine{00368             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00369                 CacheValues();}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00373                 posCrusher.Read(nonalloc.cPos, array, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00376                 rotCrusher.Read(nonalloc.cRot, array, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00377             }
+\DoxyCodeLine{00378             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00379                 sclCrusher.Read(nonalloc.cScl, array, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381         \textcolor{comment}{// UNTESTED}}
+\DoxyCodeLine{00382         \textcolor{comment}{//[System.Obsolete("{}Bitstream is slated to be removed. Use the Array and Primitive serializers instead."{})]}}
+\DoxyCodeLine{00383         \textcolor{keyword}{public} CompressedMatrix Read(ulong[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00384         \{}
+\DoxyCodeLine{00385             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00386             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00387         \}}
+\DoxyCodeLine{00388         \textcolor{keyword}{public} CompressedMatrix Read(uint[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00389         \{}
+\DoxyCodeLine{00390             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00391             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00392         \}}
+\DoxyCodeLine{00393         \textcolor{keyword}{public} CompressedMatrix Read(\textcolor{keywordtype}{byte}[] array, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00394         \{}
+\DoxyCodeLine{00395             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00396             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00397         \}}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399         \textcolor{keyword}{public} CompressedMatrix Read(ulong[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00400         \{}
+\DoxyCodeLine{00401             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00402             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00403             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00404         \}}
+\DoxyCodeLine{00405         \textcolor{keyword}{public} CompressedMatrix Read(uint[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00406         \{}
+\DoxyCodeLine{00407             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00408             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00409             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00410         \}}
+\DoxyCodeLine{00411         \textcolor{keyword}{public} CompressedMatrix Read(\textcolor{keywordtype}{byte}[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00412         \{}
+\DoxyCodeLine{00413             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00414             Read(CompressedMatrix.reusable, array, ref bitposition, bcl);}
+\DoxyCodeLine{00415             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00416         \}}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418         \textcolor{comment}{// UNTESTED}}
+\DoxyCodeLine{00419         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00420         \{}
+\DoxyCodeLine{00421             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00422                 CacheValues();}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00425             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00426                 posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00427             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00428                 rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00429             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00430                 sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00431         \}}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433         \textcolor{comment}{// UNTESTED}}
+\DoxyCodeLine{00434         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, uint[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00435         \{}
+\DoxyCodeLine{00436             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00437                 CacheValues();}
+\DoxyCodeLine{00438 }
+\DoxyCodeLine{00439             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00440             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00441                 posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00442             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00443                 rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00444             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00445                 sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);}
+\DoxyCodeLine{00446         \}}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00451 \textcolor{preprocessor}{        \#region ULong Buffer Writers}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00461         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix nonalloc, Transform transform, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00462         \{}
+\DoxyCodeLine{00463             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00464                 CacheValues();}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00467             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00468                 posCrusher.Write(nonalloc.cPos, transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00469             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00470                 rotCrusher.Write(nonalloc.cRot, transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00471             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00472                 sclCrusher.Write(nonalloc.cScl, transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00483         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(Transform transform, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00484         \{}
+\DoxyCodeLine{00485             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00486                 CacheValues();}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00489                 posCrusher.Write(transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00490             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00491                 rotCrusher.Write(transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00492             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00493                 sclCrusher.Write(transform, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00494         \}}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00502         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix cm, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00503         \{}
+\DoxyCodeLine{00504             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00505                 posCrusher.Write(cm.cPos, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00506             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00507                 rotCrusher.Write(cm.cRot, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00508             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00509                 sclCrusher.Write(cm.cScl, ref buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00510         \}}
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00519         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Write(CompressedMatrix nonalloc, Transform transform, ref ulong bitstream, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00520         \{}
+\DoxyCodeLine{00521             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00522                 CacheValues();}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524             Compress(nonalloc, transform);}
+\DoxyCodeLine{00525 }
+\DoxyCodeLine{00526             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00527                 posCrusher.Write(nonalloc.cPos, ref bitstream, bcl);}
+\DoxyCodeLine{00528             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00529                 rotCrusher.Write(nonalloc.cRot, ref bitstream, bcl);}
+\DoxyCodeLine{00530             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00531                 sclCrusher.Write(nonalloc.cScl, ref bitstream, bcl);}
+\DoxyCodeLine{00532         \}}
+\DoxyCodeLine{00533 }
+\DoxyCodeLine{00534 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536 \textcolor{preprocessor}{        \#region Read and Decompress}}
+\DoxyCodeLine{00537 }
+\DoxyCodeLine{00538         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, ulong buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00539         \{}
+\DoxyCodeLine{00540             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00541             ReadAndDecompress(nonalloc, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00542         \}}
+\DoxyCodeLine{00543         [System.Obsolete(\textcolor{stringliteral}{"{}Use the nonalloc overload instead and supply a target Matrix. Matrix is now a class rather than a struct"{}})]}
+\DoxyCodeLine{00544         \textcolor{keyword}{public} Matrix ReadAndDecompress(ulong buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00545         \{}
+\DoxyCodeLine{00546             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00547             \textcolor{keywordflow}{return} ReadAndDecompress(buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00548         \}}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00551         \{}
+\DoxyCodeLine{00552             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00553             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00554         \}}
+\DoxyCodeLine{00555         [System.Obsolete(\textcolor{stringliteral}{"{}Use the nonalloc overload instead and supply a target Matrix. Matrix is now a class rather than a struct"{}})]}
+\DoxyCodeLine{00556         \textcolor{keyword}{public} Matrix ReadAndDecompress(ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00557         \{}
+\DoxyCodeLine{00558             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00559             \textcolor{keywordflow}{return} Decompress(CompressedMatrix.reusable);}
+\DoxyCodeLine{00560         \}}
+\DoxyCodeLine{00561 }
+\DoxyCodeLine{00562 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00563 }
+\DoxyCodeLine{00564 \textcolor{preprocessor}{        \#region ReadAndApply}}
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00572         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndApply(Transform target, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00573         \{}
+\DoxyCodeLine{00574             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00575             Apply(target, CompressedMatrix.reusable);}
+\DoxyCodeLine{00576         \}}
+\DoxyCodeLine{00577 }
+\DoxyCodeLine{00578 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00580 \textcolor{preprocessor}{        \#region Fragments Reader}}
+\DoxyCodeLine{00581 }
+\DoxyCodeLine{00582         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong[] reusableArray64 = \textcolor{keyword}{new} ulong[5];}
+\DoxyCodeLine{00583 }
+\DoxyCodeLine{00587         \textcolor{comment}{//[System.Obsolete("{}Bitstream is slated to be removed. Use the Array and Primitive serializers instead."{})]}}
+\DoxyCodeLine{00588         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, ulong frag4 = 0, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00589         \{}
+\DoxyCodeLine{00590             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00591                 CacheValues();}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{00593             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00594             reusableArray64.Write(frag0, ref bitposition, 64);}
+\DoxyCodeLine{00595             reusableArray64.Write(frag1, ref bitposition, 64);}
+\DoxyCodeLine{00596             reusableArray64.Write(frag2, ref bitposition, 64);}
+\DoxyCodeLine{00597             reusableArray64.Write(frag3, ref bitposition, 64);}
+\DoxyCodeLine{00598             reusableArray64.Write(frag4, ref bitposition, 64);}
+\DoxyCodeLine{00599 }
+\DoxyCodeLine{00600             bitposition = 0;}
+\DoxyCodeLine{00601             Read(nonalloc, reusableArray64, ref bitposition, bcl);}
+\DoxyCodeLine{00602         \}}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604         \textcolor{comment}{//[System.Obsolete("{}Bitstream is slated to be removed. Use the Array and Primitive serializers instead."{})]}}
+\DoxyCodeLine{00605         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReadAndDecompress(Matrix nonalloc, ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, ulong frag4 = 0, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00606         \{}
+\DoxyCodeLine{00607             Read(CompressedMatrix.reusable, frag0, frag1, frag2, frag3, frag4, bcl);}
+\DoxyCodeLine{00608             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00609         \}}
+\DoxyCodeLine{00610 }
+\DoxyCodeLine{00611         \textcolor{keyword}{public} CompressedMatrix Read(ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, uint frag4 = 0, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00612         \{}
+\DoxyCodeLine{00613             Read(CompressedMatrix.reusable, frag0, frag1, frag2, frag3, frag4, bcl);}
+\DoxyCodeLine{00614             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00615         \}}
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00617 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00618 }
+\DoxyCodeLine{00619 \textcolor{preprocessor}{        \#region ULong Buffer Readers}}
+\DoxyCodeLine{00620 }
+\DoxyCodeLine{00627         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, ulong buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00628         \{}
+\DoxyCodeLine{00629             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00630             Read(nonalloc, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00631         \}}
+\DoxyCodeLine{00632 }
+\DoxyCodeLine{00633         \textcolor{comment}{//public CompressedMatrix Read(ulong buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}}
+\DoxyCodeLine{00634         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00635         \textcolor{comment}{//  int bitposition = 0;}}
+\DoxyCodeLine{00636         \textcolor{comment}{//  Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}}
+\DoxyCodeLine{00637         \textcolor{comment}{//  return CompressedMatrix.reusable;}}
+\DoxyCodeLine{00638         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00639 }
+\DoxyCodeLine{00647         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Read(CompressedMatrix nonalloc, ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00648         \{}
+\DoxyCodeLine{00649             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00650                 CacheValues();}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00653 }
+\DoxyCodeLine{00654             \textcolor{keywordflow}{if} (cached\_pBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00655                 posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00656             \textcolor{keywordflow}{if} (cached\_rBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00657                 rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00658             \textcolor{keywordflow}{if} (cached\_sBits[(\textcolor{keywordtype}{int})bcl] > 0)}
+\DoxyCodeLine{00659                 sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661         \textcolor{comment}{//[System.Obsolete("{}Bitstream is slated to be removed. Use the Array and Primitive serializers instead."{})]}}
+\DoxyCodeLine{00662         \textcolor{keyword}{public} CompressedMatrix Read(ulong buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00663         \{}
+\DoxyCodeLine{00664             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00665             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00666         \}}
+\DoxyCodeLine{00667 }
+\DoxyCodeLine{00668 }
+\DoxyCodeLine{00669 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00670 }
+\DoxyCodeLine{00671 \textcolor{preprocessor}{        \#region Compress}}
+\DoxyCodeLine{00672 }
+\DoxyCodeLine{00677         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to compress. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{00678         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc)}
+\DoxyCodeLine{00679         \{}
+\DoxyCodeLine{00680             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00682             Compress(nonalloc, defaultTransform);}
+\DoxyCodeLine{00683         \}}
+\DoxyCodeLine{00684         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to compress. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{00685         \textcolor{keyword}{public} CompressedMatrix Compress()}
+\DoxyCodeLine{00686         \{}
+\DoxyCodeLine{00687             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689             \textcolor{keywordflow}{return} Compress(defaultTransform);}
+\DoxyCodeLine{00690         \}}
+\DoxyCodeLine{00691 }
+\DoxyCodeLine{00692         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc, Matrix matrix)}
+\DoxyCodeLine{00693         \{}
+\DoxyCodeLine{00694             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00695                 CacheValues();}
+\DoxyCodeLine{00696 }
+\DoxyCodeLine{00697             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00698             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0) posCrusher.Compress(nonalloc.cPos, matrix.position); \textcolor{keywordflow}{else} nonalloc.cPos.Clear();}
+\DoxyCodeLine{00699             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, matrix.rotation); \textcolor{keywordflow}{else} nonalloc.cRot.Clear();}
+\DoxyCodeLine{00700             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, matrix.scale); \textcolor{keywordflow}{else} nonalloc.cScl.Clear();}
+\DoxyCodeLine{00701 }
+\DoxyCodeLine{00702         \}}
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00704         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc, Transform transform)}
+\DoxyCodeLine{00705         \{}
+\DoxyCodeLine{00706             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00707                 CacheValues();}
+\DoxyCodeLine{00708 }
+\DoxyCodeLine{00709             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00710             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0) posCrusher.Compress(nonalloc.cPos, transform); \textcolor{keywordflow}{else} nonalloc.cPos.Clear();}
+\DoxyCodeLine{00711             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, transform); \textcolor{keywordflow}{else} nonalloc.cRot.Clear();}
+\DoxyCodeLine{00712             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, transform); \textcolor{keywordflow}{else} nonalloc.cScl.Clear();}
+\DoxyCodeLine{00713 }
+\DoxyCodeLine{00714         \}}
+\DoxyCodeLine{00715         \textcolor{comment}{//[System.Obsolete("{}Use the nonalloc overload instead and supply a target CompressedMatrix. CompressedMatrix is now a class rather than a struct"{})]}}
+\DoxyCodeLine{00716         \textcolor{comment}{//[System.Obsolete("{}Bitstream is slated to be removed. Use the Array and Primitive serializers instead."{})]}}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00722         \textcolor{keyword}{public} CompressedMatrix Compress(Transform transform)}
+\DoxyCodeLine{00723         \{}
+\DoxyCodeLine{00724             Compress(CompressedMatrix.reusable, transform);}
+\DoxyCodeLine{00725             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00726         \}}
+\DoxyCodeLine{00727 }
+\DoxyCodeLine{00728 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS}}
+\DoxyCodeLine{00729 }
+\DoxyCodeLine{00734         \textcolor{keyword}{public} CompressedMatrix Compress(Rigidbody rb)}
+\DoxyCodeLine{00735         \{}
+\DoxyCodeLine{00736             Compress(CompressedMatrix.reusable, rb);}
+\DoxyCodeLine{00737             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00738         \}}
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00743         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc, Rigidbody rb)}
+\DoxyCodeLine{00744         \{}
+\DoxyCodeLine{00745             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00746                 CacheValues();}
+\DoxyCodeLine{00747 }
+\DoxyCodeLine{00748             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00749             posCrusher.Compress(nonalloc.cPos, rb);}
+\DoxyCodeLine{00750             rotCrusher.Compress(nonalloc.cRot, rb);}
+\DoxyCodeLine{00751             sclCrusher.Compress(nonalloc.cScl, rb);}
+\DoxyCodeLine{00752 }
+\DoxyCodeLine{00753         \}}
+\DoxyCodeLine{00754 }
+\DoxyCodeLine{00759         \textcolor{keyword}{public} CompressedMatrix Compress(Rigidbody2D rb2d)}
+\DoxyCodeLine{00760         \{}
+\DoxyCodeLine{00761             Compress(CompressedMatrix.reusable, rb2d);}
+\DoxyCodeLine{00762             \textcolor{keywordflow}{return} CompressedMatrix.reusable;}
+\DoxyCodeLine{00763         \}}
+\DoxyCodeLine{00764 }
+\DoxyCodeLine{00765 }
+\DoxyCodeLine{00769         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Compress(CompressedMatrix nonalloc, Rigidbody2D rb2d)}
+\DoxyCodeLine{00770         \{}
+\DoxyCodeLine{00771             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00772                 CacheValues();}
+\DoxyCodeLine{00773 }
+\DoxyCodeLine{00775             nonalloc.crusher = \textcolor{keyword}{this};}
+\DoxyCodeLine{00776             posCrusher.Compress(nonalloc.cPos, rb2d.transform);}
+\DoxyCodeLine{00777             rotCrusher.Compress(nonalloc.cRot, rb2d.transform);}
+\DoxyCodeLine{00778             sclCrusher.Compress(nonalloc.cScl, rb2d.transform);}
+\DoxyCodeLine{00779 }
+\DoxyCodeLine{00780             \textcolor{comment}{//nonalloc.crusher = this;}}
+\DoxyCodeLine{00781             \textcolor{comment}{//if (cached\_pBits[0] > 0)}}
+\DoxyCodeLine{00782             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00783             \textcolor{comment}{//  Vector2 localized = (posCrusher.local \&\& rb2d.transform.parent) ? (Vector2)rb2d.transform.InverseTransformPoint(rb2d.position) : rb2d.position;}}
+\DoxyCodeLine{00784             \textcolor{comment}{//  posCrusher.Compress(nonalloc.cPos, localized);}}
+\DoxyCodeLine{00785             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00786             \textcolor{comment}{//else}}
+\DoxyCodeLine{00787             \textcolor{comment}{//  nonalloc.cPos.Clear();}}
+\DoxyCodeLine{00788 }
+\DoxyCodeLine{00789             \textcolor{comment}{//if (rotCrusher.TRSType == TRSType.Quaternion)}}
+\DoxyCodeLine{00790             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00791             \textcolor{comment}{//  Quaternion localized = (rotCrusher.local \&\& rb2d.transform.parent) ? rb2d.transform.localRotation : Quaternion.Euler(0, 0, rb2d.rotation);}}
+\DoxyCodeLine{00792             \textcolor{comment}{//  if (cached\_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, localized);}}
+\DoxyCodeLine{00793             \textcolor{comment}{//  else nonalloc.cRot.Clear();}}
+\DoxyCodeLine{00794             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00795             \textcolor{comment}{//else}}
+\DoxyCodeLine{00796             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00797             \textcolor{comment}{//  Vector3 localized = (rotCrusher.local \&\& rb2d.transform.parent) ? rb2d.transform.localEulerAngles : new Vector3(0, 0, rb2d.rotation);}}
+\DoxyCodeLine{00798             \textcolor{comment}{//  if (cached\_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, localized);}}
+\DoxyCodeLine{00799             \textcolor{comment}{//  else nonalloc.cRot.Clear();}}
+\DoxyCodeLine{00800             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00801 }
+\DoxyCodeLine{00802             \textcolor{comment}{//if (cached\_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, rb2d.transform);}}
+\DoxyCodeLine{00803             \textcolor{comment}{//else nonalloc.cScl.Clear();}}
+\DoxyCodeLine{00804 }
+\DoxyCodeLine{00805         \}}
+\DoxyCodeLine{00806 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00807 }
+\DoxyCodeLine{00814         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CompressAndWrite(Matrix matrix, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00815         \{}
+\DoxyCodeLine{00816             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00817                 CacheValues();}
+\DoxyCodeLine{00818 }
+\DoxyCodeLine{00819             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{00820                 posCrusher.CompressAndWrite(matrix.position, buffer, ref bitposition);}
+\DoxyCodeLine{00821             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{00822                 rotCrusher.CompressAndWrite(matrix.rotation, buffer, ref bitposition);}
+\DoxyCodeLine{00823             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{00824                 sclCrusher.CompressAndWrite(matrix.scale, buffer, ref bitposition);}
+\DoxyCodeLine{00825         \}}
+\DoxyCodeLine{00826 }
+\DoxyCodeLine{00831         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CompressAndWrite(Transform transform, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00832         \{}
+\DoxyCodeLine{00833             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00834                 CacheValues();}
+\DoxyCodeLine{00835 }
+\DoxyCodeLine{00836             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{00837                 posCrusher.CompressAndWrite(transform, buffer, ref bitposition);}
+\DoxyCodeLine{00838             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{00839                 rotCrusher.CompressAndWrite(transform, buffer, ref bitposition);}
+\DoxyCodeLine{00840             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{00841                 sclCrusher.CompressAndWrite(transform, buffer, ref bitposition);}
+\DoxyCodeLine{00842         \}}
+\DoxyCodeLine{00843 }
+\DoxyCodeLine{00844 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS}}
+\DoxyCodeLine{00845 }
+\DoxyCodeLine{00850         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CompressAndWrite(Rigidbody rb, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00851         \{}
+\DoxyCodeLine{00852             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00853                 CacheValues();}
+\DoxyCodeLine{00854 }
+\DoxyCodeLine{00855             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{00856             \{}
+\DoxyCodeLine{00857                 Vector3 localized = (posCrusher.local \&\& rb.transform.parent) ? rb.transform.InverseTransformPoint(rb.position) : rb.position;}
+\DoxyCodeLine{00858                 posCrusher.CompressAndWrite(localized, buffer, ref bitposition);}
+\DoxyCodeLine{00859             \}}
+\DoxyCodeLine{00860             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{00861             \{}
+\DoxyCodeLine{00862                 \textcolor{keywordflow}{if} (rotCrusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00863                     rotCrusher.CompressAndWrite(rb.rotation, buffer, ref bitposition);}
+\DoxyCodeLine{00864                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00865                     rotCrusher.CompressAndWrite(rb.rotation.eulerAngles, buffer, ref bitposition);}
+\DoxyCodeLine{00866             \}}
+\DoxyCodeLine{00867             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{00868                 sclCrusher.CompressAndWrite(rb.transform, buffer, ref bitposition);}
+\DoxyCodeLine{00869         \}}
+\DoxyCodeLine{00870 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00871 }
+\DoxyCodeLine{00872 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00873 }
+\DoxyCodeLine{00874 \textcolor{preprocessor}{        \#region Decompress}}
+\DoxyCodeLine{00875 }
+\DoxyCodeLine{00876         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Decompress(Matrix nonalloc, ulong[] buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00877         \{}
+\DoxyCodeLine{00878             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00879             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00880             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00881         \}}
+\DoxyCodeLine{00882 }
+\DoxyCodeLine{00883         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Decompress(Matrix nonalloc, uint[] buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00884         \{}
+\DoxyCodeLine{00885             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00886             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00887             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00888         \}}
+\DoxyCodeLine{00889 }
+\DoxyCodeLine{00890         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Decompress(Matrix nonalloc, ulong compressed, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00891         \{}
+\DoxyCodeLine{00892             Read(CompressedMatrix.reusable, compressed, bcl);}
+\DoxyCodeLine{00893             Decompress(nonalloc, CompressedMatrix.reusable);}
+\DoxyCodeLine{00894         \}}
+\DoxyCodeLine{00895 }
+\DoxyCodeLine{00896         \textcolor{keyword}{public} Matrix Decompress(ulong[] buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00897         \{}
+\DoxyCodeLine{00898             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00899             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00900             Decompress(Matrix.reusable, CompressedMatrix.reusable);}
+\DoxyCodeLine{00901             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00902         \}}
+\DoxyCodeLine{00903 }
+\DoxyCodeLine{00904         \textcolor{keyword}{public} Matrix Decompress(uint[] buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00905         \{}
+\DoxyCodeLine{00906             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00907             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00908             Decompress(Matrix.reusable, CompressedMatrix.reusable);}
+\DoxyCodeLine{00909             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00910         \}}
+\DoxyCodeLine{00911 }
+\DoxyCodeLine{00912         \textcolor{keyword}{public} Matrix Decompress(\textcolor{keywordtype}{byte}[] buffer, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00913         \{}
+\DoxyCodeLine{00914             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00915             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{00916             Decompress(Matrix.reusable, CompressedMatrix.reusable);}
+\DoxyCodeLine{00917             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00918         \}}
+\DoxyCodeLine{00919 }
+\DoxyCodeLine{00920         \textcolor{keyword}{public} Matrix Decompress(ulong compressed, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00921         \{}
+\DoxyCodeLine{00922             Read(CompressedMatrix.reusable, compressed, bcl);}
+\DoxyCodeLine{00923             Decompress(Matrix.reusable, CompressedMatrix.reusable);}
+\DoxyCodeLine{00924             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00925         \}}
+\DoxyCodeLine{00926 }
+\DoxyCodeLine{00927         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Decompress(Matrix nonalloc, CompressedMatrix compMatrix)}
+\DoxyCodeLine{00928         \{}
+\DoxyCodeLine{00929             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00930                 CacheValues();}
+\DoxyCodeLine{00931 }
+\DoxyCodeLine{00932             nonalloc.Set(}
+\DoxyCodeLine{00933                 \textcolor{keyword}{this},}
+\DoxyCodeLine{00934                 (cached\_pBits[0] > 0) ? (Vector3)posCrusher.Decompress(compMatrix.cPos) : \textcolor{keyword}{new} Vector3(),}
+\DoxyCodeLine{00935                 (cached\_rBits[0] > 0) ? rotCrusher.Decompress(compMatrix.cRot) : (rotCrusher.TRSType == TRSType.Quaternion) ? \textcolor{keyword}{new} Element(\textcolor{keyword}{new} Quaternion(0,0,0,1)) : \textcolor{keyword}{new} Element(\textcolor{keyword}{new} Vector3(0,0,0)),}
+\DoxyCodeLine{00936                 (cached\_sBits[0] > 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : \textcolor{keyword}{new} Vector3()}
+\DoxyCodeLine{00937                 );}
+\DoxyCodeLine{00938         \}}
+\DoxyCodeLine{00939         [System.Obsolete(\textcolor{stringliteral}{"{}Use the nonalloc overload instead and supply a target Matrix. Matrix is now a class rather than a struct"{}})]}
+\DoxyCodeLine{00940         \textcolor{keyword}{public} Matrix Decompress(CompressedMatrix compMatrix)}
+\DoxyCodeLine{00941         \{}
+\DoxyCodeLine{00942             \textcolor{keywordflow}{if} (!cached)}
+\DoxyCodeLine{00943                 CacheValues();}
+\DoxyCodeLine{00944 }
+\DoxyCodeLine{00945             \textcolor{keywordflow}{return} \textcolor{keyword}{new} Matrix(}
+\DoxyCodeLine{00946                 \textcolor{keyword}{this},}
+\DoxyCodeLine{00947                 (cached\_pBits[0] > 0) ? (Vector3)posCrusher.Decompress(compMatrix.cPos) : \textcolor{keyword}{new} Vector3(),}
+\DoxyCodeLine{00948                 (cached\_rBits[0] > 0) ? rotCrusher.Decompress(compMatrix.cRot) : (rotCrusher.TRSType == TRSType.Quaternion) ? \textcolor{keyword}{new} Element(\textcolor{keyword}{new} Quaternion(0, 0, 0, 1)) : \textcolor{keyword}{new} Element(\textcolor{keyword}{new} Vector3(0, 0, 0)),}
+\DoxyCodeLine{00949                 (cached\_sBits[0] > 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : \textcolor{keyword}{new} Vector3()}
+\DoxyCodeLine{00950                 );}
+\DoxyCodeLine{00951         \}}
+\DoxyCodeLine{00952 }
+\DoxyCodeLine{00953 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00954 }
+\DoxyCodeLine{00955 \textcolor{preprocessor}{        \#region Rigidbody Set/Move}}
+\DoxyCodeLine{00956 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS}}
+\DoxyCodeLine{00957 }
+\DoxyCodeLine{00962         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb, CompressedMatrix cmatrix)}
+\DoxyCodeLine{00963         \{}
+\DoxyCodeLine{00964             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{00965                 posCrusher.Set(rb, cmatrix.cPos);}
+\DoxyCodeLine{00966             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{00967                 rotCrusher.Set(rb, cmatrix.cRot);}
+\DoxyCodeLine{00968             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{00969                 sclCrusher.Apply(rb.transform, cmatrix.cScl);}
+\DoxyCodeLine{00970         \}}
+\DoxyCodeLine{00975         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb, Matrix matrix)}
+\DoxyCodeLine{00976         \{}
+\DoxyCodeLine{00977             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{00978                 posCrusher.Set(rb, matrix.position);}
+\DoxyCodeLine{00979             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{00980                 rotCrusher.Set(rb, matrix.rotation);}
+\DoxyCodeLine{00981             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{00982                 sclCrusher.Apply(rb.transform, matrix.scale);}
+\DoxyCodeLine{00983         \}}
+\DoxyCodeLine{00988         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb, ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, ulong frag4 = 0)}
+\DoxyCodeLine{00989         \{}
+\DoxyCodeLine{00990             Read(CompressedMatrix.reusable, frag0, frag1, frag2, frag3, frag4);}
+\DoxyCodeLine{00991             Set(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{00992         \}}
+\DoxyCodeLine{00997         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb, ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00998         \{}
+\DoxyCodeLine{00999             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{01000             Set(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{01001         \}}
+\DoxyCodeLine{01006         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{01007         \{}
+\DoxyCodeLine{01008             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{01009             Set(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{01010         \}}
+\DoxyCodeLine{01011 }
+\DoxyCodeLine{01012         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody2D rb2d, Matrix matrix)}
+\DoxyCodeLine{01013         \{}
+\DoxyCodeLine{01014             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01015                 posCrusher.Set(rb2d, matrix.position);}
+\DoxyCodeLine{01016             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01017                 rotCrusher.Set(rb2d, matrix.rotation);}
+\DoxyCodeLine{01018             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01019                 sclCrusher.Apply(rb2d.transform, matrix.scale);}
+\DoxyCodeLine{01020         \}}
+\DoxyCodeLine{01025         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody2D rb2d, CompressedMatrix cmatrix)}
+\DoxyCodeLine{01026         \{}
+\DoxyCodeLine{01027             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01028                 posCrusher.Set(rb2d, cmatrix.cPos);}
+\DoxyCodeLine{01029             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01030                 rotCrusher.Set(rb2d, cmatrix.cRot);}
+\DoxyCodeLine{01031             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01032                 sclCrusher.Apply(rb2d.transform, cmatrix.cScl);}
+\DoxyCodeLine{01033         \}}
+\DoxyCodeLine{01034 }
+\DoxyCodeLine{01039         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb, CompressedMatrix cmatrix)}
+\DoxyCodeLine{01040         \{}
+\DoxyCodeLine{01041             Move(rb, cmatrix.Decompress());}
+\DoxyCodeLine{01042             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01043                 posCrusher.Move(rb, cmatrix.cPos);}
+\DoxyCodeLine{01044             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01045                 rotCrusher.Move(rb, cmatrix.cRot);}
+\DoxyCodeLine{01046             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01047                 sclCrusher.Apply(rb.transform, cmatrix.cScl);}
+\DoxyCodeLine{01048         \}}
+\DoxyCodeLine{01053         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb, Matrix matrix)}
+\DoxyCodeLine{01054         \{}
+\DoxyCodeLine{01055             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01056                 posCrusher.Move(rb, matrix.position);}
+\DoxyCodeLine{01057             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01058                 rotCrusher.Move(rb, matrix.rotation);}
+\DoxyCodeLine{01059             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01060                 sclCrusher.Apply(rb.transform, matrix.scale);}
+\DoxyCodeLine{01061         \}}
+\DoxyCodeLine{01066         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb, ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, ulong frag4 = 0)}
+\DoxyCodeLine{01067         \{}
+\DoxyCodeLine{01068             Read(CompressedMatrix.reusable, frag0, frag1, frag2, frag3, frag4);}
+\DoxyCodeLine{01069             Move(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{01070         \}}
+\DoxyCodeLine{01075         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb, ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{01076         \{}
+\DoxyCodeLine{01077             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{01078             Move(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{01079         \}}
+\DoxyCodeLine{01084         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{01085         \{}
+\DoxyCodeLine{01086             Read(CompressedMatrix.reusable, buffer, ref bitposition, bcl);}
+\DoxyCodeLine{01087             Move(rb, CompressedMatrix.reusable);}
+\DoxyCodeLine{01088         \}}
+\DoxyCodeLine{01089 }
+\DoxyCodeLine{01093         [System.Obsolete(\textcolor{stringliteral}{"{}Apply for Rigidbody has been replaced with Move and Set, to indicate usage of MovePosition/Rotation vs rb.position/rotation."{}})]}
+\DoxyCodeLine{01094         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Rigidbody rb, CompressedMatrix cmatrix)}
+\DoxyCodeLine{01095         \{}
+\DoxyCodeLine{01096             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01097                 posCrusher.Apply(rb, cmatrix.cPos);}
+\DoxyCodeLine{01098             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01099                 rotCrusher.Apply(rb, cmatrix.cRot);}
+\DoxyCodeLine{01100             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01101                 sclCrusher.Apply(rb.transform, cmatrix.cScl);}
+\DoxyCodeLine{01102         \}}
+\DoxyCodeLine{01103 }
+\DoxyCodeLine{01107         [System.Obsolete(\textcolor{stringliteral}{"{}Apply for Rigidbody has been replaced with Move and Set, to indicate usage of MovePosition/Rotation vs rb.position/rotation."{}})]}
+\DoxyCodeLine{01108         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Rigidbody rb, Matrix matrix)}
+\DoxyCodeLine{01109         \{}
+\DoxyCodeLine{01110             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01111                 posCrusher.Apply(rb, matrix.position);}
+\DoxyCodeLine{01112             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01113                 rotCrusher.Apply(rb, matrix.rotation);}
+\DoxyCodeLine{01114             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01115                 sclCrusher.Apply(rb.transform, matrix.scale);}
+\DoxyCodeLine{01116         \}}
+\DoxyCodeLine{01117 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01118 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01119 }
+\DoxyCodeLine{01120 \textcolor{preprocessor}{        \#region Apply}}
+\DoxyCodeLine{01121 }
+\DoxyCodeLine{01122         \textcolor{keyword}{const} \textcolor{keywordtype}{string} transformMissingError = \textcolor{stringliteral}{"{}The 'defaultTransform' is null and has not be set in the inspector. "{}} +}
+\DoxyCodeLine{01123                 \textcolor{stringliteral}{"{}For non-\/editor usages of TransformCrusher you need to pass the target transform to this method."{}};}
+\DoxyCodeLine{01124 }
+\DoxyCodeLine{01125         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to compress. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{01126         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(ulong cvalue)}
+\DoxyCodeLine{01127         \{}
+\DoxyCodeLine{01128             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{01129 }
+\DoxyCodeLine{01130             Apply(defaultTransform, cvalue);}
+\DoxyCodeLine{01131         \}}
+\DoxyCodeLine{01132 }
+\DoxyCodeLine{01133         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform t, ulong cvalue)}
+\DoxyCodeLine{01134         \{}
+\DoxyCodeLine{01135             Decompress(Matrix.reusable, cvalue);}
+\DoxyCodeLine{01136             Apply(t, Matrix.reusable);}
+\DoxyCodeLine{01137         \}}
+\DoxyCodeLine{01138 }
+\DoxyCodeLine{01139         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to compress. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{01140         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(ulong u0, ulong u1, ulong u2, ulong u3, uint u4)}
+\DoxyCodeLine{01141         \{}
+\DoxyCodeLine{01142             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{01143 }
+\DoxyCodeLine{01144             Apply(defaultTransform, u0, u1, u2, u3, u4);}
+\DoxyCodeLine{01145         \}}
+\DoxyCodeLine{01146 }
+\DoxyCodeLine{01147         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform t, ulong frag0, ulong frag1 = 0, ulong frag2 = 0, ulong frag3 = 0, ulong frag4 = 0)}
+\DoxyCodeLine{01148         \{}
+\DoxyCodeLine{01149             Read(CompressedMatrix.reusable, frag0, frag1, frag2, frag3, frag4);}
+\DoxyCodeLine{01150             Apply(t, CompressedMatrix.reusable);}
+\DoxyCodeLine{01151         \}}
+\DoxyCodeLine{01152 }
+\DoxyCodeLine{01156         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to Apply to. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{01157         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(CompressedMatrix cmatrix)}
+\DoxyCodeLine{01158         \{}
+\DoxyCodeLine{01159             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{01160 }
+\DoxyCodeLine{01161             Apply(defaultTransform, cmatrix);}
+\DoxyCodeLine{01162         \}}
+\DoxyCodeLine{01163 }
+\DoxyCodeLine{01167         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform t, CompressedMatrix cmatrix)}
+\DoxyCodeLine{01168         \{}
+\DoxyCodeLine{01169             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01170                 posCrusher.Apply(t, cmatrix.cPos);}
+\DoxyCodeLine{01171             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01172                 rotCrusher.Apply(t, cmatrix.cRot);}
+\DoxyCodeLine{01173             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01174                 sclCrusher.Apply(t, cmatrix.cScl);}
+\DoxyCodeLine{01175         \}}
+\DoxyCodeLine{01176 }
+\DoxyCodeLine{01177 }
+\DoxyCodeLine{01181         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to Apply to. Default Transform has be deprecated."{}})]}
+\DoxyCodeLine{01182         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Matrix matrix)}
+\DoxyCodeLine{01183         \{}
+\DoxyCodeLine{01184             Debug.Assert(defaultTransform, transformMissingError);}
+\DoxyCodeLine{01185 }
+\DoxyCodeLine{01186             Apply(defaultTransform, matrix);}
+\DoxyCodeLine{01187         \}}
+\DoxyCodeLine{01188 }
+\DoxyCodeLine{01192         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform transform, Matrix matrix)}
+\DoxyCodeLine{01193         \{}
+\DoxyCodeLine{01194             \textcolor{keywordflow}{if} (cached\_pBits[0] > 0)}
+\DoxyCodeLine{01195                 posCrusher.Apply(transform, matrix.position);}
+\DoxyCodeLine{01196             \textcolor{keywordflow}{if} (cached\_rBits[0] > 0)}
+\DoxyCodeLine{01197                 rotCrusher.Apply(transform, matrix.rotation);}
+\DoxyCodeLine{01198             \textcolor{keywordflow}{if} (cached\_sBits[0] > 0)}
+\DoxyCodeLine{01199                 sclCrusher.Apply(transform, matrix.scale);}
+\DoxyCodeLine{01200         \}}
+\DoxyCodeLine{01201 }
+\DoxyCodeLine{01202 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01203 }
+\DoxyCodeLine{01208         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(Rigidbody rb, CompressedMatrix cm, Matrix m)}
+\DoxyCodeLine{01209         \{}
+\DoxyCodeLine{01210             Compress(cm, rb);}
+\DoxyCodeLine{01211             Decompress(m, cm);}
+\DoxyCodeLine{01212         \}}
+\DoxyCodeLine{01213 }
+\DoxyCodeLine{01218         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(Rigidbody2D rb2d, CompressedMatrix cm, Matrix m)}
+\DoxyCodeLine{01219         \{}
+\DoxyCodeLine{01220             Compress(cm, rb2d);}
+\DoxyCodeLine{01221             Decompress(m, cm);}
+\DoxyCodeLine{01222         \}}
+\DoxyCodeLine{01223 }
+\DoxyCodeLine{01228         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Capture(Transform tr, CompressedMatrix cm, Matrix m)}
+\DoxyCodeLine{01229         \{}
+\DoxyCodeLine{01230             \textcolor{comment}{// pos}}
+\DoxyCodeLine{01231             posCrusher.Compress(cm.cPos, tr);}
+\DoxyCodeLine{01232             m.position = (Vector3)posCrusher.Decompress(cm.cPos);}
+\DoxyCodeLine{01233 }
+\DoxyCodeLine{01234             \textcolor{comment}{// rot}}
+\DoxyCodeLine{01235             rotCrusher.Compress(cm.cRot, tr);}
+\DoxyCodeLine{01236             m.rotation = rotCrusher.Decompress(cm.cRot);}
+\DoxyCodeLine{01237 }
+\DoxyCodeLine{01238             \textcolor{comment}{// scl}}
+\DoxyCodeLine{01239             sclCrusher.Compress(cm.cScl, tr);}
+\DoxyCodeLine{01240             m.scale = (Vector3)sclCrusher.Decompress(cm.cScl);}
+\DoxyCodeLine{01241 }
+\DoxyCodeLine{01242         \}}
+\DoxyCodeLine{01243 }
+\DoxyCodeLine{01247         \textcolor{keyword}{public} \textcolor{keywordtype}{int} TallyBits(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{01248         \{}
+\DoxyCodeLine{01249             \textcolor{keywordtype}{int} p = posCrusher != \textcolor{keyword}{null} ? posCrusher.TallyBits(bcl) : 0;}
+\DoxyCodeLine{01250             \textcolor{keywordtype}{int} r = posCrusher != \textcolor{keyword}{null} ? rotCrusher.TallyBits(bcl) : 0;}
+\DoxyCodeLine{01251             \textcolor{keywordtype}{int} s = posCrusher != \textcolor{keyword}{null} ? sclCrusher.TallyBits(bcl) : 0;}
+\DoxyCodeLine{01252             \textcolor{keywordflow}{return} p + r + s;}
+\DoxyCodeLine{01253         \}}
+\DoxyCodeLine{01254 }
+\DoxyCodeLine{01255         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CopyFrom(TransformCrusher source)}
+\DoxyCodeLine{01256         \{}
+\DoxyCodeLine{01257             posCrusher.CopyFrom(source.posCrusher);}
+\DoxyCodeLine{01258             rotCrusher.CopyFrom(source.rotCrusher);}
+\DoxyCodeLine{01259             sclCrusher.CopyFrom(source.sclCrusher);}
+\DoxyCodeLine{01260 }
+\DoxyCodeLine{01261             CacheValues();}
+\DoxyCodeLine{01262         \}}
+\DoxyCodeLine{01263 }
+\DoxyCodeLine{01264         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{01265         \{}
+\DoxyCodeLine{01266             \textcolor{keywordflow}{return} Equals(obj as TransformCrusher);}
+\DoxyCodeLine{01267         \}}
+\DoxyCodeLine{01268 }
+\DoxyCodeLine{01269         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(TransformCrusher other)}
+\DoxyCodeLine{01270         \{}
+\DoxyCodeLine{01271             \textcolor{keywordflow}{return} other != \textcolor{keyword}{null} \&\&}
+\DoxyCodeLine{01272                 \textcolor{comment}{//EqualityComparer<Transform>.Default.Equals(defaultTransform, other.defaultTransform) \&\&}}
+\DoxyCodeLine{01273                 (posCrusher == \textcolor{keyword}{null} ? other.posCrusher == null : posCrusher.Equals(other.posCrusher)) \&\&}
+\DoxyCodeLine{01274                 (rotCrusher == \textcolor{keyword}{null} ? other.rotCrusher == \textcolor{keyword}{null} : rotCrusher.Equals(other.rotCrusher)) \&\&}
+\DoxyCodeLine{01275                 (sclCrusher == \textcolor{keyword}{null} ? other.sclCrusher == \textcolor{keyword}{null} : sclCrusher.Equals(other.sclCrusher));}
+\DoxyCodeLine{01276         \}}
+\DoxyCodeLine{01277 }
+\DoxyCodeLine{01278         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{01279         \{}
+\DoxyCodeLine{01280             var hashCode = -\/453726296;}
+\DoxyCodeLine{01281             \textcolor{comment}{//hashCode = hashCode * -\/1521134295 + EqualityComparer<Transform>.Default.GetHashCode(defaultTransform);}}
+\DoxyCodeLine{01282             hashCode = hashCode * -\/1521134295 + ((posCrusher == \textcolor{keyword}{null}) ? 0 : posCrusher.GetHashCode());}
+\DoxyCodeLine{01283             hashCode = hashCode * -\/1521134295 + ((rotCrusher == \textcolor{keyword}{null}) ? 0 : rotCrusher.GetHashCode());}
+\DoxyCodeLine{01284             hashCode = hashCode * -\/1521134295 + ((sclCrusher == \textcolor{keyword}{null}) ? 0 : sclCrusher.GetHashCode());}
+\DoxyCodeLine{01285             \textcolor{keywordflow}{return} hashCode;}
+\DoxyCodeLine{01286         \}}
+\DoxyCodeLine{01287 }
+\DoxyCodeLine{01288 }
+\DoxyCodeLine{01289         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator ==(TransformCrusher crusher1, TransformCrusher crusher2)}
+\DoxyCodeLine{01290         \{}
+\DoxyCodeLine{01291             \textcolor{keywordflow}{return} EqualityComparer<TransformCrusher>.Default.Equals(crusher1, crusher2);}
+\DoxyCodeLine{01292         \}}
+\DoxyCodeLine{01293 }
+\DoxyCodeLine{01294         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator !=(TransformCrusher crusher1, TransformCrusher crusher2)}
+\DoxyCodeLine{01295         \{}
+\DoxyCodeLine{01296             \textcolor{keywordflow}{return} !(crusher1 == crusher2);}
+\DoxyCodeLine{01297         \}}
+\DoxyCodeLine{01298     \}}
+\DoxyCodeLine{01299 }
+\DoxyCodeLine{01300 \}}
+
+\end{DoxyCode}

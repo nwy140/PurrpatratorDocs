@@ -1,0 +1,147 @@
+\doxysection{Orbit\+Motion.\+cs}
+\label{_orbit_motion_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Demos/Common/Scripts/Motion/OrbitMotion.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Demos/Common/Scripts/Motion/OrbitMotion.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{namespace }Dustyroom \{}
+\DoxyCodeLine{00004 \textcolor{keyword}{public} \textcolor{keyword}{class }OrbitMotion : MonoBehaviour \{}
+\DoxyCodeLine{00005     \textcolor{keyword}{public} \textcolor{keyword}{enum} TargetMode \{}
+\DoxyCodeLine{00006         Transform,}
+\DoxyCodeLine{00007         Position}
+\DoxyCodeLine{00008     \}}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010     \textcolor{keyword}{public} TargetMode targetMode = TargetMode.Position;}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} Transform targetTransform;}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} followTargetTransform = \textcolor{keyword}{true};}
+\DoxyCodeLine{00013     \textcolor{keyword}{public} Vector3 targetOffset = Vector3.zero;}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} Vector3 targetPosition;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     [Space] \textcolor{keyword}{public} \textcolor{keywordtype}{float} distanceHorizontal = 60.0f;}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keywordtype}{float} distanceVertical = 60.0f;}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keywordtype}{float} xSpeed = 120.0f;}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keywordtype}{float} ySpeed = 120.0f;}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keywordtype}{float} damping = 3f;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     [Space] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} clampAngle = \textcolor{keyword}{false};}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keywordtype}{float} yMinLimit = -\/20f;}
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keywordtype}{float} yMaxLimit = 80f;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     [Space] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} allowZoom = \textcolor{keyword}{false};}
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keywordtype}{float} distanceMin = .5f;}
+\DoxyCodeLine{00028     \textcolor{keyword}{public} \textcolor{keywordtype}{float} distanceMax = 15f;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030     \textcolor{keywordtype}{float} \_x = 0.0f;}
+\DoxyCodeLine{00031     \textcolor{keywordtype}{float} \_y = 0.0f;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033     [Space] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoMovement = \textcolor{keyword}{false};}
+\DoxyCodeLine{00034     \textcolor{keyword}{public} \textcolor{keywordtype}{float} autoSpeedX = 0.2f;}
+\DoxyCodeLine{00035     \textcolor{keyword}{public} \textcolor{keywordtype}{float} autoSpeedY = 0.1f;}
+\DoxyCodeLine{00036     \textcolor{keyword}{public} \textcolor{keywordtype}{float} autoSpeedDistance = -\/0.1f;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038     [Space] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} interactive = \textcolor{keyword}{true};}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040     \textcolor{keyword}{private} \textcolor{keywordtype}{float} \_lastMoveTime;}
+\DoxyCodeLine{00041     [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} timeSinceLastMove;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043     \textcolor{keywordtype}{void} Start() \{}
+\DoxyCodeLine{00044         Vector3 angles = transform.eulerAngles;}
+\DoxyCodeLine{00045         \_x = angles.y;}
+\DoxyCodeLine{00046         \_y = angles.x;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{comment}{// Make the rigid body not change rotation}}
+\DoxyCodeLine{00049         Rigidbody rigidbody = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00050         \textcolor{keywordflow}{if} (rigidbody != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00051             rigidbody.freezeRotation = \textcolor{keyword}{true};}
+\DoxyCodeLine{00052         \}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 \textcolor{preprocessor}{\#if (UNITY\_ANDROID || UNITY\_IOS) \&\& !UNITY\_EDITOR}}
+\DoxyCodeLine{00055         xSpeed *= 0.2f;}
+\DoxyCodeLine{00056         ySpeed *= 0.2f;}
+\DoxyCodeLine{00057 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keywordflow}{if} (targetMode == TargetMode.Transform) \{}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{if} (targetTransform != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00061                 targetPosition = targetTransform.position + targetOffset;}
+\DoxyCodeLine{00062             \}}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00064                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reference transform is not set."{}});}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067     \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069     \textcolor{keywordtype}{void} Update() \{}
+\DoxyCodeLine{00070         \textcolor{keywordflow}{if} (targetMode == TargetMode.Transform \&\& followTargetTransform) \{}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{if} (targetTransform != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00072                 targetPosition = targetTransform.position + targetOffset;}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00075                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reference transform is not set."{}});}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{comment}{//*}}
+\DoxyCodeLine{00080         \textcolor{keywordtype}{bool} isCameraMoving = \textcolor{keyword}{false};}
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if ((UNITY\_ANDROID || UNITY\_IOS) \&\& !UNITY\_EDITOR)}}
+\DoxyCodeLine{00082         isCameraMoving = Input.GetTouch(0).deltaPosition.sqrMagnitude > 0f;}
+\DoxyCodeLine{00083 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00084         isCameraMoving = Mathf.Abs(Input.GetAxis(\textcolor{stringliteral}{"{}Mouse X"{}})) + Mathf.Abs(Input.GetAxis(\textcolor{stringliteral}{"{}Mouse Y"{}})) > 0f;}
+\DoxyCodeLine{00085 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086         \textcolor{keywordflow}{if} (isCameraMoving) \{}
+\DoxyCodeLine{00087             \_lastMoveTime = Time.time;}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         timeSinceLastMove = Time.time -\/ \_lastMoveTime;}
+\DoxyCodeLine{00091         \textcolor{comment}{//*/}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keywordflow}{if} (interactive \&\& Input.GetMouseButton(0)) \{}
+\DoxyCodeLine{00094 \textcolor{preprocessor}{\#if ((UNITY\_ANDROID || UNITY\_IOS) \&\& !UNITY\_EDITOR)}}
+\DoxyCodeLine{00095         \_x += Input.GetTouch(0).deltaPosition.x * xSpeed * 40f * 0.02f;}
+\DoxyCodeLine{00096         \_y -\/= Input.GetTouch(0).deltaPosition.y * ySpeed * 40f * 0.02f;}
+\DoxyCodeLine{00097 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00098         \_x += Input.GetAxis(\textcolor{stringliteral}{"{}Mouse X"{}}) * xSpeed * 40f * 0.02f;}
+\DoxyCodeLine{00099         \_y -\/= Input.GetAxis(\textcolor{stringliteral}{"{}Mouse Y"{}}) * ySpeed * 40f * 0.02f;}
+\DoxyCodeLine{00100 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (autoMovement) \{}
+\DoxyCodeLine{00103             \_x += autoSpeedX * 40f * Time.deltaTime * 10f;}
+\DoxyCodeLine{00104             \_y -\/= autoSpeedY * 40f * Time.deltaTime * 10f;}
+\DoxyCodeLine{00105             distanceHorizontal += autoSpeedDistance;}
+\DoxyCodeLine{00106         \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         \textcolor{keywordflow}{if} (clampAngle) \{}
+\DoxyCodeLine{00109             \_y = ClampAngle(\_y, yMinLimit, yMaxLimit);}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         Quaternion rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(\_y, \_x, 0),}
+\DoxyCodeLine{00113             Time.deltaTime * damping);}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keywordflow}{if} (allowZoom) \{}
+\DoxyCodeLine{00116             distanceHorizontal = Mathf.Clamp(}
+\DoxyCodeLine{00117                 distanceHorizontal -\/ Input.GetAxis(\textcolor{stringliteral}{"{}Mouse ScrollWheel"{}}) * 5, distanceMin, distanceMax);}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keywordtype}{float} rotationX = rotation.eulerAngles.x;}
+\DoxyCodeLine{00121         \textcolor{keywordflow}{if} (rotationX > 90f) \{}
+\DoxyCodeLine{00122             rotationX -\/= 360f;}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keywordtype}{float} usedDistance = Mathf.Lerp(distanceHorizontal, distanceVertical, Mathf.Abs(rotationX / 90f));}
+\DoxyCodeLine{00126         Vector3 negDistance = \textcolor{keyword}{new} Vector3(0.0f, 0.0f, -\/usedDistance);}
+\DoxyCodeLine{00127         Vector3 position = rotation * negDistance + targetPosition;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         transform.rotation = rotation;}
+\DoxyCodeLine{00130         transform.position = position;}
+\DoxyCodeLine{00131     \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133     \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ClampAngle(\textcolor{keywordtype}{float} angle, \textcolor{keywordtype}{float} min, \textcolor{keywordtype}{float} max) \{}
+\DoxyCodeLine{00134         \textcolor{keywordflow}{if} (angle < -\/360f)}
+\DoxyCodeLine{00135             angle += 360f;}
+\DoxyCodeLine{00136         \textcolor{keywordflow}{if} (angle > 360f)}
+\DoxyCodeLine{00137             angle -\/= 360f;}
+\DoxyCodeLine{00138         \textcolor{keywordflow}{return} Mathf.Clamp(angle, min, max);}
+\DoxyCodeLine{00139     \}}
+\DoxyCodeLine{00140 \}}
+\DoxyCodeLine{00141 \}}
+
+\end{DoxyCode}

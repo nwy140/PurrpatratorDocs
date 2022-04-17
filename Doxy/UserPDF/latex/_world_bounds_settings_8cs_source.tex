@@ -1,0 +1,292 @@
+\doxysection{World\+Bounds\+Settings.\+cs}
+\label{_world_bounds_settings_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBoundsSettings.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBoundsSettings.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     [CreateAssetMenu()]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBoundsSettings : SettingsScriptableObject<WorldBoundsSettings>}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} HELP\_URL = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} HELP\_URL; \} \}}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} AssetPath \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{@"{}Assets/emotitron/TransformCrusher/WorldBounds/Resources/"{}}; \} \}}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} SettingsDescription}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             \textcolor{keyword}{get}}
+\DoxyCodeLine{00030             \{}
+\DoxyCodeLine{00031                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}(BETA) World Bounds Settings established shared Transform Crusher bitpackers. These can be used by any SyncTransform component that is on the root of synced objects."{}} +}
+\DoxyCodeLine{00032                     \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)nWorldBounds components can be added to scene objects, and their bounding boxes will automatically factored into the World Bounds position ranges."{}};}
+\DoxyCodeLine{00033             \}}
+\DoxyCodeLine{00034         \}}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}
+\DoxyCodeLine{00038         \textcolor{keyword}{static} \textcolor{keywordtype}{void} Bootstrap()}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             var single = Single;}
+\DoxyCodeLine{00041             var wbgs = single.worldBoundsGroups;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (single != \textcolor{keyword}{null} \&\& wbgs.Count > 0)}
+\DoxyCodeLine{00044                 defaultWorldBoundsCrusher = single.worldBoundsGroups[0].crusher;}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [HideInInspector]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} List<WorldBoundsGroup> worldBoundsGroups = \textcolor{keyword}{new} List<WorldBoundsGroup>();}
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keyword}{static} ElementCrusher defaultWorldBoundsCrusher;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             base.Awake();}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             \textcolor{keywordflow}{if} (worldBoundsGroups.Count == 0)}
+\DoxyCodeLine{00056                 worldBoundsGroups.Add(\textcolor{keyword}{new} WorldBoundsGroup());}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             base.Initialize();}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (worldBoundsGroups.Count == 0)}
+\DoxyCodeLine{00064                 worldBoundsGroups.Add(\textcolor{keyword}{new} WorldBoundsGroup());}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             defaultWorldBoundsCrusher = worldBoundsGroups[0].crusher;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{foreach} (var wbs \textcolor{keywordflow}{in} worldBoundsGroups)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 wbs.RecalculateWorldCombinedBounds();}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveWorldBoundsFromAll(WorldBounds wb)}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             var wbgs = Single.worldBoundsGroups;}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < wbgs.Count; ++i)}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 var awb = wbgs[i].activeWorldBounds;}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} (awb.Contains(wb))}
+\DoxyCodeLine{00081                 \{}
+\DoxyCodeLine{00082                     awb.Remove(wb);}
+\DoxyCodeLine{00083                     wbgs[i].RecalculateWorldCombinedBounds();}
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} TallyBits(ref \textcolor{keywordtype}{int} index, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             var wbs = Single.worldBoundsGroups;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             \textcolor{comment}{// if WorldBounds layer is no longer valid, reset to default}}
+\DoxyCodeLine{00093             \textcolor{keywordflow}{if} (index >= wbs.Count)}
+\DoxyCodeLine{00094                 index = 0;}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             var crusher = single.worldBoundsGroups[index].crusher;}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00098                 crusher.XCrusher.GetBits(bcl) +}
+\DoxyCodeLine{00099                 crusher.YCrusher.GetBits(bcl) +}
+\DoxyCodeLine{00100                 crusher.ZCrusher.GetBits(bcl);}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         [MenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/World Bounds Settings"{}}, \textcolor{keyword}{false}, 208)]}
+\DoxyCodeLine{00107         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SelectInstance()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             Single.SelectThisInstance();}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \textcolor{keyword}{const} \textcolor{keywordtype}{float} helpboxhght = WorldBoundsGroup.BoundsReportHeight; \textcolor{comment}{//42f  ;}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly GUIContent GC\_RANGES\_DISABLED = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}World Bounds (Auto Ranges)"{}}, \textcolor{stringliteral}{"{}DISABLE\_RANGES"{}});}
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly GUIContent GC\_RANGES\_ENABLED = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}World Bounds"{}});}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} DrawGui(Object target, \textcolor{keywordtype}{bool} asFoldout, \textcolor{keywordtype}{bool} includeScriptField, \textcolor{keywordtype}{bool} initializeAsOpen = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} asWindow = \textcolor{keyword}{false})}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{keywordtype}{bool} isexpanded = base.DrawGui(target, asFoldout, includeScriptField, initializeAsOpen, asWindow);}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (!isexpanded)}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} isexpanded;}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             var so = \textcolor{keyword}{new} SerializedObject(\textcolor{keyword}{this});}
+\DoxyCodeLine{00125             so.Update();}
+\DoxyCodeLine{00126             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             SerializedProperty wbgs = so.FindProperty(\textcolor{stringliteral}{"{}worldBoundsGroups"{}});}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130             Rect r;}
+\DoxyCodeLine{00131             \textcolor{comment}{//r = EditorGUILayout.GetControlRect();}}
+\DoxyCodeLine{00132             \textcolor{comment}{//EditorGUI.LabelField(r, "{}Group Name"{}, (GUIStyle)"{}MiniLabel"{});}}
+\DoxyCodeLine{00134 \textcolor{comment}{}            \textcolor{comment}{//EditorGUI.LabelField(r, "{}Resolution (x/1 units)"{}, CrusherDrawer.miniLabelRight);}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < wbgs.arraySize; ++i)}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138                 var wbg\_sp = wbgs.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00139                 var crshr\_sp = wbg\_sp.FindPropertyRelative(\textcolor{stringliteral}{"{}crusher"{}});}
+\DoxyCodeLine{00140                 \textcolor{keywordtype}{float} wbg\_hght = EditorGUI.GetPropertyHeight(wbg\_sp);}
+\DoxyCodeLine{00141                 \textcolor{keywordtype}{bool} nobounds = worldBoundsGroups[i].activeWorldBounds.Count == 0;}
+\DoxyCodeLine{00142                 }
+\DoxyCodeLine{00143                 \textcolor{keywordtype}{float} crshr\_hght = EditorGUI.GetPropertyHeight(crshr\_sp);}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 \textcolor{keyword}{const} \textcolor{keywordtype}{float} PAD = 6;}
+\DoxyCodeLine{00146                 r = EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, wbg\_hght + helpboxhght + crshr\_hght + PAD * 4);}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148                 EditorGUI.LabelField(r, GUIContent.none, (GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00149                 r.xMin += PAD; r.xMax -\/= PAD;}
+\DoxyCodeLine{00150                 r.yMin += PAD; r.yMax -\/= PAD;}
+\DoxyCodeLine{00151                 r.height = wbg\_hght;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                 r.xMax -\/= 18;}
+\DoxyCodeLine{00155                 EditorGUI.PropertyField(r,  wbg\_sp);}
+\DoxyCodeLine{00156                 r.xMax += 18;}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00159                 EditorGUI.BeginDisabledGroup(i == 0);}
+\DoxyCodeLine{00160                 \{}
+\DoxyCodeLine{00161                     Rect btnr = r;}
+\DoxyCodeLine{00162                     \textcolor{comment}{//btnr.yMin -\/= wbg\_hght;}}
+\DoxyCodeLine{00163                     btnr.xMin = btnr.xMax -\/ 16;}
+\DoxyCodeLine{00164                     btnr.width = 16;}
+\DoxyCodeLine{00165                     btnr.height = 16;}
+\DoxyCodeLine{00166                     \textcolor{keywordflow}{if} (GUI.Button(btnr, \textcolor{stringliteral}{"{}X"{}}))}
+\DoxyCodeLine{00167                     \{}
+\DoxyCodeLine{00168                         wbgs.DeleteArrayElementAtIndex(i);}
+\DoxyCodeLine{00169                         so.ApplyModifiedProperties();}
+\DoxyCodeLine{00170                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00171                     \}}
+\DoxyCodeLine{00172                 \}}
+\DoxyCodeLine{00173                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                 r.yMin += wbg\_hght + PAD;}
+\DoxyCodeLine{00177                 r.height = helpboxhght;}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00180                 \textcolor{keywordflow}{if} (!nobounds)}
+\DoxyCodeLine{00181                     worldBoundsGroups[i].RecalculateWorldCombinedBounds();}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183                 \textcolor{keyword}{const} \textcolor{keywordtype}{string} noWBsfound = \textcolor{stringliteral}{"{}There are no WorldBounds components active in the current scene for this group."{}};}
+\DoxyCodeLine{00184                 \textcolor{keywordtype}{string} summary = (worldBoundsGroups[i].ActiveBoundsObjCount == 0) ? noWBsfound : worldBoundsGroups[i].BoundsReport();}
+\DoxyCodeLine{00185                 \textcolor{comment}{//r.xMax += 16;}}
+\DoxyCodeLine{00186                 EditorGUI.LabelField(r, summary, (GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00187                 }
+\DoxyCodeLine{00188                 }
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190                 r.yMin += helpboxhght + PAD * 2;}
+\DoxyCodeLine{00191                 r.height = crshr\_hght;}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00194                 \textcolor{comment}{//EditorGUI.BeginDisabledGroup(!nobounds);}}
+\DoxyCodeLine{00195                 var wbgc = (nobounds) ? GC\_RANGES\_ENABLED : GC\_RANGES\_DISABLED;}
+\DoxyCodeLine{00196                 EditorGUI.PropertyField(r, crshr\_sp, wbgc);}
+\DoxyCodeLine{00197                 \textcolor{comment}{//EditorGUI.EndDisabledGroup(); }}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199                 \textcolor{comment}{//EditorGUILayout.Space();}}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (GUI.Button(EditorGUILayout.GetControlRect(), \textcolor{stringliteral}{"{}Add Bounds Group"{}}))}
+\DoxyCodeLine{00204             \{}
+\DoxyCodeLine{00205                 \textcolor{keywordtype}{int} newidx = wbgs.arraySize;}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 Single.worldBoundsGroups.Add(\textcolor{keyword}{new} WorldBoundsGroup());}
+\DoxyCodeLine{00208                 so.Update();}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                 \textcolor{comment}{//wbgs.InsertArrayElementAtIndex(newidx);}}
+\DoxyCodeLine{00211                 wbgs.GetArrayElementAtIndex(newidx).FindPropertyRelative(\textcolor{stringliteral}{"{}name"{}}).stringValue = WorldBoundsGroup.newAddName;}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213                 so.ApplyModifiedProperties();}
+\DoxyCodeLine{00214                 EnsureNamesAreUnique(newidx);}
+\DoxyCodeLine{00215                 so.Update();}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             EditorGUILayout.Space();}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00221             \{}
+\DoxyCodeLine{00222                 EditorUtility.SetDirty(so.targetObject);}
+\DoxyCodeLine{00223             \}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             \textcolor{keywordflow}{return} isexpanded;}
+\DoxyCodeLine{00226         \}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<string> namecheck = \textcolor{keyword}{new} HashSet<string>();}
+\DoxyCodeLine{00229         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureNamesAreUnique(\textcolor{keywordtype}{int} newestIndex = -\/1)}
+\DoxyCodeLine{00230         \{}
+\DoxyCodeLine{00231             namecheck.Clear();}
+\DoxyCodeLine{00232             var wbs = Single.worldBoundsGroups;}
+\DoxyCodeLine{00233             \textcolor{keywordtype}{bool} haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < wbs.Count; ++i)}
+\DoxyCodeLine{00236             \{}
+\DoxyCodeLine{00237                 var wbsi = wbs[i];}
+\DoxyCodeLine{00238                 \textcolor{comment}{// Try adding newest changed last, so it will get its named changed, rather than an existing duplicate}}
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{if} (i == newestIndex \&\& i != 0)}
+\DoxyCodeLine{00240                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242                 \textcolor{keywordflow}{if} (i == 0)}
+\DoxyCodeLine{00243                 \{}
+\DoxyCodeLine{00244                     \textcolor{keywordflow}{if} (wbsi.name != WorldBoundsGroup.defaultName)}
+\DoxyCodeLine{00245                     \{}
+\DoxyCodeLine{00246                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00247                         wbsi.name = WorldBoundsGroup.defaultName;}
+\DoxyCodeLine{00248                     \}}
+\DoxyCodeLine{00249                 \}}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00251                     \textcolor{keywordflow}{while} (namecheck.Contains(wbsi.name))}
+\DoxyCodeLine{00252                     \{}
+\DoxyCodeLine{00253                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00254                         wbsi.name += \textcolor{stringliteral}{"{}X"{}};}
+\DoxyCodeLine{00255                     \}}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257                 namecheck.Add(wbsi.name);}
+\DoxyCodeLine{00258             \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             \textcolor{comment}{// Change the newest changed name as needed (if supplied and valid) last}}
+\DoxyCodeLine{00261             \textcolor{keywordflow}{if} (newestIndex > 0 \&\& newestIndex < wbs.Count)}
+\DoxyCodeLine{00262                 \textcolor{keywordflow}{while} (namecheck.Contains(wbs[newestIndex].name))}
+\DoxyCodeLine{00263                 \{}
+\DoxyCodeLine{00264                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00265                     wbs[newestIndex].name += \textcolor{stringliteral}{"{}X"{}};}
+\DoxyCodeLine{00266                 \}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268             \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00269             \{}
+\DoxyCodeLine{00270                 EditorUtility.SetDirty(Single);}
+\DoxyCodeLine{00271             \}}
+\DoxyCodeLine{00272         \}}
+\DoxyCodeLine{00273 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00274     \}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278     [CustomEditor(typeof(WorldBoundsSettings))]}
+\DoxyCodeLine{00279     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBoundsSOEditor : Editor}
+\DoxyCodeLine{00280     \{}
+\DoxyCodeLine{00281         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             base.OnInspectorGUI();}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285             WorldBoundsSettings.Single.DrawGui(target, \textcolor{keyword}{false}, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287         \}}
+\DoxyCodeLine{00288     \}}
+\DoxyCodeLine{00289 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00290 \}}
+\DoxyCodeLine{00291 }
+
+\end{DoxyCode}

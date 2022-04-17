@@ -1,0 +1,161 @@
+\doxysection{Friend\+List\+View.\+cs}
+\label{_friend_list_view_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/FriendListView.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Lists/FriendListView.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}FriendListView.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00020 \{}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keyword}{class }FriendListView : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00031         [Serializable]}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{class }FriendDetail}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             \textcolor{keyword}{public} FriendDetail(\textcolor{keywordtype}{string} NickName, \textcolor{keywordtype}{string} UserId)}
+\DoxyCodeLine{00035             \{}
+\DoxyCodeLine{00036                 this.NickName = NickName;}
+\DoxyCodeLine{00037                 this.UserId = UserId;}
+\DoxyCodeLine{00038             \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             \textcolor{keyword}{public} \textcolor{keywordtype}{string} NickName;}
+\DoxyCodeLine{00041             \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId;}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} FriendListCell CellPrototype;}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} Text ContentFeedback;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} Text UpdateStatusText;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         [System.Serializable]}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{class }OnJoinRoomEvent : UnityEvent<string> \{ \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} OnJoinRoomEvent OnJoinRoom;}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         Dictionary<string, FriendListCell> FriendCellList = \textcolor{keyword}{new} Dictionary<string, FriendListCell>();}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keywordtype}{string}[] FriendsLUT = \textcolor{keyword}{new} \textcolor{keywordtype}{string}[0];}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             CellPrototype.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00063         }
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             base.OnEnable();}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00071             ContentFeedback.text = \textcolor{keywordtype}{string}.Empty;;}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetFriendDetails(FriendDetail[] friendList)}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             ResetList();}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             List<string> \_list = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{foreach} (FriendDetail \_friend \textcolor{keywordflow}{in} friendList)}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (\_friend.UserId != PhotonNetwork.LocalPlayer.UserId)}
+\DoxyCodeLine{00083                 \{}
+\DoxyCodeLine{00084                     FriendCellList[\_friend.UserId] = Instantiate(CellPrototype);}
+\DoxyCodeLine{00085                     FriendCellList[\_friend.UserId].transform.SetParent(CellPrototype.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00086                     FriendCellList[\_friend.UserId].gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00087                     FriendCellList[\_friend.UserId].RefreshInfo(\_friend);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                     \_list.Add(\_friend.UserId);}
+\DoxyCodeLine{00090                 \}}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             this.FriendsLUT = \_list.ToArray<\textcolor{keywordtype}{string}>();}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             FindFriends();}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FindFriends()}
+\DoxyCodeLine{00099         \{}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             PhotonNetwork.FindFriends(FriendsLUT);}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             ContentFeedback.text = \textcolor{stringliteral}{"{}Finding Friends..."{}};}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnFriendListUpdate(List<FriendInfo> friendList)}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             StartCoroutine(\textcolor{stringliteral}{"{}UpdateUIPing"{}});}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             \textcolor{keywordflow}{if} (friendList.Count == 0)}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 ContentFeedback.text = \textcolor{stringliteral}{"{}No Friends Found"{}};}
+\DoxyCodeLine{00113             \}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 ContentFeedback.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00116             \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{foreach} (FriendInfo \_info \textcolor{keywordflow}{in} friendList)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{if} (FriendCellList.ContainsKey(\_info.UserId))}
+\DoxyCodeLine{00122                 \{}
+\DoxyCodeLine{00123                     FriendCellList[\_info.UserId].RefreshInfo(\_info);}
+\DoxyCodeLine{00124                 \}}
+\DoxyCodeLine{00125             \}}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomListUpdateCallBack(List<RoomInfo> roomList)}
+\DoxyCodeLine{00129         \{}
+\DoxyCodeLine{00130             PhotonNetwork.FindFriends(FriendsLUT);}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinFriendRoom(\textcolor{keywordtype}{string} RoomName)}
+\DoxyCodeLine{00134         \{}
+\DoxyCodeLine{00135             \textcolor{comment}{//Debug.Log("{}FriendListView:JoinFriendRoom "{} + RoomName);}}
+\DoxyCodeLine{00136             OnJoinRoom.Invoke(RoomName);}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         IEnumerator UpdateUIPing()}
+\DoxyCodeLine{00140         \{}
+\DoxyCodeLine{00141             UpdateStatusText.text = \textcolor{stringliteral}{"{}Updated"{}};}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(1f);}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             UpdateStatusText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00146         \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetList()}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{foreach} (KeyValuePair<string, FriendListCell> entry \textcolor{keywordflow}{in} FriendCellList)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (entry.Value != \textcolor{keyword}{null})}
+\DoxyCodeLine{00154                 \{}
+\DoxyCodeLine{00155                     Destroy(entry.Value.gameObject);}
+\DoxyCodeLine{00156                 \}}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             FriendCellList = \textcolor{keyword}{new} Dictionary<string, FriendListCell>();}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161     \}}
+\DoxyCodeLine{00162 \}}
+
+\end{DoxyCode}

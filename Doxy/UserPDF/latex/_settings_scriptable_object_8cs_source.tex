@@ -1,0 +1,373 @@
+\doxysection{Settings\+Scriptable\+Object.\+cs}
+\label{_settings_scriptable_object_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/SettingsScriptableObject/SettingsScriptableObject.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/SettingsScriptableObject/SettingsScriptableObject.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SettingsScriptableObjectBase : ScriptableObject}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keywordtype}{void} Initialize();}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{comment}{// Be sure all Settings SOs are registered after project load and recompiles.}}
+\DoxyCodeLine{00026         [InitializeOnLoadMethod]}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RegisterAllSettingsSOs()}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             Resources.LoadAll<SettingsScriptableObjectBase>(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00030         \}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<Object, MethodInfo> registeredSettingsSOs = \textcolor{keyword}{new} Dictionary<Object, MethodInfo>();}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         [HideInInspector]}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} SettingsName}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             \textcolor{keyword}{get}}
+\DoxyCodeLine{00041             \{}
+\DoxyCodeLine{00042                 \textcolor{keywordflow}{return} ObjectNames.NicifyVariableName(GetType().Name);}
+\DoxyCodeLine{00043             \}}
+\DoxyCodeLine{00044         \}}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} AssetPath}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keyword}{get}}
+\DoxyCodeLine{00048             \{}
+\DoxyCodeLine{00049                 var script = MonoScript.FromScriptableObject(\textcolor{keyword}{this});}
+\DoxyCodeLine{00050                 var path = AssetDatabase.GetAssetPath(script);}
+\DoxyCodeLine{00051                 \textcolor{keywordflow}{if} (path == \textcolor{keyword}{null})}
+\DoxyCodeLine{00052                 \{}
+\DoxyCodeLine{00053                     Debug.LogWarning(\textcolor{stringliteral}{"{}Invalid path for asset "{}} + script);}
+\DoxyCodeLine{00054                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00055                 \}}
+\DoxyCodeLine{00056                 path = System.IO.Path.GetDirectoryName(path);}
+\DoxyCodeLine{00057                 \textcolor{keywordflow}{return} path + \textcolor{stringliteral}{"{}/Resources/"{}};}
+\DoxyCodeLine{00058             \}}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{object}[] drawArgs = \textcolor{keyword}{new} \textcolor{keywordtype}{object}[5] \{ \textcolor{keyword}{null}, \textcolor{keyword}{true}, \textcolor{keyword}{false}, \textcolor{keyword}{true}, \textcolor{keyword}{false} \};}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawAllSettings(Editor targetEditor, \textcolor{keywordtype}{bool} initializeAsOpen)}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             drawArgs[0] = targetEditor;}
+\DoxyCodeLine{00066             drawArgs[3] = initializeAsOpen;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{foreach} (var so \textcolor{keywordflow}{in} registeredSettingsSOs)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 \textcolor{comment}{// Only show actual assets, not any temp stuff in memory.}}
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{if} (!AssetDatabase.Contains(so.Key))}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074                 EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 4);}
+\DoxyCodeLine{00075                 so.Value.Invoke(so.Key, drawArgs);}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00080     \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00086     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SettingsScriptableObject<T> : SettingsScriptableObjectBase where T : SettingsScriptableObjectBase}
+\DoxyCodeLine{00087     \{}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SelectThisInstance()}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             EditorGUIUtility.PingObject(\textcolor{keyword}{this});}
+\DoxyCodeLine{00094             Selection.activeObject = \textcolor{keyword}{this};}
+\DoxyCodeLine{00095         \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{string} SettingsDescription \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \} \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         [HideInInspector]}
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keywordtype}{string} HelpURL \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} AssetName = typeof(T).Name;}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{comment}{//public static bool LoadResource()}}
+\DoxyCodeLine{00106         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00107         \textcolor{comment}{//  return (Resources.Load<T>(AssetName) as T) != null;}}
+\DoxyCodeLine{00108         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{static} System.Action OnSingletonReady;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \textcolor{keyword}{public} \textcolor{keyword}{static} T single;}
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keyword}{static} T Single}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{keyword}{get}}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{if} (!single)}
+\DoxyCodeLine{00123                 \{}
+\DoxyCodeLine{00125                     single = Resources.Load<T>(AssetName) as T;}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00129                     \textcolor{keywordflow}{if} (!single)}
+\DoxyCodeLine{00130                     \{}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132                         single = ScriptableObject.CreateInstance<T>();}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                         \textcolor{keywordtype}{string} assetPath = single.AssetPath;}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136                         \textcolor{keywordflow}{if} (assetPath == \textcolor{keyword}{null})}
+\DoxyCodeLine{00137                         \{}
+\DoxyCodeLine{00138                             Debug.LogWarning(\textcolor{stringliteral}{"{}Script no longer exists for "{}} + single.GetType() + \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00139                             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00140                         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142                         \textcolor{keywordflow}{if} (!System.IO.Directory.Exists(assetPath))}
+\DoxyCodeLine{00143                         \{}
+\DoxyCodeLine{00144                             System.IO.Directory.CreateDirectory(assetPath);}
+\DoxyCodeLine{00145                             Debug.LogWarning(typeof(T).Name + \textcolor{stringliteral}{"{} resource directory missing. Recreation success: "{}} + System.IO.Directory.Exists(assetPath));}
+\DoxyCodeLine{00146                         \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148                         \textcolor{keywordflow}{if} (System.IO.Directory.Exists(assetPath))}
+\DoxyCodeLine{00149                         \{}
+\DoxyCodeLine{00150                             \textcolor{keywordtype}{string} filepath = assetPath + AssetName + \textcolor{stringliteral}{"{}.asset"{}};}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152                             \textcolor{keywordflow}{if} (!System.IO.File.Exists(filepath))}
+\DoxyCodeLine{00153                             \{}
+\DoxyCodeLine{00154                                 AssetDatabase.CreateAsset(single, filepath);}
+\DoxyCodeLine{00155                                 Debug.LogWarning(AssetName + \textcolor{stringliteral}{"{} missing. Recreation success: "{}} + System.IO.File.Exists(filepath));}
+\DoxyCodeLine{00156                             \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158                         \}}
+\DoxyCodeLine{00159                     \}}
+\DoxyCodeLine{00160 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162                     \textcolor{keywordflow}{if} (single)}
+\DoxyCodeLine{00163                         single.Initialize();}
+\DoxyCodeLine{00164                 \}}
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{return} single;}
+\DoxyCodeLine{00166             \}}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00172             var holdsingle = single;}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             Initialize();}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176             \textcolor{keywordflow}{if} (holdsingle == \textcolor{keyword}{null} \&\& single != \textcolor{keyword}{null})}
+\DoxyCodeLine{00177                 \textcolor{keywordflow}{if} (OnSingletonReady != \textcolor{keyword}{null})}
+\DoxyCodeLine{00178                     OnSingletonReady();}
+\DoxyCodeLine{00179         \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00182         \{}
+\DoxyCodeLine{00184             var holdsingle = single;}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             Initialize();}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (holdsingle == \textcolor{keyword}{null} \&\& single != \textcolor{keyword}{null})}
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{if} (OnSingletonReady != \textcolor{keyword}{null})}
+\DoxyCodeLine{00190                     OnSingletonReady();}
+\DoxyCodeLine{00191         \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00194         \{}
+\DoxyCodeLine{00195             single = \textcolor{keyword}{this} as T;}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             \textcolor{comment}{// Register every SettingsSO, so it can be iterated and rendered by DrawAllSettings}}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{if} (!registeredSettingsSOs.ContainsKey(\textcolor{keyword}{this}))}
+\DoxyCodeLine{00201             \{}
+\DoxyCodeLine{00202                 registeredSettingsSOs.Add(\textcolor{keyword}{this}, typeof(T).GetMethod(\textcolor{stringliteral}{"{}DrawGui"{}}));}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00206         \}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00218         \{}
+\DoxyCodeLine{00219             \textcolor{comment}{// Unregister SettingsSO}}
+\DoxyCodeLine{00220             \textcolor{keywordflow}{if} (registeredSettingsSOs.ContainsKey(\textcolor{keyword}{this}))}
+\DoxyCodeLine{00221             \{}
+\DoxyCodeLine{00222                 registeredSettingsSOs.Remove(\textcolor{keyword}{this});}
+\DoxyCodeLine{00223             \}}
+\DoxyCodeLine{00224         \}}
+\DoxyCodeLine{00228         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} DrawGui(Object target, \textcolor{keywordtype}{bool} asFoldout, \textcolor{keywordtype}{bool} includeScriptField, \textcolor{keywordtype}{bool} initializeAsOpen = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} asWindow = \textcolor{keyword}{false})}
+\DoxyCodeLine{00229         \{}
+\DoxyCodeLine{00230             \textcolor{comment}{//EditorGUI.indentLevel = 0;}}
+\DoxyCodeLine{00231             \textcolor{keywordtype}{bool} isExpanded = ScriptableObjectGUITools.DrawHeaderFoldout(target, \textcolor{keyword}{this}, asFoldout, SettingsName, HelpURL, initializeAsOpen, asWindow);}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             \textcolor{comment}{//if (asWindow)}}
+\DoxyCodeLine{00234             \textcolor{comment}{//  EditorGUI.indentLevel = 1;}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordflow}{if} (!asFoldout || isExpanded)}
+\DoxyCodeLine{00237             \{}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                 DrawGuiPre(asWindow);}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242                 DrawDescription();}
+\DoxyCodeLine{00243                 DrawGuiMid(includeScriptField);}
+\DoxyCodeLine{00244                 DrawGuiPost(asWindow);}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248                 EditorGUILayout.Space();}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             \textcolor{comment}{//OnValidate();}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252             \textcolor{keywordflow}{return} isExpanded;}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DrawDescription()}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (SettingsDescription != \textcolor{keyword}{null})}
+\DoxyCodeLine{00258                 EditorGUILayout.LabelField(SettingsDescription, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(6, 6, 6, 6) \});}
+\DoxyCodeLine{00259         \}}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DrawGuiMid(\textcolor{keywordtype}{bool} includeScriptField)}
+\DoxyCodeLine{00262         \{}
+\DoxyCodeLine{00263             ScriptableObjectGUITools.RenderContentsOfScriptableObject(Single, includeScriptField);}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00268         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DrawGuiPre(\textcolor{keywordtype}{bool} asWindow)}
+\DoxyCodeLine{00269         \{}
+\DoxyCodeLine{00270         \}}
+\DoxyCodeLine{00274         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DrawGuiPost(\textcolor{keywordtype}{bool} asWindow)}
+\DoxyCodeLine{00275         \{}
+\DoxyCodeLine{00276         \}}
+\DoxyCodeLine{00277 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00278     \}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283     \textcolor{keyword}{public} \textcolor{keyword}{class }ScriptableObjectGUITools}
+\DoxyCodeLine{00284     \{}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<FolderLookupKey, bool> foldoutStates = \textcolor{keyword}{new} Dictionary<FolderLookupKey, bool>();}
+\DoxyCodeLine{00287         \textcolor{keyword}{public} \textcolor{keyword}{static} FolderLookupKey reusableLookup = \textcolor{keyword}{new} FolderLookupKey();}
+\DoxyCodeLine{00288         \textcolor{keyword}{public} \textcolor{keyword}{struct }FolderLookupKey}
+\DoxyCodeLine{00289         \{}
+\DoxyCodeLine{00290             \textcolor{keyword}{public} Object target;}
+\DoxyCodeLine{00291             \textcolor{keyword}{public} System.Type type;}
+\DoxyCodeLine{00292             \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Object target, System.Type type)}
+\DoxyCodeLine{00293             \{}
+\DoxyCodeLine{00294                 this.target = target;}
+\DoxyCodeLine{00295                 this.type = type;}
+\DoxyCodeLine{00296             \}}
+\DoxyCodeLine{00297         \}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} DrawHeaderFoldout(Object target, Object targetSO, \textcolor{keywordtype}{bool} asFoldout, \textcolor{keywordtype}{string} settingsName, \textcolor{keywordtype}{string} HelpURL, \textcolor{keywordtype}{bool} initializeAsOpen, \textcolor{keywordtype}{bool} isWindow)}
+\DoxyCodeLine{00301         \{}
+\DoxyCodeLine{00302             \textcolor{comment}{//int holdIndentLevel = EditorGUI.indentLevel;}}
+\DoxyCodeLine{00303             \textcolor{comment}{//EditorGUI.indentLevel = 0;}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305             reusableLookup.Set(target, targetSO.GetType());}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00308             \textcolor{keywordflow}{if} (!foldoutStates.ContainsKey(reusableLookup))}
+\DoxyCodeLine{00309             \{}
+\DoxyCodeLine{00310                 foldoutStates.Add(reusableLookup, initializeAsOpen);}
+\DoxyCodeLine{00311             \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00316             \textcolor{keywordflow}{if} (asFoldout)}
+\DoxyCodeLine{00317             \{}
+\DoxyCodeLine{00318                 Rect foldrect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(12));}
+\DoxyCodeLine{00319                 foldrect.xMin = 4;}
+\DoxyCodeLine{00320                 foldoutStates[reusableLookup] = EditorGUI.Toggle(foldrect, foldoutStates[reusableLookup], (GUIStyle)\textcolor{stringliteral}{"{}Foldout"{}});}
+\DoxyCodeLine{00321             \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             Rect rt = EditorGUILayout.GetControlRect();}
+\DoxyCodeLine{00324             rt.xMin = (asFoldout) ? 18 : rt.xMin;}
+\DoxyCodeLine{00325             }
+\DoxyCodeLine{00326             \textcolor{comment}{//Adjust the find button to left align correctly based on foldout/non-\/foldout}}
+\DoxyCodeLine{00327             \textcolor{comment}{//if (isWindow)}}
+\DoxyCodeLine{00328             \textcolor{comment}{//  rt.xMin += (asFoldout) ? 16 : 0;}}
+\DoxyCodeLine{00329             \textcolor{comment}{//else}}
+\DoxyCodeLine{00330             \textcolor{comment}{//  rt.xMin += (asFoldout) ? 2 : -\/7;}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332 \#\textcolor{keywordflow}{if} UNITY\_2019\_3\_OR\_NEWER}
+\DoxyCodeLine{00333             if (GUI.Button(rt, settingsName, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00334 \#\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00335             \textcolor{keywordflow}{if} (GUI.Button(rt, settingsName, (GUIStyle)\textcolor{stringliteral}{"{}PreButton"{}}))}
+\DoxyCodeLine{00336 \#endif}
+\DoxyCodeLine{00337             \{}
+\DoxyCodeLine{00338                 EditorGUIUtility.PingObject(targetSO);}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340                 \textcolor{keywordflow}{if} (HelpURL != \textcolor{keyword}{null} \&\& HelpURL != \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00341                     Application.OpenURL(HelpURL);}
+\DoxyCodeLine{00342             \}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00346             \textcolor{comment}{//rt.xMin = holdX;}}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             \textcolor{comment}{//EditorGUI.indentLevel = holdIndentLevel;}}
+\DoxyCodeLine{00350 }
+\DoxyCodeLine{00351             \textcolor{keywordflow}{return} foldoutStates[reusableLookup];}
+\DoxyCodeLine{00352         \}}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RenderContentsOfScriptableObject(SettingsScriptableObjectBase singleton, \textcolor{keywordtype}{bool} includeScriptField)}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00356             \textcolor{comment}{//EditorGUILayout.Space();}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358             SerializedObject so = \textcolor{keyword}{new} SerializedObject(singleton);}
+\DoxyCodeLine{00359             SerializedProperty sp = so.GetIterator();}
+\DoxyCodeLine{00360             sp.Next(\textcolor{keyword}{true});}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             \textcolor{comment}{// Skip drawing the script reference?}}
+\DoxyCodeLine{00363             \textcolor{keywordflow}{if} (!includeScriptField)}
+\DoxyCodeLine{00364                 sp.NextVisible(\textcolor{keyword}{false});}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00367             \textcolor{keywordflow}{while} (sp.NextVisible(\textcolor{keyword}{false}))}
+\DoxyCodeLine{00368             \{}
+\DoxyCodeLine{00369                 RenderSP(sp);}
+\DoxyCodeLine{00370             \}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00372             EditorGUILayout.Space();}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00375             \{}
+\DoxyCodeLine{00376                 singleton.Initialize();}
+\DoxyCodeLine{00377                 so.ApplyModifiedProperties();}
+\DoxyCodeLine{00378                 AssetDatabase.SaveAssets();}
+\DoxyCodeLine{00379             \}}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RenderSP(SerializedProperty sp)}
+\DoxyCodeLine{00383         \{}
+\DoxyCodeLine{00384             \textcolor{keywordflow}{if} (sp.isArray)}
+\DoxyCodeLine{00385                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < sp.arraySize; ++i)}
+\DoxyCodeLine{00386                 \{}
+\DoxyCodeLine{00387                     var child = sp.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00388                     RenderSP(child);}
+\DoxyCodeLine{00389                 \}}
+\DoxyCodeLine{00390             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00391                 EditorGUILayout.PropertyField(sp);}
+\DoxyCodeLine{00392         \}}
+\DoxyCodeLine{00393     \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00396 }
+\DoxyCodeLine{00397         \}}
+\DoxyCodeLine{00398 }
+
+\end{DoxyCode}

@@ -1,0 +1,284 @@
+\doxysection{Lite\+Int\+Crusher.\+cs}
+\label{_lite_int_crusher_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/LiteCrusher/LiteIntCrusher.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/LiteCrusher/LiteIntCrusher.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00003 }
+\DoxyCodeLine{00004 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011     \textcolor{keyword}{public} \textcolor{keyword}{enum} LiteIntCompressType}
+\DoxyCodeLine{00012     \{}
+\DoxyCodeLine{00013         PackSigned, PackUnsigned, Range}
+\DoxyCodeLine{00014     \}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     [Serializable]}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{class }LiteIntCrusher : LiteCrusher<uint, int>}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         [SerializeField] \textcolor{keyword}{public} LiteIntCompressType compressType;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         [SerializeField] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} min;}
+\DoxyCodeLine{00022         [SerializeField] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} max;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{int} smallest;}
+\DoxyCodeLine{00025         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{int} biggest;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} LiteIntCrusher()}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             this.compressType = LiteIntCompressType.PackSigned;}
+\DoxyCodeLine{00030             this.min = sbyte.MinValue;}
+\DoxyCodeLine{00031             this.max = sbyte.MaxValue;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             \textcolor{keywordflow}{if} (compressType == LiteIntCompressType.Range)}
+\DoxyCodeLine{00034                 Recalculate(min, max, ref smallest, ref biggest, ref bits);}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} LiteIntCrusher(LiteIntCompressType compType = LiteIntCompressType.PackSigned, \textcolor{keywordtype}{int} min = sbyte.MinValue, \textcolor{keywordtype}{int} max = sbyte.MaxValue)}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             this.compressType = compType;}
+\DoxyCodeLine{00040             this.min = min;}
+\DoxyCodeLine{00041             this.max = max;}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (compressType == LiteIntCompressType.Range)}
+\DoxyCodeLine{00044                 Recalculate(min, max, ref smallest, ref biggest, ref bits);}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{override} uint WriteValue(\textcolor{keywordtype}{int} val, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00053                     \{}
+\DoxyCodeLine{00054                         uint cval = (uint)val;}
+\DoxyCodeLine{00055                         buffer.WritePackedBytes(cval, ref bitposition, 32);}
+\DoxyCodeLine{00056                         \textcolor{keywordflow}{return} cval;}
+\DoxyCodeLine{00057                     \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00060                     \{}
+\DoxyCodeLine{00061                         uint zigzag = (uint)((val << 1) \string^ (val >> 31));}
+\DoxyCodeLine{00062                         buffer.WritePackedBytes(zigzag, ref bitposition, 32);}
+\DoxyCodeLine{00063                         \textcolor{keywordflow}{return} zigzag;}
+\DoxyCodeLine{00064                     \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{case} LiteIntCompressType.Range:}
+\DoxyCodeLine{00067                     \{}
+\DoxyCodeLine{00068                         uint cval = Encode(val);}
+\DoxyCodeLine{00069                         buffer.Write(cval, ref bitposition, bits);}
+\DoxyCodeLine{00070                         \textcolor{keywordflow}{return} cval;}
+\DoxyCodeLine{00071                     \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00074                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076         \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} WriteCValue(uint cval, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00083                     \{}
+\DoxyCodeLine{00084                         buffer.WritePackedBytes(cval, ref bitposition, 32);}
+\DoxyCodeLine{00085                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00086                     \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00089                     \{}
+\DoxyCodeLine{00090                         buffer.WritePackedBytes(cval, ref bitposition, 32);}
+\DoxyCodeLine{00091                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00092                     \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{case} LiteIntCompressType.Range:}
+\DoxyCodeLine{00095                     \{}
+\DoxyCodeLine{00096                         buffer.Write(cval, ref bitposition, bits);}
+\DoxyCodeLine{00097                         \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00098                     \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ReadValue(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00110                     \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})buffer.ReadPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{return} buffer.ReadSignedPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{case} LiteIntCompressType.Range:}
+\DoxyCodeLine{00116                     uint cval = (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00117                     \textcolor{keywordflow}{return} Decode(cval);}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00120                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00121             \}}
+\DoxyCodeLine{00122         \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keyword}{public} \textcolor{keyword}{override} uint ReadCValue(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00126         \{}
+\DoxyCodeLine{00127             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00128             \{}
+\DoxyCodeLine{00129                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00130                     \textcolor{keywordflow}{return} (uint)buffer.ReadPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00133                     \textcolor{keywordflow}{return} (uint)buffer.ReadPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135                 \textcolor{keywordflow}{case} LiteIntCompressType.Range:}
+\DoxyCodeLine{00136                     \textcolor{keywordflow}{return} (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00139                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{override} uint Encode(\textcolor{keywordtype}{int} value)}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00148                     \{}
+\DoxyCodeLine{00149                         \textcolor{keywordflow}{return} value.ZigZag();}
+\DoxyCodeLine{00150                     \}}
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00152                     \{}
+\DoxyCodeLine{00153                         \textcolor{keywordflow}{return} (uint)value;}
+\DoxyCodeLine{00154                     \}}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00156                     \{}
+\DoxyCodeLine{00157                         value = (value > biggest) ? biggest : (value < smallest) ? smallest : value;}
+\DoxyCodeLine{00158                         \textcolor{keywordflow}{return} (uint)(value -\/ smallest);}
+\DoxyCodeLine{00159                     \}}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} Decode(uint cvalue)}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165             \textcolor{keywordflow}{switch} (compressType)}
+\DoxyCodeLine{00166             \{}
+\DoxyCodeLine{00167                 \textcolor{keywordflow}{case} LiteIntCompressType.PackSigned:}
+\DoxyCodeLine{00168                     \{}
+\DoxyCodeLine{00169                         \textcolor{keywordflow}{return} cvalue.UnZigZag();}
+\DoxyCodeLine{00170                     \}}
+\DoxyCodeLine{00171                 \textcolor{keywordflow}{case} LiteIntCompressType.PackUnsigned:}
+\DoxyCodeLine{00172                     \{}
+\DoxyCodeLine{00173                         \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})cvalue;}
+\DoxyCodeLine{00174                     \}}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00176                     \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})(cvalue + smallest);}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Recalculate(\textcolor{keywordtype}{int} min, \textcolor{keywordtype}{int} max, LiteIntCrusher crusher)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             \textcolor{keywordtype}{int} range;}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{keywordflow}{if} (min < max)}
+\DoxyCodeLine{00185             \{}
+\DoxyCodeLine{00186                 crusher.smallest = min;}
+\DoxyCodeLine{00187                 crusher.biggest = max;}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00190             \{}
+\DoxyCodeLine{00191                 crusher.smallest = max;}
+\DoxyCodeLine{00192                 crusher.biggest = min;}
+\DoxyCodeLine{00193             \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195             range = crusher.biggest -\/ crusher.smallest;}
+\DoxyCodeLine{00196             crusher.bits = GetBitsForMaxValue((uint)range);}
+\DoxyCodeLine{00197         \}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Recalculate(\textcolor{keywordtype}{int} min, \textcolor{keywordtype}{int} max, ref \textcolor{keywordtype}{int} smallest, ref \textcolor{keywordtype}{int} biggest, ref \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00200         \{}
+\DoxyCodeLine{00201             \textcolor{keywordtype}{int} range;}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (min < max)}
+\DoxyCodeLine{00204             \{}
+\DoxyCodeLine{00205                 smallest = min;}
+\DoxyCodeLine{00206                 biggest = max;}
+\DoxyCodeLine{00207             \}}
+\DoxyCodeLine{00208             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00209             \{}
+\DoxyCodeLine{00210                 smallest = max;}
+\DoxyCodeLine{00211                 biggest = min;}
+\DoxyCodeLine{00212             \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214             range = biggest -\/ smallest;}
+\DoxyCodeLine{00215             bits = GetBitsForMaxValue((uint)range);}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218     \}}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222     [CustomPropertyDrawer(typeof(LiteIntCrusher))]}
+\DoxyCodeLine{00223     [CanEditMultipleObjects]}
+\DoxyCodeLine{00224     \textcolor{keyword}{public} \textcolor{keyword}{class }LiteIntCrusherDrawer : PropertyDrawer}
+\DoxyCodeLine{00225     \{}
+\DoxyCodeLine{00226         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle miniLabelRight = \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) \{ alignment = TextAnchor.UpperRight \};}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIContent accCenterLabel = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}center"{}}, \textcolor{stringliteral}{"{}Accurate Center reduces precision slightly to allow for an exact mid-\/value."{}} +}
+\DoxyCodeLine{00229             \textcolor{stringliteral}{"{} Enable this when you need an value exactly between min and max to be lossless after compression. For example if you need 0 to be accurate when your range is -\/1 to 1."{}});}
+\DoxyCodeLine{00230         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00231         \{}
+\DoxyCodeLine{00232             SerializedProperty compType = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}compressType"{}});}
+\DoxyCodeLine{00233             SerializedProperty min = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}min"{}});}
+\DoxyCodeLine{00234             SerializedProperty max = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}max"{}});}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordtype}{float} compTypeWidth = 100;}
+\DoxyCodeLine{00237             \textcolor{keywordtype}{float} stretchleft = r.xMin + compTypeWidth;}
+\DoxyCodeLine{00238             \textcolor{keywordtype}{float} mLabelWidth = 26;}
+\DoxyCodeLine{00239             }
+\DoxyCodeLine{00240             Rect rectBits = \textcolor{keyword}{new} Rect(r) \{ xMax = stretchleft \};}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242             Rect rectStretch = \textcolor{keyword}{new} Rect(r) \{ xMin = stretchleft, xMax = r.xMax \};}
+\DoxyCodeLine{00243             Rect rectMin = \textcolor{keyword}{new} Rect(rectStretch) \{ width = rectStretch.width * .5f \};}
+\DoxyCodeLine{00244             Rect rectMax = \textcolor{keyword}{new} Rect(rectStretch) \{ xMin = rectStretch.xMin + rectStretch.width * .5f \};}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00247             EditorGUI.PropertyField(rectBits,  compType, GUIContent.none);}
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (compType.intValue == (\textcolor{keywordtype}{int})LiteIntCompressType.Range)}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(rectMin) \{ width = mLabelWidth \}, \textcolor{stringliteral}{"{}min"{}}, miniLabelRight);}
+\DoxyCodeLine{00251                 EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(rectMin) \{ xMin = rectMin.xMin + mLabelWidth \}, min, GUIContent.none);}
+\DoxyCodeLine{00252                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(rectMax) \{ width = mLabelWidth \}, \textcolor{stringliteral}{"{}max"{}}, miniLabelRight);}
+\DoxyCodeLine{00253                 EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(rectMax) \{ xMin = rectMax.xMin + mLabelWidth \}, max, GUIContent.none);}
+\DoxyCodeLine{00254             \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00257             \{}
+\DoxyCodeLine{00258                 SerializedProperty smallest = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}smallest"{}});}
+\DoxyCodeLine{00259                 SerializedProperty biggest = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}biggest"{}});}
+\DoxyCodeLine{00260                 SerializedProperty bits = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}bits"{}});}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00263                 \textcolor{keywordflow}{if} (compType.intValue == (\textcolor{keywordtype}{int})LiteIntCompressType.Range)}
+\DoxyCodeLine{00264                 \{}
+\DoxyCodeLine{00265                     \textcolor{keywordtype}{int} \_smallest = 0, \_biggest = 0, \_bits = 0;}
+\DoxyCodeLine{00266                     LiteIntCrusher.Recalculate(min.intValue, max.intValue, ref \_smallest, ref \_biggest, ref \_bits);}
+\DoxyCodeLine{00267                     smallest.intValue = \_smallest;}
+\DoxyCodeLine{00268                     biggest.intValue = \_biggest;}
+\DoxyCodeLine{00269                     bits.intValue = \_bits;}
+\DoxyCodeLine{00270                 \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00273             \}}
+\DoxyCodeLine{00274         \}}
+\DoxyCodeLine{00275     \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279 \}}
+
+\end{DoxyCode}

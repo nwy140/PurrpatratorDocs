@@ -1,0 +1,170 @@
+\doxysection{Half\+Utilities.\+cs}
+\label{_half_utilities_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/HalfFloat/HalfUtilities.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/HalfFloat/HalfUtilities.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{/*}}
+\DoxyCodeLine{00002 \textcolor{comment}{* Copyright (c) 2007-\/2010 SlimDX Group}}
+\DoxyCodeLine{00003 \textcolor{comment}{* }}
+\DoxyCodeLine{00004 \textcolor{comment}{* Permission is hereby granted, free of charge, to any person obtaining a copy}}
+\DoxyCodeLine{00005 \textcolor{comment}{* of this software and associated documentation files (the "{}Software"{}), to deal}}
+\DoxyCodeLine{00006 \textcolor{comment}{* in the Software without restriction, including without limitation the rights}}
+\DoxyCodeLine{00007 \textcolor{comment}{* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell}}
+\DoxyCodeLine{00008 \textcolor{comment}{* copies of the Software, and to permit persons to whom the Software is}}
+\DoxyCodeLine{00009 \textcolor{comment}{* furnished to do so, subject to the following conditions:}}
+\DoxyCodeLine{00010 \textcolor{comment}{* }}
+\DoxyCodeLine{00011 \textcolor{comment}{* The above copyright notice and this permission notice shall be included in}}
+\DoxyCodeLine{00012 \textcolor{comment}{* all copies or substantial portions of the Software.}}
+\DoxyCodeLine{00013 \textcolor{comment}{* }}
+\DoxyCodeLine{00014 \textcolor{comment}{* THE SOFTWARE IS PROVIDED "{}AS IS"{}, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR}}
+\DoxyCodeLine{00015 \textcolor{comment}{* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,}}
+\DoxyCodeLine{00016 \textcolor{comment}{* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE}}
+\DoxyCodeLine{00017 \textcolor{comment}{* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER}}
+\DoxyCodeLine{00018 \textcolor{comment}{* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,}}
+\DoxyCodeLine{00019 \textcolor{comment}{* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN}}
+\DoxyCodeLine{00020 \textcolor{comment}{* THE SOFTWARE.}}
+\DoxyCodeLine{00021 \textcolor{comment}{*/}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 \textcolor{keyword}{using} System.Runtime.InteropServices;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{keyword}{namespace }Photon.Compression.HalfFloat}
+\DoxyCodeLine{00026 \{}
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }HalfUtilities}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         \textcolor{keyword}{static} readonly uint[] HalfToFloatMantissaTable = \textcolor{keyword}{new} uint[2048];}
+\DoxyCodeLine{00030         \textcolor{keyword}{static} readonly uint[] HalfToFloatExponentTable = \textcolor{keyword}{new} uint[64];}
+\DoxyCodeLine{00031         \textcolor{keyword}{static} readonly uint[] HalfToFloatOffsetTable = \textcolor{keyword}{new} uint[64];}
+\DoxyCodeLine{00032         \textcolor{keyword}{static} readonly ushort[] FloatToHalfBaseTable = \textcolor{keyword}{new} ushort[512];}
+\DoxyCodeLine{00033         \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] FloatToHalfShiftTable = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[512];}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [StructLayout(LayoutKind.Explicit)]}
+\DoxyCodeLine{00036         \textcolor{keyword}{struct }FloatToUint}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             [FieldOffset(0)]}
+\DoxyCodeLine{00039             \textcolor{keyword}{public} uint uintValue;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             [FieldOffset(0)]}
+\DoxyCodeLine{00042             \textcolor{keyword}{public} \textcolor{keywordtype}{float} floatValue;}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{static} HalfUtilities()}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             \textcolor{comment}{//Mantissa table}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             \textcolor{comment}{//0 => 0}}
+\DoxyCodeLine{00052             HalfToFloatMantissaTable[0] = 0;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{comment}{//Transform subnormal to normalized}}
+\DoxyCodeLine{00055             \textcolor{keywordflow}{for} (i = 1; i < 1024; i++)}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 uint m = ((uint)i) << 13;}
+\DoxyCodeLine{00058                 uint e = 0;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                 \textcolor{keywordflow}{while} ((m \& 0x00800000) == 0)}
+\DoxyCodeLine{00061                 \{}
+\DoxyCodeLine{00062                     e -\/= 0x00800000;}
+\DoxyCodeLine{00063                     m <<= 1;}
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066                 m \&= \string~0x00800000U;}
+\DoxyCodeLine{00067                 e += 0x38800000;}
+\DoxyCodeLine{00068                 HalfToFloatMantissaTable[i] = m | e;}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             \textcolor{comment}{//Normal case}}
+\DoxyCodeLine{00072             \textcolor{keywordflow}{for} (i = 1024; i < 2048; i++)}
+\DoxyCodeLine{00073                 HalfToFloatMantissaTable[i] = 0x38000000 + (((uint)(i -\/ 1024)) << 13);}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             \textcolor{comment}{//Exponent table}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             \textcolor{comment}{//0 => 0}}
+\DoxyCodeLine{00078             HalfToFloatExponentTable[0] = 0;}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             \textcolor{keywordflow}{for} (i = 1; i < 63; i++)}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (i < 31)}
+\DoxyCodeLine{00083                 \{}
+\DoxyCodeLine{00084                     \textcolor{comment}{//Positive Numbers}}
+\DoxyCodeLine{00085                     HalfToFloatExponentTable[i] = ((uint)i) << 23;}
+\DoxyCodeLine{00086                 \}}
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00088                 \{}
+\DoxyCodeLine{00089                     \textcolor{comment}{//Negative Numbers}}
+\DoxyCodeLine{00090                     HalfToFloatExponentTable[i] = 0x80000000 + (((uint)(i -\/ 32)) << 23);}
+\DoxyCodeLine{00091                 \}}
+\DoxyCodeLine{00092             \}}
+\DoxyCodeLine{00093             HalfToFloatExponentTable[31] = 0x47800000;}
+\DoxyCodeLine{00094             HalfToFloatExponentTable[32] = 0x80000000;}
+\DoxyCodeLine{00095             HalfToFloatExponentTable[63] = 0xC7800000;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{comment}{//Offset table}}
+\DoxyCodeLine{00098             HalfToFloatOffsetTable[0] = 0;}
+\DoxyCodeLine{00099             \textcolor{keywordflow}{for} (i = 1; i < 64; i++)}
+\DoxyCodeLine{00100                 HalfToFloatOffsetTable[i] = 1024;}
+\DoxyCodeLine{00101             HalfToFloatOffsetTable[32] = 0;}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             \textcolor{comment}{//Float to Half tables}}
+\DoxyCodeLine{00104             \textcolor{keywordflow}{for} (i = 0; i < 256; i++)}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordtype}{int} e = i -\/ 127;}
+\DoxyCodeLine{00107                 \textcolor{keywordflow}{if} (e < -\/24)}
+\DoxyCodeLine{00108                 \{}
+\DoxyCodeLine{00109                     \textcolor{comment}{//Very small numbers map to zero}}
+\DoxyCodeLine{00110                     FloatToHalfBaseTable[i | 0x000] = 0x0000;}
+\DoxyCodeLine{00111                     FloatToHalfBaseTable[i | 0x100] = 0x8000;}
+\DoxyCodeLine{00112                     FloatToHalfShiftTable[i | 0x000] = 24;}
+\DoxyCodeLine{00113                     FloatToHalfShiftTable[i | 0x100] = 24;}
+\DoxyCodeLine{00114                 \}}
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (e < -\/14)}
+\DoxyCodeLine{00116                 \{}
+\DoxyCodeLine{00117                     \textcolor{comment}{//Small numbers map to denorms}}
+\DoxyCodeLine{00118                     FloatToHalfBaseTable[i | 0x000] = (ushort)((0x0400 >> (-\/e -\/ 14)));}
+\DoxyCodeLine{00119                     FloatToHalfBaseTable[i | 0x100] = (ushort)((0x0400 >> (-\/e -\/ 14)) | 0x8000);}
+\DoxyCodeLine{00120                     FloatToHalfShiftTable[i | 0x000] = (byte)(-\/e -\/ 1);}
+\DoxyCodeLine{00121                     FloatToHalfShiftTable[i | 0x100] = (byte)(-\/e -\/ 1);}
+\DoxyCodeLine{00122                 \}}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (e <= 15)}
+\DoxyCodeLine{00124                 \{}
+\DoxyCodeLine{00125                     \textcolor{comment}{//Normal numbers just lose precision}}
+\DoxyCodeLine{00126                     FloatToHalfBaseTable[i | 0x000] = (ushort)(((e + 15) << 10));}
+\DoxyCodeLine{00127                     FloatToHalfBaseTable[i | 0x100] = (ushort)(((e + 15) << 10) | 0x8000);}
+\DoxyCodeLine{00128                     FloatToHalfShiftTable[i | 0x000] = 13;}
+\DoxyCodeLine{00129                     FloatToHalfShiftTable[i | 0x100] = 13;}
+\DoxyCodeLine{00130                 \}}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (e < 128)}
+\DoxyCodeLine{00132                 \{}
+\DoxyCodeLine{00133                     \textcolor{comment}{//Large numbers map to Infinity}}
+\DoxyCodeLine{00134                     FloatToHalfBaseTable[i | 0x000] = 0x7C00;}
+\DoxyCodeLine{00135                     FloatToHalfBaseTable[i | 0x100] = 0xFC00;}
+\DoxyCodeLine{00136                     FloatToHalfShiftTable[i | 0x000] = 24;}
+\DoxyCodeLine{00137                     FloatToHalfShiftTable[i | 0x100] = 24;}
+\DoxyCodeLine{00138                 \}}
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140                 \{}
+\DoxyCodeLine{00141                     \textcolor{comment}{//Infinity and NaN's stay Infinity and NaN's}}
+\DoxyCodeLine{00142                     FloatToHalfBaseTable[i | 0x000] = 0x7C00;}
+\DoxyCodeLine{00143                     FloatToHalfBaseTable[i | 0x100] = 0xFC00;}
+\DoxyCodeLine{00144                     FloatToHalfShiftTable[i | 0x000] = 13;}
+\DoxyCodeLine{00145                     FloatToHalfShiftTable[i | 0x100] = 13;}
+\DoxyCodeLine{00146                 \}}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148         \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} Unpack(ushort value)}
+\DoxyCodeLine{00151         \{}
+\DoxyCodeLine{00152             var conv = \textcolor{keyword}{new} FloatToUint();}
+\DoxyCodeLine{00153             conv.uintValue = HalfToFloatMantissaTable[HalfToFloatOffsetTable[value >> 10] + (((uint)value) \& 0x3ff)] + HalfToFloatExponentTable[value >> 10];}
+\DoxyCodeLine{00154             \textcolor{keywordflow}{return} conv.floatValue;}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort Pack(\textcolor{keywordtype}{float} value)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             FloatToUint conv = \textcolor{keyword}{new} FloatToUint();}
+\DoxyCodeLine{00160             conv.floatValue = value;}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{return} (ushort)(FloatToHalfBaseTable[(conv.uintValue >> 23) \& 0x1ff] + ((conv.uintValue \& 0x007fffff) >> FloatToHalfShiftTable[(conv.uintValue >> 23) \& 0x1ff]));}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163     \}}
+\DoxyCodeLine{00164 \}}
+
+\end{DoxyCode}

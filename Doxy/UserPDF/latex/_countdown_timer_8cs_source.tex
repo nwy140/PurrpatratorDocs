@@ -1,0 +1,164 @@
+\doxysection{Countdown\+Timer.\+cs}
+\label{_countdown_timer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Room/CountdownTimer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Room/CountdownTimer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CountdownTimer.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// This is a basic CountdownTimer. In order to start the timer, the MasterClient can add a certain entry to the Custom Room Properties,}}
+\DoxyCodeLine{00007 \textcolor{comment}{// which contains the property's name 'StartTime' and the actual start time describing the moment, the timer has been started.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// To have a synchronized timer, the best practice is to use PhotonNetwork.Time.}}
+\DoxyCodeLine{00009 \textcolor{comment}{// In order to subscribe to the CountdownTimerHasExpired event you can call CountdownTimer.OnCountdownTimerHasExpired += OnCountdownTimerIsExpired;}}
+\DoxyCodeLine{00010 \textcolor{comment}{// from Unity's OnEnable function for example. For unsubscribing simply call CountdownTimer.OnCountdownTimerHasExpired -\/= OnCountdownTimerIsExpired;.}}
+\DoxyCodeLine{00011 \textcolor{comment}{// You can do this from Unity's OnDisable function for example.}}
+\DoxyCodeLine{00012 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00013 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00014 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00019 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00022 \{}
+\DoxyCodeLine{00035     \textcolor{keyword}{public} \textcolor{keyword}{class }CountdownTimer : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00036     \{}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} CountdownTimerHasExpired();}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CountdownStartTime = \textcolor{stringliteral}{"{}StartTime"{}};}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [Header(\textcolor{stringliteral}{"{}Countdown time in seconds"{}})] }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{float} Countdown = 5.0f;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isTimerRunning;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keywordtype}{int} startTime;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         [Header(\textcolor{stringliteral}{"{}Reference to a Text component for visualizing the countdown"{}})]}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} Text Text;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{event} CountdownTimerHasExpired OnCountdownTimerHasExpired;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (this.Text == \textcolor{keyword}{null}) Debug.LogError(\textcolor{stringliteral}{"{}Reference to 'Text' is not set. Please set a valid reference."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             Debug.Log(\textcolor{stringliteral}{"{}OnEnable CountdownTimer"{}});}
+\DoxyCodeLine{00069             base.OnEnable();}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             \textcolor{comment}{// the starttime may already be in the props. look it up.}}
+\DoxyCodeLine{00072             Initialize();}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             base.OnDisable();}
+\DoxyCodeLine{00078             Debug.Log(\textcolor{stringliteral}{"{}OnDisable CountdownTimer"{}});}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (!this.isTimerRunning) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             \textcolor{keywordtype}{float} countdown = TimeRemaining();}
+\DoxyCodeLine{00087             this.Text.text = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Game starts in \{0\} seconds"{}}, countdown.ToString(\textcolor{stringliteral}{"{}n0"{}}));}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             \textcolor{keywordflow}{if} (countdown > 0.0f) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             OnTimerEnds();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnTimerRuns()}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             this.isTimerRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{00098             this.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnTimerEnds()}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             this.isTimerRunning = \textcolor{keyword}{false};}
+\DoxyCodeLine{00104             this.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             Debug.Log(\textcolor{stringliteral}{"{}Emptying info text."{}}, this.Text);}
+\DoxyCodeLine{00107             this.Text.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keywordflow}{if} (OnCountdownTimerHasExpired != \textcolor{keyword}{null}) OnCountdownTimerHasExpired();}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             Debug.Log(\textcolor{stringliteral}{"{}CountdownTimer.OnRoomPropertiesUpdate "{}} + propertiesThatChanged.ToStringFull());}
+\DoxyCodeLine{00116             Initialize();}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordtype}{int} propStartTime;}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{if} (TryGetStartTime(out propStartTime))}
+\DoxyCodeLine{00124             \{}
+\DoxyCodeLine{00125                 this.startTime = propStartTime;}
+\DoxyCodeLine{00126                 Debug.Log(\textcolor{stringliteral}{"{}Initialize sets StartTime "{}} + this.startTime + \textcolor{stringliteral}{"{} server time now: "{}} + PhotonNetwork.ServerTimestamp + \textcolor{stringliteral}{"{} remain: "{}} + TimeRemaining());}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129                 this.isTimerRunning = TimeRemaining() > 0;}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{if} (this.isTimerRunning)}
+\DoxyCodeLine{00132                     OnTimerRuns();}
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00134                     OnTimerEnds();}
+\DoxyCodeLine{00135             \}}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \textcolor{keyword}{private} \textcolor{keywordtype}{float} TimeRemaining()}
+\DoxyCodeLine{00140         \{}
+\DoxyCodeLine{00141             \textcolor{keywordtype}{int} timer = PhotonNetwork.ServerTimestamp -\/ this.startTime;}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{return} this.Countdown -\/ timer / 1000f;}
+\DoxyCodeLine{00143         \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TryGetStartTime(out \textcolor{keywordtype}{int} startTimestamp)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             startTimestamp = PhotonNetwork.ServerTimestamp;}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             \textcolor{keywordtype}{object} startTimeFromProps;}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue(CountdownStartTime, out startTimeFromProps))}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 startTimestamp = (int)startTimeFromProps;}
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00158         \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetStartTime()}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             \textcolor{keywordtype}{int} startTime = 0;}
+\DoxyCodeLine{00164             \textcolor{keywordtype}{bool} wasSet = TryGetStartTime(out startTime);}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             Hashtable props = \textcolor{keyword}{new} Hashtable}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 \{CountdownTimer.CountdownStartTime, (int)PhotonNetwork.ServerTimestamp\}}
+\DoxyCodeLine{00169             \};}
+\DoxyCodeLine{00170             PhotonNetwork.CurrentRoom.SetCustomProperties(props);}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             Debug.Log(\textcolor{stringliteral}{"{}Set Custom Props for Time: "{}}+ props.ToStringFull() + \textcolor{stringliteral}{"{} wasSet: "{}}+wasSet);}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175     \}}
+\DoxyCodeLine{00176 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,178 @@
+\doxysection{First\+Pers\+Con.\+cs}
+\label{_first_pers_con_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Adriana/Scripts/Human/FirstPersCon.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Adriana/Scripts/Human/FirstPersCon.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{keyword}{public} \textcolor{keyword}{class }FirstPersCon : MonoBehaviour}
+\DoxyCodeLine{00006 \{}
+\DoxyCodeLine{00007     [Header(\textcolor{stringliteral}{"{}Finger Touch Input"{}})]}
+\DoxyCodeLine{00008     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{int} leftIndex, rightIndex;}
+\DoxyCodeLine{00009     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} halfScreenWidth;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011     Vector2 currMousePosition, lastMousePosition;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013     [Header(\textcolor{stringliteral}{"{}Camera Settings"{}})]}
+\DoxyCodeLine{00014     [SerializeField] \textcolor{keyword}{private} Transform cameraTransform;}
+\DoxyCodeLine{00015     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} cameraSensitivity;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     Vector2 lookInput;}
+\DoxyCodeLine{00018     \textcolor{keywordtype}{float} camPitch;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     [Header(\textcolor{stringliteral}{"{}Character Movement"{}})]}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     [SerializeField] \textcolor{keyword}{private} CharacterController charController;}
+\DoxyCodeLine{00023     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} moveSpeed;}
+\DoxyCodeLine{00024     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} moveInputDeadZone;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} groundForce = 10f;}
+\DoxyCodeLine{00027     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} gravForce = 10f;}
+\DoxyCodeLine{00028     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} verticalVelocity;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030     Vector2 moveTouchStartPos;}
+\DoxyCodeLine{00031     Vector2 moveInput;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033     [Header(\textcolor{stringliteral}{"{}Ground Check"{}})]}
+\DoxyCodeLine{00034     [SerializeField] \textcolor{keyword}{private} Transform groundCheckSphere;}
+\DoxyCodeLine{00035     [SerializeField] \textcolor{keyword}{private} LayerMask groundLayers;}
+\DoxyCodeLine{00036     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} groundCheckRadius;}
+\DoxyCodeLine{00037     [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{bool} groundedCheck;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00040     \{}
+\DoxyCodeLine{00041         leftIndex = -\/1;}
+\DoxyCodeLine{00042         rightIndex = -\/1;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         halfScreenWidth = Screen.width / 2;}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{comment}{//calculate dead zone}}
+\DoxyCodeLine{00047         moveInputDeadZone = Mathf.Pow(Screen.height / moveInputDeadZone, 2);}
+\DoxyCodeLine{00048     \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00051     \{}
+\DoxyCodeLine{00052         GetTouchInput();}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         PlayerJumpAndGravity();}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keywordflow}{if} (rightIndex != -\/1)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             LookAround();}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keywordflow}{if}(leftIndex != -\/1)}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             Move();}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065     \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067     \textcolor{keyword}{private} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00068     \{}
+\DoxyCodeLine{00069         groundedCheck = Physics.CheckSphere(groundCheckSphere.position, groundCheckRadius, groundLayers);}
+\DoxyCodeLine{00070     \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072     \textcolor{keywordtype}{void} GetTouchInput()}
+\DoxyCodeLine{00073     \{}
+\DoxyCodeLine{00074         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < Input.touchCount; i++)}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             Touch t = Input.GetTouch(i);}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \textcolor{keywordflow}{switch} (t.phase)}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{case} TouchPhase.Began:}
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{if} (t.position.x < halfScreenWidth \&\& leftIndex == -\/1)}
+\DoxyCodeLine{00082                     \{}
+\DoxyCodeLine{00083                         leftIndex = t.fingerId; \textcolor{comment}{// start tracking}}
+\DoxyCodeLine{00084                         Debug.Log(\textcolor{stringliteral}{"{}Pressing left side of screen"{}});}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086                         \textcolor{comment}{// set start position for movement}}
+\DoxyCodeLine{00087                         moveTouchStartPos = t.position;}
+\DoxyCodeLine{00088                     \}}
+\DoxyCodeLine{00089                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (t.position.x > halfScreenWidth \&\& rightIndex == -\/1)}
+\DoxyCodeLine{00090                     \{}
+\DoxyCodeLine{00091                         rightIndex = t.fingerId; \textcolor{comment}{// start tracking}}
+\DoxyCodeLine{00092                         lastMousePosition = currMousePosition;}
+\DoxyCodeLine{00093                         lookInput = currMousePosition -\/ lastMousePosition;}
+\DoxyCodeLine{00094                         Debug.Log(\textcolor{stringliteral}{"{}Pressing right side of screen"{}});}
+\DoxyCodeLine{00095                     \}}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00097                 \textcolor{keywordflow}{case} TouchPhase.Ended:}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{case} TouchPhase.Canceled:}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100                     lastMousePosition = currMousePosition;}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102                     \textcolor{keywordflow}{if} (t.fingerId == leftIndex)}
+\DoxyCodeLine{00103                     \{}
+\DoxyCodeLine{00104                         leftIndex = -\/1; \textcolor{comment}{// stop tracking}}
+\DoxyCodeLine{00105                         Debug.Log(\textcolor{stringliteral}{"{}Left finger is not being pressed"{}});}
+\DoxyCodeLine{00106                     \}}
+\DoxyCodeLine{00107                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (t.fingerId == rightIndex)}
+\DoxyCodeLine{00108                     \{}
+\DoxyCodeLine{00109                         rightIndex = -\/1; \textcolor{comment}{// stop tracking}}
+\DoxyCodeLine{00110                         Debug.Log(\textcolor{stringliteral}{"{}Right finger is not being pressed"{}});}
+\DoxyCodeLine{00111                     \}}
+\DoxyCodeLine{00112                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{case} TouchPhase.Moved:}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                     currMousePosition = t.position;}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                     \textcolor{keywordflow}{if} (t.fingerId == rightIndex)}
+\DoxyCodeLine{00118                     \{}
+\DoxyCodeLine{00119                         lookInput = t.deltaPosition * cameraSensitivity * Time.deltaTime;}
+\DoxyCodeLine{00120                     \}}
+\DoxyCodeLine{00121                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (t.fingerId == leftIndex)}
+\DoxyCodeLine{00122                     \{}
+\DoxyCodeLine{00123                         moveInput = t.position -\/ moveTouchStartPos;}
+\DoxyCodeLine{00124                     \}}
+\DoxyCodeLine{00125                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{case} TouchPhase.Stationary:}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128                     \textcolor{keywordflow}{if}(t.fingerId == rightIndex)}
+\DoxyCodeLine{00129                     \{}
+\DoxyCodeLine{00130                         lookInput = Vector2.zero;}
+\DoxyCodeLine{00131                     \}}
+\DoxyCodeLine{00132                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00133             \}}
+\DoxyCodeLine{00134         \}}
+\DoxyCodeLine{00135     \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137     \textcolor{keyword}{private} \textcolor{keywordtype}{void} LookAround()}
+\DoxyCodeLine{00138     \{}
+\DoxyCodeLine{00139         \textcolor{comment}{// vertical}}
+\DoxyCodeLine{00140         camPitch = Mathf.Clamp(camPitch -\/ lookInput.y, -\/90f, 90f);}
+\DoxyCodeLine{00141         cameraTransform.localRotation = Quaternion.Euler(camPitch, 0, 0); \textcolor{comment}{// rotate the camera on the x axis}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \textcolor{comment}{// horizontal}}
+\DoxyCodeLine{00144         transform.Rotate(transform.up, lookInput.x);}
+\DoxyCodeLine{00145     \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Move()}
+\DoxyCodeLine{00148     \{}
+\DoxyCodeLine{00149         \textcolor{keywordflow}{if} (moveInput.sqrMagnitude <= moveInputDeadZone)}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{return}; \textcolor{comment}{// dont move if the touch delta is shorter than dead zone}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152         \textcolor{comment}{// if greater,}}
+\DoxyCodeLine{00153         Vector2 movementDirection = moveInput.normalized * moveSpeed * Time.deltaTime;}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155         charController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);}
+\DoxyCodeLine{00156     \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158     \textcolor{keyword}{private} \textcolor{keywordtype}{void} PlayerJumpAndGravity()}
+\DoxyCodeLine{00159     \{}
+\DoxyCodeLine{00160         \textcolor{keywordflow}{if} (groundedCheck \&\& verticalVelocity <= 0)}
+\DoxyCodeLine{00161         \{}
+\DoxyCodeLine{00162             verticalVelocity = -\/groundForce * Time.deltaTime;}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165         \{}
+\DoxyCodeLine{00166             verticalVelocity -\/= gravForce * Time.deltaTime;}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         Vector3 jumpMovement = transform.up * verticalVelocity;}
+\DoxyCodeLine{00170         charController.Move(jumpMovement * Time.deltaTime);}
+\DoxyCodeLine{00171     \}}
+\DoxyCodeLine{00172 \}}
+
+\end{DoxyCode}

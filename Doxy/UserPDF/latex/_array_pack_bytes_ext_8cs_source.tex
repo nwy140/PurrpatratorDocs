@@ -1,0 +1,222 @@
+\doxysection{Array\+Pack\+Bytes\+Ext.\+cs}
+\label{_array_pack_bytes_ext_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/ArrayPackBytesExt.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/ArrayPackBytesExt.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{/*}}
+\DoxyCodeLine{00002 \textcolor{comment}{* The MIT License (MIT)}}
+\DoxyCodeLine{00003 \textcolor{comment}{* }}
+\DoxyCodeLine{00004 \textcolor{comment}{* Copyright (c) 2018-\/2019 Davin Carten (emotitron) (davincarten@gmail.com)}}
+\DoxyCodeLine{00005 \textcolor{comment}{* }}
+\DoxyCodeLine{00006 \textcolor{comment}{* Permission is hereby granted, free of charge, to any person obtaining a copy}}
+\DoxyCodeLine{00007 \textcolor{comment}{* of this software and associated documentation files (the "{}Software"{}), to deal}}
+\DoxyCodeLine{00008 \textcolor{comment}{* in the Software without restriction, including without limitation the rights}}
+\DoxyCodeLine{00009 \textcolor{comment}{* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell}}
+\DoxyCodeLine{00010 \textcolor{comment}{* copies of the Software, and to permit persons to whom the Software is}}
+\DoxyCodeLine{00011 \textcolor{comment}{* furnished to do so, subject to the following conditions:}}
+\DoxyCodeLine{00012 \textcolor{comment}{* }}
+\DoxyCodeLine{00013 \textcolor{comment}{* The above copyright notice and this permission notice shall be included in}}
+\DoxyCodeLine{00014 \textcolor{comment}{* all copies or substantial portions of the Software.}}
+\DoxyCodeLine{00015 \textcolor{comment}{* }}
+\DoxyCodeLine{00016 \textcolor{comment}{* THE SOFTWARE IS PROVIDED "{}AS IS"{}, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR}}
+\DoxyCodeLine{00017 \textcolor{comment}{* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,}}
+\DoxyCodeLine{00018 \textcolor{comment}{* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE}}
+\DoxyCodeLine{00019 \textcolor{comment}{* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER}}
+\DoxyCodeLine{00020 \textcolor{comment}{* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,}}
+\DoxyCodeLine{00021 \textcolor{comment}{* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN}}
+\DoxyCodeLine{00022 \textcolor{comment}{* THE SOFTWARE.}}
+\DoxyCodeLine{00023 \textcolor{comment}{*/}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00026 \textcolor{preprocessor}{\#define UNITY\_ASSERTIONS}}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00030 \{}
+\DoxyCodeLine{00034     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }ArrayPackBytesExt}
+\DoxyCodeLine{00035     \{}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{        \#region Primary Write Packed}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} WritePackedBytes(ulong* uPtr, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00047             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00048             \textcolor{keywordtype}{int} valuebytes = value.UsedByteCount();}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             ArraySerializeUnsafe.Write(uPtr, (uint)(valuebytes), ref bitposition, (\textcolor{keywordtype}{int})sizebits);}
+\DoxyCodeLine{00051             ArraySerializeUnsafe.Write(uPtr, value, ref bitposition, valuebytes << 3);}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{comment}{//UnityEngine.Debug.Log(value + "{} buff:"{} + buffer + "{}bytes "{} + bytes +}}
+\DoxyCodeLine{00054             \textcolor{comment}{//  "{} = ["{} + (int)sizebits + "{} : "{} + (valuebytes << 3) + "{}]  total bits: "{} + ((int)sizebits + (valuebytes << 3)));}}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WritePackedBytes(\textcolor{keyword}{this} ulong[] buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00066             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00067             \textcolor{keywordtype}{int} valuebytes = value.UsedByteCount();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             buffer.Write((uint)(valuebytes), ref bitposition, (\textcolor{keywordtype}{int})sizebits);}
+\DoxyCodeLine{00070             buffer.Write(value, ref bitposition, valuebytes << 3);}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{comment}{//UnityEngine.Debug.Log(value + "{} buff:"{} + buffer + "{}bytes "{} + bytes +}}
+\DoxyCodeLine{00073             \textcolor{comment}{//  "{} = ["{} + (int)sizebits + "{} : "{} + (valuebytes << 3) + "{}]  total bits: "{} + ((int)sizebits + (valuebytes << 3)));}}
+\DoxyCodeLine{00074         \}}
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WritePackedBytes(\textcolor{keyword}{this} uint[] buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00084             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00085             \textcolor{keywordtype}{int} valuebytes = value.UsedByteCount();}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             buffer.Write((uint)(valuebytes), ref bitposition, sizebits);}
+\DoxyCodeLine{00088             buffer.Write(value, ref bitposition, valuebytes << 3);}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             \textcolor{comment}{//UnityEngine.Debug.Log(value + "{} buff:"{} + buffer + "{}bytes "{} + bytes +}}
+\DoxyCodeLine{00091             \textcolor{comment}{//  "{} = ["{} + (int)sizebits + "{} : "{} + (valuebits << 3) + "{}]  total bits: "{} + ((int)sizebits + (valuebits << 3)));}}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00096         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WritePackedBytes(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00097         \{}
+\DoxyCodeLine{00098             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00099                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00102             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00103             \textcolor{keywordtype}{int} valuebytes = value.UsedByteCount();}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             buffer.Write((uint)(valuebytes), ref bitposition, sizebits);}
+\DoxyCodeLine{00106             buffer.Write(value, ref bitposition, valuebytes << 3);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{comment}{//UnityEngine.Debug.Log(value + "{} buff:"{} + buffer + "{}bytes "{} + bytes +}}
+\DoxyCodeLine{00109             \textcolor{comment}{//  "{} = ["{} + (int)sizebits + "{} : "{} + (valuebits << 3) + "{}]  total bits: "{} + ((int)sizebits + (valuebits << 3)));}}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114 \textcolor{preprocessor}{        \#region Primary Read Packed}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00119         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} ulong ReadPackedBytes(ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00125             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00126             \textcolor{keywordtype}{int} valuebits = (int)ArraySerializeUnsafe.Read(uPtr, ref bitposition, sizebits) << 3;}
+\DoxyCodeLine{00127             \textcolor{keywordflow}{return} ArraySerializeUnsafe.Read(uPtr, ref bitposition, valuebits);}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong ReadPackedBytes(\textcolor{keyword}{this} ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00135                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00138             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00139             \textcolor{keywordtype}{int} valuebits = (int)buffer.Read(ref bitposition, sizebits) << 3;}
+\DoxyCodeLine{00140             \textcolor{keywordflow}{return} buffer.Read(ref bitposition, valuebits);}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00145         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong ReadPackedBytes(\textcolor{keyword}{this} uint[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00146         \{}
+\DoxyCodeLine{00147             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00151             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00152             \textcolor{keywordtype}{int} valuebits = (int)buffer.Read(ref bitposition, sizebits) << 3;}
+\DoxyCodeLine{00153             \textcolor{keywordflow}{return} buffer.Read(ref bitposition, valuebits);}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00158         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong ReadPackedBytes(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{if} (bits == 0)}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163             \textcolor{keywordtype}{int} bytes = (bits + 7) >> 3;}
+\DoxyCodeLine{00164             \textcolor{keywordtype}{int} sizebits = bytes.UsedBitCount();}
+\DoxyCodeLine{00165             \textcolor{keywordtype}{int} valuebits = (int)buffer.Read(ref bitposition, sizebits) << 3;}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{return} buffer.Read(ref bitposition, valuebits);}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 \textcolor{preprocessor}{        \#region Packed Signed}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{comment}{// Unsafe}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00178         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSignedPackedBytes(ulong* uPtr, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00181             WritePackedBytes(uPtr, zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00186         \textcolor{keyword}{public} unsafe \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSignedPackedBytes(ulong* uPtr, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             uint value = (uint)ReadPackedBytes(uPtr, ref bitposition, bits);}
+\DoxyCodeLine{00189             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00190             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00191         \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193         \textcolor{comment}{// ulong[]}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00198         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSignedPackedBytes(\textcolor{keyword}{this} ulong[] buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00199         \{}
+\DoxyCodeLine{00200             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00201             buffer.WritePackedBytes(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00202         \}}
+\DoxyCodeLine{00206         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSignedPackedBytes(\textcolor{keyword}{this} ulong[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00207         \{}
+\DoxyCodeLine{00208             uint value = (uint)buffer.ReadPackedBytes(ref bitposition, bits);}
+\DoxyCodeLine{00209             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213         \textcolor{comment}{// uint[]}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00218         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSignedPackedBytes(\textcolor{keyword}{this} uint[] buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00221             buffer.WritePackedBytes(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00226         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSignedPackedBytes(\textcolor{keyword}{this} uint[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00227         \{}
+\DoxyCodeLine{00228             uint value = (uint)buffer.ReadPackedBytes(ref bitposition, bits);}
+\DoxyCodeLine{00229             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00231         \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233         \textcolor{comment}{// byte[]}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00238         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSignedPackedBytes(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00239         \{}
+\DoxyCodeLine{00240             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00241             buffer.WritePackedBytes(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00242         \}}
+\DoxyCodeLine{00246         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSignedPackedBytes(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00247         \{}
+\DoxyCodeLine{00248             uint value = (uint)buffer.ReadPackedBytes(ref bitposition, bits);}
+\DoxyCodeLine{00249             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00250             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00251         \}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00256         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} WriteSignedPackedBytes64(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, \textcolor{keywordtype}{long} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00257         \{}
+\DoxyCodeLine{00258             ulong zig = (ulong)((value << 1) \string^ (value >> 63));}
+\DoxyCodeLine{00259             buffer.WritePackedBytes(zig, ref bitposition, bits);}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00264         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{long} ReadSignedPackedBytes64(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00265         \{}
+\DoxyCodeLine{00266             ulong zig = buffer.ReadPackedBytes(ref bitposition, bits);}
+\DoxyCodeLine{00267             \textcolor{keywordtype}{long} zag = (long)((\textcolor{keywordtype}{long})(zig >> 1) \string^ (-\/(\textcolor{keywordtype}{long})(zig \& 1)));}
+\DoxyCodeLine{00268             \textcolor{keywordflow}{return} zag;}
+\DoxyCodeLine{00269         \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00272     \}}
+\DoxyCodeLine{00273 \}}
+
+\end{DoxyCode}

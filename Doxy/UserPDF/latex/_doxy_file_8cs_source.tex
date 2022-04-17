@@ -1,0 +1,125 @@
+\doxysection{Doxy\+File.\+cs}
+\label{_doxy_file_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Doxygen/Editor/DoxyFile.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Doxygen/Editor/DoxyFile.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.Text.RegularExpressions;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }ProjectNull.DocTools\{}
+\DoxyCodeLine{00007     \textcolor{keyword}{public} \textcolor{keyword}{enum} DoxyType \{}
+\DoxyCodeLine{00008         User,}
+\DoxyCodeLine{00009         Developer}
+\DoxyCodeLine{00010     \}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{class }DoxyFile \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MakeTheDoxyFiles(DoxySettings doxySettings)\{}
+\DoxyCodeLine{00021             \textcolor{keywordtype}{int} madeDoxy=0;}
+\DoxyCodeLine{00022             madeDoxy = MakeDoxyOfType(DoxyType.User,doxySettings)?1:0;}
+\DoxyCodeLine{00023             madeDoxy = madeDoxy + (MakeDoxyOfType(DoxyType.Developer,doxySettings)?1:0);}
+\DoxyCodeLine{00024             \textcolor{keywordflow}{return} madeDoxy;}
+\DoxyCodeLine{00025         \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} MakeDoxyOfType(DoxyType doxyType, DoxySettings doxySettings)\{}
+\DoxyCodeLine{00031             \textcolor{keywordflow}{if}(!DoxygenFileExist(doxyType, doxySettings))\{}
+\DoxyCodeLine{00032                 \textcolor{keywordtype}{string} baseDoxy = ReadBaseConfig();}
+\DoxyCodeLine{00033                 \textcolor{keywordtype}{string} doxyContent=EditbaseDoxyString(baseDoxy, doxyType, doxySettings);}
+\DoxyCodeLine{00034                 BuildFile(doxyContent, doxyType, doxySettings);}
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00036             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00037                 \textcolor{keywordtype}{string} baseDoxy = ReadDoxyfile(doxyType, doxySettings);}
+\DoxyCodeLine{00038                 \textcolor{keywordtype}{string} doxyContent=EditDoxyString(baseDoxy, doxyType, doxySettings);}
+\DoxyCodeLine{00039                 BuildFile(doxyContent, doxyType, doxySettings);}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} DoxygenFileExist(DoxyType doxyType, DoxySettings doxySettings)\{}
+\DoxyCodeLine{00048             \textcolor{keywordtype}{string} activeDocumentationFolder = doxySettings.activeDocumentationFolder.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if}(File.Exists(activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)"{}} + doxyType.ToString() + \textcolor{stringliteral}{"{}Doxyfile"{}}))\{}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00051             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ReadBaseConfig()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             TextAsset basefile = (TextAsset)Resources.Load(\textcolor{stringliteral}{"{}BaseDoxyfile"{}}, typeof(TextAsset));}
+\DoxyCodeLine{00062             StringReader reader = \textcolor{keyword}{new} StringReader(basefile.text);}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} ( reader == \textcolor{keyword}{null} )\{}
+\DoxyCodeLine{00064                 UnityEngine.Debug.LogError(\textcolor{stringliteral}{"{}BaseDoxyfile not found or not readable"{}});}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00066             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{return} reader.ReadToEnd();}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00074         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ReadDoxyfile(DoxyType doxyType, DoxySettings doxySettings)}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             \textcolor{keywordtype}{string} doxyFileName = doxySettings.activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)"{}} + doxyType + \textcolor{stringliteral}{"{}Doxyfile"{}};}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{if}(File.Exists(doxyFileName))\{}
+\DoxyCodeLine{00080                     \textcolor{comment}{// Read in non-\/existent file.}}
+\DoxyCodeLine{00081                     \textcolor{keyword}{using} (StreamReader sr = \textcolor{keyword}{new} StreamReader(doxyFileName))}
+\DoxyCodeLine{00082                     \{}
+\DoxyCodeLine{00083                         \textcolor{keywordtype}{string} line = sr.ReadToEnd();}
+\DoxyCodeLine{00084                         \textcolor{keywordflow}{return} line;}
+\DoxyCodeLine{00085                     \}}
+\DoxyCodeLine{00086                 \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00087                     \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089             \}\textcolor{keywordflow}{catch} (FileNotFoundException ex)\{}
+\DoxyCodeLine{00090                 Debug.Log(ex);}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00098         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} EditbaseDoxyString(\textcolor{keywordtype}{string} baseDoxy,DoxyType doxyType, DoxySettings doxySettings)\{}
+\DoxyCodeLine{00099             \textcolor{keywordflow}{if}(baseDoxy!=\textcolor{keyword}{null})\{}
+\DoxyCodeLine{00100                 \textcolor{comment}{//Make the new doxyfile content}}
+\DoxyCodeLine{00101                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_NUMBER         =[A-\/Za-\/z0-\/9\_. ]*"{}},\textcolor{stringliteral}{"{}PROJECT\_NUMBER         = "{}} + doxySettings.projectVersionNumber);}
+\DoxyCodeLine{00102                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_BRIEF          =[A-\/Za-\/z0-\/9\_. "{}}+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+\textcolor{stringliteral}{"{}]*"{}},\textcolor{stringliteral}{"{}PROJECT\_BRIEF          = "{}} + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+doxySettings.projectBrief+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00103                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}INPUT                  =[A-\/Za-\/z0-\/9\_.: /"{}}+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+\textcolor{stringliteral}{"{}]*"{}},\textcolor{stringliteral}{"{}INPUT                  = "{}} + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+doxySettings.projecSourceFolder+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00104                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_NAME           =[A-\/Za-\/z0-\/9\_. "{}}+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+\textcolor{stringliteral}{"{}]*"{}},\textcolor{stringliteral}{"{}PROJECT\_NAME           = "{}} + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+doxySettings.projectName+\textcolor{stringliteral}{"{} "{}} + doxyType + \textcolor{stringliteral}{"{} manual\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00105                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}OUTPUT\_DIRECTORY       =[A-\/Za-\/z0-\/9\_. \(\backslash\)\(\backslash\)]*"{}},\textcolor{stringliteral}{"{}OUTPUT\_DIRECTORY       = "{}} + \textcolor{stringliteral}{"{}.\(\backslash\)\(\backslash\)"{}} + doxyType + \textcolor{stringliteral}{"{}PDF"{}});}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{return} baseDoxy;}
+\DoxyCodeLine{00107             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00108                 Debug.Log(\textcolor{stringliteral}{"{}Could not build file due to null input"{}});}
+\DoxyCodeLine{00109                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00116         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} EditDoxyString(\textcolor{keywordtype}{string} baseDoxy,DoxyType doxyType, DoxySettings doxySettings)\{}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if}(baseDoxy!=\textcolor{keyword}{null})\{}
+\DoxyCodeLine{00118                 \textcolor{comment}{//Make the new doxyfile content}}
+\DoxyCodeLine{00119                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_NUMBER         =[A-\/Za-\/z0-\/9\_. ]*"{}},\textcolor{stringliteral}{"{}PROJECT\_NUMBER         = "{}} + doxySettings.projectVersionNumber);}
+\DoxyCodeLine{00120                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_BRIEF          =[A-\/Za-\/z0-\/9\_. "{}}+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+\textcolor{stringliteral}{"{}]*"{}},\textcolor{stringliteral}{"{}PROJECT\_BRIEF          = "{}} + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+doxySettings.projectBrief+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00121                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}PROJECT\_NAME           =[A-\/Za-\/z0-\/9\_. "{}}+\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+\textcolor{stringliteral}{"{}]*"{}},\textcolor{stringliteral}{"{}PROJECT\_NAME           = "{}} + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+doxySettings.projectName+\textcolor{stringliteral}{"{} "{}} + doxyType + \textcolor{stringliteral}{"{} manual\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00122                 baseDoxy = Regex.Replace(baseDoxy,\textcolor{stringliteral}{@"{}OUTPUT\_DIRECTORY       =[A-\/Za-\/z0-\/9\_. \(\backslash\)\(\backslash\)]*"{}},\textcolor{stringliteral}{"{}OUTPUT\_DIRECTORY       = "{}} + \textcolor{stringliteral}{"{}.\(\backslash\)\(\backslash\)"{}} + doxyType + \textcolor{stringliteral}{"{}PDF"{}});}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{return} baseDoxy;}
+\DoxyCodeLine{00124             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00125                 Debug.Log(\textcolor{stringliteral}{"{}Could not build file due to null input"{}});}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00127             \}}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129         }
+\DoxyCodeLine{00133         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} BuildFile(\textcolor{keywordtype}{string} doxyContent, DoxyType doxyType, DoxySettings doxySettings)\{}
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if}(doxyContent!=\textcolor{keyword}{null})\{}
+\DoxyCodeLine{00135                 StringBuilder sb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00136                 sb.Append(doxyContent);}
+\DoxyCodeLine{00137                 StreamWriter NewDoxyfile = \textcolor{keyword}{new} StreamWriter(doxySettings.activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)"{}} + doxyType + \textcolor{stringliteral}{"{}Doxyfile"{}});}
+\DoxyCodeLine{00138                 }
+\DoxyCodeLine{00139                 NewDoxyfile.Write(sb.ToString());}
+\DoxyCodeLine{00140                 NewDoxyfile.Close();}
+\DoxyCodeLine{00141             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00142                 Debug.Log(\textcolor{stringliteral}{"{}Could not build file due to null input"{}});}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145     \}}
+\DoxyCodeLine{00146 \}}
+
+\end{DoxyCode}

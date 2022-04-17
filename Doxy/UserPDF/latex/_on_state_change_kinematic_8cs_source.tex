@@ -1,0 +1,199 @@
+\doxysection{On\+State\+Change\+Kinematic.\+cs}
+\label{_on_state_change_kinematic_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/OnStateChangeKinematic.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/OnStateChangeKinematic.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{interface }IAutoKinematic}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         \textcolor{keywordtype}{bool} AutoKinematicEnabled \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00017     \}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{enum} KinematicSetting \{ Ignore, Default, NonKinematic, Kinematic \}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     [DisallowMultipleComponent]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }OnStateChangeKinematic : NetComponent}
+\DoxyCodeLine{00023         , IOnStateChange}
+\DoxyCodeLine{00024         , IApplyOrder}
+\DoxyCodeLine{00025         , IAutoKinematic}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} 11; \} \}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{        \#region IAutoKinematic}}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AutoKinematicEnabled \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} KinematicSetting onDespawned = KinematicSetting.Kinematic;}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} KinematicSetting onAnchored = KinematicSetting.Kinematic;}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} KinematicSetting onMounted = KinematicSetting.NonKinematic;}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} KinematicSetting onTransit = KinematicSetting.NonKinematic;}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} KinematicSetting onDropped = KinematicSetting.NonKinematic;}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} KinematicSetting onVisible = KinematicSetting.Default;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [Tooltip(\textcolor{stringliteral}{"{}Destroy this component if no Rigidbodies exist on this GameObject."{}})]}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoDestroy = \textcolor{keyword}{true};}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{comment}{// cache}}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} ObjState currentState;}
+\DoxyCodeLine{00045         \textcolor{keyword}{private} Rigidbody rb;}
+\DoxyCodeLine{00046         \textcolor{keyword}{private} Rigidbody2D rb2d;}
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} kinematicDefault;}
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keywordtype}{int} interpolateDefault;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             base.OnAwake();}
+\DoxyCodeLine{00053             rb = netObj.Rb;}
+\DoxyCodeLine{00054             rb2d = netObj.Rb2D;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (rb)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 kinematicDefault = rb.isKinematic;}
+\DoxyCodeLine{00059                 interpolateDefault = (int)rb.interpolation;}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rb2d)}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 kinematicDefault = rb2d.isKinematic;}
+\DoxyCodeLine{00065                 interpolateDefault = (int)rb2d.interpolation;}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (autoDestroy \&\& !rb \&\& !rb2d)}
+\DoxyCodeLine{00069                 Destroy(\textcolor{keyword}{this});}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             SetOwnedKinematics(currentState);}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (isMine)}
+\DoxyCodeLine{00081                 SetOwnedKinematics(currentState);}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00083                 SetUnownedKinematics();}
+\DoxyCodeLine{00084         \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStateChange(ObjState newState, ObjState previousState, Transform attachmentTransform, Mount attachTo = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} isReady = \textcolor{keyword}{true})}
+\DoxyCodeLine{00087         \{}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00089                 SetOwnedKinematics(newState);}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetUnownedKinematics()}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (RigidbodyType == RigidbodyType.None)}
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (RigidbodyType == RigidbodyType.RB)}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 rb.isKinematic = \textcolor{keyword}{true};}
+\DoxyCodeLine{00100                 rb.interpolation = RigidbodyInterpolation.None;}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 rb2d.isKinematic = \textcolor{keyword}{true};}
+\DoxyCodeLine{00105                 rb2d.interpolation = RigidbodyInterpolation2D.None;}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetOwnedKinematics(ObjState state)}
+\DoxyCodeLine{00110         \{}
+\DoxyCodeLine{00111             \textcolor{keywordflow}{if} (RigidbodyType == RigidbodyType.None)}
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             KinematicSetting kinematicSetting;}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if} (state == ObjState.Despawned \&\& onDespawned != KinematicSetting.Ignore)}
+\DoxyCodeLine{00118                 kinematicSetting = onDespawned;}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((state \& ObjState.Anchored) != 0 \&\& onAnchored != KinematicSetting.Ignore)}
+\DoxyCodeLine{00120                 kinematicSetting = onAnchored;}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((state \& ObjState.Mounted) != 0 \&\& onMounted != KinematicSetting.Ignore)}
+\DoxyCodeLine{00122                 kinematicSetting = onMounted;}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((state \& ObjState.Transit) != 0 \&\& onTransit != KinematicSetting.Ignore)}
+\DoxyCodeLine{00124                 kinematicSetting = onTransit;}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((state \& ObjState.Dropped) != 0 \&\& onDropped != KinematicSetting.Ignore)}
+\DoxyCodeLine{00126                 kinematicSetting = onDropped;}
+\DoxyCodeLine{00127             }
+\DoxyCodeLine{00128             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((state \& ObjState.Visible) != 0 \&\& onVisible != KinematicSetting.Ignore)}
+\DoxyCodeLine{00129                 kinematicSetting = onVisible;}
+\DoxyCodeLine{00130             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00131                 kinematicSetting = KinematicSetting.Default;}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{keywordtype}{bool} isKinematic =}
+\DoxyCodeLine{00134                 (kinematicSetting == KinematicSetting.NonKinematic) ? \textcolor{keyword}{false} :}
+\DoxyCodeLine{00135                 (kinematicSetting == KinematicSetting.Kinematic) ? true :}
+\DoxyCodeLine{00136                 kinematicDefault;}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{keywordflow}{if} (RigidbodyType == RigidbodyType.RB)}
+\DoxyCodeLine{00139             \{}
+\DoxyCodeLine{00140                 \textcolor{comment}{// setting the rb to the transform is needed here to harden any recent transform.pos changes. Otherwise this switch will negate them}}
+\DoxyCodeLine{00141                 rb.position = transform.position;}
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{if} (isKinematic)}
+\DoxyCodeLine{00143                 \{}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{\#if UNITY\_2018\_3\_OR\_NEWER}}
+\DoxyCodeLine{00145                     rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;}
+\DoxyCodeLine{00146 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00147                     rb.isKinematic = \textcolor{keyword}{true};}
+\DoxyCodeLine{00148                 \}}
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00150                 \{}
+\DoxyCodeLine{00151                     rb.isKinematic = \textcolor{keyword}{false};}
+\DoxyCodeLine{00152                 \}}
+\DoxyCodeLine{00153                 \textcolor{comment}{// Be sure to not interpolate attache objects. Even as  kinematic, a moving parent will create position desync}}
+\DoxyCodeLine{00154                 rb.interpolation = (state != ObjState.Despawned \&\& (state \& ObjState.Mounted) == 0) ? (RigidbodyInterpolation)interpolateDefault : RigidbodyInterpolation.None;}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00157                 \textcolor{comment}{//rb.interpolation = RigidbodyInterpolation.None;}}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 rb2d.position = transform.position;}
+\DoxyCodeLine{00162                 rb2d.isKinematic = isKinematic;}
+\DoxyCodeLine{00163                 rb2d.simulated = !isKinematic;}
+\DoxyCodeLine{00164                 rb2d.interpolation = (state != ObjState.Despawned \&\& (state \& ObjState.Mounted) == 0) ? (RigidbodyInterpolation2D)interpolateDefault : RigidbodyInterpolation2D.None;}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             currentState = state;}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170     \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174     [CustomEditor(typeof(OnStateChangeKinematic))]}
+\DoxyCodeLine{00175     [CanEditMultipleObjects]}
+\DoxyCodeLine{00176     \textcolor{keyword}{public} \textcolor{keyword}{class }OnStateChangeKinematicEditor : ReactorHeaderEditor}
+\DoxyCodeLine{00177     \{}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} help = \textcolor{stringliteral}{"{}Responds to <i>"{}} + typeof(IOnStateChange).Name + \textcolor{stringliteral}{"{}</i> callbacks and if (IsMine == true) sets the rb.isKinematic value."{}} +}
+\DoxyCodeLine{00180                     \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)nStates higher on of the list below have priority (for example if the state has the Mounted bit set, then the kinematic setting for that will be used"{}} +}
+\DoxyCodeLine{00181                     \textcolor{stringliteral}{"{} regardless of the "{}} + ObjState.Visible + \textcolor{stringliteral}{"{} or "{}} + ObjState.Dropped + \textcolor{stringliteral}{"{} flags."{}};}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00184         \{}
+\DoxyCodeLine{00185             \textcolor{keyword}{get}}
+\DoxyCodeLine{00186             \{}
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{return} help;}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192     \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00195 \textcolor{preprocessor}{\}}}
+
+\end{DoxyCode}

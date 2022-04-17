@@ -1,0 +1,185 @@
+\doxysection{Ghost\+World.\+cs}
+\label{_ghost_world_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GhostWorld/GhostWorld.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/GhostWorld/GhostWorld.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if GHOST\_WORLD}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple.GhostWorlds}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }GhostWorld}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#if UNITY\_2019\_1\_OR\_NEWER}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} PhysicsScene ghostPhysics;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateGhostWorld()}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             var sceneparams = \textcolor{keyword}{new} CreateSceneParameters(LocalPhysicsMode.Physics3D) \{ \};}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             ghostScene = SceneManager.CreateScene(\textcolor{stringliteral}{"{}\_GhostWorld"{}}, sceneparams);}
+\DoxyCodeLine{00032             ghostPhysics = PhysicsSceneExtensions.GetPhysicsScene(ghostScene);}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GHOST\_WORLD\_LAYER = 31;}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GHOST\_WORLD\_LAYERMASK = 1 << GHOST\_WORLD\_LAYER;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}
+\DoxyCodeLine{00040         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateGhostWorld()}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             ghostScene = SceneManager.GetActiveScene();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00045             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < GHOST\_WORLD\_LAYER; ++i)}
+\DoxyCodeLine{00046             \{}
+\DoxyCodeLine{00047                 Physics.IgnoreLayerCollision(GHOST\_WORLD\_LAYER, i);}
+\DoxyCodeLine{00048             \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{static} Scene ghostScene;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Collider> reusableColliderList = \textcolor{keyword}{new} List<Collider>(4);}
+\DoxyCodeLine{00055         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<INeedsGhostGameObject> reusableNeedsGameObjectClone = \textcolor{keyword}{new} List<INeedsGhostGameObject>();}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{static} \textcolor{keywordtype}{int} colliderCount = 0;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00062         \textcolor{keyword}{internal} \textcolor{keyword}{static} Ghost CreateRewindGhost(IHaunted haunted)}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             Scene holdscene = SceneManager.GetActiveScene();}
+\DoxyCodeLine{00065             SceneManager.SetActiveScene(ghostScene);}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00068             GameObject ghostGO = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}ghst."{}} + haunted.GameObject.name);}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070 \textcolor{preprocessor}{\#if !UNITY\_2019\_1\_OR\_NEWER}}
+\DoxyCodeLine{00072             Object.DontDestroyOnLoad(ghostGO);}
+\DoxyCodeLine{00073 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             SceneManager.SetActiveScene(holdscene);}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00078             Ghost ghost = ghostGO.AddComponent<Ghost>();}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083             var widgetYGO = GameObject.CreatePrimitive(PrimitiveType.Cylinder);}
+\DoxyCodeLine{00084             Object.DestroyImmediate(widgetYGO.GetComponent<Collider>());}
+\DoxyCodeLine{00085             widgetYGO.transform.localScale = \textcolor{keyword}{new} Vector3(.1f, 3f, .1f);}
+\DoxyCodeLine{00086             widgetYGO.transform.parent = ghostGO.transform;}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             var widgetXGO = Object.Instantiate(widgetYGO, ghost.transform);}
+\DoxyCodeLine{00089             widgetYGO.transform.Rotate(0f, 0f, 90f);}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             var debugCross = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}Debug Cross"{}});}
+\DoxyCodeLine{00092             debugCross.hideFlags = HideFlags.HideInHierarchy;}
+\DoxyCodeLine{00093             debugCross.transform.parent = ghostGO.transform;}
+\DoxyCodeLine{00094             widgetXGO.transform.parent = debugCross.transform;}
+\DoxyCodeLine{00095             widgetYGO.transform.parent = debugCross.transform;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             ghost.debugRenderers = ghost.GetComponentsInChildren<Renderer>();}
+\DoxyCodeLine{00098             ghost.ShowDebugCross(\textcolor{keyword}{false});}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00103             ghost.Initialize(haunted);}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             colliderCount = 0;}
+\DoxyCodeLine{00107             CloneChildrenAndColliders(haunted.GameObject, ghostGO, ghost);}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keywordflow}{return} ghost;}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00115         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CloneChildrenAndColliders(GameObject srcGO, GameObject copyGO, Ghost rootGhost)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             copyGO.transform.localPosition = srcGO.transform.localPosition;}
+\DoxyCodeLine{00118             copyGO.transform.localScale = srcGO.transform.localScale;}
+\DoxyCodeLine{00119             copyGO.transform.localRotation = srcGO.transform.localRotation;}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121 \textcolor{preprocessor}{\#if !UNITY\_2019\_1\_OR\_NEWER}}
+\DoxyCodeLine{00122             copyGO.layer = GHOST\_WORLD\_LAYER;}
+\DoxyCodeLine{00123 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00124             copyGO.layer = srcGO.layer;}
+\DoxyCodeLine{00125 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00128             CloneColliders(rootGhost, srcGO, copyGO, ref colliderCount);}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00131             srcGO.GetComponents(reusableNeedsGameObjectClone);}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             GhostComponent ghostComponent = \textcolor{keyword}{null};}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{keywordflow}{foreach} (var iNeedsClone \textcolor{keywordflow}{in} reusableNeedsGameObjectClone)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138                 IHauntedComponent ihc = iNeedsClone as IHauntedComponent;}
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{if} (ihc != \textcolor{keyword}{null})}
+\DoxyCodeLine{00140                 \{}
+\DoxyCodeLine{00141                     \textcolor{keywordflow}{if} (ghostComponent == \textcolor{keyword}{null})}
+\DoxyCodeLine{00142                         ghostComponent = copyGO.AddComponent<GhostComponent>();}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144                     ghostComponent.AddHaunted(ihc, rootGhost);}
+\DoxyCodeLine{00145                 \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00148                 ICopyToGhost icopy = iNeedsClone as ICopyToGhost;}
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{if} (icopy != \textcolor{keyword}{null})}
+\DoxyCodeLine{00150                     (icopy as Component).ComponentCopy(copyGO);}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00155             \textcolor{comment}{//srcGO.GetComponents(reusableCopyToGhostFind);}}
+\DoxyCodeLine{00156             \textcolor{comment}{//foreach (var icopy in reusableCopyToGhostFind)}}
+\DoxyCodeLine{00157             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00158             \textcolor{comment}{//  (icopy as Component).ComponentCopy(copyGO);}}
+\DoxyCodeLine{00159             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00162             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < srcGO.transform.childCount; i++)}
+\DoxyCodeLine{00163             \{}
+\DoxyCodeLine{00164                 Transform orig = srcGO.transform.GetChild(i);}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00167                 \textcolor{keywordflow}{if} (orig.GetComponentInChildren<Collider>() == \textcolor{keyword}{null} \&\&}
+\DoxyCodeLine{00168                     orig.GetComponentInChildren<INeedsGhostGameObject>() == \textcolor{keyword}{null})}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171                 Transform copy = \textcolor{keyword}{new} GameObject(orig.name).transform;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173                 copy.parent = copyGO.transform;}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175                 CloneChildrenAndColliders(srcGO.transform.GetChild(i).gameObject, copy.gameObject, rootGhost);}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177         \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CloneColliders(Ghost ghost, GameObject sourceObj, GameObject copyObj, ref \textcolor{keywordtype}{int} colliderCount)}
+\DoxyCodeLine{00180         \{}
+\DoxyCodeLine{00181             sourceObj.GetComponents(reusableColliderList);}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < reusableColliderList.Count; ++i)}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{if} (reusableColliderList[i] != \textcolor{keyword}{null})}
+\DoxyCodeLine{00186                 \{}
+\DoxyCodeLine{00187                     copyObj.AddColliderCopy(reusableColliderList[i]);}
+\DoxyCodeLine{00188 \textcolor{preprocessor}{\#if !UNITY\_2019\_1\_OR\_NEWER}}
+\DoxyCodeLine{00189                     var ghostcol = copyObj.AddComponent<GhostCollider>();}
+\DoxyCodeLine{00190                     ghostcol.SetLayer(sourceObj.layer);}
+\DoxyCodeLine{00191 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00192                     colliderCount++;}
+\DoxyCodeLine{00193                 \}}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195             \textcolor{keywordflow}{return} reusableColliderList.Count;}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198     \}}
+\DoxyCodeLine{00199 \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

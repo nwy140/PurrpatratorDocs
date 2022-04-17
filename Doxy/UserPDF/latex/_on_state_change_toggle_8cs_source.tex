@@ -1,0 +1,221 @@
+\doxysection{On\+State\+Change\+Toggle.\+cs}
+\label{_on_state_change_toggle_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/OnStateChangeToggle.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/OnStateChangeToggle.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{enum} DisplayToggle \{ GameObject, Component, Renderer \}}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{class }OnStateChangeToggle : NetComponent}
+\DoxyCodeLine{00018     , IOnStateChange}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         [HideInInspector]}
+\DoxyCodeLine{00022         [Tooltip(\textcolor{stringliteral}{"{}How this object should be toggled. GameObject toggles gameObject.SetActive(), Renderer toggles renderer.enabled, and Component toggles component.enabled."{}})]}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} DisplayToggle toggle = DisplayToggle.GameObject;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         [Tooltip(\textcolor{stringliteral}{"{}User specified component to toggle enabled."{}})]}
+\DoxyCodeLine{00026         [HideInInspector]}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} Component component;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [HideInInspector]}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} GameObject \_gameObject;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [HideInInspector]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} Renderer \_renderer;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [HideInInspector]}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} ObjStateLogic stateLogic = \textcolor{keyword}{new} ObjStateLogic();}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{comment}{// Cached}}
+\DoxyCodeLine{00039         \textcolor{keywordtype}{bool} reactToAttached;}
+\DoxyCodeLine{00040         MonoBehaviour monob;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} show;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         [HideInInspector]}
+\DoxyCodeLine{00047         [Utilities.VersaMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} ObjState currentState = (ObjState)(-\/1);}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             \_gameObject = gameObject;}
+\DoxyCodeLine{00054             \_renderer = GetComponent<Renderer>();}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00059         \{}
+\DoxyCodeLine{00060             base.OnAwake();}
+\DoxyCodeLine{00061         }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (toggle == DisplayToggle.Renderer)}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{if} (\_renderer == \textcolor{keyword}{null})}
+\DoxyCodeLine{00065                     \_renderer = GetComponent<Renderer>();}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (toggle == DisplayToggle.Component)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 monob = component as MonoBehaviour;}
+\DoxyCodeLine{00070             \}}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{if} (\_gameObject == \textcolor{keyword}{null})}
+\DoxyCodeLine{00074                     \_gameObject = gameObject;}
+\DoxyCodeLine{00075             \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             stateLogic.RecalculateMasks();}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             reactToAttached = (((stateLogic.notMask \& (int)ObjState.Mounted) == 0) \&\& (stateLogic.stateMask \& (\textcolor{keywordtype}{int})ObjState.Mounted) != 0);}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082         }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStateChange(ObjState newState, ObjState previousState, Transform pickup, Mount attachedTo = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} isReady = \textcolor{keyword}{true})}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             \textcolor{comment}{//Debug.Log(transform.root.name + "{}:"{} + name + "{} "{} + photonView.ControllerActorNr + "{} "{} + state + "{} "{} + attachedTo);}}
+\DoxyCodeLine{00087 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00088             currentState = newState;}
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (!isReady)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 \textcolor{comment}{//Debug.Log(transform.root.name + "{}:"{} + name + "{} not ready!"{});}}
+\DoxyCodeLine{00093                 show = \textcolor{keyword}{false};}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 \textcolor{keywordtype}{bool} match = stateLogic.Evaluate((\textcolor{keywordtype}{int})newState);}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                 \textcolor{keywordflow}{if} (match)}
+\DoxyCodeLine{00100                 \{}
+\DoxyCodeLine{00101                     show = \textcolor{keyword}{true};}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00104                     \textcolor{keywordflow}{if} (reactToAttached)}
+\DoxyCodeLine{00105                         \textcolor{keywordflow}{if} (attachedTo == \textcolor{keyword}{null} \&\& (newState \& ObjState.Mounted) != 0)}
+\DoxyCodeLine{00106                             show = \textcolor{keyword}{false};}
+\DoxyCodeLine{00107                 \}}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109                     show = \textcolor{keyword}{false};}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             \textcolor{comment}{//if (!photonView.IsMine)}}
+\DoxyCodeLine{00113             \textcolor{comment}{//    Debug.Log(photonView.ViewID + "{} "{} + photonView.name + "{} : "{} + GetType().Name + "{} "{} }}
+\DoxyCodeLine{00114             \textcolor{comment}{//        + state +  "{} show: "{} + show + "{} match: "{} + stateLogic.Evaluate((int)state));}}
+\DoxyCodeLine{00115             DeferredEnable();}
+\DoxyCodeLine{00116             \textcolor{comment}{//NetMasterCallbacks.postCallbackActions.Enqueue(DeferredEnable);}}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DeferredEnable()}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{switch} (toggle)}
+\DoxyCodeLine{00122             \{}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{case} DisplayToggle.GameObject:}
+\DoxyCodeLine{00125                     \{}
+\DoxyCodeLine{00126                         \_gameObject.SetActive(show);}
+\DoxyCodeLine{00127                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00128                     \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{case} DisplayToggle.Component:}
+\DoxyCodeLine{00131                     \{}
+\DoxyCodeLine{00132                         \textcolor{keywordflow}{if} (monob)}
+\DoxyCodeLine{00133                             monob.enabled = show;}
+\DoxyCodeLine{00134                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00135                     \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{case} DisplayToggle.Renderer:}
+\DoxyCodeLine{00138                     \{}
+\DoxyCodeLine{00139                         \textcolor{keywordflow}{if} (\_renderer)}
+\DoxyCodeLine{00140                             \_renderer.enabled = show;}
+\DoxyCodeLine{00141                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00142                     \}}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145     \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149     [CustomEditor(typeof(OnStateChangeToggle))]}
+\DoxyCodeLine{00150     [CanEditMultipleObjects]}
+\DoxyCodeLine{00151     \textcolor{keyword}{public} \textcolor{keyword}{class }OnStateChangeToggleEditor : StateReactorHeaderEditor}
+\DoxyCodeLine{00152     \{}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00155         \{}
+\DoxyCodeLine{00156             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Ties object toggles to OnStateChange callbacks."{}}; \}}
+\DoxyCodeLine{00157         \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         \textcolor{keyword}{protected} \textcolor{keywordtype}{int}[] stateValues = (\textcolor{keywordtype}{int}[])System.Enum.GetValues(typeof(ObjState));}
+\DoxyCodeLine{00160         \textcolor{keyword}{protected} \textcolor{keywordtype}{string}[] stateNames = System.Enum.GetNames(typeof(ObjState));}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162         \textcolor{keyword}{protected} SerializedProperty stateMask, notMask;}
+\DoxyCodeLine{00163         \textcolor{keyword}{protected} SerializedProperty toggle, operation, currentState;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             base.OnEnable();}
+\DoxyCodeLine{00168             stateMask = serializedObject.FindProperty(\textcolor{stringliteral}{"{}stateMask"{}});}
+\DoxyCodeLine{00169             notMask = serializedObject.FindProperty(\textcolor{stringliteral}{"{}notMask"{}});}
+\DoxyCodeLine{00170             toggle = serializedObject.FindProperty(\textcolor{stringliteral}{"{}toggle"{}});}
+\DoxyCodeLine{00171             operation = serializedObject.FindProperty(\textcolor{stringliteral}{"{}operation"{}});}
+\DoxyCodeLine{00172             currentState = serializedObject.FindProperty(\textcolor{stringliteral}{"{}currentState"{}});}
+\DoxyCodeLine{00173             currentState.isExpanded = \textcolor{keyword}{true};}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178             }
+\DoxyCodeLine{00179             base.OnInspectorGUI();}
+\DoxyCodeLine{00180             var \_target = target as OnStateChangeToggle;}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             }
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             EditorGUILayout.PropertyField(toggle);}
+\DoxyCodeLine{00187             }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (toggle.enumValueIndex == (\textcolor{keywordtype}{int})DisplayToggle.Component)}
+\DoxyCodeLine{00189                 EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}component"{}}));}
+\DoxyCodeLine{00190             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (toggle.enumValueIndex == (\textcolor{keywordtype}{int})DisplayToggle.GameObject)}
+\DoxyCodeLine{00191                 EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}\_gameObject"{}}));}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (toggle.enumValueIndex == (\textcolor{keywordtype}{int})DisplayToggle.Renderer)}
+\DoxyCodeLine{00193                 EditorGUILayout.PropertyField(serializedObject.FindProperty(\textcolor{stringliteral}{"{}\_renderer"{}}));}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195             \_target.stateLogic.DrawGUI(serializedObject.FindProperty(\textcolor{stringliteral}{"{}stateLogic"{}}));}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \textcolor{keywordflow}{if} (\_target.GetComponent<NetObject>())}
+\DoxyCodeLine{00199                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}<b>NetObject detected on this GameObject!</b>\(\backslash\)n\(\backslash\)nThis component OnPickup will disable the entire net object (including the respawn timer), which is likely unintentional."{}} +}
+\DoxyCodeLine{00200                     \textcolor{stringliteral}{"{} Make the NetObject root an empty object and put the mesh and this component on a child instead, so that networked object remains active."{}}, MessageType.Warning);}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (Application.isPlaying)}
+\DoxyCodeLine{00203             \{}
+\DoxyCodeLine{00204                 EditorGUI.BeginDisabledGroup(\textcolor{keyword}{true});}
+\DoxyCodeLine{00205                 EditorGUILayout.PropertyField(currentState);}
+\DoxyCodeLine{00206                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00207             \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00210             \{}
+\DoxyCodeLine{00211                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00212             \}}
+\DoxyCodeLine{00213         \}}
+\DoxyCodeLine{00214     \}}
+\DoxyCodeLine{00215 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00216 \}}
+
+\end{DoxyCode}

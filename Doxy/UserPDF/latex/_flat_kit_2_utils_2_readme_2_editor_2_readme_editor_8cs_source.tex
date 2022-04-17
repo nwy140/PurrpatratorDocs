@@ -1,0 +1,418 @@
+\doxysection{Readme\+Editor.\+cs}
+\label{_flat_kit_2_utils_2_readme_2_editor_2_readme_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Utils/Readme/Editor/ReadmeEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Utils/Readme/Editor/ReadmeEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEditor.PackageManager;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{namespace }FlatKit \{}
+\DoxyCodeLine{00009 [CustomEditor(typeof(FlatKitReadme))]}
+\DoxyCodeLine{00010 \textcolor{keyword}{public} \textcolor{keyword}{class }ReadmeEditor : Editor \{}
+\DoxyCodeLine{00011     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} AssetName = \textcolor{stringliteral}{"{}Flat Kit"{}};}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUID UnityPackageUrpGuid = \textcolor{keyword}{new} GUID(\textcolor{stringliteral}{"{}41e59f562b69648719f2424c438758f3"{}});}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUID UnityPackageBuiltInGuid = \textcolor{keyword}{new} GUID(\textcolor{stringliteral}{"{}f4227764308e84f89a765fbf315e2945"{}});}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUID UrpPipelineAssetGuid = \textcolor{keyword}{new} GUID(\textcolor{stringliteral}{"{}ecbd363870e07455ea237f5753668d30"{}});}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keyword}{private} FlatKitReadme \_readme;}
+\DoxyCodeLine{00020     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} \_showingVersionMessage;}
+\DoxyCodeLine{00021     \textcolor{keyword}{private} \textcolor{keywordtype}{string} \_versionLatest;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} \_showingClearCacheMessage;}
+\DoxyCodeLine{00024     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} \_cacheClearedSuccessfully;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable() \{}
+\DoxyCodeLine{00027         \_readme = serializedObject.targetObject as FlatKitReadme;}
+\DoxyCodeLine{00028         \textcolor{keywordflow}{if} (\_readme == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00029             Debug.LogError(\$\textcolor{stringliteral}{"{}[\{AssetName\}] Readme error."{}});}
+\DoxyCodeLine{00030             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00031         \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \_readme.Refresh();}
+\DoxyCodeLine{00034         \_showingVersionMessage = \textcolor{keyword}{false};}
+\DoxyCodeLine{00035         \_showingClearCacheMessage = \textcolor{keyword}{false};}
+\DoxyCodeLine{00036         \_versionLatest = \textcolor{keyword}{null};}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         AssetDatabase.importPackageStarted += OnImportPackageStarted;}
+\DoxyCodeLine{00039         AssetDatabase.importPackageCompleted += OnImportPackageCompleted;}
+\DoxyCodeLine{00040         AssetDatabase.importPackageFailed += OnImportPackageFailed;}
+\DoxyCodeLine{00041         AssetDatabase.importPackageCancelled += OnImportPackageCancelled;}
+\DoxyCodeLine{00042     \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDisable() \{}
+\DoxyCodeLine{00045         AssetDatabase.importPackageStarted -\/= OnImportPackageStarted;}
+\DoxyCodeLine{00046         AssetDatabase.importPackageCompleted -\/= OnImportPackageCompleted;}
+\DoxyCodeLine{00047         AssetDatabase.importPackageFailed -\/= OnImportPackageFailed;}
+\DoxyCodeLine{00048         AssetDatabase.importPackageCancelled -\/= OnImportPackageCancelled;}
+\DoxyCodeLine{00049     \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI() \{}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             EditorGUILayout.LabelField(AssetName, EditorStyles.boldLabel);}
+\DoxyCodeLine{00054             DrawUILine(Color.gray, 1, 0);}
+\DoxyCodeLine{00055             EditorGUILayout.LabelField(\$\textcolor{stringliteral}{"{}Version \{\_readme.FlatKitVersion\}"{}}, EditorStyles.miniLabel);}
+\DoxyCodeLine{00056             EditorGUILayout.Separator();}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Documentation"{}})) \{}
+\DoxyCodeLine{00060             OpenDocumentation();}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (\_showingVersionMessage) \{}
+\DoxyCodeLine{00065                 EditorGUILayout.Space(20);}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{if} (\_versionLatest == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00068                     EditorGUILayout.HelpBox(\$\textcolor{stringliteral}{"{}Checking the latest version..."{}}, MessageType.None);}
+\DoxyCodeLine{00069                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00070                     var local = Version.Parse(\_readme.FlatKitVersion);}
+\DoxyCodeLine{00071                     var remote = Version.Parse(\_versionLatest);}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{if} (local >= remote) \{}
+\DoxyCodeLine{00073                         EditorGUILayout.HelpBox(\$\textcolor{stringliteral}{"{}You have the latest version! \{\_readme.FlatKitVersion\}."{}},}
+\DoxyCodeLine{00074                             MessageType.Info);}
+\DoxyCodeLine{00075                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00076                         EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00077                             \$\textcolor{stringliteral}{"{}Update needed. "{}} +}
+\DoxyCodeLine{00078                             \$\textcolor{stringliteral}{"{}The latest version is \{\_versionLatest\}, but you have \{\_readme.FlatKitVersion\}."{}},}
+\DoxyCodeLine{00079                             MessageType.Warning);}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if !UNITY\_2020\_3\_OR\_NEWER}}
+\DoxyCodeLine{00082                         EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00083                             \$\textcolor{stringliteral}{"{}Please update Unity to 2020.3 or newer to get the latest "{}} +}
+\DoxyCodeLine{00084                             \$\textcolor{stringliteral}{"{}version of Flat Kit."{}},}
+\DoxyCodeLine{00085                             MessageType.Error);}
+\DoxyCodeLine{00086 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00087                     \}}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Check for updates"{}})) \{}
+\DoxyCodeLine{00092                 \_showingVersionMessage = \textcolor{keyword}{true};}
+\DoxyCodeLine{00093                 \_versionLatest = \textcolor{keyword}{null};}
+\DoxyCodeLine{00094                 CheckVersion();}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (\_showingVersionMessage) \{}
+\DoxyCodeLine{00098                 EditorGUILayout.Space(20);}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Open support ticket"{}})) \{}
+\DoxyCodeLine{00106                 OpenSupportTicket();}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Copy debug info"{}})) \{}
+\DoxyCodeLine{00110                 CopyDebugInfoToClipboard();}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00114         \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if} (!\_readme.FlatKitInstalled) \{}
+\DoxyCodeLine{00118                 EditorGUILayout.Separator();}
+\DoxyCodeLine{00119                 DrawUILine(Color.yellow, 1, 0);}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121                 EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00122                     \$\textcolor{stringliteral}{"{}Before using \{AssetName\} you need to unpack it depending on your "{}} + \textcolor{stringliteral}{"{}project's Render Pipeline."{}},}
+\DoxyCodeLine{00123                     MessageType.Warning);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127                 EditorGUILayout.LabelField(\$\textcolor{stringliteral}{"{}Unpack \{AssetName\} for"{}}, EditorStyles.label);}
+\DoxyCodeLine{00128                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}URP"{}})) \{}
+\DoxyCodeLine{00129                     UnpackFlatKitUrp();}
+\DoxyCodeLine{00130                 \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Built-\/in RP"{}})) \{}
+\DoxyCodeLine{00133                     UnpackFlatKitBuiltInRP();}
+\DoxyCodeLine{00134                 \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00137                 DrawUILine(Color.yellow, 1, 0);}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(\_readme.PackageManagerError)) \{}
+\DoxyCodeLine{00145                 EditorGUILayout.Separator();}
+\DoxyCodeLine{00146                 DrawUILine(Color.yellow, 1, 0);}
+\DoxyCodeLine{00147                 EditorGUILayout.HelpBox(\$\textcolor{stringliteral}{"{}Package Manager error: \{\_readme.PackageManagerError\}"{}}, MessageType.Warning);}
+\DoxyCodeLine{00148                 DrawUILine(Color.yellow, 1, 0);}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             DrawUILine(Color.gray, 1, 20);}
+\DoxyCodeLine{00154             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00155             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Configure project for"{}}, EditorStyles.label);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}URP"{}}, EditorStyles.miniButtonLeft)) \{}
+\DoxyCodeLine{00158                 ConfigureUrp();}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Built-\/in RP"{}}, EditorStyles.miniButtonLeft)) \{}
+\DoxyCodeLine{00162                 ConfigureBuiltIn();}
+\DoxyCodeLine{00163             \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00166         \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             DrawUILine(Color.gray, 1, 20);}
+\DoxyCodeLine{00170             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Package Manager"{}}, EditorStyles.label);}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Clear cache"{}})) \{}
+\DoxyCodeLine{00175                 ClearPackageCache();}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             \textcolor{keywordflow}{if} (GUILayout.Button(\$\textcolor{stringliteral}{"{}Select \{AssetName\}"{}})) \{}
+\DoxyCodeLine{00179                 OpenPackageManager();}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{keywordflow}{if} (\_showingClearCacheMessage) \{}
+\DoxyCodeLine{00185                 \textcolor{keywordflow}{if} (\_cacheClearedSuccessfully) \{}
+\DoxyCodeLine{00186                     EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00187                         \$\textcolor{stringliteral}{"{}Successfully removed cached packages. \(\backslash\)n"{}} +}
+\DoxyCodeLine{00188                         \$\textcolor{stringliteral}{"{}Please re-\/download \{AssetName\} in the Package Manager."{}}, MessageType.Info);}
+\DoxyCodeLine{00189                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00190                     EditorGUILayout.HelpBox(\$\textcolor{stringliteral}{"{}Could not find or clear package cache."{}}, MessageType.Warning);}
+\DoxyCodeLine{00191                 \}}
+\DoxyCodeLine{00192             \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             EditorGUILayout.Separator();}
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         DrawColorSpaceCheck();}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199         \{}
+\DoxyCodeLine{00200             DrawUILine(Color.gray, 1, 20);}
+\DoxyCodeLine{00201             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Debug info"{}}, EditorStyles.miniBoldLabel);}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             GUILayout.BeginVertical();}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Copy"{}}, EditorStyles.miniButtonLeft)) \{}
+\DoxyCodeLine{00207                 CopyDebugInfoToClipboard();}
+\DoxyCodeLine{00208                 \textcolor{comment}{// EditorUtility.DisplayDialog(AssetName, "{}Debug info copied to the clipboard."{}, "{}OK"{});}}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (EditorGUIUtility.systemCopyBuffer == GetDebugInfoString()) \{}
+\DoxyCodeLine{00212                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Copied!"{}}, EditorStyles.miniLabel);}
+\DoxyCodeLine{00213             \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215             GUILayout.EndVertical();}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             var debugInfo = GetDebugInfo();}
+\DoxyCodeLine{00220             \textcolor{keywordflow}{foreach} (var s \textcolor{keywordflow}{in} debugInfo) \{}
+\DoxyCodeLine{00221                 EditorGUILayout.LabelField(\$\textcolor{stringliteral}{"{}    "{}} + s, EditorStyles.miniLabel);}
+\DoxyCodeLine{00222             \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             EditorGUILayout.Separator();}
+\DoxyCodeLine{00225         \}}
+\DoxyCodeLine{00226     \}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228     \textcolor{keyword}{private} \textcolor{keywordtype}{string}[] GetDebugInfo() \{}
+\DoxyCodeLine{00229         var info = \textcolor{keyword}{new} List<string> \{}
+\DoxyCodeLine{00230             \$\textcolor{stringliteral}{"{}\{AssetName\} version \{\_readme.FlatKitVersion\}"{}},}
+\DoxyCodeLine{00231             \$\textcolor{stringliteral}{"{}Unity \{\_readme.UnityVersion\}"{}},}
+\DoxyCodeLine{00232             \$\textcolor{stringliteral}{"{}Dev platform: \{Application.platform\}"{}},}
+\DoxyCodeLine{00233             \$\textcolor{stringliteral}{"{}Target platform: \{EditorUserBuildSettings.activeBuildTarget\}"{}},}
+\DoxyCodeLine{00234             \$\textcolor{stringliteral}{"{}URP installed: \{\_readme.UrpInstalled\}, version \{\_readme.UrpVersionInstalled\}"{}},}
+\DoxyCodeLine{00235             \$\textcolor{stringliteral}{"{}Render pipeline: \{Shader.globalRenderPipeline\}"{}},}
+\DoxyCodeLine{00236             \$\textcolor{stringliteral}{"{}Color space: \{PlayerSettings.colorSpace\}"{}}}
+\DoxyCodeLine{00237         \};}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239         var qualityConfig = QualitySettings.renderPipeline == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}N/A"{}} : QualitySettings.renderPipeline.name;}
+\DoxyCodeLine{00240         info.Add(\$\textcolor{stringliteral}{"{}Quality config: \{qualityConfig\}"{}});}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         var graphicsConfig = GraphicsSettings.currentRenderPipeline == \textcolor{keyword}{null}}
+\DoxyCodeLine{00243             ? \textcolor{stringliteral}{"{}N/A"{}}}
+\DoxyCodeLine{00244             : GraphicsSettings.currentRenderPipeline.name;}
+\DoxyCodeLine{00245         info.Add(\$\textcolor{stringliteral}{"{}Graphics config: \{graphicsConfig\}"{}});}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keywordflow}{return} info.ToArray();}
+\DoxyCodeLine{00248     \}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250     \textcolor{keyword}{private} \textcolor{keywordtype}{string} GetDebugInfoString() \{}
+\DoxyCodeLine{00251         \textcolor{keywordtype}{string}[] info = GetDebugInfo();}
+\DoxyCodeLine{00252         \textcolor{keywordflow}{return} String.Join(\textcolor{stringliteral}{"{}\(\backslash\)n"{}}, info);}
+\DoxyCodeLine{00253     \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255     \textcolor{keyword}{private} \textcolor{keywordtype}{void} CopyDebugInfoToClipboard() \{}
+\DoxyCodeLine{00256         EditorGUIUtility.systemCopyBuffer = GetDebugInfoString();}
+\DoxyCodeLine{00257     \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OpenPackageManager() \{}
+\DoxyCodeLine{00260 \textcolor{preprocessor}{\#if UNITY\_2020\_1\_OR\_NEWER}}
+\DoxyCodeLine{00261         Client.Resolve();}
+\DoxyCodeLine{00262 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264         \textcolor{keyword}{const} \textcolor{keywordtype}{string} packageName = \textcolor{stringliteral}{"{}Flat Kit: Toon Shading and Water"{}};}
+\DoxyCodeLine{00265         UnityEditor.PackageManager.UI.Window.Open(packageName);}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267         \textcolor{comment}{/*}}
+\DoxyCodeLine{00268 \textcolor{comment}{        var request = Client.Add(packageName);}}
+\DoxyCodeLine{00269 \textcolor{comment}{        while (!request.IsCompleted) System.Threading.Tasks.Task.Delay(100);}}
+\DoxyCodeLine{00270 \textcolor{comment}{        if (request.Status != StatusCode.Success) Debug.LogError("{}Cannot import asset: "{} + request.Error.message);}}
+\DoxyCodeLine{00271 \textcolor{comment}{        */}}
+\DoxyCodeLine{00272     \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274     \textcolor{keyword}{private} \textcolor{keywordtype}{void} ClearPackageCache() \{}
+\DoxyCodeLine{00275         \textcolor{keywordtype}{string} path = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00276         \textcolor{keywordflow}{if} (Application.platform == RuntimePlatform.OSXEditor) \{}
+\DoxyCodeLine{00277             path = \textcolor{stringliteral}{"{}\string~/Library/Unity/Asset Store-\/5.x/Dustyroom/"{}};}
+\DoxyCodeLine{00278         \}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keywordflow}{if} (Application.platform == RuntimePlatform.LinuxEditor) \{}
+\DoxyCodeLine{00281             path = \textcolor{stringliteral}{"{}\string~/.local/share/unity3d/Asset Store-\/5.x/Dustyroom/"{}};}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284         \textcolor{keywordflow}{if} (Application.platform == RuntimePlatform.WindowsEditor) \{}
+\DoxyCodeLine{00285             \textcolor{comment}{// This wouldn't understand \%APPDATA\%.}}
+\DoxyCodeLine{00286             path = Application.persistentDataPath.Substring(0,}
+\DoxyCodeLine{00287                        Application.persistentDataPath.IndexOf(\textcolor{stringliteral}{"{}AppData"{}}, StringComparison.Ordinal)) +}
+\DoxyCodeLine{00288                    \textcolor{stringliteral}{"{}/AppData/Roaming/Unity/Asset Store-\/5.x/Dustyroom"{}};}
+\DoxyCodeLine{00289         \}}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291         \textcolor{keywordflow}{if} (path == \textcolor{keywordtype}{string}.Empty) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293         \_cacheClearedSuccessfully |= FileUtil.DeleteFileOrDirectory(path);}
+\DoxyCodeLine{00294         \_showingClearCacheMessage = \textcolor{keyword}{true};}
+\DoxyCodeLine{00295     \}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UnpackFlatKitUrp() \{}
+\DoxyCodeLine{00298         \textcolor{keywordtype}{string} path = AssetDatabase.GUIDToAssetPath(UnityPackageUrpGuid.ToString());}
+\DoxyCodeLine{00299         \textcolor{keywordflow}{if} (path == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00300             Debug.LogError(\$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Could not find the URP package."{}});}
+\DoxyCodeLine{00301         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00302             AssetDatabase.ImportPackage(path, \textcolor{keyword}{false});}
+\DoxyCodeLine{00303         \}}
+\DoxyCodeLine{00304     \}}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306     \textcolor{keyword}{private} \textcolor{keywordtype}{void} UnpackFlatKitBuiltInRP() \{}
+\DoxyCodeLine{00307         \textcolor{keywordtype}{string} path = AssetDatabase.GUIDToAssetPath(UnityPackageBuiltInGuid.ToString());}
+\DoxyCodeLine{00308         \textcolor{keywordflow}{if} (path == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00309             Debug.LogError(\$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Could not find the Built-\/in RP package."{}});}
+\DoxyCodeLine{00310         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00311             AssetDatabase.ImportPackage(path, \textcolor{keyword}{false});}
+\DoxyCodeLine{00312         \}}
+\DoxyCodeLine{00313     \}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnImportPackageStarted(\textcolor{keywordtype}{string} packageName) \{ \}}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnImportPackageCompleted(\textcolor{keywordtype}{string} packageName) \{}
+\DoxyCodeLine{00318         \_readme.Refresh();}
+\DoxyCodeLine{00319         Repaint();}
+\DoxyCodeLine{00320         EditorUtility.SetDirty(\textcolor{keyword}{this});}
+\DoxyCodeLine{00321     \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnImportPackageFailed(\textcolor{keywordtype}{string} packageName, \textcolor{keywordtype}{string} errorMessage) \{}
+\DoxyCodeLine{00324         Debug.LogError(\$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Failed to unpack \{packageName\}: \{errorMessage\}."{}});}
+\DoxyCodeLine{00325     \}}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnImportPackageCancelled(\textcolor{keywordtype}{string} packageName) \{}
+\DoxyCodeLine{00328         Debug.LogError(\$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Cancelled unpacking \{packageName\}."{}});}
+\DoxyCodeLine{00329     \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331     \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConfigureUrp() \{}
+\DoxyCodeLine{00332         \textcolor{keywordtype}{string} path = AssetDatabase.GUIDToAssetPath(UrpPipelineAssetGuid.ToString());}
+\DoxyCodeLine{00333         \textcolor{keywordflow}{if} (path == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00334             Debug.LogError(\$\textcolor{stringliteral}{"{}[\{AssetName\}] Couldn't find the URP pipeline asset. "{}} +}
+\DoxyCodeLine{00335                            \textcolor{stringliteral}{"{}Have you unpacked the URP package?"{}});}
+\DoxyCodeLine{00336             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00337         \}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         var pipelineAsset = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(path);}
+\DoxyCodeLine{00340         \textcolor{keywordflow}{if} (pipelineAsset == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00341             Debug.LogError(\$\textcolor{stringliteral}{"{}[\{AssetName\}] Couldn't load the URP pipeline asset."{}});}
+\DoxyCodeLine{00342             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         Debug.Log(}
+\DoxyCodeLine{00346             \$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Set the render pipeline asset in the Graphics settings to the \{AssetName\} example."{}});}
+\DoxyCodeLine{00347         GraphicsSettings.renderPipelineAsset = pipelineAsset;}
+\DoxyCodeLine{00348         GraphicsSettings.defaultRenderPipeline = pipelineAsset;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350         ChangePipelineAssetAllQualityLevels(pipelineAsset);}
+\DoxyCodeLine{00351     \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353     \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConfigureBuiltIn() \{}
+\DoxyCodeLine{00354         GraphicsSettings.renderPipelineAsset = \textcolor{keyword}{null};}
+\DoxyCodeLine{00355         Debug.Log(\$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Cleared the render pipeline asset in the Graphics settings."{}});}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357         ChangePipelineAssetAllQualityLevels(\textcolor{keyword}{null});}
+\DoxyCodeLine{00358     \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360     \textcolor{keyword}{private} \textcolor{keywordtype}{void} ChangePipelineAssetAllQualityLevels(RenderPipelineAsset pipelineAsset) \{}
+\DoxyCodeLine{00361         var originalQualityLevel = QualitySettings.GetQualityLevel();}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363         var logString = \$\textcolor{stringliteral}{"{}<b>[\{AssetName\}]</b> Set the render pipeline asset for the quality levels:"{}};}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < QualitySettings.names.Length; i++) \{}
+\DoxyCodeLine{00366             logString += \$\textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)t\{QualitySettings.names[i]\}"{}};}
+\DoxyCodeLine{00367             QualitySettings.SetQualityLevel(i, \textcolor{keyword}{false});}
+\DoxyCodeLine{00368             QualitySettings.renderPipeline = pipelineAsset;}
+\DoxyCodeLine{00369         \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371         Debug.Log(logString);}
+\DoxyCodeLine{00372 }
+\DoxyCodeLine{00373         QualitySettings.SetQualityLevel(originalQualityLevel, \textcolor{keyword}{false});}
+\DoxyCodeLine{00374     \}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376     \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawColorSpaceCheck() \{}
+\DoxyCodeLine{00377         \textcolor{keywordflow}{if} (PlayerSettings.colorSpace != ColorSpace.Linear) \{}
+\DoxyCodeLine{00378             DrawUILine(Color.gray, 1, 20);}
+\DoxyCodeLine{00379             EditorGUILayout.HelpBox(}
+\DoxyCodeLine{00380                 \$\textcolor{stringliteral}{"{}\{AssetName\} demo scenes were created for the Linear color space, but your project is "{}} +}
+\DoxyCodeLine{00381                 \$\textcolor{stringliteral}{"{}using \{PlayerSettings.colorSpace\}.\(\backslash\)nThis may result in the demo scenes appearing slightly "{}} +}
+\DoxyCodeLine{00382                 \$\textcolor{stringliteral}{"{}different compared to the Asset Store screenshots.\(\backslash\)nOptionally, you may switch the color space "{}} +}
+\DoxyCodeLine{00383                 \$\textcolor{stringliteral}{"{}using the button below."{}},}
+\DoxyCodeLine{00384                 MessageType.Warning);}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Switch player settings to Linear color space"{}})) \{}
+\DoxyCodeLine{00387                 PlayerSettings.colorSpace = ColorSpace.Linear;}
+\DoxyCodeLine{00388             \}}
+\DoxyCodeLine{00389         \}}
+\DoxyCodeLine{00390     \}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392     \textcolor{keyword}{private} \textcolor{keywordtype}{void} CheckVersion() \{}
+\DoxyCodeLine{00393         NetworkManager.GetVersion(version => \{ \_versionLatest = version; \});}
+\DoxyCodeLine{00394     \}}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OpenSupportTicket() \{}
+\DoxyCodeLine{00397         Application.OpenURL(\textcolor{stringliteral}{"{}https://github.com/Dustyroom/flat-\/kit-\/doc/issues/new/choose"{}});}
+\DoxyCodeLine{00398     \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OpenDocumentation() \{}
+\DoxyCodeLine{00401         Application.OpenURL(\textcolor{stringliteral}{"{}https://flatkit.dustyroom.com"{}});}
+\DoxyCodeLine{00402     \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404     \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawUILine(Color color, \textcolor{keywordtype}{int} thickness = 2, \textcolor{keywordtype}{int} padding = 10) \{}
+\DoxyCodeLine{00405         Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));}
+\DoxyCodeLine{00406         r.height = thickness;}
+\DoxyCodeLine{00407         r.y += padding / 2f;}
+\DoxyCodeLine{00408         r.x -\/= 2;}
+\DoxyCodeLine{00409         EditorGUI.DrawRect(r, color);}
+\DoxyCodeLine{00410     \}}
+\DoxyCodeLine{00411 \}}
+\DoxyCodeLine{00412 \}}
+
+\end{DoxyCode}

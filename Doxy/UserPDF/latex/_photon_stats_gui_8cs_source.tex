@@ -1,0 +1,156 @@
+\doxysection{Photon\+Stats\+Gui.\+cs}
+\label{_photon_stats_gui_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Debugging/PhotonStatsGui.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Debugging/PhotonStatsGui.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonStatsGui.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Basic GUI to show traffic and health statistics of the connection to Photon,}}
+\DoxyCodeLine{00007 \textcolor{comment}{// toggled by shift+tab.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// Part of the [Optional GUI](@ref optionalGui).}}
+\DoxyCodeLine{00009 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00011 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00020 \{}
+\DoxyCodeLine{00033     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonStatsGui : MonoBehaviour}
+\DoxyCodeLine{00034     \{}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} statsWindowOn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} statsOn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} healthStatsVisible;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} trafficStatsOn;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} buttonsOn;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00051         \textcolor{keyword}{public} Rect statsRect = \textcolor{keyword}{new} Rect(0, 100, 200, 50);}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{int} WindowId = 100;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (this.statsRect.x <= 0)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 this.statsRect.x = Screen.width -\/ this.statsRect.width;}
+\DoxyCodeLine{00062             \}}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Tab) \&\& Input.GetKey(KeyCode.LeftShift))}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 this.statsWindowOn = !this.statsWindowOn;}
+\DoxyCodeLine{00071                 this.statsOn = \textcolor{keyword}{true};    \textcolor{comment}{// enable stats when showing the window}}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnGUI()}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsEnabled != statsOn)}
+\DoxyCodeLine{00078             \{}
+\DoxyCodeLine{00079                 PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsEnabled = this.statsOn;}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (!this.statsWindowOn)}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             this.statsRect = GUILayout.Window(this.WindowId, this.statsRect, this.TrafficStatsWindow, \textcolor{stringliteral}{"{}Messages (shift+tab)"{}});}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TrafficStatsWindow(\textcolor{keywordtype}{int} windowID)}
+\DoxyCodeLine{00091         \{}
+\DoxyCodeLine{00092             \textcolor{keywordtype}{bool} statsToLog = \textcolor{keyword}{false};}
+\DoxyCodeLine{00093             TrafficStatsGameLevel gls = PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsGameLevel;}
+\DoxyCodeLine{00094             \textcolor{keywordtype}{long} elapsedMs = PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsElapsedMs / 1000;}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (elapsedMs == 0)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 elapsedMs = 1;}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00101             this.buttonsOn = GUILayout.Toggle(this.buttonsOn, \textcolor{stringliteral}{"{}buttons"{}});}
+\DoxyCodeLine{00102             this.healthStatsVisible = GUILayout.Toggle(this.healthStatsVisible, \textcolor{stringliteral}{"{}health"{}});}
+\DoxyCodeLine{00103             this.trafficStatsOn = GUILayout.Toggle(this.trafficStatsOn, \textcolor{stringliteral}{"{}traffic"{}});}
+\DoxyCodeLine{00104             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{keywordtype}{string} total = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Out \{0,4\} | In \{1,4\} | Sum \{2,4\}"{}}, gls.TotalOutgoingMessageCount, gls.TotalIncomingMessageCount, gls.TotalMessageCount);}
+\DoxyCodeLine{00107             \textcolor{keywordtype}{string} elapsedTime = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}sec average:"{}}, elapsedMs);}
+\DoxyCodeLine{00108             \textcolor{keywordtype}{string} average = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Out \{0,4\} | In \{1,4\} | Sum \{2,4\}"{}}, gls.TotalOutgoingMessageCount / elapsedMs, gls.TotalIncomingMessageCount / elapsedMs, gls.TotalMessageCount / elapsedMs);}
+\DoxyCodeLine{00109             GUILayout.Label(total);}
+\DoxyCodeLine{00110             GUILayout.Label(elapsedTime);}
+\DoxyCodeLine{00111             GUILayout.Label(average);}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (this.buttonsOn)}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00116                 this.statsOn = GUILayout.Toggle(this.statsOn, \textcolor{stringliteral}{"{}stats on"{}});}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Reset"{}}))}
+\DoxyCodeLine{00118                 \{}
+\DoxyCodeLine{00119                     PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsReset();}
+\DoxyCodeLine{00120                     PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsEnabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00121                 \}}
+\DoxyCodeLine{00122                 statsToLog = GUILayout.Button(\textcolor{stringliteral}{"{}To Log"{}});}
+\DoxyCodeLine{00123                 GUILayout.EndHorizontal();}
+\DoxyCodeLine{00124             \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordtype}{string} trafficStatsIn = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00127             \textcolor{keywordtype}{string} trafficStatsOut = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (this.trafficStatsOn)}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 GUILayout.Box(\textcolor{stringliteral}{"{}Traffic Stats"{}});}
+\DoxyCodeLine{00131                 trafficStatsIn = \textcolor{stringliteral}{"{}Incoming: \(\backslash\)n"{}} + PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsIncoming.ToString();}
+\DoxyCodeLine{00132                 trafficStatsOut = \textcolor{stringliteral}{"{}Outgoing: \(\backslash\)n"{}} + PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsOutgoing.ToString();}
+\DoxyCodeLine{00133                 GUILayout.Label(trafficStatsIn);}
+\DoxyCodeLine{00134                 GUILayout.Label(trafficStatsOut);}
+\DoxyCodeLine{00135             \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordtype}{string} healthStats = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00138             \textcolor{keywordflow}{if} (this.healthStatsVisible)}
+\DoxyCodeLine{00139             \{}
+\DoxyCodeLine{00140                 GUILayout.Box(\textcolor{stringliteral}{"{}Health Stats"{}});}
+\DoxyCodeLine{00141                 healthStats = \textcolor{keywordtype}{string}.Format(}
+\DoxyCodeLine{00142                     \textcolor{stringliteral}{"{}ping: \{6\}[+/-\/\{7\}]ms resent:\{8\} \(\backslash\)n\(\backslash\)nmax ms between\(\backslash\)nsend: \{0,4\} \(\backslash\)ndispatch: \{1,4\} \(\backslash\)n\(\backslash\)nlongest dispatch for: \(\backslash\)nev(\{3\}):\{2,3\}ms \(\backslash\)nop(\{5\}):\{4,3\}ms"{}},}
+\DoxyCodeLine{00143                     gls.LongestDeltaBetweenSending,}
+\DoxyCodeLine{00144                     gls.LongestDeltaBetweenDispatching,}
+\DoxyCodeLine{00145                     gls.LongestEventCallback,}
+\DoxyCodeLine{00146                     gls.LongestEventCallbackCode,}
+\DoxyCodeLine{00147                     gls.LongestOpResponseCallback,}
+\DoxyCodeLine{00148                     gls.LongestOpResponseCallbackOpCode,}
+\DoxyCodeLine{00149                     PhotonNetwork.NetworkingClient.LoadBalancingPeer.RoundTripTime,}
+\DoxyCodeLine{00150                     PhotonNetwork.NetworkingClient.LoadBalancingPeer.RoundTripTimeVariance,}
+\DoxyCodeLine{00151                     PhotonNetwork.NetworkingClient.LoadBalancingPeer.ResentReliableCommands);}
+\DoxyCodeLine{00152                 GUILayout.Label(healthStats);}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} (statsToLog)}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 \textcolor{keywordtype}{string} complete = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\(\backslash\)n\{1\}\(\backslash\)n\{2\}\(\backslash\)n\{3\}\(\backslash\)n\{4\}\(\backslash\)n\{5\}"{}}, total, elapsedTime, average, trafficStatsIn, trafficStatsOut, healthStats);}
+\DoxyCodeLine{00158                 Debug.Log(complete);}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{comment}{// if anything was clicked, the height of this window is likely changed. reduce it to be layouted again next frame}}
+\DoxyCodeLine{00162             \textcolor{keywordflow}{if} (GUI.changed)}
+\DoxyCodeLine{00163             \{}
+\DoxyCodeLine{00164                 this.statsRect.height = 100;}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             GUI.DragWindow();}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169     \}}
+\DoxyCodeLine{00170 \}}
+
+\end{DoxyCode}

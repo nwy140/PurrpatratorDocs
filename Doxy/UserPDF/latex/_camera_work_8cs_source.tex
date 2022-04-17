@@ -1,0 +1,123 @@
+\doxysection{Camera\+Work.\+cs}
+\label{_camera_work_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/CameraWork.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/CameraWork.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CameraWork.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Used in PUN Basics Tutorial to deal with the Camera work to follow the player}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Demo.PunBasics}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }CameraWork : MonoBehaviour}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020 \textcolor{preprocessor}{        \#region Private Fields}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [Tooltip(\textcolor{stringliteral}{"{}The distance in the local x-\/z plane to the target"{}})]}
+\DoxyCodeLine{00023         [SerializeField]}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keywordtype}{float} distance = 7.0f;}
+\DoxyCodeLine{00025         }
+\DoxyCodeLine{00026         [Tooltip(\textcolor{stringliteral}{"{}The height we want the camera to be above the target"{}})]}
+\DoxyCodeLine{00027         [SerializeField]}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keywordtype}{float} height = 3.0f;}
+\DoxyCodeLine{00029         }
+\DoxyCodeLine{00030         [Tooltip(\textcolor{stringliteral}{"{}Allow the camera to be offseted vertically from the target, for example giving more view of the sceneray and less ground."{}})]}
+\DoxyCodeLine{00031         [SerializeField]}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} Vector3 centerOffset = Vector3.zero;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         [Tooltip(\textcolor{stringliteral}{"{}Set this as false if a component of a prefab being instanciated by Photon Network, and manually call OnStartFollowing() when and if needed."{}})]}
+\DoxyCodeLine{00035         [SerializeField]}
+\DoxyCodeLine{00036         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} followOnStart = \textcolor{keyword}{false};}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         [Tooltip(\textcolor{stringliteral}{"{}The Smoothing for the camera to follow the target"{}})]}
+\DoxyCodeLine{00039         [SerializeField]}
+\DoxyCodeLine{00040         \textcolor{keyword}{private} \textcolor{keywordtype}{float} smoothSpeed = 0.125f;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{comment}{// cached transform of the target}}
+\DoxyCodeLine{00043         Transform cameraTransform;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{comment}{// maintain a flag internally to reconnect if target is lost or camera is switched}}
+\DoxyCodeLine{00046         \textcolor{keywordtype}{bool} isFollowing;}
+\DoxyCodeLine{00047         }
+\DoxyCodeLine{00048         \textcolor{comment}{// Cache for camera offset}}
+\DoxyCodeLine{00049         Vector3 cameraOffset = Vector3.zero;}
+\DoxyCodeLine{00050         }
+\DoxyCodeLine{00051         }
+\DoxyCodeLine{00052 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 \textcolor{preprocessor}{        \#region MonoBehaviour Callbacks}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00059         \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{comment}{// Start following the target if wanted.}}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (followOnStart)}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 OnStartFollowing();}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{comment}{// The transform target may not destroy on level load, }}
+\DoxyCodeLine{00072             \textcolor{comment}{// so we need to cover corner cases where the Main Camera is different everytime we load a new scene, and reconnect when that happens}}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (cameraTransform == \textcolor{keyword}{null} \&\& isFollowing)}
+\DoxyCodeLine{00074             \{}
+\DoxyCodeLine{00075                 OnStartFollowing();}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \textcolor{comment}{// only follow is explicitly declared}}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (isFollowing) \{}
+\DoxyCodeLine{00080                 Follow ();}
+\DoxyCodeLine{00081             \}}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086 \textcolor{preprocessor}{        \#region Public Methods}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStartFollowing()}
+\DoxyCodeLine{00093         \{         }
+\DoxyCodeLine{00094             cameraTransform = Camera.main.transform;}
+\DoxyCodeLine{00095             isFollowing = \textcolor{keyword}{true};}
+\DoxyCodeLine{00096             \textcolor{comment}{// we don't smooth anything, we go straight to the right camera shot}}
+\DoxyCodeLine{00097             Cut();}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099         }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 \textcolor{preprocessor}{        \#region Private Methods}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00107         \textcolor{keywordtype}{void} Follow()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             cameraOffset.z = -\/distance;}
+\DoxyCodeLine{00110             cameraOffset.y = height;}
+\DoxyCodeLine{00111             }
+\DoxyCodeLine{00112             cameraTransform.position = Vector3.Lerp(cameraTransform.position, \textcolor{keyword}{this}.transform.position +\textcolor{keyword}{this}.transform.TransformVector(cameraOffset), smoothSpeed*Time.deltaTime);}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             cameraTransform.LookAt(this.transform.position + centerOffset);}
+\DoxyCodeLine{00115             }
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118        }
+\DoxyCodeLine{00119         \textcolor{keywordtype}{void} Cut()}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             cameraOffset.z = -\/distance;}
+\DoxyCodeLine{00122             cameraOffset.y = height;}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             cameraTransform.position = this.transform.position + this.transform.TransformVector(cameraOffset);}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             cameraTransform.LookAt(this.transform.position + centerOffset);}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00129     \}}
+\DoxyCodeLine{00130 \}}
+
+\end{DoxyCode}

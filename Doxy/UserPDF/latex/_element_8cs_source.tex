@@ -1,0 +1,175 @@
+\doxysection{Element.\+cs}
+\label{_element_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/Element.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/Element.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Runtime.InteropServices;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00015     [StructLayout(LayoutKind.Explicit)]}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{struct }Element : System.IEquatable<Element>}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keyword}{enum} VectorType \{ Vector3 = 1, Quaternion = 2 \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         [FieldOffset(0)]}
+\DoxyCodeLine{00021         \textcolor{keyword}{public} VectorType vectorType;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         [FieldOffset(4)]}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} Vector3 v;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [FieldOffset(4)]}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} Quaternion quat;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{        \#region Constructors}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Element(Vector3 v) : this()}
+\DoxyCodeLine{00032         \{}
+\DoxyCodeLine{00033             vectorType = VectorType.Vector3;}
+\DoxyCodeLine{00034             this.v = v;}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} Element(Quaternion quat) : this()}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             vectorType = VectorType.Quaternion;}
+\DoxyCodeLine{00040             this.quat = quat;}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 \textcolor{preprocessor}{        \#region Implicit/Explicit Casts}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} Quaternion(Element e)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if} (e.vectorType == VectorType.Quaternion)}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return} e.quat;}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00052             \{}
+\DoxyCodeLine{00053 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00054                 Debug.LogWarning(\textcolor{stringliteral}{"{}Casting a Element of type Vector to a Quaternion uses Quaternion.Euler(). Is this intentional? Cast to Vector3 and convert to Quaternion yourself to silence this warning."{}});}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00056                 \textcolor{keywordflow}{return} Quaternion.Euler(e.v);}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} Vector3(Element e)}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (e.vectorType == VectorType.Vector3)}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{return} e.v;}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00067                 Debug.LogWarning(\textcolor{stringliteral}{"{}Casting a Element of type Quaternion to a Vector3 uses quaternion.eulerAngles. Is this intentional? Cast to Quaternion and convert to EulerAngles yourself to silence this warning."{}});}
+\DoxyCodeLine{00068 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{return} e.quat.eulerAngles;}
+\DoxyCodeLine{00070             \}}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keyword}{static} Element Slerp(Element a, Element b, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{if} (a.vectorType == VectorType.Quaternion)}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{return} Quaternion.Slerp((Quaternion)a, (Quaternion)b, t);}
+\DoxyCodeLine{00080             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{return} Vector3.Slerp((Vector3)a, (Vector3)b, t);}
+\DoxyCodeLine{00082         \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{static} Element SlerpUnclamped(Element a, Element b, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (a.vectorType == VectorType.Quaternion)}
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{return} Quaternion.SlerpUnclamped((Quaternion)a, (Quaternion)b, t);}
+\DoxyCodeLine{00088             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{return} Vector3.SlerpUnclamped((Vector3)a, (Vector3)b, t);}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092 \textcolor{preprocessor}{        \#region IEquatable}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator ==(Element a, Element b)}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             \textcolor{keywordflow}{return} a.vectorType == b.vectorType \&\&}
+\DoxyCodeLine{00097                 (a.vectorType == VectorType.Vector3) ?}
+\DoxyCodeLine{00098                     (}
+\DoxyCodeLine{00099                     a.v.x == b.v.x \&\&}
+\DoxyCodeLine{00100                     a.v.y == b.v.y \&\&}
+\DoxyCodeLine{00101                     a.v.z == b.v.z}
+\DoxyCodeLine{00102                     ) : (}
+\DoxyCodeLine{00103                     a.quat.x == b.quat.x \&\&}
+\DoxyCodeLine{00104                     a.quat.y == b.quat.y \&\&}
+\DoxyCodeLine{00105                     a.quat.z == b.quat.z \&\&}
+\DoxyCodeLine{00106                     a.quat.w == b.quat.w}
+\DoxyCodeLine{00107                     );}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator !=(Element a, Element b)}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{return} !(a == b);}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{return} obj is Element \&\& Equals((Element)obj);}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(Element other)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{return} vectorType == other.vectorType \&\&}
+\DoxyCodeLine{00123                 (vectorType == VectorType.Vector3) ?}
+\DoxyCodeLine{00124                     (}
+\DoxyCodeLine{00125                     v.x == other.v.x \&\&}
+\DoxyCodeLine{00126                     v.y == other.v.y \&\&}
+\DoxyCodeLine{00127                     v.z == other.v.z}
+\DoxyCodeLine{00128                     ) : (}
+\DoxyCodeLine{00129                     quat.x == other.quat.x \&\&}
+\DoxyCodeLine{00130                     quat.y == other.quat.y \&\&}
+\DoxyCodeLine{00131                     quat.z == other.quat.z \&\&}
+\DoxyCodeLine{00132                     quat.w == other.quat.w}
+\DoxyCodeLine{00133                     );}
+\DoxyCodeLine{00134         \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} Equals(Vector3 a, Vector3 b)}
+\DoxyCodeLine{00137         \{}
+\DoxyCodeLine{00138             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00139                     (}
+\DoxyCodeLine{00140                     a.x == b.x \&\&}
+\DoxyCodeLine{00141                     a.y == b.y \&\&}
+\DoxyCodeLine{00142                     a.z == b.z}
+\DoxyCodeLine{00143                     );}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} Equals(Quaternion a, Quaternion b)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00149                     (}
+\DoxyCodeLine{00150                     a.x == b.x \&\&}
+\DoxyCodeLine{00151                     a.y == b.y \&\&}
+\DoxyCodeLine{00152                     a.z == b.z \&\&}
+\DoxyCodeLine{00153                     a.w == b.w}
+\DoxyCodeLine{00154                     );}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         \textcolor{keyword}{public} \textcolor{keyword}{static} implicit \textcolor{keyword}{operator} Element(Quaternion q) \{ \textcolor{keywordflow}{return} \textcolor{keyword}{new} Element(q); \}}
+\DoxyCodeLine{00160         \textcolor{keyword}{public} \textcolor{keyword}{static} implicit \textcolor{keyword}{operator} Element(Vector3 v) \{ \textcolor{keywordflow}{return} \textcolor{keyword}{new} Element(v); \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00163         \{}
+\DoxyCodeLine{00164             \textcolor{keywordflow}{return} vectorType + \textcolor{stringliteral}{"{} "{}} + ((vectorType == VectorType.Quaternion) ? quat.ToString() : v.ToString());}
+\DoxyCodeLine{00165         \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{return} base.GetHashCode();}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171     \}}
+\DoxyCodeLine{00172 \}}
+
+\end{DoxyCode}

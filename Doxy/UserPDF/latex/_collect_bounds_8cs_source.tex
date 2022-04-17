@@ -1,0 +1,203 @@
+\doxysection{Collect\+Bounds.\+cs}
+\label{_collect_bounds_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Utilities/CollectBounds.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Utilities/CollectBounds.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{namespace }Photon.Utilities}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }BoundsTools}
+\DoxyCodeLine{00012     \{}
+\DoxyCodeLine{00013         \textcolor{keyword}{public} \textcolor{keyword}{enum} BoundsType \{ Both, MeshRenderer, Collider, Manual \}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015         \textcolor{comment}{// 3d}}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<MeshFilter> meshFilters = \textcolor{keyword}{new} List<MeshFilter>();}
+\DoxyCodeLine{00017         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Renderer> meshRenderers = \textcolor{keyword}{new} List<Renderer>();}
+\DoxyCodeLine{00018         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Collider> colliders = \textcolor{keyword}{new} List<Collider>();}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Collider> validColliders = \textcolor{keyword}{new} List<Collider>();}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{comment}{// 2d}}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<SpriteRenderer> spriteRenderers = \textcolor{keyword}{new} List<SpriteRenderer>();}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Collider2D> colliders2D = \textcolor{keyword}{new} List<Collider2D>();}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<Collider2D> validColliders2D = \textcolor{keyword}{new} List<Collider2D>();}
+\DoxyCodeLine{00026 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{static} Bounds CollectMyBounds(\textcolor{keyword}{this} GameObject go, BoundsType factorIn, out \textcolor{keywordtype}{int} numOfBoundsFound, \textcolor{keywordtype}{bool} includeChildren = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} includeInactive = \textcolor{keyword}{false})}
+\DoxyCodeLine{00035         \{}
+\DoxyCodeLine{00036             \textcolor{comment}{// if we are ignoring inactive, an inactive parent is already a null. Quit here.}}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (!go.activeInHierarchy \&\& !!includeInactive)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 numOfBoundsFound = 0;}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Bounds();}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordtype}{bool} bothtype = factorIn == BoundsType.Both;}
+\DoxyCodeLine{00044             \textcolor{keywordtype}{bool} rendtype = bothtype || factorIn == BoundsType.MeshRenderer;}
+\DoxyCodeLine{00045             \textcolor{keywordtype}{bool} colltype = bothtype || factorIn == BoundsType.Collider;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             \textcolor{comment}{// Clear the reusables so they have counts of zero}}
+\DoxyCodeLine{00048             meshFilters.Clear();}
+\DoxyCodeLine{00049             meshRenderers.Clear();}
+\DoxyCodeLine{00050             colliders.Clear();}
+\DoxyCodeLine{00051             spriteRenderers.Clear();}
+\DoxyCodeLine{00052             validColliders.Clear();}
+\DoxyCodeLine{00053 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00054             validColliders2D.Clear();}
+\DoxyCodeLine{00055 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00056             \textcolor{keywordtype}{int} myBoundsCount = 0;}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058             \textcolor{comment}{// Find all of the MeshRenderers and Colliders (as specified)}}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (rendtype)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{if} (go.activeInHierarchy)}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     \textcolor{keywordflow}{if} (includeChildren)}
+\DoxyCodeLine{00064                     \{}
+\DoxyCodeLine{00065                         go.GetComponentsInChildren(includeInactive, meshRenderers);}
+\DoxyCodeLine{00066                         go.GetComponentsInChildren(includeInactive, meshFilters);}
+\DoxyCodeLine{00067                         go.GetComponentsInChildren(includeInactive, spriteRenderers);}
+\DoxyCodeLine{00068                     \}}
+\DoxyCodeLine{00069                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070                     \{}
+\DoxyCodeLine{00071                         go.GetComponents(meshRenderers);}
+\DoxyCodeLine{00072                         go.GetComponents(meshFilters);}
+\DoxyCodeLine{00073                         go.GetComponents(spriteRenderers);}
+\DoxyCodeLine{00074                     \}}
+\DoxyCodeLine{00075                 \}}
+\DoxyCodeLine{00076             \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             \textcolor{keywordflow}{if} (colltype)}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} (go.activeInHierarchy)}
+\DoxyCodeLine{00081                 \{}
+\DoxyCodeLine{00082                     \textcolor{keywordflow}{if} (includeChildren)}
+\DoxyCodeLine{00083                     \{}
+\DoxyCodeLine{00084                         go.GetComponentsInChildren(includeInactive, colliders);}
+\DoxyCodeLine{00085 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00086                         go.GetComponentsInChildren(includeInactive, colliders2D);}
+\DoxyCodeLine{00087 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                     \}}
+\DoxyCodeLine{00090                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00091                     \{}
+\DoxyCodeLine{00092                         go.GetComponents(colliders);}
+\DoxyCodeLine{00093 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00094                         go.GetComponents(colliders2D);}
+\DoxyCodeLine{00095 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00096                     \}}
+\DoxyCodeLine{00097                 \}}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{comment}{// Add any MeshRenderer attached to the found MeshFilters to their own list.}}
+\DoxyCodeLine{00101             \textcolor{comment}{// We want the MeshRenderer for its bounds, but only if there is a MeshFilter, otherwise there is a risk of a 0,0,0}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < meshFilters.Count; i++)}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 Renderer mr = meshFilters[i].GetComponent<Renderer>();}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{if} (mr \&\& (mr.enabled || includeInactive))}
+\DoxyCodeLine{00107                 \{}
+\DoxyCodeLine{00108                     \textcolor{keywordflow}{if} (!meshRenderers.Contains(mr))}
+\DoxyCodeLine{00109                         meshRenderers.Add(mr);}
+\DoxyCodeLine{00110                 \}}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{comment}{// Collect only the valid colliders (ignore inactive if not includeInactive)}}
+\DoxyCodeLine{00114             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < colliders.Count; i++)}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 \textcolor{keywordflow}{if} (colliders[i].enabled || includeInactive)}
+\DoxyCodeLine{00117                     \textcolor{keywordflow}{if} (colliders[i])}
+\DoxyCodeLine{00118                         validColliders.Add(colliders[i]);}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             \textcolor{comment}{// Collect only the valid colliders (ignore inactive if not includeInactive)}}
+\DoxyCodeLine{00124             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < colliders2D.Count; i++)}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (colliders2D[i] \&\& colliders2D[i].enabled || includeInactive)}
+\DoxyCodeLine{00127                     \textcolor{comment}{// 2d colliders arrive as null but present in scene changes, test for null}}
+\DoxyCodeLine{00128                     \textcolor{keywordflow}{if} (colliders2D[i])}
+\DoxyCodeLine{00129                         validColliders2D.Add(colliders2D[i]);}
+\DoxyCodeLine{00130             \}}
+\DoxyCodeLine{00131 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00132             \textcolor{comment}{// Make sure we found some bounds objects, or we need to quit.}}
+\DoxyCodeLine{00133             numOfBoundsFound =}
+\DoxyCodeLine{00134                 meshRenderers.Count +}
+\DoxyCodeLine{00135                 spriteRenderers.Count +}
+\DoxyCodeLine{00136                 validColliders.Count}
+\DoxyCodeLine{00137 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D             }}
+\DoxyCodeLine{00138                 + validColliders2D.Count}
+\DoxyCodeLine{00139 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00140                 ;}
+\DoxyCodeLine{00141             \textcolor{comment}{// No values means no bounds will be found, and this will break things if we try to use it.}}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (numOfBoundsFound == 0)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Bounds();}
+\DoxyCodeLine{00145             \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{comment}{// Get a starting bounds. We need this because the default of centered 0,0,0 will break things if the map is}}
+\DoxyCodeLine{00148             \textcolor{comment}{// offset and doesn't encapsulte the world origin.}}
+\DoxyCodeLine{00149             Bounds compositeBounds;}
+\DoxyCodeLine{00150             }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (meshRenderers.Count > 0)}
+\DoxyCodeLine{00152                 compositeBounds = meshRenderers[0].bounds;}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (validColliders.Count > 0)}
+\DoxyCodeLine{00155                 compositeBounds = validColliders[0].bounds;}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00158             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (validColliders2D.Count > 0 \&\& validColliders2D[0])}
+\DoxyCodeLine{00159                 compositeBounds = validColliders2D[0].bounds;}
+\DoxyCodeLine{00160 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (spriteRenderers.Count > 0)}
+\DoxyCodeLine{00162                 compositeBounds = spriteRenderers[0].bounds;}
+\DoxyCodeLine{00164             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Bounds();}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < spriteRenderers.Count; i++)}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 myBoundsCount++;}
+\DoxyCodeLine{00170                 compositeBounds.Encapsulate(spriteRenderers[i].bounds);}
+\DoxyCodeLine{00171             \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             \textcolor{comment}{// Encapsulate all outer found bounds into that. We will be adding the root to itself, but no biggy, this only runs once.}}
+\DoxyCodeLine{00174             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < meshRenderers.Count; i++)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 myBoundsCount++;}
+\DoxyCodeLine{00177                 compositeBounds.Encapsulate(meshRenderers[i].bounds);}
+\DoxyCodeLine{00178             \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < validColliders.Count; i++)}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 myBoundsCount++;}
+\DoxyCodeLine{00183                 compositeBounds.Encapsulate(validColliders[i].bounds);}
+\DoxyCodeLine{00184             \}}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#if !DISABLE\_PHYSICS\_2D}}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < validColliders2D.Count; i++)}
+\DoxyCodeLine{00187             \{}
+\DoxyCodeLine{00188                 myBoundsCount++;}
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{if} (validColliders2D[i])}
+\DoxyCodeLine{00190                     compositeBounds.Encapsulate(validColliders2D[i].bounds);}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00193             \textcolor{keywordflow}{return} compositeBounds;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         \textcolor{keyword}{public} \textcolor{keyword}{static} Bounds CollectMyBounds(GameObject go, BoundsType factorIn, \textcolor{keywordtype}{bool} includeChildren = \textcolor{keyword}{true})}
+\DoxyCodeLine{00198         \{}
+\DoxyCodeLine{00199             \textcolor{keywordtype}{int} dummy;}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{return} CollectMyBounds(go, factorIn, out dummy, includeChildren);}
+\DoxyCodeLine{00201         \}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203     \}}
+\DoxyCodeLine{00204 \}}
+\DoxyCodeLine{00205 }
+
+\end{DoxyCode}

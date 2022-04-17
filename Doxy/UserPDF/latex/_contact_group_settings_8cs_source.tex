@@ -1,0 +1,182 @@
+\doxysection{Contact\+Group\+Settings.\+cs}
+\label{_contact_group_settings_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/ContactGroups/ContactGroupSettings.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/ContactGroups/ContactGroupSettings.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple.ContactGroups}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00018     [HelpURL(Internal.SimpleDocsURLS.CONTACT\_SYSTEM)]}
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }ContactGroupSettings : SettingsScriptableObject<ContactGroupSettings>}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialized;}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} DEF\_NAME = \textcolor{stringliteral}{"{}Default"{}};}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [HideInInspector]}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} List<string> contactGroupTags = \textcolor{keyword}{new} List<string>(2) \{ DEF\_NAME, \textcolor{stringliteral}{"{}Critical"{}} \};}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} Dictionary<string, int> rewindLayerTagToId = \textcolor{keyword}{new} Dictionary<string, int>();}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         [System.NonSerialized]}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} bitsForMask;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} SettingsName \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Contact Group Settings"{}}; \} \}}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]}
+\DoxyCodeLine{00038         \textcolor{keyword}{static} \textcolor{keywordtype}{void} Bootstrap()}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             var single = Single;}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             single = \textcolor{keyword}{this};}
+\DoxyCodeLine{00046             base.Initialize();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (initialized)}
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             initialized = \textcolor{keyword}{true};}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             bitsForMask = contactGroupTags.Count -\/ 1;}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             \textcolor{comment}{// populate the lookup dictionary}}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < contactGroupTags.Count; i++)}
+\DoxyCodeLine{00057                 \textcolor{keywordflow}{if} (rewindLayerTagToId.ContainsKey(contactGroupTags[i]))}
+\DoxyCodeLine{00058                 \{}
+\DoxyCodeLine{00059                     Debug.LogError(\textcolor{stringliteral}{"{}The tag '"{}} + contactGroupTags[i] + \textcolor{stringliteral}{"{}' is used more than once in '"{}} + GetType().Name + \textcolor{stringliteral}{"{}'. Repeats will be discarded, which will likely break some parts of rewind until they are removed."{}});}
+\DoxyCodeLine{00060                 \}}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     rewindLayerTagToId.Add(contactGroupTags[i], i);}
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             \textcolor{comment}{//XDebug.Log(!XDebug.logInfo ? null : ("{}Initialized ContactGroupMasterSettings -\/ Total Layer Tags Count: "{} + contactGroupTags.Count));}}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00074         [System.Obsolete(\textcolor{stringliteral}{"{}Left over from NST, likely not useful any more."{}})]}
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} FindClosestMatch(\textcolor{keywordtype}{string} n, \textcolor{keywordtype}{int} \textcolor{keywordtype}{id})}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             var hgs = Single;}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (hgs.contactGroupTags.Contains(n))}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{return} hgs.contactGroupTags.IndexOf(n);}
+\DoxyCodeLine{00081             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{id} < hgs.contactGroupTags.Count)}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{return} id;}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00087         \textcolor{comment}{//private bool expanded = true;}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.CONTACT\_SYSTEM; \} \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} instructions = \textcolor{stringliteral}{"{}These tags are used by "{}} + typeof(ContactGroupAssign).Name + \textcolor{stringliteral}{"{} to assign colliders to contact groups, for uses like head shots and critical hits."{}};}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         [MenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/Contact Group Settings"{}}, \textcolor{keyword}{false}, 206)]}
+\DoxyCodeLine{00094         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SelectInstance()}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             Single.SelectThisInstance();}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keywordtype}{int} prevContactGroupCount = -\/1;}
+\DoxyCodeLine{00100         \textcolor{keywordtype}{string} summaryString;}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} DrawGui(Object target, \textcolor{keywordtype}{bool} asFoldout, \textcolor{keywordtype}{bool} includeScriptField, \textcolor{keywordtype}{bool} initializeAsOpen = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} asWindow = \textcolor{keyword}{false})}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             }
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{keywordtype}{bool} isExpanded = base.DrawGui(target, asFoldout, includeScriptField, initializeAsOpen, asWindow);}
+\DoxyCodeLine{00107             \textcolor{comment}{//bool isHierarchyMode = EditorGUIUtility.hierarchyMode;}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keywordflow}{if} (!asFoldout || isExpanded)}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113                 SerializedObject soTarget = \textcolor{keyword}{new} SerializedObject(Single);}
+\DoxyCodeLine{00114                 }
+\DoxyCodeLine{00115                 SerializedProperty tags = soTarget.FindProperty(\textcolor{stringliteral}{"{}contactGroupTags"{}});}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                 EditorGUILayout.PrefixLabel(\textcolor{stringliteral}{"{}Defined Groups:"{}});}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 EditorUtils.DrawEditableList(tags, \textcolor{keyword}{true}, \textcolor{stringliteral}{"{}Group"{}});}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121                 EditorGUILayout.HelpBox(instructions, MessageType.None);}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123                 \textcolor{keywordtype}{int} contactGroupCount = contactGroupTags.Count;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{if} (prevContactGroupCount != contactGroupCount)}
+\DoxyCodeLine{00126                     summaryString = (contactGroupTags.Count -\/ 1) + \textcolor{stringliteral}{"{} bits per hit used for hitmasks."{}};}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128                 EditorGUILayout.HelpBox(summaryString, MessageType.None);}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130                 prevContactGroupCount = contactGroupCount;}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00134                 \{}
+\DoxyCodeLine{00135                     Undo.RecordObject(Single, \textcolor{stringliteral}{"{}Modify ContactGroupSettings "{}});}
+\DoxyCodeLine{00136                     soTarget.ApplyModifiedProperties();}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138                     EditorUtility.SetDirty(\textcolor{keyword}{this});}
+\DoxyCodeLine{00139                     AssetDatabase.SaveAssets();}
+\DoxyCodeLine{00140                 \}}
+\DoxyCodeLine{00141                 }
+\DoxyCodeLine{00142             \}}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{return} isExpanded;}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DrawLinkToSettings()}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             Rect r = EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 48f);}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             GUI.Box(r, GUIContent.none, (GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordtype}{float} padding = 4;}
+\DoxyCodeLine{00153             \textcolor{keywordtype}{float} line = r.yMin + padding;}
+\DoxyCodeLine{00154             \textcolor{keywordtype}{float} width = r.width -\/ padding * 2;}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156             GUI.Label(\textcolor{keyword}{new} Rect(r.xMin + padding, line, width, 16), \textcolor{stringliteral}{"{}Add/Remove Hit Box Groups here:"{}}, (GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}});}
+\DoxyCodeLine{00157             line += 18;}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (GUI.Button(\textcolor{keyword}{new} Rect(r.xMin + padding, line, width, 23), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Find Contact Group Settings"{}})))}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 EditorGUIUtility.PingObject(ContactGroupSettings.Single);}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00165     \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170     [CustomEditor(typeof(ContactGroupSettings))]}
+\DoxyCodeLine{00171     [CanEditMultipleObjects]}
+\DoxyCodeLine{00172     \textcolor{keyword}{public} \textcolor{keyword}{class }ContactGroupSettingsEditor : Editor}
+\DoxyCodeLine{00173     \{}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00176         \{}
+\DoxyCodeLine{00177             ContactGroupSettings.Single.DrawGui(target, \textcolor{keyword}{false}, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179     \}}
+\DoxyCodeLine{00180 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00181 \}}
+\DoxyCodeLine{00182 }
+
+\end{DoxyCode}

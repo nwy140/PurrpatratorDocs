@@ -1,0 +1,172 @@
+\doxysection{Pack\+Object\+Database.\+cs}
+\label{_pack_object_database_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/PackObjectDatabase.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/PackObjectDatabase.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }PackFrame}
+\DoxyCodeLine{00014     \{}
+\DoxyCodeLine{00015         \textcolor{keyword}{public} FastBitMask128 mask;}
+\DoxyCodeLine{00016         \textcolor{keyword}{public} FastBitMask128 isCompleteMask;}
+\DoxyCodeLine{00017     \}}
+\DoxyCodeLine{00018 \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00021 \{}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PackObjectDatabase}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} delegate SerializationFlags PackStructDelegate(IntPtr obj, PackFrame prevFrame, ref FastBitMask128 mask, ref \textcolor{keywordtype}{int} maskOffset, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags forceKeyframe);}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} delegate SerializationFlags PackObjDelegate(ref System.Object obj, PackFrame prevFrame, ref FastBitMask128 mask, ref \textcolor{keywordtype}{int} maskOffset, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags forceKeyframe);}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} delegate SerializationFlags PackFrameDelegate(PackFrame obj, PackFrame prevFrame, ref FastBitMask128 mask, ref \textcolor{keywordtype}{int} maskOffset, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags forceKeyframe);}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} delegate SerializationFlags UnpackFrameDelegate(PackFrame obj, ref FastBitMask128 hasContentMask, ref FastBitMask128 isCompleteMask, ref \textcolor{keywordtype}{int} maskOffset, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags forceKeyframe);}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackCopyFrameToObjectDelegate(PackFrame src, System.Object trg, ref FastBitMask128 mask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackCopyFrameToStructDelegate(PackFrame src, IntPtr trg, ref FastBitMask128 mask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackSnapshotObjectDelegate(PackFrame snap, PackFrame targ, System.Object trg, ref FastBitMask128 readyMask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackSnapshotStructDelegate(PackFrame snap, PackFrame targ, IntPtr trg, ref FastBitMask128 readyMask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackInterpFrameToFrameDelegate(PackFrame start, PackFrame end, PackFrame trg, \textcolor{keywordtype}{float} ntime, ref FastBitMask128 readyMask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackInterpFrameToObjectDelegate(PackFrame start, PackFrame end, System.Object trg, \textcolor{keywordtype}{float} ntime, ref FastBitMask128 readyMask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} PackInterpFrameToStructDelegate(PackFrame start, PackFrame end, IntPtr trg, \textcolor{keywordtype}{float} ntime, ref FastBitMask128 readyMask, ref \textcolor{keywordtype}{int} maskOffset);}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<Type, PackObjectInfo> packObjInfoLookup = \textcolor{keyword}{new} Dictionary<Type, PackObjectInfo>();}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{static} PackObjectInfo GetPackObjectInfo(Type type)}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             PackObjectInfo info;}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if} (packObjInfoLookup.TryGetValue(type, out info))}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return} info;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00053             var packType = Type.GetType(\textcolor{stringliteral}{"{}Pack\_"{}} + type.Name);}
+\DoxyCodeLine{00054             \textcolor{keywordflow}{if} (packType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00055             \{}
+\DoxyCodeLine{00056                 Debug.LogError(\textcolor{stringliteral}{"{}BRUTE FORCE Pack\_"{}} + type.Name + \textcolor{stringliteral}{"{}. This shouldn't happen."{}});}
+\DoxyCodeLine{00057                 packType.GetMethod(\textcolor{stringliteral}{"{}Initialize"{}}).Invoke(\textcolor{keyword}{null}, \textcolor{keyword}{null});}
+\DoxyCodeLine{00058             \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             \textcolor{keywordflow}{if} (packObjInfoLookup.TryGetValue(type, out info))}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{return} info;}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00064             Debug.LogWarning(\textcolor{stringliteral}{"{}PackObject code has not been generated for type '"{}} + type.Name + \textcolor{stringliteral}{"{}'. Is Code Generation disabled in "{}} + typeof(PackObjectSettings).Name + \textcolor{stringliteral}{"{}?"{}});}
+\DoxyCodeLine{00065 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keyword}{class }PackObjectInfo}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{keyword}{public} readonly Type packFrameType;}
+\DoxyCodeLine{00072             \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} maxBits;}
+\DoxyCodeLine{00073             \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} maxBytes;}
+\DoxyCodeLine{00074             \textcolor{keyword}{public} readonly FastBitMask128 defaultReadyMask;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             \textcolor{keyword}{public} readonly PackObjDelegate PackObjToBuffer;}
+\DoxyCodeLine{00077             \textcolor{keyword}{public} readonly PackStructDelegate PackStructToBuffer;}
+\DoxyCodeLine{00078             \textcolor{keyword}{public} readonly PackFrameDelegate PackFrameToBuffer;}
+\DoxyCodeLine{00079             \textcolor{keyword}{public} readonly UnpackFrameDelegate UnpackFrameFromBuffer;}
+\DoxyCodeLine{00080             \textcolor{keyword}{public} Func<PackFrame> FactoryFrame;}
+\DoxyCodeLine{00081             \textcolor{keyword}{public} Func<System.Object, int, PackFrame[]> FactoryFramesObj;}
+\DoxyCodeLine{00082             \textcolor{keyword}{public} Func<IntPtr, int, PackFrame[]> FactoryFramesStruct;}
+\DoxyCodeLine{00083             \textcolor{keyword}{public} PackCopyFrameToObjectDelegate CopyFrameToObj;}
+\DoxyCodeLine{00084             \textcolor{keyword}{public} PackCopyFrameToStructDelegate CopyFrameToStruct;}
+\DoxyCodeLine{00085             \textcolor{keyword}{public} PackSnapshotObjectDelegate SnapObject;}
+\DoxyCodeLine{00086             \textcolor{keyword}{public} PackSnapshotStructDelegate SnapStruct;}
+\DoxyCodeLine{00087             \textcolor{keyword}{public} PackInterpFrameToFrameDelegate InterpFrameToFrame;}
+\DoxyCodeLine{00088             \textcolor{keyword}{public} PackInterpFrameToObjectDelegate InterpFrameToObj;}
+\DoxyCodeLine{00089             \textcolor{keyword}{public} PackInterpFrameToStructDelegate InterpFrameToStruct;}
+\DoxyCodeLine{00090             \textcolor{keyword}{public} Action<System.Object, PackFrame> CaptureObj;}
+\DoxyCodeLine{00091             \textcolor{keyword}{public} Action<IntPtr, PackFrame> CaptureStruct;}
+\DoxyCodeLine{00092             \textcolor{keyword}{public} Action<PackFrame, PackFrame> CopyFrameToFrame;}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} fieldCount;}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00097             \textcolor{keyword}{public} PackObjectInfo(}
+\DoxyCodeLine{00098                 FastBitMask128 defaultReadyMask,}
+\DoxyCodeLine{00099                 PackObjDelegate packObjToBuffer, }
+\DoxyCodeLine{00100                 \textcolor{comment}{//PackObjDelegate unpackObjFromBuffer,}}
+\DoxyCodeLine{00101                 PackFrameDelegate packFrameToBuffer,}
+\DoxyCodeLine{00102                 UnpackFrameDelegate unpackFrameFromBuffer,}
+\DoxyCodeLine{00103                 \textcolor{keywordtype}{int} maxBits,}
+\DoxyCodeLine{00104                 Func<PackFrame> factoryFrame,}
+\DoxyCodeLine{00105                 Func<System.Object, \textcolor{keywordtype}{int}, PackFrame[]> factoryFramesObj,}
+\DoxyCodeLine{00106                 PackCopyFrameToObjectDelegate copyFrameToObj,}
+\DoxyCodeLine{00107                 Action<System.Object, PackFrame> captureObj,}
+\DoxyCodeLine{00108                 Action<PackFrame, PackFrame> copyFrameToFrame,}
+\DoxyCodeLine{00109                 PackSnapshotObjectDelegate snapObject,}
+\DoxyCodeLine{00110                 PackInterpFrameToFrameDelegate interpFrameToFrame,}
+\DoxyCodeLine{00111                 PackInterpFrameToObjectDelegate interpFrameToObj,}
+\DoxyCodeLine{00112                 \textcolor{keywordtype}{int} fieldCount}
+\DoxyCodeLine{00113                 )}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 this.PackObjToBuffer = packObjToBuffer;}
+\DoxyCodeLine{00116                 this.defaultReadyMask = defaultReadyMask;}
+\DoxyCodeLine{00117                 \textcolor{comment}{//this.unpackObjFromBuffer = unpackObjFromBuffer;}}
+\DoxyCodeLine{00118                 this.PackFrameToBuffer = packFrameToBuffer;}
+\DoxyCodeLine{00119                 this.UnpackFrameFromBuffer = unpackFrameFromBuffer;}
+\DoxyCodeLine{00120                 this.maxBits = maxBits;}
+\DoxyCodeLine{00121                 this.maxBytes = (maxBits + 7) >> 3;}
+\DoxyCodeLine{00122                 this.FactoryFrame = factoryFrame;}
+\DoxyCodeLine{00123                 this.FactoryFramesObj = factoryFramesObj;}
+\DoxyCodeLine{00124                 this.CopyFrameToObj = copyFrameToObj;}
+\DoxyCodeLine{00125                 this.CaptureObj = captureObj;}
+\DoxyCodeLine{00126                 this.CopyFrameToFrame = copyFrameToFrame;}
+\DoxyCodeLine{00127                 this.SnapObject = snapObject;}
+\DoxyCodeLine{00128                 this.InterpFrameToFrame = interpFrameToFrame;}
+\DoxyCodeLine{00129                 this.InterpFrameToObj = interpFrameToObj;}
+\DoxyCodeLine{00130                 this.fieldCount = fieldCount;}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00134             \textcolor{keyword}{public} PackObjectInfo(}
+\DoxyCodeLine{00135                 FastBitMask128 defaultReadyMask,}
+\DoxyCodeLine{00136                 PackStructDelegate packStructToBuffer,}
+\DoxyCodeLine{00137                 \textcolor{comment}{//PackStructDelegate unpackStructFromBuffer,}}
+\DoxyCodeLine{00138                 PackFrameDelegate packFrameToBuffer,}
+\DoxyCodeLine{00139                 UnpackFrameDelegate unpackFrameFromBuffer,}
+\DoxyCodeLine{00140                 \textcolor{keywordtype}{int} maxBits,}
+\DoxyCodeLine{00141                 Func<PackFrame> factoryFrame,}
+\DoxyCodeLine{00142                 Func<IntPtr, \textcolor{keywordtype}{int}, PackFrame[]> factoryFramesStruct,}
+\DoxyCodeLine{00143                 PackCopyFrameToStructDelegate copyFrameToStruct,}
+\DoxyCodeLine{00144                 Action<IntPtr, PackFrame> captureStruct,}
+\DoxyCodeLine{00145                 Action<PackFrame, PackFrame> copyFrameToFrame,}
+\DoxyCodeLine{00146                 PackSnapshotStructDelegate snapStruct,}
+\DoxyCodeLine{00147                 PackInterpFrameToFrameDelegate interpFrameToFrame,}
+\DoxyCodeLine{00148                 PackInterpFrameToStructDelegate interpFrameToStruct,}
+\DoxyCodeLine{00149                 \textcolor{keywordtype}{int} fieldCount}
+\DoxyCodeLine{00150                 )}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 this.defaultReadyMask = defaultReadyMask;}
+\DoxyCodeLine{00153                 this.PackStructToBuffer = packStructToBuffer;}
+\DoxyCodeLine{00154                 \textcolor{comment}{//this.unpackStructFromBuffer = unpackStructFromBuffer;}}
+\DoxyCodeLine{00155                 this.PackFrameToBuffer = packFrameToBuffer;}
+\DoxyCodeLine{00156                 this.UnpackFrameFromBuffer = unpackFrameFromBuffer;}
+\DoxyCodeLine{00157                 this.maxBits = maxBits;}
+\DoxyCodeLine{00158                 this.maxBytes = (maxBits + 7) >> 3;}
+\DoxyCodeLine{00159                 this.FactoryFrame = factoryFrame;}
+\DoxyCodeLine{00160                 this.FactoryFramesStruct = factoryFramesStruct;}
+\DoxyCodeLine{00161                 this.CopyFrameToStruct = copyFrameToStruct;}
+\DoxyCodeLine{00162                 this.CaptureStruct = captureStruct;}
+\DoxyCodeLine{00163                 this.CopyFrameToFrame = copyFrameToFrame;}
+\DoxyCodeLine{00164                 this.SnapStruct = snapStruct;}
+\DoxyCodeLine{00165                 this.InterpFrameToFrame = interpFrameToFrame;}
+\DoxyCodeLine{00166                 this.InterpFrameToStruct = interpFrameToStruct;}
+\DoxyCodeLine{00167                 this.fieldCount = fieldCount;}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169             \}}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171     \}}
+\DoxyCodeLine{00172 \}}
+\DoxyCodeLine{00173 }
+
+\end{DoxyCode}

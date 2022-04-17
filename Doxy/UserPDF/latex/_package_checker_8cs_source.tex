@@ -1,0 +1,275 @@
+\doxysection{Package\+Checker.\+cs}
+\label{_package_checker_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Editor/PackageChecker/PackageChecker.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Editor/PackageChecker/PackageChecker.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEditor.PackageManager;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEditor.PackageManager.Requests;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} PackageInfo = UnityEditor.PackageManager.PackageInfo;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }StarterAssets}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PackageChecker}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014         \textcolor{keyword}{private} \textcolor{keyword}{static} ListRequest clientList;}
+\DoxyCodeLine{00015         \textcolor{keyword}{private} \textcolor{keyword}{static} SearchRequest compatibleList;}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} \textcolor{keyword}{static} List<PackageEntry> packagesToAdd;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018         \textcolor{keyword}{private} \textcolor{keyword}{static} AddRequest[] addRequests;}
+\DoxyCodeLine{00019         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool}[] installRequired;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} EditorFolderRoot = \textcolor{stringliteral}{"{}Assets/StarterAssets/"{}};}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} PackagesToImportDataFile = \textcolor{stringliteral}{"{}PackageImportList.txt"{}};}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{string} PackageCheckerScriptingDefine = \textcolor{stringliteral}{"{}STARTER\_ASSETS\_PACKAGES\_CHECKED"{}};}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         [InitializeOnLoadMethod]}
+\DoxyCodeLine{00026         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CheckPackage()}
+\DoxyCodeLine{00027         \{}
+\DoxyCodeLine{00028             \textcolor{comment}{// if we dont have the scripting define, it means the check has not been done}}
+\DoxyCodeLine{00029             \textcolor{keywordflow}{if} (!ScriptingDefineUtils.CheckScriptingDefine(PackageCheckerScriptingDefine))}
+\DoxyCodeLine{00030             \{}
+\DoxyCodeLine{00031                 packagesToAdd = \textcolor{keyword}{new} List<PackageEntry>();}
+\DoxyCodeLine{00032                 clientList = \textcolor{keyword}{null};}
+\DoxyCodeLine{00033                 compatibleList = \textcolor{keyword}{null};}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035                 \textcolor{comment}{// find the projects required package list}}
+\DoxyCodeLine{00036                 var requiredPackagesListFile = Directory.GetFiles(Application.dataPath, PackagesToImportDataFile,}
+\DoxyCodeLine{00037                     SearchOption.AllDirectories);}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039                 \textcolor{comment}{// if no PackageImportList.txt exists}}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{if} (requiredPackagesListFile.Length == 0)}
+\DoxyCodeLine{00041                 \{}
+\DoxyCodeLine{00042                     Debug.LogError(}
+\DoxyCodeLine{00043                         \textcolor{stringliteral}{"{}[Auto Package] : Couldn't find the packages list. Be sure there is a file called PackageImportList in your project"{}});}
+\DoxyCodeLine{00044                 \}}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00046                 \{}
+\DoxyCodeLine{00047                     packagesToAdd = \textcolor{keyword}{new} List<PackageEntry>();}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049                     \textcolor{keywordtype}{string} packageListPath = requiredPackagesListFile[0];}
+\DoxyCodeLine{00050                     \textcolor{keywordtype}{string}[] content = File.ReadAllLines(packageListPath);}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052                     \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} line \textcolor{keywordflow}{in} content)}
+\DoxyCodeLine{00053                     \{}
+\DoxyCodeLine{00054                         \textcolor{keywordtype}{string}[] split = line.Split(\textcolor{charliteral}{'@'});}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056                         \textcolor{comment}{// if no version is given, return null}}
+\DoxyCodeLine{00057                         PackageEntry entry = \textcolor{keyword}{new} PackageEntry}
+\DoxyCodeLine{00058                             \{name = split[0], version = split.Length > 1 ? split[1] : \textcolor{keyword}{null}\};}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                         packagesToAdd.Add(entry);}
+\DoxyCodeLine{00061                     \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063                     \textcolor{comment}{// Create a file in library that is queried to see if CheckPackage() has been run already}}
+\DoxyCodeLine{00064                     ScriptingDefineUtils.SetScriptingDefine(PackageCheckerScriptingDefine);}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066                     \textcolor{comment}{// create a list of compatible packages for current engine version}}
+\DoxyCodeLine{00067                     compatibleList = Client.SearchAll();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069                     \textcolor{keywordflow}{while} (!compatibleList.IsCompleted)}
+\DoxyCodeLine{00070                     \{}
+\DoxyCodeLine{00071                         \textcolor{keywordflow}{if} (compatibleList.Status == StatusCode.Failure || compatibleList.Error != \textcolor{keyword}{null})}
+\DoxyCodeLine{00072                         \{}
+\DoxyCodeLine{00073                             Debug.LogError(compatibleList.Error.message);}
+\DoxyCodeLine{00074                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00075                         \}}
+\DoxyCodeLine{00076                     \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078                     \textcolor{comment}{// create a list of packages found in the engine}}
+\DoxyCodeLine{00079                     clientList = Client.List();}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{while} (!clientList.IsCompleted)}
+\DoxyCodeLine{00082                     \{}
+\DoxyCodeLine{00083                         \textcolor{keywordflow}{if} (clientList.Status == StatusCode.Failure || clientList.Error != \textcolor{keyword}{null})}
+\DoxyCodeLine{00084                         \{}
+\DoxyCodeLine{00085                             Debug.LogError(clientList.Error.message);}
+\DoxyCodeLine{00086                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00087                         \}}
+\DoxyCodeLine{00088                     \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090                     addRequests = \textcolor{keyword}{new} AddRequest[packagesToAdd.Count];}
+\DoxyCodeLine{00091                     installRequired = \textcolor{keyword}{new} \textcolor{keywordtype}{bool}[packagesToAdd.Count];}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093                     \textcolor{comment}{// default new packages to install = false. we will mark true after validating they're required}}
+\DoxyCodeLine{00094                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < installRequired.Length; i++)}
+\DoxyCodeLine{00095                     \{}
+\DoxyCodeLine{00096                         installRequired[i] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00097                     \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                     \textcolor{comment}{// build data collections compatible packages for this project, and packages within the project}}
+\DoxyCodeLine{00100                     List<PackageInfo> compatiblePackages =}
+\DoxyCodeLine{00101                         \textcolor{keyword}{new} List<PackageInfo>();}
+\DoxyCodeLine{00102                     List<PackageInfo> clientPackages =}
+\DoxyCodeLine{00103                         \textcolor{keyword}{new} List<PackageInfo>();}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105                     \textcolor{keywordflow}{foreach} (var result \textcolor{keywordflow}{in} compatibleList.Result)}
+\DoxyCodeLine{00106                     \{}
+\DoxyCodeLine{00107                         compatiblePackages.Add(result);}
+\DoxyCodeLine{00108                     \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110                     \textcolor{keywordflow}{foreach} (var result \textcolor{keywordflow}{in} clientList.Result)}
+\DoxyCodeLine{00111                     \{}
+\DoxyCodeLine{00112                         clientPackages.Add(result);}
+\DoxyCodeLine{00113                     \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                     \textcolor{comment}{// check for the latest verified package version for each package that is missing a version}}
+\DoxyCodeLine{00116                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < packagesToAdd.Count; i++)}
+\DoxyCodeLine{00117                     \{}
+\DoxyCodeLine{00118                         \textcolor{comment}{// if a version number is not provided}}
+\DoxyCodeLine{00119                         \textcolor{keywordflow}{if} (packagesToAdd[i].version == \textcolor{keyword}{null})}
+\DoxyCodeLine{00120                         \{}
+\DoxyCodeLine{00121                             \textcolor{keywordflow}{foreach} (var package \textcolor{keywordflow}{in} compatiblePackages)}
+\DoxyCodeLine{00122                             \{}
+\DoxyCodeLine{00123                                 \textcolor{comment}{// if no latest verified version found, PackageChecker will just install latest release}}
+\DoxyCodeLine{00124                                 \textcolor{keywordflow}{if} (packagesToAdd[i].name == package.name \&\& package.versions.verified != \textcolor{keywordtype}{string}.Empty)}
+\DoxyCodeLine{00125                                 \{}
+\DoxyCodeLine{00126                                     \textcolor{comment}{// add latest verified version number to the packagetoadd list version}}
+\DoxyCodeLine{00127                                     \textcolor{comment}{// so that we get the latest verified version only}}
+\DoxyCodeLine{00128                                     packagesToAdd[i].version = package.versions.verified;}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130                                     \textcolor{comment}{// add to our install list}}
+\DoxyCodeLine{00131                                     installRequired[i] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133                                     \textcolor{comment}{//Debug.Log(string.Format("{}Requested \{0\}. Latest verified compatible package found: \{1\}"{},}}
+\DoxyCodeLine{00134                                     \textcolor{comment}{//    packagesToAdd[i].name, packagesToAdd[i].version));}}
+\DoxyCodeLine{00135                                 \}}
+\DoxyCodeLine{00136                             \}}
+\DoxyCodeLine{00137                         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                         \textcolor{comment}{// we don't need to catch packages that are not installed as their latest version has been collected}}
+\DoxyCodeLine{00140                         \textcolor{comment}{// from the campatiblelist result}}
+\DoxyCodeLine{00141                         \textcolor{keywordflow}{foreach} (var package \textcolor{keywordflow}{in} clientPackages)}
+\DoxyCodeLine{00142                         \{}
+\DoxyCodeLine{00143                             \textcolor{keywordflow}{if} (packagesToAdd[i].name == package.name)}
+\DoxyCodeLine{00144                             \{}
+\DoxyCodeLine{00145                                 \textcolor{comment}{// see what version we have installed}}
+\DoxyCodeLine{00146                                 \textcolor{keywordflow}{switch} (CompareVersion(packagesToAdd[i].version, package.version))}
+\DoxyCodeLine{00147                                 \{}
+\DoxyCodeLine{00148                                     \textcolor{comment}{// latest verified is ahead of installed version}}
+\DoxyCodeLine{00149                                     \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00150                                         installRequired[i] = EditorUtility.DisplayDialog(\textcolor{stringliteral}{"{}Confirm Package Upgrade"{}},}
+\DoxyCodeLine{00151                                             \$\textcolor{stringliteral}{"{}The version of \(\backslash\)"{}\{packagesToAdd[i].name\}\(\backslash\)"{} in this project is \{package.version\}. The latest verified "{}} +}
+\DoxyCodeLine{00152                                             \$\textcolor{stringliteral}{"{}version is \{packagesToAdd[i].version\}. Would you like to upgrade it to the latest version? (Recommended)"{}},}
+\DoxyCodeLine{00153                                             \textcolor{stringliteral}{"{}Yes"{}}, \textcolor{stringliteral}{"{}No"{}});}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155                                         Debug.Log(}
+\DoxyCodeLine{00156                                             \$\textcolor{stringliteral}{"{}<b>Package version behind</b>: \{package.packageId\} is behind latest verified "{}} +}
+\DoxyCodeLine{00157                                             \$\textcolor{stringliteral}{"{}version \{package.versions.verified\}. prompting user install"{}});}
+\DoxyCodeLine{00158                                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                                     \textcolor{comment}{// latest verified matches installed version}}
+\DoxyCodeLine{00161                                     \textcolor{keywordflow}{case} 0:}
+\DoxyCodeLine{00162                                         installRequired[i] = \textcolor{keyword}{false};}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164                                         Debug.Log(}
+\DoxyCodeLine{00165                                             \$\textcolor{stringliteral}{"{}<b>Package version match</b>: \{package.packageId\} matches latest verified version "{}} +}
+\DoxyCodeLine{00166                                             \$\textcolor{stringliteral}{"{}\{package.versions.verified\}. Skipped install"{}});}
+\DoxyCodeLine{00167                                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                                     \textcolor{comment}{// latest verified is behind installed version}}
+\DoxyCodeLine{00170                                     \textcolor{keywordflow}{case} -\/1:}
+\DoxyCodeLine{00171                                         installRequired[i] = EditorUtility.DisplayDialog(\textcolor{stringliteral}{"{}Confirm Package Downgrade"{}},}
+\DoxyCodeLine{00172                                             \$\textcolor{stringliteral}{"{}The version of \(\backslash\)"{}\{packagesToAdd[i].name\}\(\backslash\)"{} in this project is \{package.version\}. The latest verified version is \{packagesToAdd[i].version\}. "{}} +}
+\DoxyCodeLine{00173                                             \$\textcolor{stringliteral}{"{}\{package.version\} is unverified. Would you like to downgrade it to the latest verified version? "{}} +}
+\DoxyCodeLine{00174                                             \textcolor{stringliteral}{"{}(Recommended)"{}}, \textcolor{stringliteral}{"{}Yes"{}}, \textcolor{stringliteral}{"{}No"{}});}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                                         Debug.Log(}
+\DoxyCodeLine{00177                                             \$\textcolor{stringliteral}{"{}<b>Package version ahead</b>: \{package.packageId\} is newer than latest verified "{}} +}
+\DoxyCodeLine{00178                                             \$\textcolor{stringliteral}{"{}version \{package.versions.verified\}, skipped install"{}});}
+\DoxyCodeLine{00179                                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00180                                 \}}
+\DoxyCodeLine{00181                             \}}
+\DoxyCodeLine{00182                         \}}
+\DoxyCodeLine{00183                     \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185                     \textcolor{comment}{// install our packages and versions}}
+\DoxyCodeLine{00186                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < packagesToAdd.Count; i++)}
+\DoxyCodeLine{00187                     \{}
+\DoxyCodeLine{00188                         \textcolor{keywordflow}{if} (installRequired[i])}
+\DoxyCodeLine{00189                         \{}
+\DoxyCodeLine{00190                             addRequests[i] = InstallSelectedPackage(packagesToAdd[i].name, packagesToAdd[i].version);}
+\DoxyCodeLine{00191                         \}}
+\DoxyCodeLine{00192                     \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194                     ReimportPackagesByKeyword();}
+\DoxyCodeLine{00195                 \}}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197         \}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199         \textcolor{keyword}{private} \textcolor{keyword}{static} AddRequest InstallSelectedPackage(\textcolor{keywordtype}{string} packageName, \textcolor{keywordtype}{string} packageVersion)}
+\DoxyCodeLine{00200         \{}
+\DoxyCodeLine{00201             \textcolor{keywordflow}{if} (packageVersion != \textcolor{keyword}{null})}
+\DoxyCodeLine{00202             \{}
+\DoxyCodeLine{00203                 packageName = packageName + \textcolor{stringliteral}{"{}@"{}} + packageVersion;}
+\DoxyCodeLine{00204                 Debug.Log(\$\textcolor{stringliteral}{"{}<b>Adding package</b>: \{packageName\}"{}});}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207             AddRequest newPackage = Client.Add(packageName);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordflow}{while} (!newPackage.IsCompleted)}
+\DoxyCodeLine{00210             \{}
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{if} (newPackage.Status == StatusCode.Failure || newPackage.Error != \textcolor{keyword}{null})}
+\DoxyCodeLine{00212                 \{}
+\DoxyCodeLine{00213                     Debug.LogError(newPackage.Error.message);}
+\DoxyCodeLine{00214                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00215                 \}}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             \textcolor{keywordflow}{return} newPackage;}
+\DoxyCodeLine{00219         \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ReimportPackagesByKeyword()}
+\DoxyCodeLine{00222         \{}
+\DoxyCodeLine{00223             AssetDatabase.Refresh();}
+\DoxyCodeLine{00224             AssetDatabase.ImportAsset(EditorFolderRoot, ImportAssetOptions.ImportRecursive);}
+\DoxyCodeLine{00225         \}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CompareVersion(\textcolor{keywordtype}{string} latestVerifiedVersion, \textcolor{keywordtype}{string} projectVersion)}
+\DoxyCodeLine{00228         \{}
+\DoxyCodeLine{00229             \textcolor{keywordtype}{string}[] latestVersionSplit = latestVerifiedVersion.Split(\textcolor{charliteral}{'.'});}
+\DoxyCodeLine{00230             \textcolor{keywordtype}{string}[] projectVersionSplit = projectVersion.Split(\textcolor{charliteral}{'.'});}
+\DoxyCodeLine{00231             \textcolor{keywordtype}{int} iteratorA = 0;}
+\DoxyCodeLine{00232             \textcolor{keywordtype}{int} iteratorB = 0;}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{keywordflow}{while} (iteratorA < latestVersionSplit.Length || iteratorB < projectVersionSplit.Length)}
+\DoxyCodeLine{00235             \{}
+\DoxyCodeLine{00236                 \textcolor{keywordtype}{int} latestVerified = 0;}
+\DoxyCodeLine{00237                 \textcolor{keywordtype}{int} installed = 0;}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{if} (iteratorA < latestVersionSplit.Length)}
+\DoxyCodeLine{00240                 \{}
+\DoxyCodeLine{00241                     latestVerified = Convert.ToInt32(latestVersionSplit[iteratorA]);}
+\DoxyCodeLine{00242                 \}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244                 \textcolor{keywordflow}{if} (iteratorB < projectVersionSplit.Length)}
+\DoxyCodeLine{00245                 \{}
+\DoxyCodeLine{00246                     installed = Convert.ToInt32(projectVersionSplit[iteratorB]);}
+\DoxyCodeLine{00247                 \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249                 \textcolor{comment}{// latest verified is ahead of installed version}}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{if} (latestVerified > installed) \textcolor{keywordflow}{return} 1;}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 \textcolor{comment}{// latest verified is behind installed version}}
+\DoxyCodeLine{00253                 \textcolor{keywordflow}{if} (latestVerified < installed) \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255                 iteratorA++;}
+\DoxyCodeLine{00256                 iteratorB++;}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{comment}{// if the version is the same}}
+\DoxyCodeLine{00260             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00261         \}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{keyword}{public} \textcolor{keyword}{class }PackageEntry}
+\DoxyCodeLine{00264         \{}
+\DoxyCodeLine{00265             \textcolor{keyword}{public} \textcolor{keywordtype}{string} name;}
+\DoxyCodeLine{00266             \textcolor{keyword}{public} \textcolor{keywordtype}{string} version;}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268     \}}
+\DoxyCodeLine{00269 \}}
+
+\end{DoxyCode}

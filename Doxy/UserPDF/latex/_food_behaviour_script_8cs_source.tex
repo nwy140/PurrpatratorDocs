@@ -1,0 +1,74 @@
+\doxysection{Food\+Behaviour\+Script.\+cs}
+\label{_food_behaviour_script_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/FoodBehaviourScript.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/FoodBehaviourScript.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{public} \textcolor{keyword}{class }FoodBehaviourScript : MonoBehaviourPun}
+\DoxyCodeLine{00010 \{}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isCollected = \textcolor{keyword}{false}, isHeld = \textcolor{keyword}{true};}
+\DoxyCodeLine{00012     \textcolor{keywordtype}{float} originalYAxis;}
+\DoxyCodeLine{00013     \textcolor{keyword}{public} \textcolor{keywordtype}{float} floatStrength;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015     \textcolor{keyword}{public} UnityEvent TaskComplete;}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} GameObject foodObject;}
+\DoxyCodeLine{00017     PhotonView PV;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     Collider colliderObj;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     [HideInInspector]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} isActive = \textcolor{keyword}{false};}
+\DoxyCodeLine{00023  }
+\DoxyCodeLine{00024     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026         this.originalYAxis = this.transform.position.y;}
+\DoxyCodeLine{00027         colliderObj = GetComponent<Collider>();}
+\DoxyCodeLine{00028     \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00031     \{}
+\DoxyCodeLine{00032         TryGetComponent(out PV);}
+\DoxyCodeLine{00033     \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035     \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00036     \{}
+\DoxyCodeLine{00037         \textcolor{comment}{//Debug.Log(isHeld);}}
+\DoxyCodeLine{00038         transform.Rotate(20 * Time.deltaTime * 0, 3, 0);}
+\DoxyCodeLine{00039         transform.position = \textcolor{keyword}{new} Vector3(transform.position.x, originalYAxis + ((\textcolor{keywordtype}{float})Math.Sin(Time.time*2) * floatStrength), transform.position.z);}
+\DoxyCodeLine{00040         \textcolor{keywordflow}{if} (isHeld == \textcolor{keyword}{false})}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             PV.RPC(nameof(DeliverFood), RpcTarget.MasterClient);}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044         \textcolor{keywordflow}{if} (isCollected \&\& foodObject != \textcolor{keyword}{null})}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             PV.RPC(nameof(PhotonSyncingTaskCompletion), RpcTarget.MasterClient);}
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049     \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051     [PunRPC]}
+\DoxyCodeLine{00052     \textcolor{keyword}{public} \textcolor{keywordtype}{void} PhotonSyncingTaskCompletion()}
+\DoxyCodeLine{00053     \{}
+\DoxyCodeLine{00054         Debug.Log(\textcolor{stringliteral}{"{}PhotonSyncingTaskCompletion"{}});}
+\DoxyCodeLine{00055         colliderObj.enabled = !colliderObj.enabled;}
+\DoxyCodeLine{00056         PhotonNetwork.Destroy(foodObject);}
+\DoxyCodeLine{00057         \textcolor{comment}{//TaskComplete.Invoke();}}
+\DoxyCodeLine{00058     \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060     [PunRPC]}
+\DoxyCodeLine{00061     \textcolor{keyword}{public} \textcolor{keywordtype}{void} DeliverFood()}
+\DoxyCodeLine{00062     \{}
+\DoxyCodeLine{00063         Debug.Log(\textcolor{stringliteral}{"{}DeliverFood"{}});}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         TaskComplete.Invoke();}
+\DoxyCodeLine{00066     \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,142 @@
+\doxysection{Cluster.\+cs}
+\label{_cluster_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoProcedural/Scripts/Cluster.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoProcedural/Scripts/Cluster.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{keyword}{namespace }Photon.Pun.Demo.Procedural}
+\DoxyCodeLine{00008 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{class }Cluster : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} \textcolor{keywordtype}{string} propertiesKey;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018         \textcolor{keyword}{private} Dictionary<int, float> propertiesValue;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ClusterId \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} Dictionary<int, GameObject> Blocks \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00027         \{}
+\DoxyCodeLine{00028             Blocks = \textcolor{keyword}{new} Dictionary<int, GameObject>();}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030             propertiesValue = \textcolor{keyword}{new} Dictionary<int, float>();}
+\DoxyCodeLine{00031         \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00036         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             propertiesKey = \textcolor{stringliteral}{"{}Cluster "{}} + ClusterId;}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 \textcolor{preprocessor}{        \#region CLASS FUNCTIONS}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddBlock(\textcolor{keywordtype}{int} blockId, GameObject block)}
+\DoxyCodeLine{00051         \{}
+\DoxyCodeLine{00052             Blocks.Add(blockId, block);}
+\DoxyCodeLine{00053         \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DestroyCluster()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{foreach} (GameObject block \textcolor{keywordflow}{in} Blocks.Values)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 Destroy(block);}
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             Blocks.Clear();}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 RemoveClusterFromRoomProperties();}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DecreaseBlockHeight(\textcolor{keywordtype}{int} blockId)}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             \textcolor{keywordtype}{float} height = Blocks[blockId].transform.localScale.y;}
+\DoxyCodeLine{00080             height = Mathf.Max((height -\/ 1.0f), 0.0f);}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             SetBlockHeightLocal(blockId, height);}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keywordtype}{void} IncreaseBlockHeight(\textcolor{keywordtype}{int} blockId)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordtype}{float} height = Blocks[blockId].transform.localScale.y;}
+\DoxyCodeLine{00091             height = Mathf.Min((height + 1.0f), 8.0f);}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             SetBlockHeightLocal(blockId, height);}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetBlockHeightRemote(\textcolor{keywordtype}{int} blockId, \textcolor{keywordtype}{float} height)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             GameObject block = Blocks[blockId];}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             Vector3 scale = block.transform.localScale;}
+\DoxyCodeLine{00105             Vector3 position = block.transform.localPosition;}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             block.transform.localScale = \textcolor{keyword}{new} Vector3(scale.x, height, scale.z);}
+\DoxyCodeLine{00108             block.transform.localPosition = \textcolor{keyword}{new} Vector3(position.x, height / 2.0f, position.z);}
+\DoxyCodeLine{00109         \}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00115         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SetBlockHeightLocal(\textcolor{keywordtype}{int} blockId, \textcolor{keywordtype}{float} height)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             GameObject block = Blocks[blockId];}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             Vector3 scale = block.transform.localScale;}
+\DoxyCodeLine{00120             Vector3 position = block.transform.localPosition;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             block.transform.localScale = \textcolor{keyword}{new} Vector3(scale.x, height, scale.z);}
+\DoxyCodeLine{00123             block.transform.localPosition = \textcolor{keyword}{new} Vector3(position.x, height / 2.0f, position.z);}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             UpdateRoomProperties(blockId, height);}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00131         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateRoomProperties(\textcolor{keywordtype}{int} blockId, \textcolor{keywordtype}{float} height)}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             propertiesValue[blockId] = height;}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             Hashtable properties = \textcolor{keyword}{new} Hashtable \{\{propertiesKey, propertiesValue\}\};}
+\DoxyCodeLine{00136             PhotonNetwork.CurrentRoom.SetCustomProperties(properties);}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00142         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RemoveClusterFromRoomProperties()}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144             Hashtable properties = \textcolor{keyword}{new} Hashtable \{\{propertiesKey, \textcolor{keyword}{null}\}\};}
+\DoxyCodeLine{00145             PhotonNetwork.CurrentRoom.SetCustomProperties(properties);}
+\DoxyCodeLine{00146         \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 \textcolor{preprocessor}{        \#region PUN CALLBACKS}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00157         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (propertiesThatChanged.ContainsKey(propertiesKey))}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{if} (propertiesThatChanged[propertiesKey] == \textcolor{keyword}{null})}
+\DoxyCodeLine{00162                 \{}
+\DoxyCodeLine{00163                     propertiesValue = \textcolor{keyword}{new} Dictionary<int, float>();}
+\DoxyCodeLine{00164                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167                 propertiesValue = (Dictionary<int, float>) propertiesThatChanged[propertiesKey];}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{foreach} (KeyValuePair<int, float> pair \textcolor{keywordflow}{in} propertiesValue)}
+\DoxyCodeLine{00170                 \{}
+\DoxyCodeLine{00171                     SetBlockHeightRemote(pair.Key, pair.Value);}
+\DoxyCodeLine{00172                 \}}
+\DoxyCodeLine{00173             \}}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00177     \}}
+\DoxyCodeLine{00178 \}}
+
+\end{DoxyCode}

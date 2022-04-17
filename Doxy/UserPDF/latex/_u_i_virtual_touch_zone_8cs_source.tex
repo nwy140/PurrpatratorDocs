@@ -1,0 +1,131 @@
+\doxysection{UIVirtual\+Touch\+Zone.\+cs}
+\label{_u_i_virtual_touch_zone_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualTouchZone.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualTouchZone.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine.EventSystems;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{keyword}{public} \textcolor{keyword}{class }UIVirtualTouchZone : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler}
+\DoxyCodeLine{00008 \{}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010     [Header(\textcolor{stringliteral}{"{}Rect References"{}})]}
+\DoxyCodeLine{00011     \textcolor{keyword}{public} RectTransform containerRect;}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} RectTransform handleRect;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014     [Header(\textcolor{stringliteral}{"{}Settings"{}})]}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} clampToMagnitude;}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keywordtype}{float} magnitudeMultiplier = 1f;}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} invertXOutputValue;}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} invertYOutputValue;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{comment}{//Stored Pointer Values}}
+\DoxyCodeLine{00021     \textcolor{keyword}{private} Vector2 pointerDownPosition;}
+\DoxyCodeLine{00022     \textcolor{keyword}{private} Vector2 currentPointerPosition;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024     [Header(\textcolor{stringliteral}{"{}Output"{}})]}
+\DoxyCodeLine{00025     \textcolor{keyword}{public} UnityEvent<Vector2> touchZoneOutputEvent;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027     \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00028     \{}
+\DoxyCodeLine{00029         SetupHandle();}
+\DoxyCodeLine{00030     \}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032     \textcolor{keyword}{private} \textcolor{keywordtype}{void} SetupHandle()}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00034         \textcolor{keywordflow}{if}(handleRect)}
+\DoxyCodeLine{00035         \{}
+\DoxyCodeLine{00036             SetObjectActiveState(handleRect.gameObject, \textcolor{keyword}{false}); }
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038     \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040     \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPointerDown(PointerEventData eventData)}
+\DoxyCodeLine{00041     \{}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         RectTransformUtility.ScreenPointToLocalPointInRectangle(containerRect, eventData.position, eventData.pressEventCamera, out pointerDownPosition);}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keywordflow}{if}(handleRect)}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             SetObjectActiveState(handleRect.gameObject, \textcolor{keyword}{true});}
+\DoxyCodeLine{00048             UpdateHandleRectPosition(pointerDownPosition);}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050     \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052     \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDrag(PointerEventData eventData)}
+\DoxyCodeLine{00053     \{}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         RectTransformUtility.ScreenPointToLocalPointInRectangle(containerRect, eventData.position, eventData.pressEventCamera, out currentPointerPosition);}
+\DoxyCodeLine{00056         }
+\DoxyCodeLine{00057         Vector2 positionDelta = GetDeltaBetweenPositions(pointerDownPosition, currentPointerPosition);}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         Vector2 clampedPosition = ClampValuesToMagnitude(positionDelta);}
+\DoxyCodeLine{00060         }
+\DoxyCodeLine{00061         Vector2 outputPosition = ApplyInversionFilter(clampedPosition);}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         OutputPointerEventValue(outputPosition * magnitudeMultiplier);}
+\DoxyCodeLine{00064     \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066     \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPointerUp(PointerEventData eventData)}
+\DoxyCodeLine{00067     \{}
+\DoxyCodeLine{00068         pointerDownPosition = Vector2.zero;}
+\DoxyCodeLine{00069         currentPointerPosition = Vector2.zero;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         OutputPointerEventValue(Vector2.zero);}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keywordflow}{if}(handleRect)}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075             SetObjectActiveState(handleRect.gameObject, \textcolor{keyword}{false});}
+\DoxyCodeLine{00076             UpdateHandleRectPosition(Vector2.zero);}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078     \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080     \textcolor{keywordtype}{void} OutputPointerEventValue(Vector2 pointerPosition)}
+\DoxyCodeLine{00081     \{}
+\DoxyCodeLine{00082         touchZoneOutputEvent.Invoke(pointerPosition);}
+\DoxyCodeLine{00083     \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085     \textcolor{keywordtype}{void} UpdateHandleRectPosition(Vector2 newPosition)}
+\DoxyCodeLine{00086     \{}
+\DoxyCodeLine{00087         handleRect.anchoredPosition = newPosition;}
+\DoxyCodeLine{00088     \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090     \textcolor{keywordtype}{void} SetObjectActiveState(GameObject targetObject, \textcolor{keywordtype}{bool} newState)}
+\DoxyCodeLine{00091     \{}
+\DoxyCodeLine{00092         targetObject.SetActive(newState);}
+\DoxyCodeLine{00093     \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095     Vector2 GetDeltaBetweenPositions(Vector2 firstPosition, Vector2 secondPosition)}
+\DoxyCodeLine{00096     \{}
+\DoxyCodeLine{00097         \textcolor{keywordflow}{return} secondPosition -\/ firstPosition;}
+\DoxyCodeLine{00098     \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100     Vector2 ClampValuesToMagnitude(Vector2 position)}
+\DoxyCodeLine{00101     \{}
+\DoxyCodeLine{00102         \textcolor{keywordflow}{return} Vector2.ClampMagnitude(position, 1);}
+\DoxyCodeLine{00103     \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105     Vector2 ApplyInversionFilter(Vector2 position)}
+\DoxyCodeLine{00106     \{}
+\DoxyCodeLine{00107         \textcolor{keywordflow}{if}(invertXOutputValue)}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             position.x = InvertValue(position.x);}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \textcolor{keywordflow}{if}(invertYOutputValue)}
+\DoxyCodeLine{00113         \{}
+\DoxyCodeLine{00114             position.y = InvertValue(position.y);}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keywordflow}{return} position;}
+\DoxyCodeLine{00118     \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120     \textcolor{keywordtype}{float} InvertValue(\textcolor{keywordtype}{float} value)}
+\DoxyCodeLine{00121     \{}
+\DoxyCodeLine{00122         \textcolor{keywordflow}{return} -\/value;}
+\DoxyCodeLine{00123     \}}
+\DoxyCodeLine{00124     }
+\DoxyCodeLine{00125 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,224 @@
+\doxysection{Spaceship.\+cs}
+\label{_spaceship_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/Spaceship.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Game/Spaceship.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Spaceship.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Asteroid Demo,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Spaceship}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{namespace }Photon.Pun.Demo.Asteroids}
+\DoxyCodeLine{00019 \{}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{class }Spaceship : MonoBehaviour}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keywordtype}{float} RotationSpeed = 90.0f;}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{float} MovementSpeed = 2.0f;}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{float} MaxSpeed = 0.2f;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} ParticleSystem Destruction;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} GameObject EngineTrail;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} GameObject BulletPrefab;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} PhotonView photonView;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 \textcolor{preprocessor}{\#pragma warning disable 0109}}
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keyword}{new} Rigidbody rigidbody;}
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keyword}{new} Collider collider;}
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keyword}{new} Renderer renderer;}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{\#pragma warning restore 0109}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{private} \textcolor{keywordtype}{float} rotation = 0.0f;}
+\DoxyCodeLine{00039         \textcolor{keyword}{private} \textcolor{keywordtype}{float} acceleration = 0.0f;}
+\DoxyCodeLine{00040         \textcolor{keyword}{private} \textcolor{keywordtype}{float} shootingTimer = 0.0f;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} controllable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             photonView = GetComponent<PhotonView>();}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             rigidbody = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00051             collider = GetComponent<Collider>();}
+\DoxyCodeLine{00052             renderer = GetComponent<Renderer>();}
+\DoxyCodeLine{00053         \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{foreach} (Renderer r \textcolor{keywordflow}{in} GetComponentsInChildren<Renderer>())}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 r.material.color = AsteroidsGame.GetColor(photonView.Owner.GetPlayerNumber());}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             \textcolor{keywordflow}{if} (!photonView.AmOwner || !controllable)}
+\DoxyCodeLine{00066             \{}
+\DoxyCodeLine{00067                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \textcolor{comment}{// we don't want the master client to apply input to remote ships while the remote player is inactive}}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{if} (this.photonView.CreatorActorNr != PhotonNetwork.LocalPlayer.ActorNumber)}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00073                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00074             \}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             rotation = Input.GetAxis(\textcolor{stringliteral}{"{}Horizontal"{}});}
+\DoxyCodeLine{00077             acceleration = Input.GetAxis(\textcolor{stringliteral}{"{}Vertical"{}});}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (Input.GetButton(\textcolor{stringliteral}{"{}Jump"{}}) \&\& shootingTimer <= 0.0)}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 shootingTimer = 0.2f;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083                 photonView.RPC(\textcolor{stringliteral}{"{}Fire"{}}, RpcTarget.AllViaServer, rigidbody.position, rigidbody.rotation);}
+\DoxyCodeLine{00084             \}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (shootingTimer > 0.0f)}
+\DoxyCodeLine{00087             \{}
+\DoxyCodeLine{00088                 shootingTimer -\/= Time.deltaTime;}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{if} (!photonView.IsMine)}
+\DoxyCodeLine{00095             \{}
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00097             \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             \textcolor{keywordflow}{if} (!controllable)}
+\DoxyCodeLine{00100             \{}
+\DoxyCodeLine{00101                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             Quaternion rot = rigidbody.rotation * Quaternion.Euler(0, rotation * RotationSpeed * Time.fixedDeltaTime, 0);}
+\DoxyCodeLine{00105             rigidbody.MoveRotation(rot);}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             Vector3 force = (rot * Vector3.forward) * acceleration * 1000.0f * MovementSpeed * Time.fixedDeltaTime;}
+\DoxyCodeLine{00108             rigidbody.AddForce(force);}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             \textcolor{keywordflow}{if} (rigidbody.velocity.magnitude > (MaxSpeed * 1000.0f))}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 rigidbody.velocity = rigidbody.velocity.normalized * MaxSpeed * 1000.0f;}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             CheckExitScreen();}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120 \textcolor{preprocessor}{        \#region COROUTINES}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{keyword}{private} IEnumerator WaitForRespawn()}
+\DoxyCodeLine{00123         \{}
+\DoxyCodeLine{00124             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(AsteroidsGame.PLAYER\_RESPAWN\_TIME);}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             photonView.RPC(\textcolor{stringliteral}{"{}RespawnSpaceship"{}}, RpcTarget.AllViaServer);}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131 \textcolor{preprocessor}{        \#region PUN CALLBACKS}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         [PunRPC]}
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DestroySpaceship()}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             rigidbody.velocity = Vector3.zero;}
+\DoxyCodeLine{00137             rigidbody.angularVelocity = Vector3.zero;}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             collider.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00140             renderer.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             controllable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             EngineTrail.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00145             Destruction.Play();}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00148             \{}
+\DoxyCodeLine{00149                 \textcolor{keywordtype}{object} lives;}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(AsteroidsGame.PLAYER\_LIVES, out lives))}
+\DoxyCodeLine{00151                 \{}
+\DoxyCodeLine{00152                     PhotonNetwork.LocalPlayer.SetCustomProperties(\textcolor{keyword}{new} Hashtable \{\{AsteroidsGame.PLAYER\_LIVES, ((int) lives <= 1) ? 0 : ((int) lives -\/ 1)\}\});}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154                     \textcolor{keywordflow}{if} (((\textcolor{keywordtype}{int}) lives) > 1)}
+\DoxyCodeLine{00155                     \{}
+\DoxyCodeLine{00156                         StartCoroutine(\textcolor{stringliteral}{"{}WaitForRespawn"{}});}
+\DoxyCodeLine{00157                     \}}
+\DoxyCodeLine{00158                 \}}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162         [PunRPC]}
+\DoxyCodeLine{00163         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Fire(Vector3 position, Quaternion rotation, PhotonMessageInfo info)}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165             \textcolor{keywordtype}{float} lag = (float) (PhotonNetwork.Time -\/ info.SentServerTime);}
+\DoxyCodeLine{00166             GameObject bullet;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00169             bullet = Instantiate(BulletPrefab, position, Quaternion.identity) as GameObject;}
+\DoxyCodeLine{00170             bullet.GetComponent<Bullet>().InitializeBullet(photonView.Owner, (rotation * Vector3.forward), Mathf.Abs(lag));}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00174             \textcolor{comment}{//Vector3 baseX = rotation * Vector3.right;}}
+\DoxyCodeLine{00175             \textcolor{comment}{//Vector3 baseZ = rotation * Vector3.forward;}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177             \textcolor{comment}{//Vector3 offsetLeft = -\/1.5f * baseX -\/ 0.5f * baseZ;}}
+\DoxyCodeLine{00178             \textcolor{comment}{//Vector3 offsetRight = 1.5f * baseX -\/ 0.5f * baseZ;}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{comment}{//bullet = Instantiate(BulletPrefab, rigidbody.position + offsetLeft, Quaternion.identity) as GameObject;}}
+\DoxyCodeLine{00181             \textcolor{comment}{//bullet.GetComponent<Bullet>().InitializeBullet(photonView.Owner, baseZ, Mathf.Abs(lag));}}
+\DoxyCodeLine{00182             \textcolor{comment}{//bullet = Instantiate(BulletPrefab, rigidbody.position + offsetRight, Quaternion.identity) as GameObject;}}
+\DoxyCodeLine{00183             \textcolor{comment}{//bullet.GetComponent<Bullet>().InitializeBullet(photonView.Owner, baseZ, Mathf.Abs(lag));}}
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186         [PunRPC]}
+\DoxyCodeLine{00187         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RespawnSpaceship()}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             collider.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00190             renderer.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             controllable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             EngineTrail.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00195             Destruction.Stop();}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197         }
+\DoxyCodeLine{00198 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CheckExitScreen()}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (Camera.main == \textcolor{keyword}{null})}
+\DoxyCodeLine{00203             \{}
+\DoxyCodeLine{00204                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206             }
+\DoxyCodeLine{00207             \textcolor{keywordflow}{if} (Mathf.Abs(rigidbody.position.x) > (Camera.main.orthographicSize * Camera.main.aspect))}
+\DoxyCodeLine{00208             \{}
+\DoxyCodeLine{00209                 rigidbody.position = \textcolor{keyword}{new} Vector3(-\/Mathf.Sign(rigidbody.position.x) * Camera.main.orthographicSize * Camera.main.aspect, 0, rigidbody.position.z);}
+\DoxyCodeLine{00210                 rigidbody.position -\/= rigidbody.position.normalized * 0.1f; \textcolor{comment}{// offset a little bit to avoid looping back \& forth between the 2 edges }}
+\DoxyCodeLine{00211             \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             \textcolor{keywordflow}{if} (Mathf.Abs(rigidbody.position.z) > Camera.main.orthographicSize)}
+\DoxyCodeLine{00214             \{}
+\DoxyCodeLine{00215                 rigidbody.position = \textcolor{keyword}{new} Vector3(rigidbody.position.x, rigidbody.position.y, -\/Mathf.Sign(rigidbody.position.z) * Camera.main.orthographicSize);}
+\DoxyCodeLine{00216                 rigidbody.position -\/= rigidbody.position.normalized * 0.1f; \textcolor{comment}{// offset a little bit to avoid looping back \& forth between the 2 edges }}
+\DoxyCodeLine{00217             \}}
+\DoxyCodeLine{00218         \}}
+\DoxyCodeLine{00219     \}}
+\DoxyCodeLine{00220 \}}
+
+\end{DoxyCode}

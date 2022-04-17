@@ -1,0 +1,79 @@
+\doxysection{Bezier\+Curve\+Inspector.\+cs}
+\label{_bezier_curve_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/Editor/BezierCurveInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/Editor/BezierCurveInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Bezier.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Original: http://catlikecoding.com/unity/tutorials/curves-\/and-\/splines/}}
+\DoxyCodeLine{00007 \textcolor{comment}{//  Used in SlotRacer Demo}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Demo.SlotRacer.Utils}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     [CustomEditor(typeof(BezierCurve))]}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }BezierCurveInspector : Editor}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} lineSteps = 10;}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} directionScale = 0.5f;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{private} BezierCurve curve;}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} Transform handleTransform;}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} Quaternion handleRotation;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnSceneGUI()}
+\DoxyCodeLine{00028         \{}
+\DoxyCodeLine{00029             curve = target as BezierCurve;}
+\DoxyCodeLine{00030             handleTransform = curve.transform;}
+\DoxyCodeLine{00031             handleRotation = Tools.pivotRotation == PivotRotation.Local ?}
+\DoxyCodeLine{00032                 handleTransform.rotation : Quaternion.identity;}
+\DoxyCodeLine{00033             }
+\DoxyCodeLine{00034             Vector3 p0 = ShowPoint(0);}
+\DoxyCodeLine{00035             Vector3 p1 = ShowPoint(1);}
+\DoxyCodeLine{00036             Vector3 p2 = ShowPoint(2);}
+\DoxyCodeLine{00037             Vector3 p3 = ShowPoint(3);}
+\DoxyCodeLine{00038             }
+\DoxyCodeLine{00039             Handles.color = Color.gray;}
+\DoxyCodeLine{00040             Handles.DrawLine(p0, p1);}
+\DoxyCodeLine{00041             Handles.DrawLine(p2, p3);}
+\DoxyCodeLine{00042             }
+\DoxyCodeLine{00043             ShowDirections();}
+\DoxyCodeLine{00044             Handles.DrawBezier(p0, p3, p1, p2, Color.white, \textcolor{keyword}{null}, 2f);}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ShowDirections()}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             Handles.color = Color.green;}
+\DoxyCodeLine{00050             Vector3 point = curve.GetPoint(0f);}
+\DoxyCodeLine{00051             Handles.DrawLine(point, point + curve.GetDirection(0f) * directionScale);}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i <= lineSteps; i++)}
+\DoxyCodeLine{00053             \{}
+\DoxyCodeLine{00054                 point = curve.GetPoint(i / (\textcolor{keywordtype}{float})lineSteps);}
+\DoxyCodeLine{00055                 Handles.DrawLine(point, point + curve.GetDirection(i / (\textcolor{keywordtype}{float})lineSteps) * directionScale);}
+\DoxyCodeLine{00056             \}}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} Vector3 ShowPoint(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             Vector3 point = handleTransform.TransformPoint(curve.points[index]);}
+\DoxyCodeLine{00062             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00063             point = Handles.DoPositionHandle(point, handleRotation);}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 Undo.RecordObject(curve, \textcolor{stringliteral}{"{}Move Point"{}});}
+\DoxyCodeLine{00067                 EditorUtility.SetDirty(curve);}
+\DoxyCodeLine{00068                 curve.points[index] = handleTransform.InverseTransformPoint(point);}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070             \textcolor{keywordflow}{return} point;}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072     \}}
+\DoxyCodeLine{00073 \}}
+
+\end{DoxyCode}

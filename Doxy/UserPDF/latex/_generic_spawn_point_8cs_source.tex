@@ -1,0 +1,127 @@
+\doxysection{Generic\+Spawn\+Point.\+cs}
+\label{_generic_spawn_point_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/GenericSpawnPoint.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/GenericSpawnPoint.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{class }GenericSpawnPoint : MonoBehaviour}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         [Header(\textcolor{stringliteral}{"{}Spawn Point Blocked Check"{}})]}
+\DoxyCodeLine{00020         [Tooltip(\textcolor{stringliteral}{"{}Select the physics layers for colliders to test against. If 'avoidCollision' is true and any colliders on these layers "{}} +}
+\DoxyCodeLine{00021             \textcolor{stringliteral}{"{}are blocking the spawn point, will attempt to find the next spawn point that isn't blocked."{}})]}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} LayerMask layerMask;}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keywordtype}{float} blockedCheckRadius = 2f;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00026         \{}
+\DoxyCodeLine{00027             spawns.Add(\textcolor{keyword}{this});}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             spawns.Remove(\textcolor{keyword}{this});}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsBlocked}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keyword}{get}}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 \textcolor{keywordtype}{int} count = Physics.OverlapSphereNonAlloc(transform.position, blockedCheckRadius, reusable, layerMask);}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{return} (count == 0) ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043         \textcolor{comment}{// Statics}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly List<GenericSpawnPoint> spawns = \textcolor{keyword}{new} List<GenericSpawnPoint>();}
+\DoxyCodeLine{00046         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} lastPicked;}
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Collider[] reusable = \textcolor{keyword}{new} Collider[8];}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keyword}{static} Transform GetRandomSpawnPoint(\textcolor{keywordtype}{bool} avoidCollision = \textcolor{keyword}{true})}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (spawns.Count == 0)}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{keywordtype}{int} startindex = Random.Range(0, spawns.Count -\/ 1);}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{comment}{// Try to find a spawn that doesn't conflict}}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{if} (avoidCollision)}
+\DoxyCodeLine{00058                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < spawns.Count; i++)}
+\DoxyCodeLine{00059                     \textcolor{keywordflow}{if} (!spawns[(i + startindex) \% spawns.Count].IsBlocked)}
+\DoxyCodeLine{00060                         \textcolor{keywordflow}{return} spawns[(i + startindex) \% spawns.Count].transform;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{comment}{// No collision free spawn found}}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{return} spawns[startindex].transform;}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keyword}{static} Transform GetNextSpawnPoint(\textcolor{keywordtype}{bool} avoidCollision = \textcolor{keyword}{true})}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (spawns.Count == 0)}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             lastPicked = (lastPicked + 1) \% spawns.Count;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             \textcolor{comment}{// Try to find a spawn that doesn't conflict}}
+\DoxyCodeLine{00074             if (avoidCollision)}
+\DoxyCodeLine{00075                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < spawns.Count; i++)}
+\DoxyCodeLine{00076                 \{}
+\DoxyCodeLine{00077                     \textcolor{keywordtype}{int} next = (i + lastPicked) \% spawns.Count;}
+\DoxyCodeLine{00078                     if (!spawns[next].IsBlocked)}
+\DoxyCodeLine{00079                     \{}
+\DoxyCodeLine{00080                         lastPicked = next;}
+\DoxyCodeLine{00081                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00082                     \}}
+\DoxyCodeLine{00083                 \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{keywordflow}{return} spawns[lastPicked].transform;}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keyword}{static} Transform GetSpawnPointFromValue(\textcolor{keywordtype}{int} value)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{if} (spawns.Count == 0)}
+\DoxyCodeLine{00091                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             \textcolor{keywordtype}{int} spawnId = (value + 1) \% spawns.Count;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{return} spawns[spawnId].transform;}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098         \textcolor{keywordtype}{void} OnDrawGizmosSelected()}
+\DoxyCodeLine{00099         \{}
+\DoxyCodeLine{00100             Gizmos.color = Color.yellow;}
+\DoxyCodeLine{00101             Gizmos.DrawWireSphere(transform.position, blockedCheckRadius);}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103     \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107     [CustomEditor(typeof(GenericSpawnPoint))]}
+\DoxyCodeLine{00108     [CanEditMultipleObjects]}
+\DoxyCodeLine{00109     \textcolor{keyword}{public} \textcolor{keyword}{class }GenericSpawnPointEditor : Editor}
+\DoxyCodeLine{00110     \{}
+\DoxyCodeLine{00111         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00112         \{}
+\DoxyCodeLine{00113             base.OnInspectorGUI();}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Replacement for UNET 'NetworkStartPosition' that will work with other network engines."{}}, MessageType.None);}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117     \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121 \}}
+
+\end{DoxyCode}

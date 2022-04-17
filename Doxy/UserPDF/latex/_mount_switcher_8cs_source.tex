@@ -1,0 +1,72 @@
+\doxysection{Mount\+Switcher.\+cs}
+\label{_mount_switcher_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/MountSwitcher.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/MountSwitcher.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00009 \{}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} \textcolor{keyword}{class }MountSwitcher : NetComponent}
+\DoxyCodeLine{00011         , IOnPreUpdate}
+\DoxyCodeLine{00012         , IOnPreSimulate}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014         \textcolor{keyword}{public} KeyCode keycode = KeyCode.M;}
+\DoxyCodeLine{00015         \textcolor{keyword}{public} MountSelector mount = \textcolor{keyword}{new} MountSelector(1);}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} triggered;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         \textcolor{keyword}{protected} SyncState syncState;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00022         \{}
+\DoxyCodeLine{00023             base.OnAwake();}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025             \textcolor{keywordflow}{if} (netObj)}
+\DoxyCodeLine{00026                 syncState = netObj.GetComponent<SyncState>();}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028             \textcolor{keywordflow}{if} (!GetComponent<SyncState>())}
+\DoxyCodeLine{00029             \{}
+\DoxyCodeLine{00030                 Debug.LogWarning(GetType().Name + \textcolor{stringliteral}{"{} on '"{}} + transform.parent.name + \textcolor{stringliteral}{"{}/"{}} + name + \textcolor{stringliteral}{"{}' needs to be on the root of NetObject with component "{}} + typeof(SyncState).Name + \textcolor{stringliteral}{"{}. Disabling."{}});}
+\DoxyCodeLine{00031                 netObj.RemoveInterfaces(\textcolor{keyword}{this});}
+\DoxyCodeLine{00032             \}}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPreUpdate()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (Input.GetKeyDown(keycode))}
+\DoxyCodeLine{00038                 triggered = \textcolor{keyword}{true};}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPreSimulate(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{int} subFrameId)}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{comment}{//Debug.Log("{}<color=blue>"{} + pv.IsMine + "{}</color>"{});}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (triggered)}
+\DoxyCodeLine{00046             \{}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048                 triggered = \textcolor{keyword}{false};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050                 var currMount = syncState.CurrentMount;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{if} (ReferenceEquals(currMount, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00053                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{if} (!currMount.IsMine)}
+\DoxyCodeLine{00056                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058                 Debug.Log(\textcolor{stringliteral}{"{}Try change to mount : "{}} + currMount + \textcolor{stringliteral}{"{} : "{}} + currMount.IsMine + \textcolor{stringliteral}{"{} : "{}} + mount.id);}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                 syncState.ChangeMount(mount.id);}
+\DoxyCodeLine{00061             \}}
+\DoxyCodeLine{00062         \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064     \}}
+\DoxyCodeLine{00065 \}}
+\DoxyCodeLine{00066 }
+
+\end{DoxyCode}

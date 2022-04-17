@@ -1,0 +1,51 @@
+\doxysection{Shader\+Include\+Utilities.\+cs}
+\label{_shader_include_utilities_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Common/ShaderIncludeUtilities.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/RenderFeatures/Common/ShaderIncludeUtilities.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }FlatKit}
+\DoxyCodeLine{00007 \{}
+\DoxyCodeLine{00008     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }ShaderIncludeUtilities}
+\DoxyCodeLine{00009     \{}
+\DoxyCodeLine{00010         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddAlwaysIncludedShader(\textcolor{keywordtype}{string} shaderName)}
+\DoxyCodeLine{00011         \{}
+\DoxyCodeLine{00012             var shader = Shader.Find(shaderName);}
+\DoxyCodeLine{00013             \textcolor{keywordflow}{if} (shader == \textcolor{keyword}{null})}
+\DoxyCodeLine{00014                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016             var graphicsSettingsObj =}
+\DoxyCodeLine{00017                 AssetDatabase.LoadAssetAtPath<GraphicsSettings>(\textcolor{stringliteral}{"{}ProjectSettings/GraphicsSettings.asset"{}});}
+\DoxyCodeLine{00018             var serializedObject = \textcolor{keyword}{new} SerializedObject(graphicsSettingsObj);}
+\DoxyCodeLine{00019             var arrayProp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}m\_AlwaysIncludedShaders"{}});}
+\DoxyCodeLine{00020             \textcolor{keywordtype}{bool} hasShader = \textcolor{keyword}{false};}
+\DoxyCodeLine{00021             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < arrayProp.arraySize; ++i)}
+\DoxyCodeLine{00022             \{}
+\DoxyCodeLine{00023                 var arrayElem = arrayProp.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00024                 \textcolor{keywordflow}{if} (shader == arrayElem.objectReferenceValue)}
+\DoxyCodeLine{00025                 \{}
+\DoxyCodeLine{00026                     hasShader = \textcolor{keyword}{true};}
+\DoxyCodeLine{00027                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00028                 \}}
+\DoxyCodeLine{00029             \}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031             \textcolor{keywordflow}{if} (!hasShader)}
+\DoxyCodeLine{00032             \{}
+\DoxyCodeLine{00033                 \textcolor{keywordtype}{int} arrayIndex = arrayProp.arraySize;}
+\DoxyCodeLine{00034                 arrayProp.InsertArrayElementAtIndex(arrayIndex);}
+\DoxyCodeLine{00035                 var arrayElem = arrayProp.GetArrayElementAtIndex(arrayIndex);}
+\DoxyCodeLine{00036                 arrayElem.objectReferenceValue = shader;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040                 AssetDatabase.SaveAssets();}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043     \}}
+\DoxyCodeLine{00044 \}}
+\DoxyCodeLine{00045 \textcolor{preprocessor}{\#endif }\textcolor{comment}{// UNITY\_EDITOR}}
+
+\end{DoxyCode}

@@ -1,0 +1,265 @@
+\doxysection{Type\+Helpers.\+cs}
+\label{_type_helpers_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/Helpers/TypeHelpers.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/Helpers/TypeHelpers.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }TypeHelpers}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{preprocessor}{        \#region Nested Loop Check}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<Type> nestCheck = \textcolor{keyword}{new} HashSet<Type>();}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} safetycounter;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CheckForNestedLoop(\textcolor{keyword}{this} Type type, HashSet<Type> hashset = \textcolor{keyword}{null})}
+\DoxyCodeLine{00024         \{}
+\DoxyCodeLine{00025             \textcolor{keywordflow}{if} (hashset == \textcolor{keyword}{null})}
+\DoxyCodeLine{00026             \{}
+\DoxyCodeLine{00027                 hashset = nestCheck;}
+\DoxyCodeLine{00028                 safetycounter = 0;}
+\DoxyCodeLine{00029                 hashset.Clear();}
+\DoxyCodeLine{00030             \}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00033             var attrs = type.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00034             \textcolor{keywordflow}{if} (attrs.Length == 0)}
+\DoxyCodeLine{00035                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (hashset.Contains(type))}
+\DoxyCodeLine{00038                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             safetycounter++;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042             \textcolor{keywordflow}{if} (safetycounter > 20)}
+\DoxyCodeLine{00043             \{}
+\DoxyCodeLine{00044                 Debug.Log(\textcolor{stringliteral}{"{}Ouch. Stuck trying to test for loops. "{}} + type.Name);}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00046             \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             var fields = type.GetFields();}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             \textcolor{keywordflow}{foreach} (var field \textcolor{keywordflow}{in} fields)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 \textcolor{comment}{//if (field.FieldType == type)}}
+\DoxyCodeLine{00053                 \textcolor{comment}{//  return true;}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00056                 \textcolor{keywordflow}{if} (field.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false}).Length != 0)}
+\DoxyCodeLine{00057                 \{}
+\DoxyCodeLine{00058                     hashset.Add(type);}
+\DoxyCodeLine{00059                     Debug.Log(\textcolor{stringliteral}{"{}Loop found "{}} + type.Name + \textcolor{stringliteral}{"{} "{}} + field.FieldType + \textcolor{stringliteral}{"{} "{}} + field.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false}).Length);}
+\DoxyCodeLine{00060                     \textcolor{keywordflow}{if} (CheckForNestedLoop(field.FieldType, hashset))}
+\DoxyCodeLine{00061                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00062                     hashset.Remove(type);}
+\DoxyCodeLine{00063                 \}}
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070 \textcolor{preprocessor}{        \#region IsManaged}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsUnManaged(\textcolor{keyword}{this} Type t)}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (t.IsPrimitive || t.IsPointer || t.IsEnum)}
+\DoxyCodeLine{00075                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077             \textcolor{comment}{//Debug.Log("{}<b>Testing For UnManaged</b> "{} + t.Name + "{} "{} + t.IsValueType);}}
+\DoxyCodeLine{00078             \textcolor{keywordflow}{if} (!t.IsValueType)}
+\DoxyCodeLine{00079                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             \textcolor{keywordflow}{if} (t.IsGenericType)}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (t.IsValueType)}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 var fields = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);}
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} fields)}
+\DoxyCodeLine{00088                     \textcolor{keywordflow}{if} (!IsUnManaged(f.FieldType))}
+\DoxyCodeLine{00089                         \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00092             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{        \#region Type To Hash}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<Type> endlessLoopCheck = \textcolor{keyword}{new} HashSet<Type>();}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{long} TypeToHash64(\textcolor{keyword}{this} Type type, HashSet<Type> endlessCheck = \textcolor{keyword}{null})}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00108             var attrs = type.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00109             \textcolor{keywordflow}{if} (attrs.Length == 0)}
+\DoxyCodeLine{00110                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             var attr = attrs[0] as PackObjectAttribute;}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{keywordflow}{if} (endlessCheck == \textcolor{keyword}{null})}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 endlessCheck = endlessLoopCheck;}
+\DoxyCodeLine{00118                 endlessCheck.Clear();}
+\DoxyCodeLine{00119             \}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (endlessCheck.Contains(type))}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 Debug.LogWarning(type.Name + \textcolor{stringliteral}{"{} has an endless recursive field loop."{}});}
+\DoxyCodeLine{00123                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00124             \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             endlessCheck.Add(type);}
+\DoxyCodeLine{00127             var hashes = \textcolor{keyword}{new} List<long>();}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             hashes.Add(type.FullName.GetHashCode());}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);}
+\DoxyCodeLine{00132             \textcolor{keywordtype}{bool} includeAllPublic = attr.defaultInclusion == DefaultPackInclusion.AllPublic;}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} fields)}
+\DoxyCodeLine{00135                 hashes.Add(HashField(f, includeAllPublic));}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             HashAttribute(attr, hashes);}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00140             hashes.Sort();}
+\DoxyCodeLine{00141             \textcolor{keywordtype}{long} hash = 504981047;}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{foreach} (var h \textcolor{keywordflow}{in} hashes) hash = hash * -\/1521134295 + h;}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{return} hash;}
+\DoxyCodeLine{00144         \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{long} HashField(FieldInfo field, \textcolor{keywordtype}{bool} includeAllPublic)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             var hashes = \textcolor{keyword}{new} List<long>();}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00151             \textcolor{keywordtype}{long} objhash = TypeToHash64(field.FieldType, endlessLoopCheck);}
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (objhash != 0)}
+\DoxyCodeLine{00153             \{}
+\DoxyCodeLine{00154                 hashes.Add(objhash);}
+\DoxyCodeLine{00155                 \textcolor{keywordflow}{return} objhash;}
+\DoxyCodeLine{00156             \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00159             var attrs = field.GetCustomAttributes(typeof(SyncVarBaseAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00162             \textcolor{keywordflow}{if} (attrs.Length == 0 \&\& !includeAllPublic)}
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             hashes.Add(field.FieldType.FullName.GetHashCode());}
+\DoxyCodeLine{00166             hashes.Add(field.Name.GetHashCode());}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (attrs.Length != 0)}
+\DoxyCodeLine{00170             \{}
+\DoxyCodeLine{00171                 var attr = attrs[0] as SyncVarBaseAttribute;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173                 HashAttribute(attr, hashes);}
+\DoxyCodeLine{00174                 HashCallback(field, attr.applyCallback, hashes);}
+\DoxyCodeLine{00175                 HashCallback(field, attr.snapshotCallback, hashes);}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             var fields = field.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance);}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} fields)}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 }
+\DoxyCodeLine{00183                 hashes.Add(HashField(f, includeAllPublic));}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             \textcolor{keywordtype}{long} hash = 504981047;}
+\DoxyCodeLine{00188             hashes.Sort();}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{foreach} (var h \textcolor{keywordflow}{in} hashes)}
+\DoxyCodeLine{00190                 hash = hash * -\/1521134295 + h;}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{keywordflow}{return} hash;}
+\DoxyCodeLine{00193         \}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} HashAttribute(Attribute attr, List<long> hashes)}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             hashes.Add(attr.GetType().FullName.GetHashCode());}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             \textcolor{keywordflow}{foreach} (var a \textcolor{keywordflow}{in} attr.GetType().GetFields())}
+\DoxyCodeLine{00200             \{}
+\DoxyCodeLine{00201                 \textcolor{comment}{//Debug.Log("{}Hashing attr "{} + a.Name + "{} "{} /*+ a.GetValue(attr)*/);}}
+\DoxyCodeLine{00202                 var obj = (a.GetValue(attr));}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{if} (obj != \textcolor{keyword}{null})}
+\DoxyCodeLine{00204                     hashes.Add(obj.GetHashCode());}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206         \}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{keyword}{public} \textcolor{keyword}{static} MethodInfo HashCallback(\textcolor{keyword}{this} FieldInfo field, \textcolor{keywordtype}{string} methodname, List<long> hashes)}
+\DoxyCodeLine{00209         \{}
+\DoxyCodeLine{00210             Type objType = field.ReflectedType;}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212             \textcolor{keywordflow}{if} (methodname == \textcolor{keyword}{null})}
+\DoxyCodeLine{00213                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00216             var methinfo = field.ReflectedType.GetMethod(methodname);}
+\DoxyCodeLine{00217             var parms = (methinfo == \textcolor{keyword}{null}) ? \textcolor{keyword}{null} : methinfo.GetParameters();}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219             var ftype = field.FieldType;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (methinfo == \textcolor{keyword}{null})}
+\DoxyCodeLine{00223                 \textcolor{keywordflow}{goto} BadCallback;}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (!methinfo.IsPublic)}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{goto} BadCallback;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keywordflow}{if} (methinfo.IsStatic)}
+\DoxyCodeLine{00229                 \textcolor{keywordflow}{goto} BadCallback;}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             \textcolor{keywordflow}{if} (parms.Length != 2)}
+\DoxyCodeLine{00232                 \textcolor{keywordflow}{goto} BadCallback;}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{keywordflow}{if} (parms[0].ParameterType == ftype \&\& parms[1].ParameterType == ftype)}
+\DoxyCodeLine{00235             \{}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{if} (hashes != \textcolor{keyword}{null})}
+\DoxyCodeLine{00237                 \textcolor{keywordflow}{foreach} (var prm \textcolor{keywordflow}{in} methinfo.GetParameters())}
+\DoxyCodeLine{00238                     hashes.Add(prm.ParameterType.FullName.GetHashCode());}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return} methinfo;}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245             BadCallback:}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordtype}{bool} doesntExist = methinfo == \textcolor{keyword}{null};}
+\DoxyCodeLine{00248             \textcolor{keywordtype}{bool} isStatic = doesntExist ? false : methinfo.IsStatic;}
+\DoxyCodeLine{00249             \textcolor{keywordtype}{bool} isPrivate = doesntExist ? false : methinfo.IsPrivate;}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251             \textcolor{keywordtype}{string} staticString = isStatic ? \textcolor{stringliteral}{"{}<color=red>static</color> "{}} : \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00252             \textcolor{keywordtype}{string} accessString = isPrivate ? \textcolor{stringliteral}{"{}<color=red>private </color>"{}} : \textcolor{stringliteral}{"{}public "{}};}
+\DoxyCodeLine{00253             \textcolor{keywordtype}{string} \textcolor{keyword}{typename} = ftype.Name;}
+\DoxyCodeLine{00254             \textcolor{keywordtype}{string} parmstring = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256             \textcolor{keywordflow}{if} (parms != \textcolor{keyword}{null})}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < parms.Length; ++i)}
+\DoxyCodeLine{00258                 parmstring += (i == 0 ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{}, "{}}) + parms[i].ParameterType.Name;}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             Debug.LogWarning(\textcolor{stringliteral}{"{}<b>Invalid Callback</b> <i>'"{}} + accessString + staticString + methodname + \textcolor{stringliteral}{"{}("{}} + parmstring + \textcolor{stringliteral}{"{})'</i> on <b>"{}} + objType.Name + \textcolor{stringliteral}{"{}</b>"{}} +}
+\DoxyCodeLine{00261                 \textcolor{stringliteral}{"{}. Check that method with this name exists (spelling?) and method has format: <i>'public "{}} + methodname + \textcolor{stringliteral}{"{}("{}} + \textcolor{keyword}{typename} + \textcolor{stringliteral}{"{}, "{}} + \textcolor{keyword}{typename} + \textcolor{stringliteral}{"{})'</i>"{}});}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00267     \}}
+\DoxyCodeLine{00268 \}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

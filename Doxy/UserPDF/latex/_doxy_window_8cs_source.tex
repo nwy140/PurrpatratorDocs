@@ -1,0 +1,304 @@
+\doxysection{Doxy\+Window.\+cs}
+\label{_doxy_window_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Doxygen/Editor/DoxyWindow.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Doxygen/Editor/DoxyWindow.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }ProjectNull.DocTools\{}
+\DoxyCodeLine{00010     \textcolor{keyword}{public} \textcolor{keyword}{class }DoxyWindow : EditorWindow \{}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012         \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_tabOpen=2;}
+\DoxyCodeLine{00013         \textcolor{keyword}{private} \textcolor{keywordtype}{string} \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00014         \textcolor{keyword}{private} DoxySettings \_doxySettings=\textcolor{keyword}{new} DoxySettings();}
+\DoxyCodeLine{00015         \textcolor{keyword}{private} Vector2 scroll=\textcolor{keyword}{new} Vector2();}
+\DoxyCodeLine{00016         \textcolor{keyword}{private} ProcessRunner curentProcess=\textcolor{keyword}{null};}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00024         \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \_doxySettings.Load();}
+\DoxyCodeLine{00027             \textcolor{keywordflow}{if}(DoxyFile.DoxygenFileExist(DoxyType.User, \_doxySettings))\{}
+\DoxyCodeLine{00028                 \_msgToUser=\textcolor{stringliteral}{"{}User doxy file found. Settings load from the UserDoxyfile."{}};}
+\DoxyCodeLine{00029             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00030                 \_msgToUser=\textcolor{stringliteral}{"{}User doxy file not found. Settings loaded from Editor Pref."{}};}
+\DoxyCodeLine{00031             \}}
+\DoxyCodeLine{00032         \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00037         [MenuItem(\textcolor{stringliteral}{"{}Window/Doxygen documentation tool"{}})]}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ShowWindow()}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             \textcolor{comment}{//Show existing window instance. If one doesn't exist, make one.}}
+\DoxyCodeLine{00041             EditorWindow w= EditorWindow.GetWindow(typeof(DoxyWindow),\textcolor{keyword}{false},\textcolor{stringliteral}{"{}DoxygenTool"{}});}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnGUI()}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             TabMenu();}
+\DoxyCodeLine{00052             scroll = GUILayout.BeginScrollView(scroll);}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             DisplayMsgToUser();}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{switch}(\_tabOpen)\{}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00058                 SettingGUI();}
+\DoxyCodeLine{00059                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{case} 2:}
+\DoxyCodeLine{00063                 GenerateViewEditGUI();}
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             GUILayout.EndScrollView();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00074         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DisplayMsgToUser()\{}
+\DoxyCodeLine{00075             \textcolor{keywordflow}{if}(\textcolor{stringliteral}{"{}"{}}!=\_msgToUser)\{}
+\DoxyCodeLine{00076                 GUIStyle myStyle= \textcolor{keyword}{new} GUIStyle();}
+\DoxyCodeLine{00077                 myStyle.normal.textColor=Color.red;}
+\DoxyCodeLine{00078                 myStyle.wordWrap=\textcolor{keyword}{true};}
+\DoxyCodeLine{00079                 GUILayout.Label(\_msgToUser,myStyle);}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TabMenu()}
+\DoxyCodeLine{00087         \{}
+\DoxyCodeLine{00088             GUILayout.BeginHorizontal( EditorStyles.toolbar );}
+\DoxyCodeLine{00089             \{}
+\DoxyCodeLine{00090                 \textcolor{keywordflow}{if}( GUILayout.Toggle( 2 == \_tabOpen, \textcolor{stringliteral}{"{}Generate/View/Edit"{}}, EditorStyles.toolbarButton ) )}
+\DoxyCodeLine{00091                 \{}
+\DoxyCodeLine{00092                     NavigateTo(2);}
+\DoxyCodeLine{00093                 \}}
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{if}( GUILayout.Toggle( 1 == \_tabOpen, \textcolor{stringliteral}{"{}Settings"{}}, EditorStyles.toolbarButton ) )}
+\DoxyCodeLine{00095                 \{}
+\DoxyCodeLine{00096                     NavigateTo(1);}
+\DoxyCodeLine{00097                 \}}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00105         \textcolor{keyword}{private} \textcolor{keywordtype}{void} NavigateTo(\textcolor{keywordtype}{int} tabID)\{}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if}(\_tabOpen!=tabID)\{}
+\DoxyCodeLine{00107                 \_tabOpen=tabID;}
+\DoxyCodeLine{00108                 \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00109                 scroll=\textcolor{keyword}{new} Vector2();}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00116         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SettingGUI()\{}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if}(GUILayout.Button (\textcolor{stringliteral}{"{}Save settings (and build DoxyFile if needed)"{}}, EditorStyles.miniButton))}
+\DoxyCodeLine{00118             \{}
+\DoxyCodeLine{00119                 \_doxySettings.Save();}
+\DoxyCodeLine{00120                 \textcolor{keywordtype}{int} madeDoxy = DoxyFile.MakeTheDoxyFiles(\_doxySettings);}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{if}(2==madeDoxy)\{}
+\DoxyCodeLine{00122                     \_msgToUser=\textcolor{stringliteral}{"{}Settings saved and two doxyfile produced."{}};}
+\DoxyCodeLine{00123                 \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(1==madeDoxy)\{}
+\DoxyCodeLine{00124                     \_msgToUser=\textcolor{stringliteral}{"{}Settings saved and one doxyfile produced."{}};}
+\DoxyCodeLine{00125                 \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00126                     \_msgToUser=\textcolor{stringliteral}{"{}Settings saved"{}};}
+\DoxyCodeLine{00127                 \}}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{comment}{//Documentation directory}}
+\DoxyCodeLine{00132             GUILayout.Space (10);}
+\DoxyCodeLine{00133             GUILayout.Label(\textcolor{stringliteral}{"{}The path to the active documentation folder"{}},EditorStyles.wordWrappedLabel);}
+\DoxyCodeLine{00134             GUILayout.BeginHorizontal();}
+\DoxyCodeLine{00135             \_doxySettings.activeDocumentationFolder = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Documentation : "{}},\_doxySettings.activeDocumentationFolder);}
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if}(GUILayout.Button (\textcolor{stringliteral}{"{}..."{}},EditorStyles.miniButtonRight, GUILayout.Width(22)))\{}
+\DoxyCodeLine{00137                 \_doxySettings.activeDocumentationFolder = EditorUtility.OpenFolderPanel(\textcolor{stringliteral}{"{}Choose the documentation folder"{}},\_doxySettings.activeDocumentationFolder, \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{if}(\textcolor{stringliteral}{"{}"{}}!=\_doxySettings.activeDocumentationFolder)\{}
+\DoxyCodeLine{00139                     \textcolor{keywordtype}{string} userDoxyFile = \_doxySettings.activeDocumentationFolder + \textcolor{stringliteral}{"{}/UserDoxyfile"{}};}
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{if}(File.Exists(userDoxyFile))\{}
+\DoxyCodeLine{00141                         \_doxySettings.LoadSettingsFromUserDoxyFile();}
+\DoxyCodeLine{00142                     \}}
+\DoxyCodeLine{00143                 \}}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145             GUILayout.EndHorizontal();}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             \textcolor{comment}{//Reload doxygen file}}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Reload settings from UserDoxygen file"{}}, EditorStyles.miniButton))\{}
+\DoxyCodeLine{00149                 \_doxySettings.LoadSettingsFromUserDoxyFile();}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{if}(DoxyFile.DoxygenFileExist(DoxyType.User, \_doxySettings))\{}
+\DoxyCodeLine{00151                     \_msgToUser=\textcolor{stringliteral}{"{}User doxy file found. Settings load from the UserDoxyfile."{}};}
+\DoxyCodeLine{00152                 \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00153                     \_msgToUser=\textcolor{stringliteral}{"{}User doxy file not found. Settings loaded from Editor Pref."{}};}
+\DoxyCodeLine{00154                 \}}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157             \textcolor{comment}{//Doxy file settings}}
+\DoxyCodeLine{00158             GUILayout.Space (10);}
+\DoxyCodeLine{00159             GUILayout.Label(\textcolor{stringliteral}{"{}The following settings is loaded \(\backslash\)nfrom UserDoxyfile if doxyfile exist!"{}},EditorStyles.boldLabel);}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{comment}{//Doxy project settings}}
+\DoxyCodeLine{00162             GUILayout.Label(\textcolor{stringliteral}{"{}Provide some details about the project to be inserted in the doxyfile"{}},EditorStyles.wordWrappedLabel);}
+\DoxyCodeLine{00163             \_doxySettings.projectName = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Project Name: "{}},\_doxySettings.projectName);}
+\DoxyCodeLine{00164             \_doxySettings.projectBrief = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Short Description: "{}},\_doxySettings.projectBrief);}
+\DoxyCodeLine{00165             \_doxySettings.projectVersionNumber = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Version: "{}},\_doxySettings.projectVersionNumber);}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{comment}{//Doxy path}}
+\DoxyCodeLine{00168             GUILayout.Space (10);}
+\DoxyCodeLine{00169             GUILayout.Label(\textcolor{stringliteral}{"{}The path to doxygen.exe"{}},EditorStyles.wordWrappedLabel);}
+\DoxyCodeLine{00170             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00171             \_doxySettings.fullDoxygenPath = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Doxygen.exe : "{}},\_doxySettings.fullDoxygenPath);}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{if}(GUILayout.Button (\textcolor{stringliteral}{"{}..."{}},EditorStyles.miniButtonRight, GUILayout.Width(22)))\{}
+\DoxyCodeLine{00173                 \_doxySettings.fullDoxygenPath = EditorUtility.OpenFilePanel(\textcolor{stringliteral}{"{}Where is doxygen.exe installed?"{}},\_doxySettings.fullDoxygenPath, \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00174             \}}
+\DoxyCodeLine{00175             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177             \textcolor{comment}{//Sours directory}}
+\DoxyCodeLine{00178             GUILayout.Label(\textcolor{stringliteral}{"{}This settings is only used \(\backslash\)nif new doxy file is created!"{}},EditorStyles.boldLabel);}
+\DoxyCodeLine{00179             GUILayout.Space (10);}
+\DoxyCodeLine{00180             GUILayout.Label(\textcolor{stringliteral}{"{}The path to root of the source"{}},EditorStyles.wordWrappedLabel);}
+\DoxyCodeLine{00181             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00182             \_doxySettings.projecSourceFolder = EditorGUILayout.TextField(\textcolor{stringliteral}{"{}Source : "{}},\_doxySettings.projecSourceFolder);}
+\DoxyCodeLine{00183             \textcolor{keywordflow}{if}(GUILayout.Button (\textcolor{stringliteral}{"{}..."{}},EditorStyles.miniButtonRight, GUILayout.Width(22)))\{}
+\DoxyCodeLine{00184                 \_doxySettings.projecSourceFolder = EditorUtility.OpenFolderPanel(\textcolor{stringliteral}{"{}Choose the root of the source"{}},\_doxySettings.projecSourceFolder, \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00187         \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00192         \textcolor{keyword}{private} \textcolor{keywordtype}{void} GenerateViewEditGUI()\{}
+\DoxyCodeLine{00193             GUILayout.BeginVertical();}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Generate PDFs"{}}))\{}
+\DoxyCodeLine{00195                 TryToGeneratePDF();}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197             GUILayout.Space(10);}
+\DoxyCodeLine{00198             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Browse User Documentation"{}}))\{}
+\DoxyCodeLine{00199                 BrowsPDF(DoxyType.User);}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Browse Developer Documentation"{}}))\{}
+\DoxyCodeLine{00202                 BrowsPDF(DoxyType.Developer);}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204             GUILayout.Space(10);}
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Edit User Documentation"{}}))\{}
+\DoxyCodeLine{00206                 EditDoxygen(DoxyType.User);}
+\DoxyCodeLine{00207             \}}
+\DoxyCodeLine{00208             \textcolor{keywordflow}{if}(GUILayout.Button(\textcolor{stringliteral}{"{}Edit Developer Documentation"{}}))\{}
+\DoxyCodeLine{00209                 EditDoxygen(DoxyType.Developer);}
+\DoxyCodeLine{00210             \}}
+\DoxyCodeLine{00211             GUILayout.EndVertical();}
+\DoxyCodeLine{00212         \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{private} \textcolor{keywordtype}{void} BrowsPDF(DoxyType doxyType)\{}
+\DoxyCodeLine{00215             \textcolor{keywordtype}{string} s=\_doxySettings.activeDocumentationFolder;}
+\DoxyCodeLine{00216             s=s.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00217             s=s+\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)"{}} + doxyType.ToString() + \textcolor{stringliteral}{"{}Documentation.pdf"{}};}
+\DoxyCodeLine{00218             \textcolor{keywordflow}{if}(File.Exists(@s))\{}
+\DoxyCodeLine{00219                 \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00220                 System.Diagnostics.Process.Start(@s);}
+\DoxyCodeLine{00221             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00222                 \_msgToUser = doxyType.ToString() + \textcolor{stringliteral}{"{}Documentation.pdf where not found in "{}} + @s;}
+\DoxyCodeLine{00223             \}}
+\DoxyCodeLine{00224         \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226         \textcolor{keyword}{private} \textcolor{keywordtype}{void} EditDoxygen(DoxyType doxyType)\{}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keywordtype}{string} arg=\_doxySettings.activeDocumentationFolder;}
+\DoxyCodeLine{00229             arg=arg.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00230             arg=arg+\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)"{}} + doxyType.ToString() + \textcolor{stringliteral}{"{}Doxyfile"{}};}
+\DoxyCodeLine{00231             }
+\DoxyCodeLine{00232             \textcolor{keywordtype}{string} doxyWizard=\_doxySettings.fullDoxygenPath.Replace(\textcolor{stringliteral}{"{}doxygen.exe"{}},\textcolor{stringliteral}{"{}doxywizard.exe"{}});}
+\DoxyCodeLine{00233             doxyWizard=doxyWizard.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordflow}{if}(File.Exists(doxyWizard)\&\&File.Exists(arg))\{}
+\DoxyCodeLine{00237                 \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00238                 System.Diagnostics.Process.Start(\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+ doxyWizard + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}},\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}+ arg +\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00239             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00240                 \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00241                 \textcolor{keywordflow}{if}(!File.Exists(doxyWizard))\{}
+\DoxyCodeLine{00242                     \_msgToUser = \textcolor{stringliteral}{"{}doxywizard.exe is not found at:"{}} + doxyWizard;}
+\DoxyCodeLine{00243                 \}}
+\DoxyCodeLine{00244                 \textcolor{keywordflow}{if}(!File.Exists(arg))\{}
+\DoxyCodeLine{00245                     \_msgToUser += \textcolor{stringliteral}{"{}Did not find the doxyfile at:"{}} + arg;}
+\DoxyCodeLine{00246                 \}}
+\DoxyCodeLine{00247             \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249         \}}
+\DoxyCodeLine{00250         }
+\DoxyCodeLine{00251         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TryToGeneratePDF()\{}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if}((\textcolor{keyword}{null}==curentProcess?\textcolor{keyword}{true}:!(curentProcess.ProcessIsActive())))\{}
+\DoxyCodeLine{00253                 GeneratePDF();}
+\DoxyCodeLine{00254             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00255                 \_msgToUser=\textcolor{stringliteral}{"{}Can't generate PDF. One process is alrady running."{}};}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257         \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259         \textcolor{keyword}{private} \textcolor{keywordtype}{void} GeneratePDF()\{}
+\DoxyCodeLine{00260             \textcolor{comment}{//Documetnation folder}}
+\DoxyCodeLine{00261             \textcolor{keywordtype}{string} documentationFolder=\_doxySettings.activeDocumentationFolder.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263             \textcolor{keywordtype}{string} doxygenPath = \_doxySettings.fullDoxygenPath.Replace(\textcolor{charliteral}{'/'}, \textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             \textcolor{comment}{//Find the batch file in the project.}}
+\DoxyCodeLine{00267             \textcolor{keywordtype}{string} curentFolder = Directory.GetCurrentDirectory();}
+\DoxyCodeLine{00268             curentFolder=curentFolder.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00269             List<string> batFile= \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00270             RecursiveSerch(curentFolder,\textcolor{stringliteral}{"{}DoxyPDF.bat"{}},batFile);}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             \textcolor{keywordflow}{if}(DoxyFilesInPlace())\{}
+\DoxyCodeLine{00273                 curentProcess = \textcolor{keyword}{new} ProcessRunner();}
+\DoxyCodeLine{00274                 curentProcess.StartInWorkingFolder(batFile[0],\textcolor{keyword}{new} \textcolor{keywordtype}{string}[]\{\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}} + documentationFolder + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}} + \textcolor{stringliteral}{"{} \(\backslash\)"{}"{}} + doxygenPath + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}  \});}
+\DoxyCodeLine{00275             \}}
+\DoxyCodeLine{00276         \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00281         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} DoxyFilesInPlace()\{}
+\DoxyCodeLine{00282             \textcolor{keywordtype}{string} activeDocumentationFolder = \_doxySettings.activeDocumentationFolder.Replace(\textcolor{charliteral}{'/'},\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00283             \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00284             \textcolor{keywordtype}{bool} allFine=\textcolor{keyword}{true};}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286             \textcolor{keywordflow}{if}(!File.Exists(activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)UserDoxyfile"{}}))\{}
+\DoxyCodeLine{00287                 allFine=\textcolor{keyword}{false};}
+\DoxyCodeLine{00288                 \_msgToUser +=\textcolor{stringliteral}{"{}\(\backslash\)nUserDoxyfile is missing at: "{}} + activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)UserDoxyfile"{}};}
+\DoxyCodeLine{00289             \}}
+\DoxyCodeLine{00290             \textcolor{keywordflow}{if}(!File.Exists(activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)UserDoxyfile"{}}))\{}
+\DoxyCodeLine{00291                 allFine=\textcolor{keyword}{false};}
+\DoxyCodeLine{00292                 \_msgToUser +=\textcolor{stringliteral}{"{}\(\backslash\)nDeveloperDoxyfile is missing at: "{}} + activeDocumentationFolder + \textcolor{stringliteral}{@"{}\(\backslash\)UserDoxyfile"{}};}
+\DoxyCodeLine{00293             \}}
+\DoxyCodeLine{00294             \textcolor{keywordflow}{if}(!File.Exists(\_doxySettings.fullDoxygenPath))\{}
+\DoxyCodeLine{00295                 allFine=\textcolor{keyword}{false};}
+\DoxyCodeLine{00296                 \_msgToUser +=\textcolor{stringliteral}{"{}\(\backslash\)ndoxygen.exe is missing at: "{}} +\_doxySettings.fullDoxygenPath;}
+\DoxyCodeLine{00297             \}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if}(\textcolor{keyword}{false}==allFine)\{}
+\DoxyCodeLine{00300                 \_msgToUser = \textcolor{stringliteral}{"{}Can not make PDF:"{}} +\_msgToUser;}
+\DoxyCodeLine{00301                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00302             \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00303                 \_msgToUser=\textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306             \}}
+\DoxyCodeLine{00307         \}}
+\DoxyCodeLine{00308         }
+\DoxyCodeLine{00312         List<string> RecursiveSerch(\textcolor{keywordtype}{string} dir, \textcolor{keywordtype}{string} filePattern ,List<string> returnList)\{}
+\DoxyCodeLine{00313             \textcolor{keywordflow}{try} }
+\DoxyCodeLine{00314             \{}
+\DoxyCodeLine{00315                 \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} d \textcolor{keywordflow}{in} Directory.GetDirectories(dir)) }
+\DoxyCodeLine{00316                 \{}
+\DoxyCodeLine{00317                     \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} f \textcolor{keywordflow}{in} Directory.GetFiles(d, filePattern)) }
+\DoxyCodeLine{00318                     \{}
+\DoxyCodeLine{00319                         returnList.Add(f);}
+\DoxyCodeLine{00320                     \}}
+\DoxyCodeLine{00321                     returnList = RecursiveSerch(d,filePattern, returnList);}
+\DoxyCodeLine{00322                 \}}
+\DoxyCodeLine{00323             \}}
+\DoxyCodeLine{00324             \textcolor{keywordflow}{catch} (System.Exception excpt) }
+\DoxyCodeLine{00325             \{}
+\DoxyCodeLine{00326                 Debug.Log(excpt.Message);}
+\DoxyCodeLine{00327             \}}
+\DoxyCodeLine{00328             \textcolor{keywordflow}{return} returnList;}
+\DoxyCodeLine{00329         \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333     \}}
+\DoxyCodeLine{00334 \}}
+
+\end{DoxyCode}

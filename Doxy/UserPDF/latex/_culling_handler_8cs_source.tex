@@ -1,0 +1,233 @@
+\doxysection{Culling\+Handler.\+cs}
+\label{_culling_handler_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullingHandler.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Culling/CullingHandler.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CullingHandler.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities,}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Handles the network culling.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00025     [RequireComponent(typeof(PhotonView))]}
+\DoxyCodeLine{00026     \textcolor{keyword}{public} \textcolor{keyword}{class }CullingHandler : MonoBehaviour, IPunObservable}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028 \textcolor{preprocessor}{        \#region VARIABLES}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keywordtype}{int} orderIndex;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{private} CullArea cullArea;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{private} List<byte> previousActiveCells, activeCells;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{private} PhotonView pView;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{private} Vector3 lastPosition, currentPosition;}
+\DoxyCodeLine{00039         }
+\DoxyCodeLine{00040         }
+\DoxyCodeLine{00041         \textcolor{comment}{// used to limit the number of UpdateInterestGroups calls per second (there is no use to change groups more than a few times per second, even if the Culling algorithm makes it look like that)}}
+\DoxyCodeLine{00042         \textcolor{keyword}{private} \textcolor{keywordtype}{float} timeSinceUpdate;}
+\DoxyCodeLine{00043         \textcolor{comment}{// see timeSinceUpdate}}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keywordtype}{float} timeBetweenUpdatesMin = 0.33f;}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{        \#region UNITY\_FUNCTIONS}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00054         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (this.pView == \textcolor{keyword}{null})}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 this.pView = GetComponent<PhotonView>();}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060                 \textcolor{keywordflow}{if} (!this.pView.IsMine)}
+\DoxyCodeLine{00061                 \{}
+\DoxyCodeLine{00062                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00063                 \}}
+\DoxyCodeLine{00064             \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (this.cullArea == \textcolor{keyword}{null})}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 this.cullArea = FindObjectOfType<CullArea>();}
+\DoxyCodeLine{00069             \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             this.previousActiveCells = \textcolor{keyword}{new} List<byte>(0);}
+\DoxyCodeLine{00072             this.activeCells = \textcolor{keyword}{new} List<byte>(0);}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             this.currentPosition = this.lastPosition = transform.position;}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00080         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00081         \{}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (!this.pView.IsMine)}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (PhotonNetwork.InRoom)}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 \textcolor{keywordflow}{if} (this.cullArea.NumberOfSubdivisions == 0)}
+\DoxyCodeLine{00090                 \{}
+\DoxyCodeLine{00091                     this.pView.Group = this.cullArea.FIRST\_GROUP\_ID;}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093                     PhotonNetwork.SetInterestGroups(this.cullArea.FIRST\_GROUP\_ID, \textcolor{keyword}{true});}
+\DoxyCodeLine{00094                 \}}
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00096                 \{}
+\DoxyCodeLine{00097                     \textcolor{comment}{// This is used to continuously update the active group.}}
+\DoxyCodeLine{00098                     this.pView.ObservedComponents.Add(\textcolor{keyword}{this});}
+\DoxyCodeLine{00099                 \}}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00108         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110             \textcolor{keywordflow}{if} (!this.pView.IsMine)}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00113             \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115             \textcolor{comment}{// we'll limit how often this update may run at all (to avoid too frequent changes and flooding the server with SetInterestGroups calls)}}
+\DoxyCodeLine{00116             this.timeSinceUpdate += Time.deltaTime;}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{if} (this.timeSinceUpdate < this.timeBetweenUpdatesMin)}
+\DoxyCodeLine{00118             \{}
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00120             \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             this.lastPosition = this.currentPosition;}
+\DoxyCodeLine{00123             this.currentPosition = transform.position;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{comment}{// This is a simple position comparison of the current and the previous position. }}
+\DoxyCodeLine{00126             \textcolor{comment}{// When using Network Culling in a bigger project keep in mind that there might}}
+\DoxyCodeLine{00127             \textcolor{comment}{// be more transform-\/related options, e.g. the rotation, or other options to check.}}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (this.currentPosition != this.lastPosition)}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{if} (this.HaveActiveCellsChanged())}
+\DoxyCodeLine{00131                 \{}
+\DoxyCodeLine{00132                     this.UpdateInterestGroups();}
+\DoxyCodeLine{00133                     this.timeSinceUpdate = 0;}
+\DoxyCodeLine{00134                 \}}
+\DoxyCodeLine{00135             \}}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00141         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnGUI()}
+\DoxyCodeLine{00142         \{}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (!this.pView.IsMine)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00146             \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordtype}{string} subscribedAndActiveCells = \textcolor{stringliteral}{"{}Inside cells:\(\backslash\)n"{}};}
+\DoxyCodeLine{00149             \textcolor{keywordtype}{string} subscribedCells = \textcolor{stringliteral}{"{}Subscribed cells:\(\backslash\)n"{}};}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < this.activeCells.Count; ++index)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (index <= this.cullArea.NumberOfSubdivisions)}
+\DoxyCodeLine{00154                 \{}
+\DoxyCodeLine{00155                     subscribedAndActiveCells += this.activeCells[index] + \textcolor{stringliteral}{"{} | "{}};}
+\DoxyCodeLine{00156                 \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158                 subscribedCells += this.activeCells[index] + \textcolor{stringliteral}{"{} | "{}};}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160             GUI.Label(\textcolor{keyword}{new} Rect(20.0f, Screen.height -\/ 120.0f, 200.0f, 40.0f), \textcolor{stringliteral}{"{}<color=white>PhotonView Group: "{}} + \textcolor{keyword}{this}.pView.Group + \textcolor{stringliteral}{"{}</color>"{}}, \textcolor{keyword}{new} GUIStyle() \{ alignment = TextAnchor.UpperLeft, fontSize = 16 \});}
+\DoxyCodeLine{00161             GUI.Label(\textcolor{keyword}{new} Rect(20.0f, Screen.height -\/ 100.0f, 200.0f, 40.0f), \textcolor{stringliteral}{"{}<color=white>"{}} + subscribedAndActiveCells + \textcolor{stringliteral}{"{}</color>"{}}, \textcolor{keyword}{new} GUIStyle() \{ alignment = TextAnchor.UpperLeft, fontSize = 16 \});}
+\DoxyCodeLine{00162             GUI.Label(\textcolor{keyword}{new} Rect(20.0f, Screen.height -\/ 60.0f, 200.0f, 40.0f), \textcolor{stringliteral}{"{}<color=white>"{}} + subscribedCells + \textcolor{stringliteral}{"{}</color>"{}}, \textcolor{keyword}{new} GUIStyle() \{ alignment = TextAnchor.UpperLeft, fontSize = 16 \});}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} HaveActiveCellsChanged()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             \textcolor{keywordflow}{if} (this.cullArea.NumberOfSubdivisions == 0)}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             this.previousActiveCells = \textcolor{keyword}{new} List<byte>(this.activeCells);}
+\DoxyCodeLine{00179             this.activeCells = this.cullArea.GetActiveCells(transform.position);}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             \textcolor{comment}{// If the player leaves the area we insert the whole area itself as an active cell.}}
+\DoxyCodeLine{00182             \textcolor{comment}{// This can be removed if it is sure that the player is not able to leave the area.}}
+\DoxyCodeLine{00183             \textcolor{keywordflow}{while} (this.activeCells.Count <= \textcolor{keyword}{this}.cullArea.NumberOfSubdivisions)}
+\DoxyCodeLine{00184             \{}
+\DoxyCodeLine{00185                 this.activeCells.Add(this.cullArea.FIRST\_GROUP\_ID);}
+\DoxyCodeLine{00186             \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (this.activeCells.Count != \textcolor{keyword}{this}.previousActiveCells.Count)}
+\DoxyCodeLine{00189             \{}
+\DoxyCodeLine{00190                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             \textcolor{keywordflow}{if} (this.activeCells[this.cullArea.NumberOfSubdivisions] != \textcolor{keyword}{this}.previousActiveCells[\textcolor{keyword}{this}.cullArea.NumberOfSubdivisions])}
+\DoxyCodeLine{00194             \{}
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00204         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateInterestGroups()}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206             List<byte> disable = \textcolor{keyword}{new} List<byte>(0);}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{byte} groupId \textcolor{keywordflow}{in} this.previousActiveCells)}
+\DoxyCodeLine{00209             \{}
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{if} (!this.activeCells.Contains(groupId))}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     disable.Add(groupId);}
+\DoxyCodeLine{00213                 \}}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             PhotonNetwork.SetInterestGroups(disable.ToArray(), \textcolor{keyword}{this}.activeCells.ToArray());}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219 \textcolor{preprocessor}{        \#region IPunObservable implementation}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00226         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00227         \{}
+\DoxyCodeLine{00228             \textcolor{comment}{// If the player leaves the area we insert the whole area itself as an active cell.}}
+\DoxyCodeLine{00229             \textcolor{comment}{// This can be removed if it is sure that the player is not able to leave the area.}}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{while} (this.activeCells.Count <= \textcolor{keyword}{this}.cullArea.NumberOfSubdivisions)}
+\DoxyCodeLine{00231             \{}
+\DoxyCodeLine{00232                 this.activeCells.Add(this.cullArea.FIRST\_GROUP\_ID);}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keywordflow}{if} (this.cullArea.NumberOfSubdivisions == 1)}
+\DoxyCodeLine{00236             \{}
+\DoxyCodeLine{00237                 this.orderIndex = (++this.orderIndex \% this.cullArea.SUBDIVISION\_FIRST\_LEVEL\_ORDER.Length);}
+\DoxyCodeLine{00238                 this.pView.Group = this.activeCells[this.cullArea.SUBDIVISION\_FIRST\_LEVEL\_ORDER[this.orderIndex]];}
+\DoxyCodeLine{00239             \}}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.cullArea.NumberOfSubdivisions == 2)}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242                 this.orderIndex = (++this.orderIndex \% this.cullArea.SUBDIVISION\_SECOND\_LEVEL\_ORDER.Length);}
+\DoxyCodeLine{00243                 this.pView.Group = this.activeCells[this.cullArea.SUBDIVISION\_SECOND\_LEVEL\_ORDER[this.orderIndex]];}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.cullArea.NumberOfSubdivisions == 3)}
+\DoxyCodeLine{00246             \{}
+\DoxyCodeLine{00247                 this.orderIndex = (++this.orderIndex \% this.cullArea.SUBDIVISION\_THIRD\_LEVEL\_ORDER.Length);}
+\DoxyCodeLine{00248                 this.pView.Group = this.activeCells[this.cullArea.SUBDIVISION\_THIRD\_LEVEL\_ORDER[this.orderIndex]];}
+\DoxyCodeLine{00249             \}}
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00253     \}}
+\DoxyCodeLine{00254 \}}
+
+\end{DoxyCode}

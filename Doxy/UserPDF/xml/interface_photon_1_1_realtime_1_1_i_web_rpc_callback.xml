@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.2" xml:lang="en-US">
+  <compounddef id="interface_photon_1_1_realtime_1_1_i_web_rpc_callback" kind="interface" language="C#" prot="public">
+    <compoundname>Photon::Realtime::IWebRpcCallback</compoundname>
+    <derivedcompoundref refid="class_photon_1_1_pun_1_1_demo_1_1_web_rpc_implementation_example" prot="public" virt="non-virtual">Photon.Pun.Demo.WebRpcImplementationExample</derivedcompoundref>
+    <derivedcompoundref refid="class_photon_1_1_pun_1_1_mono_behaviour_pun_callbacks" prot="public" virt="non-virtual">Photon.Pun.MonoBehaviourPunCallbacks</derivedcompoundref>
+    <derivedcompoundref refid="class_photon_1_1_realtime_1_1_web_rpc_callbacks_container" prot="public" virt="non-virtual">Photon.Realtime.WebRpcCallbacksContainer</derivedcompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="interface_photon_1_1_realtime_1_1_i_web_rpc_callback_1a75f0eb120e297c22bac5511fbdbec541" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Photon.Realtime.IWebRpcCallback.OnWebRpcResponse</definition>
+        <argsstring>(OperationResponse response)</argsstring>
+        <name>OnWebRpcResponse</name>
+        <reimplementedby refid="class_photon_1_1_pun_1_1_mono_behaviour_pun_callbacks_1a00981d740846c3d509570b13503df373">OnWebRpcResponse</reimplementedby>
+        <reimplementedby refid="class_photon_1_1_pun_1_1_demo_1_1_web_rpc_implementation_example_1aef927ba54be9b36a4c2a5ce9563e3ac9">OnWebRpcResponse</reimplementedby>
+        <param>
+          <type>OperationResponse</type>
+          <declname>response</declname>
+        </param>
+        <briefdescription>
+<para>Called when the response to a WebRPC is available. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>See <ref refid="class_photon_1_1_realtime_1_1_load_balancing_client_1a60e3a0a39e040f625af0efc66a5022fa" kindref="member">LoadBalancingClient.OpWebRpc</ref>. </para>
+<para>Important: The response.ReturnCode is 0 if <ref refid="namespace_photon" kindref="compound">Photon</ref> was able to reach your web-service.<linebreak/>
+ The content of the response is what your web-service sent. You can create a <ref refid="class_photon_1_1_realtime_1_1_web_rpc_response" kindref="compound">WebRpcResponse</ref> from it.<linebreak/>
+ Example: <ref refid="class_photon_1_1_realtime_1_1_web_rpc_response" kindref="compound">WebRpcResponse</ref> webResponse = new WebRpcResponse(operationResponse);<linebreak/>
+</para>
+<para>Please note: Class OperationResponse is in a namespace which needs to be &quot;used&quot;:<linebreak/>
+ using ExitGames.Client.Photon; // includes OperationResponse (and other classes) </para>
+<para>public void <ref refid="interface_photon_1_1_realtime_1_1_i_web_rpc_callback_1a75f0eb120e297c22bac5511fbdbec541" kindref="member">OnWebRpcResponse(OperationResponse response)</ref> { Debug.LogFormat(&quot;WebRPC operation response {0}&quot;, response.ToStringFull()); switch (response.ReturnCode) { case <ref refid="class_photon_1_1_realtime_1_1_error_code_1a87b36f402b82f151d6ebaf55ddb3c2d8" kindref="member">ErrorCode.Ok</ref>: <ref refid="class_photon_1_1_realtime_1_1_web_rpc_response" kindref="compound">WebRpcResponse</ref> webRpcResponse = new WebRpcResponse(response); Debug.LogFormat(&quot;Parsed WebRPC response {0}&quot;, response.ToStringFull()); if (string.IsNullOrEmpty(webRpcResponse.Name)) { Debug.LogError(&quot;Unexpected: WebRPC response did not contain WebRPC method name&quot;); } if (webRpcResponse.ResultCode == 0) // success { switch (webRpcResponse.Name) { // todo: add your code here case GetGameListWebRpcMethodName: // example // ... break; } } else if (webRpcResponse.ResultCode == -1) { Debug.LogErrorFormat(&quot;Web server did not return ResultCode for WebRPC method=\&quot;{0}", Message={1}&quot;, webRpcResponse.Name, webRpcResponse.Message);
+           }
+           else
+           {
+               Debug.LogErrorFormat(&quot;Web server returned ResultCode={0} for WebRPC method="{1}", Message={2}&quot;, webRpcResponse.ResultCode, webRpcResponse.Name, webRpcResponse.Message);
+           }
+           break;
+       case ErrorCode.ExternalHttpCallFailed: // web service unreachable
+           Debug.LogErrorFormat(&quot;WebRPC call failed as request could not be sent to the server. {0}&quot;, response.DebugMessage);
+           break;
+       case ErrorCode.HttpLimitReached: // too many WebRPCs in a short period of time
+                                        // the debug message should contain the limit exceeded
+          Debug.LogErrorFormat(&quot;WebRPCs rate limit exceeded: {0}&quot;, response.DebugMessage);
+           break;
+      case ErrorCode.InvalidOperation: // WebRPC not configured at all OR not configured properly OR trying to send on name server
+         if (PhotonNetwork.Server == ServerConnection.NameServer)
+        {
+            Debug.LogErrorFormat(&quot;WebRPC not supported on NameServer. {0}&quot;, response.DebugMessage);
+        }
+        else
+        {
+            Debug.LogErrorFormat(&quot;WebRPC not properly configured or not configured at all. {0}&quot;, response.DebugMessage);
+        }
+        break;
+    default:
+        // other unknown error, unexpected
+        Debug.LogErrorFormat(&quot;Unexpected error, {0} {1}", response.ReturnCode, response.DebugMessage); break; } }</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonRealtime/Code/LoadBalancingClient.cs" line="4020" column="14"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Interface for &quot;WebRpc&quot; callbacks for the <ref refid="namespace_photon_1_1_realtime" kindref="compound">Realtime</ref> Api. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Currently includes only responses for Web RPCs. </para>
+<para>Classes that implement this interface must be registered to get callbacks for various situations.</para>
+<para>To register for callbacks, call <ref refid="class_photon_1_1_realtime_1_1_load_balancing_client_1a7eccc149073296a316965f2ce96d08d3" kindref="member">LoadBalancingClient.AddCallbackTarget</ref> and pass the class implementing this interface To stop getting callbacks, call <ref refid="class_photon_1_1_realtime_1_1_load_balancing_client_1a2b479687e6c8f0d73661447c91e41a88" kindref="member">LoadBalancingClient.RemoveCallbackTarget</ref> and pass the class implementing this interface</para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="4">
+        <label>DisplayWinner</label>
+        <link refid="class_display_winner"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>Launcher</label>
+        <link refid="class_launcher"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>Launcher_old</label>
+        <link refid="class_launcher__old"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>NetcodeSpawnRoomObjs</label>
+        <link refid="class_netcode_spawn_room_objs"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Photon.Realtime.IWebRpcCallback</label>
+        <link refid="interface_photon_1_1_realtime_1_1_i_web_rpc_callback"/>
+      </node>
+      <node id="8">
+        <label>Photon.Pun.Demo.Asteroids.AsteroidsGameManager</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_asteroids_1_1_asteroids_game_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>Photon.Pun.Demo.Asteroids.LobbyMainPanel</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_asteroids_1_1_lobby_main_panel"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>Photon.Pun.Demo.Asteroids.PlayerOverviewPanel</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_asteroids_1_1_player_overview_panel"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>Photon.Pun.Demo.Cockpit.FriendListView</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_friend_list_view"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>Photon.Pun.Demo.Cockpit.PlayerDetailsController</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_player_details_controller"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>Photon.Pun.Demo.Cockpit.PlayerListView</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_player_list_view"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>Photon.Pun.Demo.Cockpit.PunCockpit</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_pun_cockpit"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>Photon.Pun.Demo.Cockpit.PunCockpitEmbed</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_pun_cockpit_embed"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>Photon.Pun.Demo.Cockpit.RoomListView</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_cockpit_1_1_room_list_view"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>Photon.Pun.Demo.Procedural.Cluster</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_procedural_1_1_cluster"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>Photon.Pun.Demo.Procedural.IngameControlPanel</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_procedural_1_1_ingame_control_panel"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>Photon.Pun.Demo.PunBasics.GameManager</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_pun_basics_1_1_game_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>Photon.Pun.Demo.PunBasics.Launcher</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_pun_basics_1_1_launcher"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="21">
+        <label>Photon.Pun.Demo.PunBasics.PlayerManager</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_pun_basics_1_1_player_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Photon.Pun.Demo.WebRpcImplementationExample</label>
+        <link refid="class_photon_1_1_pun_1_1_demo_1_1_web_rpc_implementation_example"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Photon.Pun.MonoBehaviourPunCallbacks</label>
+        <link refid="class_photon_1_1_pun_1_1_mono_behaviour_pun_callbacks"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>Photon.Pun.UtilityScripts.ConnectAndJoinRandom</label>
+        <link refid="class_photon_1_1_pun_1_1_utility_scripts_1_1_connect_and_join_random"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>Photon.Pun.UtilityScripts.CountdownTimer</label>
+        <link refid="class_photon_1_1_pun_1_1_utility_scripts_1_1_countdown_timer"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>Photon.Pun.UtilityScripts.PlayerNumbering</label>
+        <link refid="class_photon_1_1_pun_1_1_utility_scripts_1_1_player_numbering"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>Photon.Pun.UtilityScripts.PunTeams</label>
+        <link refid="class_photon_1_1_pun_1_1_utility_scripts_1_1_pun_teams"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>Photon.Pun.UtilityScripts.PunTurnManager</label>
+        <link refid="class_photon_1_1_pun_1_1_utility_scripts_1_1_pun_turn_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="33">
+        <label>Photon.Realtime.WebRpcCallbacksContainer</label>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>PlayerListItem_Old</label>
+        <link refid="class_player_list_item___old"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>ReadyCheck</label>
+        <link refid="class_ready_check"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>SInt.Netcode.PhotonPUN.PlayerListItem</label>
+        <link refid="class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_player_list_item"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="30">
+        <label>SInt.Netcode.PhotonPUN.RoomManager</label>
+        <link refid="class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_room_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="31">
+        <label>SInt.Netcode.PhotonPUN.Samples.SimpleFPSOnline.PlayerController</label>
+        <link refid="class_s_int_1_1_netcode_1_1_photon_p_u_n_1_1_samples_1_1_simple_f_p_s_online_1_1_player_controller"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>ScoreManager</label>
+        <link refid="class_score_manager"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Photon.Realtime.IWebRpcCallback</label>
+        <link refid="interface_photon_1_1_realtime_1_1_i_web_rpc_callback"/>
+      </node>
+    </collaborationgraph>
+    <location file="C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonRealtime/Code/LoadBalancingClient.cs" line="3950" column="22" bodyfile="C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonRealtime/Code/LoadBalancingClient.cs" bodystart="3951" bodyend="4021"/>
+    <listofallmembers>
+      <member refid="interface_photon_1_1_realtime_1_1_i_web_rpc_callback_1a75f0eb120e297c22bac5511fbdbec541" prot="public" virt="non-virtual"><scope>Photon::Realtime::IWebRpcCallback</scope><name>OnWebRpcResponse</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

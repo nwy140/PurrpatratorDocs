@@ -1,0 +1,308 @@
+\doxysection{Norm\+Compress.\+cs}
+\label{_norm_compress_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/NormCompress/NormCompress.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/NormCompress/NormCompress.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// Copyright 2019, Davin Carten, All rights reserved}}
+\DoxyCodeLine{00002 \textcolor{comment}{// This code may only be used in game development, but may not be used in any tools or assets that are sold or made publicly available to other developers.}}
+\DoxyCodeLine{00003 }
+\DoxyCodeLine{00004 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00005 \{}
+\DoxyCodeLine{00006     \textcolor{keyword}{public} \textcolor{keyword}{enum} NormalizedFloatCompression}
+\DoxyCodeLine{00007     \{}
+\DoxyCodeLine{00008         Bits2 = 2, Bits3, Bits4, Bits5, Bits6, Bits7, Bits8, Bits9, Bits10, Bits12 = 12, Bits14 = 14,}
+\DoxyCodeLine{00009         Half16 = 16, Full32 = 32}
+\DoxyCodeLine{00010     \}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NormCompress}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{static} NormCompressCodec[] codecForBit = \textcolor{keyword}{new} NormCompressCodec[33];}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{static} NormCompress()}
+\DoxyCodeLine{00024         \{}
+\DoxyCodeLine{00025             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i <= 32; ++i)}
+\DoxyCodeLine{00026             \{}
+\DoxyCodeLine{00027                 uint maxval = GetMaxValueForBits(i);}
+\DoxyCodeLine{00028                 codecForBit[i] = \textcolor{keyword}{new} NormCompressCodec(i, maxval, 1f / maxval);}
+\DoxyCodeLine{00029             \}}
+\DoxyCodeLine{00030         \}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{struct }NormCompressCodec}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             \textcolor{keyword}{public} readonly \textcolor{keywordtype}{int} bits;}
+\DoxyCodeLine{00035             \textcolor{keyword}{public} readonly \textcolor{keywordtype}{float} encoder, decoder;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037             \textcolor{keyword}{public} NormCompressCodec(\textcolor{keywordtype}{int} bits, \textcolor{keywordtype}{float} encoder, \textcolor{keywordtype}{float} decoder)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 this.bits = bits;}
+\DoxyCodeLine{00040                 this.encoder = encoder;}
+\DoxyCodeLine{00041                 this.decoder = decoder;}
+\DoxyCodeLine{00042             \}}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE15 = 32767;}
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE15 = 1f / NORM\_COMP\_ENCODE15;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE14 = 16383;}
+\DoxyCodeLine{00051         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE14 = 1f / NORM\_COMP\_ENCODE14;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE13 = 8191;}
+\DoxyCodeLine{00054         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE13 = 1f / NORM\_COMP\_ENCODE13;}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE12 = 4095;}
+\DoxyCodeLine{00057         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE12 = 1f / NORM\_COMP\_ENCODE12;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE11 = 2047;}
+\DoxyCodeLine{00060         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE11 = 1f / NORM\_COMP\_ENCODE11;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE10 = 1023;}
+\DoxyCodeLine{00063         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE10 = 1f / NORM\_COMP\_ENCODE10;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE9 = 511;}
+\DoxyCodeLine{00066         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE9 = 1f / NORM\_COMP\_ENCODE9;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE8 = 255;}
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE8 = 1f / NORM\_COMP\_ENCODE8;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE7 = 127;}
+\DoxyCodeLine{00072         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE7 = 1f / NORM\_COMP\_ENCODE8;}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE6 = 63;}
+\DoxyCodeLine{00075         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE6 = 1f / NORM\_COMP\_ENCODE6;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE5 = 31;}
+\DoxyCodeLine{00078         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE5 = 1f / NORM\_COMP\_ENCODE5;}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE4 = 15;}
+\DoxyCodeLine{00081         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE4 = 1f / NORM\_COMP\_ENCODE4;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE3 = 7;}
+\DoxyCodeLine{00084         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE3 = 1f / NORM\_COMP\_ENCODE3;}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE2 = 3;}
+\DoxyCodeLine{00087         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE2 = 1f / NORM\_COMP\_ENCODE2;}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE1 = 1;}
+\DoxyCodeLine{00090         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE1 = 1;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_ENCODE0 = 0;}
+\DoxyCodeLine{00093         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} NORM\_COMP\_DECODE0 = 0;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{static} uint CompressNorm(\textcolor{keyword}{this} \textcolor{keywordtype}{float} value, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             value = (value > 1) ? 1 : (value < 0) ? 0 : value;}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{switch} (bits)}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{case} 0:}
+\DoxyCodeLine{00107                     \textcolor{keywordflow}{return} (uint)0;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                 \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00110                     \textcolor{keywordflow}{return} (uint)value;}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                 \textcolor{keywordflow}{case} 2:}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE2);}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 \textcolor{keywordflow}{case} 3:}
+\DoxyCodeLine{00116                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE3);}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118                 \textcolor{keywordflow}{case} 4:}
+\DoxyCodeLine{00119                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE4);}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{case} 5:}
+\DoxyCodeLine{00122                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE5);}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{case} 6:}
+\DoxyCodeLine{00125                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE6);}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{case} 7:}
+\DoxyCodeLine{00128                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE7);}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{case} 8:}
+\DoxyCodeLine{00131                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE8);}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133                 \textcolor{keywordflow}{case} 9:}
+\DoxyCodeLine{00134                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE9);}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{case} 10:}
+\DoxyCodeLine{00137                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE10);}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                 \textcolor{keywordflow}{case} 11:}
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE11);}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{case} 12:}
+\DoxyCodeLine{00143                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE12);}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{case} 13:}
+\DoxyCodeLine{00146                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE13);}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{case} 14:}
+\DoxyCodeLine{00149                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE14);}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151                 \textcolor{keywordflow}{case} 15:}
+\DoxyCodeLine{00152                     \textcolor{keywordflow}{return} (uint)(value * NORM\_COMP\_ENCODE15);}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{case} 16:}
+\DoxyCodeLine{00155                     \textcolor{keywordflow}{return} HalfFloat.HalfUtilities.Pack(value);}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00158                     \textcolor{keywordflow}{return} (ByteConverter)value;}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keyword}{static} uint WriteNorm(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, \textcolor{keywordtype}{float} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             uint cval;}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             value = (value > 1) ? 1 : (value < 0) ? 0 : value;}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             \textcolor{keywordflow}{switch} (bits)}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{case} 0:}
+\DoxyCodeLine{00176                     cval = 0;}
+\DoxyCodeLine{00177                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00180                     cval = (uint)value;}
+\DoxyCodeLine{00181                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{case} 2:}
+\DoxyCodeLine{00184                     cval = (uint)(value * NORM\_COMP\_ENCODE2);}
+\DoxyCodeLine{00185                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{case} 3:}
+\DoxyCodeLine{00188                     cval = (uint)(value * NORM\_COMP\_ENCODE3);}
+\DoxyCodeLine{00189                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191                 \textcolor{keywordflow}{case} 4:}
+\DoxyCodeLine{00192                     cval = (uint)(value * NORM\_COMP\_ENCODE4);}
+\DoxyCodeLine{00193                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{case} 5:}
+\DoxyCodeLine{00196                     cval = (uint)(value * NORM\_COMP\_ENCODE5);}
+\DoxyCodeLine{00197                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199                 \textcolor{keywordflow}{case} 6:}
+\DoxyCodeLine{00200                     cval = (uint)(value * NORM\_COMP\_ENCODE6);}
+\DoxyCodeLine{00201                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{case} 7:}
+\DoxyCodeLine{00204                     cval = (uint)(value * NORM\_COMP\_ENCODE7);}
+\DoxyCodeLine{00205                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{case} 8:}
+\DoxyCodeLine{00208                     cval = (uint)(value * NORM\_COMP\_ENCODE8);}
+\DoxyCodeLine{00209                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{case} 9:}
+\DoxyCodeLine{00212                     cval = (uint)(value * NORM\_COMP\_ENCODE9);}
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{case} 10:}
+\DoxyCodeLine{00216                     cval = (uint)(value * NORM\_COMP\_ENCODE10);}
+\DoxyCodeLine{00217                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 \textcolor{keywordflow}{case} 11:}
+\DoxyCodeLine{00220                     cval = (uint)(value * NORM\_COMP\_ENCODE11);}
+\DoxyCodeLine{00221                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223                 \textcolor{keywordflow}{case} 12:}
+\DoxyCodeLine{00224                     cval = (uint)(value * NORM\_COMP\_ENCODE12);}
+\DoxyCodeLine{00225                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227                 \textcolor{keywordflow}{case} 13:}
+\DoxyCodeLine{00228                     cval = (uint)(value * NORM\_COMP\_ENCODE13);}
+\DoxyCodeLine{00229                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231                 \textcolor{keywordflow}{case} 14:}
+\DoxyCodeLine{00232                     cval = (uint)(value * NORM\_COMP\_ENCODE14);}
+\DoxyCodeLine{00233                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235                 \textcolor{keywordflow}{case} 15:}
+\DoxyCodeLine{00236                     cval = (uint)(value * NORM\_COMP\_ENCODE15);}
+\DoxyCodeLine{00237                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239                 \textcolor{keywordflow}{case} 16:}
+\DoxyCodeLine{00240                     cval = HalfFloat.HalfUtilities.Pack(value);}
+\DoxyCodeLine{00241                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00244                     cval = (ByteConverter)value;}
+\DoxyCodeLine{00245                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             buffer.Write(cval, ref bitposition, bits);}
+\DoxyCodeLine{00249             \textcolor{keywordflow}{return} cval;}
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ReadNorm(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{switch} (bits)}
+\DoxyCodeLine{00258             \{}
+\DoxyCodeLine{00259                 \textcolor{keywordflow}{case} 0:}
+\DoxyCodeLine{00260                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262                 \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00263                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 1) * NORM\_COMP\_DECODE1;}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265                 \textcolor{keywordflow}{case} 2:}
+\DoxyCodeLine{00266                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 2) * NORM\_COMP\_DECODE2;}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268                 \textcolor{keywordflow}{case} 3:}
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 3) * NORM\_COMP\_DECODE3;}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271                 \textcolor{keywordflow}{case} 4:}
+\DoxyCodeLine{00272                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 4) * NORM\_COMP\_DECODE4;}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                 \textcolor{keywordflow}{case} 5:}
+\DoxyCodeLine{00275                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 5) * NORM\_COMP\_DECODE5;}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277                 \textcolor{keywordflow}{case} 6:}
+\DoxyCodeLine{00278                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 6) * NORM\_COMP\_DECODE6;}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280                 \textcolor{keywordflow}{case} 7:}
+\DoxyCodeLine{00281                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 7) * NORM\_COMP\_DECODE7;}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                 \textcolor{keywordflow}{case} 8:}
+\DoxyCodeLine{00284                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 8) * NORM\_COMP\_DECODE8;}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286                 \textcolor{keywordflow}{case} 9:}
+\DoxyCodeLine{00287                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 9) * NORM\_COMP\_DECODE9;}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289                 \textcolor{keywordflow}{case} 10:}
+\DoxyCodeLine{00290                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 10) * NORM\_COMP\_DECODE10;}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292                 \textcolor{keywordflow}{case} 11:}
+\DoxyCodeLine{00293                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 11) * NORM\_COMP\_DECODE11;}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295                 \textcolor{keywordflow}{case} 12:}
+\DoxyCodeLine{00296                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 12) * NORM\_COMP\_DECODE12;}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{case} 13:}
+\DoxyCodeLine{00299                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 13) * NORM\_COMP\_DECODE13;}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301                 \textcolor{keywordflow}{case} 14:}
+\DoxyCodeLine{00302                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 14) * NORM\_COMP\_DECODE14;}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{case} 15:}
+\DoxyCodeLine{00305                     \textcolor{keywordflow}{return} buffer.Read(ref bitposition, 15) * NORM\_COMP\_DECODE15;}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307                 \textcolor{keywordflow}{case} 16:}
+\DoxyCodeLine{00308                     \textcolor{keywordflow}{return} buffer.ReadHalf(ref bitposition);}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00311                     \textcolor{keywordflow}{return} buffer.ReadFloat(ref bitposition);}
+\DoxyCodeLine{00312             \}}
+\DoxyCodeLine{00313         \}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315         \textcolor{keyword}{public} \textcolor{keyword}{static} uint GetMaxValueForBits(\textcolor{keywordtype}{int} bitcount)}
+\DoxyCodeLine{00316         \{}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{return} (uint)(((ulong)1 << bitcount) -\/ 1);}
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320     \}}
+\DoxyCodeLine{00321 \}}
+
+\end{DoxyCode}

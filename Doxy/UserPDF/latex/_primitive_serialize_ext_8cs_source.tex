@@ -1,0 +1,728 @@
+\doxysection{Primitive\+Serialize\+Ext.\+cs}
+\label{_primitive_serialize_ext_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/PrimitiveSerializeExt.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/Bitpackers/PrimitiveSerializeExt.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{/*}}
+\DoxyCodeLine{00002 \textcolor{comment}{* The MIT License (MIT)}}
+\DoxyCodeLine{00003 \textcolor{comment}{* }}
+\DoxyCodeLine{00004 \textcolor{comment}{* Copyright (c) 2018-\/2019 Davin Carten (emotitron) (davincarten@gmail.com)}}
+\DoxyCodeLine{00005 \textcolor{comment}{* }}
+\DoxyCodeLine{00006 \textcolor{comment}{* Permission is hereby granted, free of charge, to any person obtaining a copy}}
+\DoxyCodeLine{00007 \textcolor{comment}{* of this software and associated documentation files (the "{}Software"{}), to deal}}
+\DoxyCodeLine{00008 \textcolor{comment}{* in the Software without restriction, including without limitation the rights}}
+\DoxyCodeLine{00009 \textcolor{comment}{* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell}}
+\DoxyCodeLine{00010 \textcolor{comment}{* copies of the Software, and to permit persons to whom the Software is}}
+\DoxyCodeLine{00011 \textcolor{comment}{* furnished to do so, subject to the following conditions:}}
+\DoxyCodeLine{00012 \textcolor{comment}{* }}
+\DoxyCodeLine{00013 \textcolor{comment}{* The above copyright notice and this permission notice shall be included in}}
+\DoxyCodeLine{00014 \textcolor{comment}{* all copies or substantial portions of the Software.}}
+\DoxyCodeLine{00015 \textcolor{comment}{* }}
+\DoxyCodeLine{00016 \textcolor{comment}{* THE SOFTWARE IS PROVIDED "{}AS IS"{}, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR}}
+\DoxyCodeLine{00017 \textcolor{comment}{* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,}}
+\DoxyCodeLine{00018 \textcolor{comment}{* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE}}
+\DoxyCodeLine{00019 \textcolor{comment}{* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER}}
+\DoxyCodeLine{00020 \textcolor{comment}{* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,}}
+\DoxyCodeLine{00021 \textcolor{comment}{* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN}}
+\DoxyCodeLine{00022 \textcolor{comment}{* THE SOFTWARE.}}
+\DoxyCodeLine{00023 \textcolor{comment}{*/}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00028 \{}
+\DoxyCodeLine{00032     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }PrimitiveSerializeExt}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00034         \textcolor{keyword}{const} \textcolor{keywordtype}{string} overrunerror = \textcolor{stringliteral}{"{}Write buffer overrun. writepos + bits exceeds target length. Data loss will occur."{}};}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036 \textcolor{preprocessor}{        \#region Inject ByteConverted}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ByteConverter value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             ((ulong)value).Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00048         \}}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ByteConverter value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             ((ulong)value).Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ByteConverter value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00068         \{}
+\DoxyCodeLine{00069             ((ulong)value).Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00078         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ByteConverter value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00079         \{}
+\DoxyCodeLine{00080             ((ulong)value).Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085 \textcolor{preprocessor}{        \#region Signed Write/Inject/Extract}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong WriteSigned(\textcolor{keyword}{this} ulong buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{return} buffer.Write(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00095         \}}
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00102             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00110             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00118             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00123         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} sbyte value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00126             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSigned(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             uint value = (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00135             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00136             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{static} uint WriteSigned(\textcolor{keyword}{this} uint buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00146             \textcolor{keywordflow}{return} buffer.Write(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00147         \}}
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00154             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00159         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00160         \{}
+\DoxyCodeLine{00161             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00162             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00167         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00170             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00175         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} sbyte value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00176         \{}
+\DoxyCodeLine{00177             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00178             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00179         \}}
+\DoxyCodeLine{00184         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSigned(\textcolor{keyword}{this} uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00185         \{}
+\DoxyCodeLine{00186             uint value = (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00187             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00195         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort WriteSigned(\textcolor{keyword}{this} ushort buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00198             \textcolor{keywordflow}{return} buffer.Write(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00203         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00206             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00207         \}}
+\DoxyCodeLine{00211         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00214             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00219         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00220         \{}
+\DoxyCodeLine{00221             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00222             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00227         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} sbyte value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00228         \{}
+\DoxyCodeLine{00229             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00230             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00231         \}}
+\DoxyCodeLine{00236         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSigned(\textcolor{keyword}{this} ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00237         \{}
+\DoxyCodeLine{00238             uint value = (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00239             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00241         \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00247         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte} WriteSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00250             \textcolor{keywordflow}{return} buffer.Write(zigzag, ref bitposition, bits);}
+\DoxyCodeLine{00251         \}}
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00258             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00259         \}}
+\DoxyCodeLine{00263         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00264         \{}
+\DoxyCodeLine{00265             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00266             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00272         \{}
+\DoxyCodeLine{00273             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00274             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00275         \}}
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectSigned(\textcolor{keyword}{this} sbyte value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281             uint zigzag = (uint)((value << 1) \string^ (value >> 31));}
+\DoxyCodeLine{00282             zigzag.Inject(ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{00283         \}}
+\DoxyCodeLine{00288         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ReadSigned(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00289         \{}
+\DoxyCodeLine{00290             uint value = (uint)buffer.Read(ref bitposition, bits);}
+\DoxyCodeLine{00291             \textcolor{keywordtype}{int} zagzig = (int)((value >> 1) \string^ (-\/(int)(value \& 1)));}
+\DoxyCodeLine{00292             \textcolor{keywordflow}{return} zagzig;}
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297 \textcolor{preprocessor}{        \#region Boolean Write/Inject/Extract}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong WritetBool(\textcolor{keyword}{this} ulong buffer, \textcolor{keywordtype}{bool} value, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00300         \{}
+\DoxyCodeLine{00301             \textcolor{keywordflow}{return} Write(buffer, (ulong)(value ? 1 : 0), ref bitposition, 1);}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303         \textcolor{keyword}{public} \textcolor{keyword}{static} uint WritetBool(\textcolor{keyword}{this} uint buffer, \textcolor{keywordtype}{bool} value, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00304         \{}
+\DoxyCodeLine{00305             \textcolor{keywordflow}{return} Write(buffer, (ulong)(value ? 1 : 0), ref bitposition, 1);}
+\DoxyCodeLine{00306         \}}
+\DoxyCodeLine{00307         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort WritetBool(\textcolor{keyword}{this} ushort buffer, \textcolor{keywordtype}{bool} value, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00308         \{}
+\DoxyCodeLine{00309             \textcolor{keywordflow}{return} Write(buffer, (ulong)(value ? 1 : 0), ref bitposition, 1);}
+\DoxyCodeLine{00310         \}}
+\DoxyCodeLine{00311         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte} WritetBool(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{bool} value, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00312         \{}
+\DoxyCodeLine{00313             \textcolor{keywordflow}{return} Write(buffer, (ulong)(value ? 1 : 0), ref bitposition, 1);}
+\DoxyCodeLine{00314         \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{bool} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00317         \{}
+\DoxyCodeLine{00318             Inject((ulong)(value ? 1 : 0), ref buffer,  ref bitposition, 1);}
+\DoxyCodeLine{00319         \}}
+\DoxyCodeLine{00320         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{bool} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00321         \{}
+\DoxyCodeLine{00322             Inject((ulong)(value ? 1 : 0), ref buffer, ref bitposition, 1);}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{bool} value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00325         \{}
+\DoxyCodeLine{00326             Inject((ulong)(value ? 1 : 0), ref buffer, ref bitposition, 1);}
+\DoxyCodeLine{00327         \}}
+\DoxyCodeLine{00328         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{bool} value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00329         \{}
+\DoxyCodeLine{00330             Inject((ulong)(value ? 1 : 0), ref buffer, ref bitposition, 1);}
+\DoxyCodeLine{00331         \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReadBool(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             \textcolor{keywordflow}{return} (buffer.Read(ref bitposition, 1) == 0) ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00336         \}}
+\DoxyCodeLine{00337         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReadtBool(\textcolor{keyword}{this} uint buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00338         \{}
+\DoxyCodeLine{00339             \textcolor{keywordflow}{return} (buffer.Read(ref bitposition, 1) == 0) ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00340         \}}
+\DoxyCodeLine{00341         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReadBool(\textcolor{keyword}{this} ushort buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00342         \{}
+\DoxyCodeLine{00343             \textcolor{keywordflow}{return} (buffer.Read(ref bitposition, 1) == 0) ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00344         \}}
+\DoxyCodeLine{00345         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReadBool(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             \textcolor{keywordflow}{return} (buffer.Read(ref bitposition, 1) == 0) ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00348         \}}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352 \textcolor{preprocessor}{        \#region Primary Write}}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00363         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong Write(\textcolor{keyword}{this} ulong buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00364         \{}
+\DoxyCodeLine{00365             System.Diagnostics.Debug.Assert(bitposition + bits <= 64, overrunerror);}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367             ulong offsetvalue = value << bitposition;}
+\DoxyCodeLine{00368             ulong mask = ulong.MaxValue >> (64 -\/ bits) << bitposition;}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00371             buffer \&= \string~mask;}
+\DoxyCodeLine{00372             buffer |= (mask \& offsetvalue);}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374             bitposition += bits;}
+\DoxyCodeLine{00375             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00376         \}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00387         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Write(\textcolor{keyword}{this} uint buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             System.Diagnostics.Debug.Assert(bitposition + bits <= 32, overrunerror);}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391             uint offsetvalue = (uint)value << bitposition;}
+\DoxyCodeLine{00392             uint mask = uint.MaxValue >> (32 -\/ bits) << bitposition;}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00395             buffer \&= \string~mask;}
+\DoxyCodeLine{00396             buffer |= (mask \& offsetvalue);}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398             bitposition += bits;}
+\DoxyCodeLine{00399             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00400         \}}
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00411         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort Write(\textcolor{keyword}{this} ushort buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00412         \{}
+\DoxyCodeLine{00413             System.Diagnostics.Debug.Assert(bitposition + bits <= 16, overrunerror);}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00415             uint offsetvalue = ((uint)value << bitposition);}
+\DoxyCodeLine{00416             uint mask = ((uint)ushort.MaxValue >> (16 -\/ bits) << bitposition);}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00419             uint \_target = buffer \& \string~mask;}
+\DoxyCodeLine{00420             \_target |= (mask \& offsetvalue);}
+\DoxyCodeLine{00421             buffer = (ushort)\_target;}
+\DoxyCodeLine{00422 }
+\DoxyCodeLine{00423             bitposition += bits;}
+\DoxyCodeLine{00424             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00425         \}}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00436         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte} Write(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} buffer, ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00437         \{}
+\DoxyCodeLine{00438             System.Diagnostics.Debug.Assert(bitposition + bits <= 8, overrunerror);}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440             uint offsetvalue = ((uint)value << bitposition);}
+\DoxyCodeLine{00441             uint mask = ((uint)\textcolor{keywordtype}{byte}.MaxValue >> (8 -\/ bits) << bitposition);}
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00443             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00444             uint \_target = buffer \& \string~mask;}
+\DoxyCodeLine{00445             \_target |= (mask \& offsetvalue);}
+\DoxyCodeLine{00446             buffer = (byte)\_target;}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448             bitposition += bits;}
+\DoxyCodeLine{00449             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00450         \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454 \textcolor{preprocessor}{        \#region Inject UInt64 Buffer}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00463         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00464         \{}
+\DoxyCodeLine{00465             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00466 }
+\DoxyCodeLine{00467         \}}
+\DoxyCodeLine{00475         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref ulong buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00476         \{}
+\DoxyCodeLine{00477             System.Diagnostics.Debug.Assert(bitposition + bits <= 64, overrunerror);}
+\DoxyCodeLine{00478 }
+\DoxyCodeLine{00479             ulong offsetvalue = value << bitposition;}
+\DoxyCodeLine{00480             ulong mask = ulong.MaxValue >> (64 -\/ bits) << bitposition;}
+\DoxyCodeLine{00481 }
+\DoxyCodeLine{00482             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00483             buffer \&= \string~mask;}
+\DoxyCodeLine{00484             buffer |= (mask \& offsetvalue);}
+\DoxyCodeLine{00485         \}}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00495         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00496         \{}
+\DoxyCodeLine{00497             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00498 }
+\DoxyCodeLine{00499         \}}
+\DoxyCodeLine{00507         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref ulong buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00508         \{}
+\DoxyCodeLine{00509             System.Diagnostics.Debug.Assert(bitposition + bits <= 64, overrunerror);}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             ulong offsetvalue = ((ulong)value << bitposition);}
+\DoxyCodeLine{00512             ulong mask = ulong.MaxValue >> (64 -\/ bits) << bitposition;}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00514             \textcolor{comment}{// Clear bits in buffer we need to write to, then write to them.}}
+\DoxyCodeLine{00515             buffer \&= \string~mask;}
+\DoxyCodeLine{00516             buffer |= (mask \& offsetvalue);}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518         \}}
+\DoxyCodeLine{00519 }
+\DoxyCodeLine{00527         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00528         \{}
+\DoxyCodeLine{00529             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00530 }
+\DoxyCodeLine{00531         \}}
+\DoxyCodeLine{00539         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref ulong buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00540         \{}
+\DoxyCodeLine{00541             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00542         \}}
+\DoxyCodeLine{00543 }
+\DoxyCodeLine{00551         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00552         \{}
+\DoxyCodeLine{00553             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00554         \}}
+\DoxyCodeLine{00562         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref ulong buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00563         \{}
+\DoxyCodeLine{00564             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00565         \}}
+\DoxyCodeLine{00566 }
+\DoxyCodeLine{00575         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00576         \{}
+\DoxyCodeLine{00577             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00578         \}}
+\DoxyCodeLine{00587         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00588         \{}
+\DoxyCodeLine{00589             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00590         \}}
+\DoxyCodeLine{00599         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00600         \{}
+\DoxyCodeLine{00601             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00602         \}}
+\DoxyCodeLine{00611         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} sbyte value, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00612         \{}
+\DoxyCodeLine{00613             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00614         \}}
+\DoxyCodeLine{00615 }
+\DoxyCodeLine{00616 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00617 }
+\DoxyCodeLine{00618 \textcolor{preprocessor}{        \#region Inject UInt32 Buffer}}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00627         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00628         \{}
+\DoxyCodeLine{00629             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00630 }
+\DoxyCodeLine{00631         \}}
+\DoxyCodeLine{00639         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref uint buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00640         \{}
+\DoxyCodeLine{00641             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00642 }
+\DoxyCodeLine{00643         \}}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00652         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00653         \{}
+\DoxyCodeLine{00654             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00655 }
+\DoxyCodeLine{00656         \}}
+\DoxyCodeLine{00664         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref uint buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 32)}
+\DoxyCodeLine{00665         \{}
+\DoxyCodeLine{00666             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00667 }
+\DoxyCodeLine{00668         \}}
+\DoxyCodeLine{00676         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00677         \{}
+\DoxyCodeLine{00678             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680         \}}
+\DoxyCodeLine{00688         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref uint buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00689         \{}
+\DoxyCodeLine{00690             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00691 }
+\DoxyCodeLine{00692         \}}
+\DoxyCodeLine{00700         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00701         \{}
+\DoxyCodeLine{00702             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00704         \}}
+\DoxyCodeLine{00712         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref uint buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00713         \{}
+\DoxyCodeLine{00714             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00715 }
+\DoxyCodeLine{00716         \}}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00724         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{long} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00725         \{}
+\DoxyCodeLine{00726             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00727         \}}
+\DoxyCodeLine{00734         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{int} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00735         \{}
+\DoxyCodeLine{00736             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00737         \}}
+\DoxyCodeLine{00744         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} \textcolor{keywordtype}{short} value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00745         \{}
+\DoxyCodeLine{00746             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00747         \}}
+\DoxyCodeLine{00754         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InjectUnsigned(\textcolor{keyword}{this} sbyte value, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 64)}
+\DoxyCodeLine{00755         \{}
+\DoxyCodeLine{00756             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00757         \}}
+\DoxyCodeLine{00758 }
+\DoxyCodeLine{00759 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00760 }
+\DoxyCodeLine{00761 \textcolor{preprocessor}{        \#region Inject UInt16 Buffer}}
+\DoxyCodeLine{00762 }
+\DoxyCodeLine{00770         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00771         \{}
+\DoxyCodeLine{00772             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00773         \}}
+\DoxyCodeLine{00781         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref ushort buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00782         \{}
+\DoxyCodeLine{00783             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00784         \}}
+\DoxyCodeLine{00792         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00793         \{}
+\DoxyCodeLine{00794             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00795         \}}
+\DoxyCodeLine{00803         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref ushort buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00804         \{}
+\DoxyCodeLine{00805             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00806         \}}
+\DoxyCodeLine{00814         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00815         \{}
+\DoxyCodeLine{00816             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00817         \}}
+\DoxyCodeLine{00825         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref ushort buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 16)}
+\DoxyCodeLine{00826         \{}
+\DoxyCodeLine{00827             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00828         \}}
+\DoxyCodeLine{00836         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref ushort buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00837         \{}
+\DoxyCodeLine{00838             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00839         \}}
+\DoxyCodeLine{00847         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref ushort buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00848         \{}
+\DoxyCodeLine{00849             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00850         \}}
+\DoxyCodeLine{00851 }
+\DoxyCodeLine{00852 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00853 }
+\DoxyCodeLine{00854 \textcolor{preprocessor}{        \#region Inject UInt8 Buffer}}
+\DoxyCodeLine{00855 }
+\DoxyCodeLine{00863         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00864         \{}
+\DoxyCodeLine{00865             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00866         \}}
+\DoxyCodeLine{00874         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00875         \{}
+\DoxyCodeLine{00876             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00877         \}}
+\DoxyCodeLine{00878 }
+\DoxyCodeLine{00886         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00887         \{}
+\DoxyCodeLine{00888             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00889         \}}
+\DoxyCodeLine{00897         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} uint value, ref \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00898         \{}
+\DoxyCodeLine{00899             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00900         \}}
+\DoxyCodeLine{00901 }
+\DoxyCodeLine{00909         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00910         \{}
+\DoxyCodeLine{00911             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00912         \}}
+\DoxyCodeLine{00920         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ushort value, ref \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00921         \{}
+\DoxyCodeLine{00922             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00923         \}}
+\DoxyCodeLine{00924 }
+\DoxyCodeLine{00932         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref \textcolor{keywordtype}{byte} buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00933         \{}
+\DoxyCodeLine{00934             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00935         \}}
+\DoxyCodeLine{00943         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref \textcolor{keywordtype}{byte} buffer, \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits = 8)}
+\DoxyCodeLine{00944         \{}
+\DoxyCodeLine{00945             buffer = Write(buffer, (ulong)value, ref bitposition, bits);}
+\DoxyCodeLine{00946         \}}
+\DoxyCodeLine{00947 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00948 }
+\DoxyCodeLine{00949 \textcolor{preprocessor}{        \#region Obsolete Extract}}
+\DoxyCodeLine{00950 }
+\DoxyCodeLine{00958         [System.Obsolete(\textcolor{stringliteral}{"{}Argument order changed"{}})]}
+\DoxyCodeLine{00959         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong Extract(\textcolor{keyword}{this} ulong value, \textcolor{keywordtype}{int} bits, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{00960         \{}
+\DoxyCodeLine{00961             \textcolor{keywordflow}{return} Extract(value, bits, ref bitposition);}
+\DoxyCodeLine{00962         \}}
+\DoxyCodeLine{00963 }
+\DoxyCodeLine{00964 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00965 }
+\DoxyCodeLine{00966 \textcolor{preprocessor}{        \#region Read -\/ Uint64 Buffer}}
+\DoxyCodeLine{00967 }
+\DoxyCodeLine{00975         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong Read(\textcolor{keyword}{this} ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00976         \{}
+\DoxyCodeLine{00977             ulong mask = (ulong.MaxValue >> (64 -\/ bits));}
+\DoxyCodeLine{00978             ulong fragment = (((ulong)value >> bitposition) \& mask);}
+\DoxyCodeLine{00979 }
+\DoxyCodeLine{00980             bitposition += bits;}
+\DoxyCodeLine{00981             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{00982         \}}
+\DoxyCodeLine{00983         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{00984         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong Extract(\textcolor{keyword}{this} ulong value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00985         \{}
+\DoxyCodeLine{00986             ulong mask = (ulong.MaxValue >> (64 -\/ bits));}
+\DoxyCodeLine{00987             ulong fragment = (((ulong)value >> bitposition) \& mask);}
+\DoxyCodeLine{00988 }
+\DoxyCodeLine{00989             bitposition += bits;}
+\DoxyCodeLine{00990             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{00991         \}}
+\DoxyCodeLine{00992 }
+\DoxyCodeLine{00999         [System.Obsolete(\textcolor{stringliteral}{"{}Always include the [ref int bitposition] argument. Extracting from position 0 would be better handled with a mask operation."{}})]}
+\DoxyCodeLine{01000         \textcolor{keyword}{public} \textcolor{keyword}{static} ulong Extract(\textcolor{keyword}{this} ulong value, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01001         \{}
+\DoxyCodeLine{01002             ulong mask = (ulong.MaxValue >> (64 -\/ bits));}
+\DoxyCodeLine{01003             ulong fragment = ((ulong)value \& mask);}
+\DoxyCodeLine{01004 }
+\DoxyCodeLine{01005             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01006         \}}
+\DoxyCodeLine{01007 }
+\DoxyCodeLine{01008 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01009 }
+\DoxyCodeLine{01010 \textcolor{preprocessor}{        \#region Read -\/ Uint32 Buffer}}
+\DoxyCodeLine{01011 }
+\DoxyCodeLine{01019         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Read(\textcolor{keyword}{this} uint value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01020         \{}
+\DoxyCodeLine{01021             uint mask = (uint.MaxValue >> (32 -\/ bits));}
+\DoxyCodeLine{01022             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01023 }
+\DoxyCodeLine{01024             bitposition += bits;}
+\DoxyCodeLine{01025             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01026         \}}
+\DoxyCodeLine{01027         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01028         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Extract(\textcolor{keyword}{this} uint value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01029         \{}
+\DoxyCodeLine{01030             uint mask = (uint.MaxValue >> (32 -\/ bits));}
+\DoxyCodeLine{01031             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01032 }
+\DoxyCodeLine{01033             bitposition += bits;}
+\DoxyCodeLine{01034             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01035         \}}
+\DoxyCodeLine{01042         [System.Obsolete(\textcolor{stringliteral}{"{}Always include the [ref int bitposition] argument. Extracting from position 0 would be better handled with a mask operation."{}})]}
+\DoxyCodeLine{01043         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Extract(\textcolor{keyword}{this} uint value, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01044         \{}
+\DoxyCodeLine{01045             uint mask = (uint.MaxValue >> (32 -\/ bits));}
+\DoxyCodeLine{01046             uint fragment = ((uint)value \& mask);}
+\DoxyCodeLine{01047 }
+\DoxyCodeLine{01048             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01049         \}}
+\DoxyCodeLine{01050 }
+\DoxyCodeLine{01051 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01052 }
+\DoxyCodeLine{01053 \textcolor{preprocessor}{        \#region Read -\/ Uint16 Buffer}}
+\DoxyCodeLine{01054 }
+\DoxyCodeLine{01062         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Read(\textcolor{keyword}{this} ushort value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01063         \{}
+\DoxyCodeLine{01064             uint mask = ((uint)ushort.MaxValue >> (16 -\/ bits));}
+\DoxyCodeLine{01065             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01066 }
+\DoxyCodeLine{01067             bitposition += bits;}
+\DoxyCodeLine{01068             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01069         \}}
+\DoxyCodeLine{01070         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01071         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Extract(\textcolor{keyword}{this} ushort value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01072         \{}
+\DoxyCodeLine{01073             uint mask = ((uint)ushort.MaxValue >> (16 -\/ bits));}
+\DoxyCodeLine{01074             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01075 }
+\DoxyCodeLine{01076             bitposition += bits;}
+\DoxyCodeLine{01077             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01078         \}}
+\DoxyCodeLine{01079 }
+\DoxyCodeLine{01080 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01081 }
+\DoxyCodeLine{01082 \textcolor{preprocessor}{        \#region Read -\/ Uint8 Buffer}}
+\DoxyCodeLine{01083 }
+\DoxyCodeLine{01091         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Read(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01092         \{}
+\DoxyCodeLine{01093             uint mask = ((uint)\textcolor{keywordtype}{byte}.MaxValue >> (8 -\/ bits));}
+\DoxyCodeLine{01094             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01095 }
+\DoxyCodeLine{01096             bitposition += bits;}
+\DoxyCodeLine{01097             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01098         \}}
+\DoxyCodeLine{01099         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01100         \textcolor{keyword}{public} \textcolor{keyword}{static} uint Extract(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01101         \{}
+\DoxyCodeLine{01102             uint mask = ((uint)\textcolor{keywordtype}{byte}.MaxValue >> (8 -\/ bits));}
+\DoxyCodeLine{01103             uint fragment = (((uint)value >> bitposition) \& mask);}
+\DoxyCodeLine{01104 }
+\DoxyCodeLine{01105             bitposition += bits;}
+\DoxyCodeLine{01106             \textcolor{keywordflow}{return} fragment;}
+\DoxyCodeLine{01107         \}}
+\DoxyCodeLine{01114         [System.Obsolete(\textcolor{stringliteral}{"{}Always include the [ref int bitposition] argument. Extracting from position 0 would be better handled with a mask operation."{}})]}
+\DoxyCodeLine{01115         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte} Extract(\textcolor{keyword}{this} \textcolor{keywordtype}{byte} value, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{01116         \{}
+\DoxyCodeLine{01117             uint mask = ((uint)\textcolor{keywordtype}{byte}.MaxValue >> (8 -\/ bits));}
+\DoxyCodeLine{01118             uint fragment = ((uint)value \& mask);}
+\DoxyCodeLine{01119 }
+\DoxyCodeLine{01120             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{byte})fragment;}
+\DoxyCodeLine{01121         \}}
+\DoxyCodeLine{01122 }
+\DoxyCodeLine{01123 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01124 }
+\DoxyCodeLine{01125 }
+\DoxyCodeLine{01126 \textcolor{preprocessor}{        \#region Float}}
+\DoxyCodeLine{01127 }
+\DoxyCodeLine{01134         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} \textcolor{keywordtype}{float} f, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01135         \{}
+\DoxyCodeLine{01136             buffer = Write(buffer, ((ulong)(ByteConverter)f), ref bitposition, 32);}
+\DoxyCodeLine{01137         \}}
+\DoxyCodeLine{01138 }
+\DoxyCodeLine{01145         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ReadFloat(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01146         \{}
+\DoxyCodeLine{01147             \textcolor{keywordflow}{return} (ByteConverter)Read(buffer, ref bitposition, 32);}
+\DoxyCodeLine{01148         \}}
+\DoxyCodeLine{01149         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01150         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ExtractFloat(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01151         \{}
+\DoxyCodeLine{01152             \textcolor{keywordflow}{return} (ByteConverter)Extract(buffer, ref bitposition, 32);}
+\DoxyCodeLine{01153         \}}
+\DoxyCodeLine{01154 }
+\DoxyCodeLine{01155 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01156 }
+\DoxyCodeLine{01157 \textcolor{preprocessor}{        \#region HalfFloat}}
+\DoxyCodeLine{01158 }
+\DoxyCodeLine{01165         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort InjectAsHalfFloat(\textcolor{keyword}{this} \textcolor{keywordtype}{float} f, ref ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01166         \{}
+\DoxyCodeLine{01167             ushort c = HalfFloat.HalfUtilities.Pack(f);}
+\DoxyCodeLine{01168             buffer = Write(buffer, c, ref bitposition, 16);}
+\DoxyCodeLine{01169             \textcolor{keywordflow}{return} c;}
+\DoxyCodeLine{01170         \}}
+\DoxyCodeLine{01177         \textcolor{keyword}{public} \textcolor{keyword}{static} ushort InjectAsHalfFloat(\textcolor{keyword}{this} \textcolor{keywordtype}{float} f, ref uint buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01178         \{}
+\DoxyCodeLine{01179             ushort c = HalfFloat.HalfUtilities.Pack(f);}
+\DoxyCodeLine{01180             buffer = Write(buffer, c, ref bitposition, 16);}
+\DoxyCodeLine{01181             \textcolor{keywordflow}{return} c;}
+\DoxyCodeLine{01182         \}}
+\DoxyCodeLine{01183 }
+\DoxyCodeLine{01190         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ReadHalfFloat(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01191         \{}
+\DoxyCodeLine{01192             ushort c = (ushort)Read(buffer, ref bitposition, 16);}
+\DoxyCodeLine{01193             \textcolor{keywordflow}{return} HalfFloat.HalfUtilities.Unpack(c);}
+\DoxyCodeLine{01194         \}}
+\DoxyCodeLine{01195         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01196         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ExtractHalfFloat(\textcolor{keyword}{this} ulong buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01197         \{}
+\DoxyCodeLine{01198             ushort c = (ushort)Extract(buffer, ref bitposition, 16);}
+\DoxyCodeLine{01199             \textcolor{keywordflow}{return} HalfFloat.HalfUtilities.Unpack(c);}
+\DoxyCodeLine{01200         \}}
+\DoxyCodeLine{01207         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ReadHalfFloat(\textcolor{keyword}{this} uint buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01208         \{}
+\DoxyCodeLine{01209             ushort c = (ushort)Read(buffer, ref bitposition, 16);}
+\DoxyCodeLine{01210             \textcolor{keywordflow}{return} HalfFloat.HalfUtilities.Unpack(c);}
+\DoxyCodeLine{01211         \}}
+\DoxyCodeLine{01212         [System.Obsolete(\textcolor{stringliteral}{"{}Use Read instead."{}})]}
+\DoxyCodeLine{01213         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} ExtractHalfFloat(\textcolor{keyword}{this} uint buffer, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01214         \{}
+\DoxyCodeLine{01215             ushort c = (ushort)Extract(buffer, ref bitposition, 16);}
+\DoxyCodeLine{01216             \textcolor{keywordflow}{return} HalfFloat.HalfUtilities.Unpack(c);}
+\DoxyCodeLine{01217         \}}
+\DoxyCodeLine{01218 }
+\DoxyCodeLine{01219 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01220 }
+\DoxyCodeLine{01221 }
+\DoxyCodeLine{01222 \textcolor{preprocessor}{        \#region Obsolete Inject}}
+\DoxyCodeLine{01223 }
+\DoxyCodeLine{01231         [System.Obsolete(\textcolor{stringliteral}{"{}Argument order changed"{}})]}
+\DoxyCodeLine{01232         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref uint buffer, \textcolor{keywordtype}{int} bits, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01233         \{}
+\DoxyCodeLine{01234             Inject(value, ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{01235         \}}
+\DoxyCodeLine{01243         [System.Obsolete(\textcolor{stringliteral}{"{}Argument order changed"{}})]}
+\DoxyCodeLine{01244         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Inject(\textcolor{keyword}{this} ulong value, ref ulong buffer, \textcolor{keywordtype}{int} bits, ref \textcolor{keywordtype}{int} bitposition)}
+\DoxyCodeLine{01245         \{}
+\DoxyCodeLine{01246             Inject(value, ref buffer, ref bitposition, bits);}
+\DoxyCodeLine{01247         \}}
+\DoxyCodeLine{01248 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01249 }
+\DoxyCodeLine{01250 }
+\DoxyCodeLine{01251     \}}
+\DoxyCodeLine{01252 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,321 @@
+\doxysection{Compressed\+Matrix.\+cs}
+\label{_compressed_matrix_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/CompressedMatrix.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/CompressedMatrix.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }CompressedMatrix : IEquatable<CompressedMatrix>}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} CompressedElement cPos = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} CompressedElement cRot = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} CompressedElement cScl = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} TransformCrusher crusher;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedMatrix reusable = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031 \textcolor{preprocessor}{        \#region Constructors}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} CompressedMatrix()}
+\DoxyCodeLine{00035         \{}
+\DoxyCodeLine{00036         \}}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} CompressedMatrix(TransformCrusher crusher)}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             this.crusher = crusher;}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} CompressedMatrix(TransformCrusher crusher, CompressedElement cPos, CompressedElement cRot, CompressedElement cScl)}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             this.crusher = crusher;}
+\DoxyCodeLine{00046             this.cPos = cPos;}
+\DoxyCodeLine{00047             this.cRot = cRot;}
+\DoxyCodeLine{00048             this.cScl = cScl;}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} CompressedMatrix(TransformCrusher crusher, ref CompressedElement cPos, ref CompressedElement cRot, ref CompressedElement cScl, \textcolor{keywordtype}{int} pBits, \textcolor{keywordtype}{int} rBits, \textcolor{keywordtype}{int} sBits)}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             this.crusher = crusher;}
+\DoxyCodeLine{00055             this.cPos = cPos;}
+\DoxyCodeLine{00056             this.cRot = cRot;}
+\DoxyCodeLine{00057             this.cScl = cScl;}
+\DoxyCodeLine{00058         \}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CopyTo(CompressedMatrix copyTarget)}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             cPos.CopyTo(copyTarget.cPos);}
+\DoxyCodeLine{00065             cRot.CopyTo(copyTarget.cRot);}
+\DoxyCodeLine{00066             cScl.CopyTo(copyTarget.cScl);}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CopyFrom(CompressedMatrix copySource)}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070             cPos.CopyFrom(copySource.cPos);}
+\DoxyCodeLine{00071             cRot.CopyFrom(copySource.cRot);}
+\DoxyCodeLine{00072             cScl.CopyFrom(copySource.cScl);}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             crusher = \textcolor{keyword}{null};}
+\DoxyCodeLine{00078             cPos.Clear();}
+\DoxyCodeLine{00079             cRot.Clear();}
+\DoxyCodeLine{00080             cScl.Clear();}
+\DoxyCodeLine{00081         \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 \textcolor{preprocessor}{        \#region AsArray}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{protected} \textcolor{keyword}{static} readonly ulong[] reusableArray64 = \textcolor{keyword}{new} ulong[6];}
+\DoxyCodeLine{00086         \textcolor{keyword}{protected} \textcolor{keyword}{static} readonly uint[] reusableArray32 = \textcolor{keyword}{new} uint[12];}
+\DoxyCodeLine{00087         \textcolor{keyword}{protected} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] reusableArray8 = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[24];}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{comment}{// 64}}
+\DoxyCodeLine{00095 \textcolor{comment}{}        \textcolor{keyword}{public} ulong[] AsArray64(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00098             crusher.Write(\textcolor{keyword}{this}, reusableArray64, ref bitposition, bcl);}
+\DoxyCodeLine{00099             reusableArray64.Zero((bitposition + 63) >> 6);}
+\DoxyCodeLine{00100             \textcolor{keywordflow}{return} reusableArray64;}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray64(ulong[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00110             crusher.Write(\textcolor{keyword}{this}, nonalloc, ref bitposition, bcl);}
+\DoxyCodeLine{00111             nonalloc.Zero((bitposition + 63) >> 6);}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{comment}{// 32}}
+\DoxyCodeLine{00120 \textcolor{comment}{}        \textcolor{keyword}{public} uint[] AsArray32(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00123             crusher.Write(\textcolor{keyword}{this}, reusableArray32, ref bitposition, bcl);}
+\DoxyCodeLine{00124             reusableArray32.Zero((bitposition + 31) >> 5);}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{return} reusableArray32;}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray32(uint[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00135             crusher.Write(\textcolor{keyword}{this}, nonalloc, ref bitposition, bcl);}
+\DoxyCodeLine{00136             nonalloc.Zero((bitposition + 31) >> 5);}
+\DoxyCodeLine{00137         \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139         \textcolor{comment}{// 8}}
+\DoxyCodeLine{00145 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{byte}[] AsArray8(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00146         \{}
+\DoxyCodeLine{00147             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00148             crusher.Write(\textcolor{keyword}{this}, reusableArray64, ref bitposition, bcl);}
+\DoxyCodeLine{00149             reusableArray8.Zero((bitposition + 7) >> 3);}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{return} reusableArray8;}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00157         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray8(\textcolor{keywordtype}{byte}[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00160             crusher.Write(\textcolor{keyword}{this}, nonalloc, ref bitposition, bcl);}
+\DoxyCodeLine{00161             nonalloc.Zero((bitposition + 7) >> 3);}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{preprocessor}{        \#region Implicit/Explicit Casts}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ulong(CompressedMatrix cm)}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00171             \textcolor{keywordflow}{if} (cm.crusher.TallyBits() > 64)}
+\DoxyCodeLine{00172                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedMatrix to ulong only works if the total bits of all crushers is >= 64 bits."{}});}
+\DoxyCodeLine{00173 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00174             ulong buffer = 0;}
+\DoxyCodeLine{00175             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00176             cm.crusher.Write(cm, ref buffer, ref bitposition);}
+\DoxyCodeLine{00177             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} uint(CompressedMatrix cm)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00183             \textcolor{keywordflow}{if} (cm.crusher.TallyBits() > 32)}
+\DoxyCodeLine{00184                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedMatrix to uint only works if the total bits of all crushers is >= 32 bits."{}});}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186             ulong buffer = 0;}
+\DoxyCodeLine{00187             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00188             cm.crusher.Write(cm, ref buffer, ref bitposition);}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{return} (uint)buffer;}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ushort(CompressedMatrix cm)}
+\DoxyCodeLine{00193         \{}
+\DoxyCodeLine{00194 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00195             \textcolor{keywordflow}{if} (cm.crusher.TallyBits() > 16)}
+\DoxyCodeLine{00196                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedMatrix to ushort only works if the total bits of all crushers is >= 16 bits."{}});}
+\DoxyCodeLine{00197 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00198             ulong buffer = 0;}
+\DoxyCodeLine{00199             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00200             cm.crusher.Write(cm, ref buffer, ref bitposition);}
+\DoxyCodeLine{00201             \textcolor{keywordflow}{return} (ushort)buffer;}
+\DoxyCodeLine{00202         \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} byte(CompressedMatrix cm)}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00207             \textcolor{keywordflow}{if} (cm.crusher.TallyBits() > 8)}
+\DoxyCodeLine{00208                 Debug.LogError(\textcolor{stringliteral}{"{}Implicit cast of CompressedMatrix to byte only works if the total bits of all crushers is >= 8 bits."{}});}
+\DoxyCodeLine{00209 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00210             ulong buffer = 0;}
+\DoxyCodeLine{00211             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00212             cm.crusher.Write(cm, ref buffer, ref bitposition);}
+\DoxyCodeLine{00213             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{byte})buffer;}
+\DoxyCodeLine{00214         \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ulong[] (CompressedMatrix cm)}
+\DoxyCodeLine{00217         \{}
+\DoxyCodeLine{00218             \textcolor{keywordflow}{return} cm.AsArray64();}
+\DoxyCodeLine{00219         \}}
+\DoxyCodeLine{00220         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} uint[] (CompressedMatrix cm)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{return} cm.AsArray32();}
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} \textcolor{keywordtype}{byte}[] (CompressedMatrix cm)}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226             \textcolor{keywordflow}{return} cm.AsArray8();}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00236         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Decompress(Matrix nonalloc)}
+\DoxyCodeLine{00237         \{}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00239                 crusher.Decompress(nonalloc, \textcolor{keyword}{this});}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00241                 nonalloc.Clear();}
+\DoxyCodeLine{00242         \}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00248         \textcolor{keyword}{public} Matrix Decompress()}
+\DoxyCodeLine{00249         \{}
+\DoxyCodeLine{00250             crusher.Decompress(Matrix.reusable, \textcolor{keyword}{this});}
+\DoxyCodeLine{00251             \textcolor{keywordflow}{return} Matrix.reusable;}
+\DoxyCodeLine{00252         \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254         [System.Obsolete(\textcolor{stringliteral}{"{}Supply the transform to Compress. Default Transform has been deprecated to allow shared TransformCrushers."{}})]}
+\DoxyCodeLine{00255         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply()}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00258                 crusher.Apply(\textcolor{keyword}{this});}
+\DoxyCodeLine{00259         \}}
+\DoxyCodeLine{00263         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Transform t)}
+\DoxyCodeLine{00264         \{}
+\DoxyCodeLine{00265             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00266                 crusher.Apply(t, \textcolor{keyword}{this});}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00272         [System.Obsolete(\textcolor{stringliteral}{"{}Apply for Rigidbody has been replaced with Move and Set, to indicate usage of MovePosition/Rotation vs rb.position/rotation."{}})]}
+\DoxyCodeLine{00273         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(Rigidbody rb)}
+\DoxyCodeLine{00274         \{}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00276                 crusher.Apply(rb, \textcolor{keyword}{this});}
+\DoxyCodeLine{00277         \}}
+\DoxyCodeLine{00281         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(Rigidbody rb)}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00284                 crusher.Set(rb, \textcolor{keyword}{this});}
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00289         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Move(Rigidbody rb)}
+\DoxyCodeLine{00290         \{}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{if} (crusher != \textcolor{keyword}{null})}
+\DoxyCodeLine{00292                 crusher.Move(rb, \textcolor{keyword}{this});}
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator ==(CompressedMatrix a, CompressedMatrix b)}
+\DoxyCodeLine{00296         \{}
+\DoxyCodeLine{00297             \textcolor{keywordflow}{if} (ReferenceEquals(a, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300             \textcolor{keywordflow}{return} a.Equals(b);}
+\DoxyCodeLine{00301         \}}
+\DoxyCodeLine{00302         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator !=(CompressedMatrix a, CompressedMatrix b)}
+\DoxyCodeLine{00303         \{}
+\DoxyCodeLine{00304             \textcolor{keywordflow}{if} (ReferenceEquals(a, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307             \textcolor{keywordflow}{return} !a.Equals(b);}
+\DoxyCodeLine{00308         \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00311         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder strb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313         \textcolor{keyword}{public} StringBuilder ToString(StringBuilder strb)}
+\DoxyCodeLine{00314         \{}
+\DoxyCodeLine{00315             strb.Append(\textcolor{stringliteral}{"{}cpos: "{}}).Append(cPos).Append(\textcolor{stringliteral}{"{} crot: "{}}).Append(cRot).Append(\textcolor{stringliteral}{"{} csl: "{}}).Append(cScl);}
+\DoxyCodeLine{00316             \textcolor{keywordflow}{return} strb;}
+\DoxyCodeLine{00317         \}}
+\DoxyCodeLine{00318         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00319         \{}
+\DoxyCodeLine{00320             strb.Length = 0;}
+\DoxyCodeLine{00321             strb.Append(\textcolor{stringliteral}{"{}cpos: "{}}).Append(cPos).Append(\textcolor{stringliteral}{"{} crot: "{}}).Append(cRot).Append(\textcolor{stringliteral}{"{} csl: "{}}).Append(cScl);}
+\DoxyCodeLine{00322             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}cpos: "{}} + cPos + \textcolor{stringliteral}{"{} crot: "{}} + cRot + \textcolor{stringliteral}{"{} srot "{}} + cScl;}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{00327         \{}
+\DoxyCodeLine{00328             \textcolor{keywordflow}{return} Equals(obj as CompressedMatrix);}
+\DoxyCodeLine{00329         \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00336         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(CompressedMatrix other)}
+\DoxyCodeLine{00337         \{}
+\DoxyCodeLine{00338             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00339                 !ReferenceEquals(other, \textcolor{keyword}{null}) \&\&}
+\DoxyCodeLine{00340                 cPos.Equals(other.cPos) \&\&}
+\DoxyCodeLine{00341                 cRot.Equals(other.cRot) \&\&}
+\DoxyCodeLine{00342                 cScl.Equals(other.cScl);}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             var hashCode = 94804922;}
+\DoxyCodeLine{00348             hashCode = hashCode * -\/1521134295 + cPos.GetHashCode();}
+\DoxyCodeLine{00349             hashCode = hashCode * -\/1521134295 + cRot.GetHashCode();}
+\DoxyCodeLine{00350             hashCode = hashCode * -\/1521134295 + cScl.GetHashCode();}
+\DoxyCodeLine{00351             hashCode = hashCode * -\/1521134295 + EqualityComparer<TransformCrusher>.Default.GetHashCode(crusher);}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{return} hashCode;}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00354     \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356 \textcolor{preprocessor}{\#if UNITY\_EDITOR || DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }CompressedMatrixExt}
+\DoxyCodeLine{00359     \{}
+\DoxyCodeLine{00360         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder AppendSB(\textcolor{keyword}{this} StringBuilder strb, CompressedMatrix cm)}
+\DoxyCodeLine{00361         \{}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363             strb.Append(\textcolor{stringliteral}{"{} cPos: "{}}).AppendSB(cm.cPos).Append(\textcolor{stringliteral}{"{} cRot: "{}}).AppendSB(cm.cRot).Append(\textcolor{stringliteral}{"{} cScl: "{}}).AppendSB(cm.cScl);}
+\DoxyCodeLine{00364             \textcolor{keywordflow}{return} strb;}
+\DoxyCodeLine{00365         \}}
+\DoxyCodeLine{00366     \}}
+\DoxyCodeLine{00367 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00369 \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371 }
+
+\end{DoxyCode}

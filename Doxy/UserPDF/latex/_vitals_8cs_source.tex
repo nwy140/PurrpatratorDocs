@@ -1,0 +1,385 @@
+\doxysection{Vitals.\+cs}
+\label{_vitals_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/Vitals.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/Vitals.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00022     [System.Serializable]}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{class }Vitals :}
+\DoxyCodeLine{00024         \textcolor{comment}{//: IVitals}}
+\DoxyCodeLine{00025         IOnVitalValueChange,}
+\DoxyCodeLine{00026         IOnVitalParamChange}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} List<IOnVitalValueChange> OnVitalValueChangeCallbacks = \textcolor{keyword}{new} List<IOnVitalValueChange>();}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} List<IOnVitalParamChange> OnVitalParamChangeCallbacks = \textcolor{keyword}{new} List<IOnVitalParamChange>();}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [HideInInspector]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} List<VitalDefinition> vitalDefs = \textcolor{keyword}{new} List<VitalDefinition>()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             \textcolor{keyword}{new} VitalDefinition (100f, 125, 125f, 1f, 1f, 1f, 1f, 1f, \textcolor{stringliteral}{"{}Health"{}}),}
+\DoxyCodeLine{00036             \textcolor{keyword}{new} VitalDefinition (100f, 125, 50, .667f, 1f, 1f, 1f, 0f, \textcolor{stringliteral}{"{}Armor"{}}),}
+\DoxyCodeLine{00037             \textcolor{keyword}{new} VitalDefinition (200f, 250, 100, 1f, 1f, 20f, 1f, 10f, \textcolor{stringliteral}{"{}Shield"{}}),}
+\DoxyCodeLine{00038         \};}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} List<VitalDefinition> VitalDefs \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalDefs; \} \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{comment}{// Vitals are not created until runtime. The definitions references are passed over to the new Vital[] instances.}}
+\DoxyCodeLine{00043         [System.NonSerialized]}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} Vital[] vitalArray;}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} Vital[] VitalArray}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keyword}{get}}
+\DoxyCodeLine{00048             \{}
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{if} (!initialized)}
+\DoxyCodeLine{00050                     Initialize();}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} vitalArray;}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{private} Dictionary<int, Vital> vitalLookup = \textcolor{keyword}{new} Dictionary<int, Vital>();}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         \textcolor{keyword}{private} \textcolor{keywordtype}{int} vitalCount;}
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} initialized;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             \textcolor{keywordflow}{if} (initialized)}
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00068             vitalCount = vitalDefs.Count;}
+\DoxyCodeLine{00069             vitalArray = \textcolor{keyword}{new} Vital[vitalCount];}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalCount; ++i)}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00073                 VitalDefinition vdef = vitalDefs[i];}
+\DoxyCodeLine{00074                 Vital vital = \textcolor{keyword}{new} Vital(vdef);}
+\DoxyCodeLine{00075                 vitalArray[i] = vital;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 vital.Initialize(TickEngineSettings.netTickInterval);}
+\DoxyCodeLine{00078                 vital.AddIOnVitalChange(\textcolor{keyword}{this});}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080                 \textcolor{comment}{// add all of the vital types to the lookup. Customs use hash, enumerated are added both as hash and by their index}}
+\DoxyCodeLine{00081                 \textcolor{keywordtype}{int} hash = vdef.VitalName.hash;}
+\DoxyCodeLine{00082                 \textcolor{keywordflow}{if} (vdef.VitalName.type != VitalType.None)}
+\DoxyCodeLine{00083                 \{}
+\DoxyCodeLine{00084                     \textcolor{keywordflow}{if} (!vitalLookup.ContainsKey(hash))}
+\DoxyCodeLine{00085                         vitalLookup.Add(hash, vital);}
+\DoxyCodeLine{00086                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00087                         Debug.LogWarning(\textcolor{stringliteral}{"{}VitalNameType hash collision! Vitals cannot have more than one of each Vital Type in its list."{}});}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             initialized = \textcolor{keyword}{true};}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ResetValues()}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalCount; ++i)}
+\DoxyCodeLine{00097             \{}
+\DoxyCodeLine{00098                 vitalArray[i].ResetValues();}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{comment}{//public void SetTickInterval(float tickInterval)}}
+\DoxyCodeLine{00103         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00104         \textcolor{comment}{//  for (int i = 0; i < vitalCount; ++i)}}
+\DoxyCodeLine{00105         \textcolor{comment}{//      vitalDefs[i].SetTickInterval(tickInterval);}}
+\DoxyCodeLine{00106         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00111         \textcolor{keyword}{public} Vital GetVital(VitalNameType vitalNameType)}
+\DoxyCodeLine{00112         \{}
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (!initialized)}
+\DoxyCodeLine{00114                 Initialize();}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             Vital vital;}
+\DoxyCodeLine{00117             vitalLookup.TryGetValue(vitalNameType.hash, out vital);}
+\DoxyCodeLine{00118             \textcolor{keywordflow}{return} vital;}
+\DoxyCodeLine{00119         \}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{public} \textcolor{keywordtype}{int} GetVitalIndex(VitalNameType vitalNameType)}
+\DoxyCodeLine{00122         \{}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{if} (vitalDefs == \textcolor{keyword}{null})}
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             \textcolor{keywordtype}{int} hash = vitalNameType.hash;}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00129             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = vitalDefs.Count; i < cnt; ++i)}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{if} (vitalDefs[i].VitalName.hash == hash)}
+\DoxyCodeLine{00131                     \textcolor{keywordflow}{return} i;}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00134         \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136         \textcolor{keyword}{public} SerializationFlags Serialize(VitalsData vdata, VitalsData lastVData, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} keyframe)}
+\DoxyCodeLine{00137         \{}
+\DoxyCodeLine{00138             var currdatas = vdata.datas;}
+\DoxyCodeLine{00139             var lastdatas = lastVData.datas;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = vitalCount; i < cnt; ++i)}
+\DoxyCodeLine{00144                 flags |= vitalDefs[i].Serialize(currdatas[i], lastdatas[i], buffer, ref bitposition, keyframe);}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00147         \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149         \textcolor{keyword}{public} SerializationFlags Deserialize(VitalsData vdata, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} keyframe)}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151             var datas = vdata.datas;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordtype}{bool} isComplete = \textcolor{keyword}{true};}
+\DoxyCodeLine{00154             \textcolor{keywordtype}{bool} hasChanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalCount; ++i)}
+\DoxyCodeLine{00157             \{}
+\DoxyCodeLine{00158                 datas[i] = vitalDefs[i].Deserialize(buffer, ref bitposition, keyframe);}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{if} (datas[i].Value == \textcolor{keywordtype}{double}.NegativeInfinity)}
+\DoxyCodeLine{00162                     isComplete = \textcolor{keyword}{false};}
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00164                     hasChanged |= \textcolor{keyword}{true};}
+\DoxyCodeLine{00165             \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00168                 isComplete ? SerializationFlags.IsComplete | SerializationFlags.HasContent :}
+\DoxyCodeLine{00169                 hasChanged ? SerializationFlags.HasContent :}
+\DoxyCodeLine{00170                 SerializationFlags.None;}
+\DoxyCodeLine{00171         \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Apply(VitalsData vdata)}
+\DoxyCodeLine{00174         \{}
+\DoxyCodeLine{00175             var datas = vdata.datas;}
+\DoxyCodeLine{00176             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalCount; ++i)}
+\DoxyCodeLine{00177                 vitalArray[i].Apply(datas[i]);}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{comment}{//public double ApplyChange(double change, VitalNameType vitalNameType, bool overloading)}}
+\DoxyCodeLine{00182         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00183         \textcolor{comment}{//  var vital = GetVital(vitalNameType);}}
+\DoxyCodeLine{00184         \textcolor{comment}{//  return (vital == null) ? change : vital.ApplyChange(change, overloading);}}
+\DoxyCodeLine{00185         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00190         \textcolor{comment}{//public double ApplyChange(double discharge, VitalNameType vitalNameType, IVitalsContactReactor overloading = null)}}
+\DoxyCodeLine{00191         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00192         \textcolor{comment}{//    Debug.Log("{}ApplyCharges "{} + vitalNameType + "{} "{} + discharge);}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194         \textcolor{comment}{//    var vital = GetVital(vitalNameType);}}
+\DoxyCodeLine{00195         \textcolor{comment}{//    if (vital == null)}}
+\DoxyCodeLine{00196         \textcolor{comment}{//        return 0;}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         \textcolor{comment}{//    var consumed = vital.ApplyChange(discharge, overloading);}}
+\DoxyCodeLine{00199         \textcolor{comment}{//    return consumed;}}
+\DoxyCodeLine{00200         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202         \textcolor{comment}{//public double TestApplyChange(double change, VitalNameType vitalNameType, bool overloading)}}
+\DoxyCodeLine{00203         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00204         \textcolor{comment}{//  var vital = GetVital(vitalNameType);}}
+\DoxyCodeLine{00205         \textcolor{comment}{//  return (vital == null) ? change : vital.TestApplyChange(change, overloading);}}
+\DoxyCodeLine{00206         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{keyword}{private} \textcolor{keywordtype}{double} ApplyCharges(\textcolor{keywordtype}{int} vitalIdx, \textcolor{keywordtype}{double} discharge, \textcolor{keywordtype}{bool} allowOverload, \textcolor{keywordtype}{bool} propagate)}
+\DoxyCodeLine{00209         \{}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211             \textcolor{keywordtype}{double} remaining = discharge;}
+\DoxyCodeLine{00212             \textcolor{keywordtype}{double} consumed = 0;}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00215             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = vitalIdx; i >= 0; -\/-\/i)}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 consumed += vitalArray[i].ApplyCharges(remaining, allowOverload, !propagate);}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 \textcolor{keywordflow}{if} (propagate)}
+\DoxyCodeLine{00220                 \{}
+\DoxyCodeLine{00221                     remaining -\/= consumed;}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223                     \textcolor{keywordflow}{if} (remaining == 0)}
+\DoxyCodeLine{00224                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00225                 \}}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00227                     \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00228             \}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230             \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00231         \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233         \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyCharges(\textcolor{keywordtype}{double} discharge, \textcolor{keywordtype}{bool} allowOverload, \textcolor{keywordtype}{bool} propagate)}
+\DoxyCodeLine{00234         \{}
+\DoxyCodeLine{00235             \textcolor{keywordflow}{return} ApplyCharges(vitalCount -\/ 1, discharge, allowOverload, propagate);}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238         \textcolor{keyword}{public} \textcolor{keywordtype}{double} ApplyCharges(VitalNameType vitalNameType, \textcolor{keywordtype}{double} discharge, \textcolor{keywordtype}{bool} allowOverload, \textcolor{keywordtype}{bool} propagate)}
+\DoxyCodeLine{00239         \{}
+\DoxyCodeLine{00240             var vtype = vitalNameType.type;}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242             \textcolor{keywordtype}{int} vitalIdx;}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244             \textcolor{comment}{// Type None indicates no specific Vital, so this value should be applied to any complete stack.}}
+\DoxyCodeLine{00245             \textcolor{keywordflow}{if} (vtype == VitalType.None)}
+\DoxyCodeLine{00246                 vitalIdx = vitalCount -\/ 1;}
+\DoxyCodeLine{00247             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00249                 vitalIdx = GetVitalIndex(vitalNameType);}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251                 \textcolor{keywordflow}{if} (vitalIdx == -\/1)}
+\DoxyCodeLine{00252                     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keywordtype}{double} consumed = ApplyCharges(vitalIdx, discharge, allowOverload, propagate);}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257             CheckForDisrupt(consumed);}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{keywordflow}{return} consumed;}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CheckForDisrupt(\textcolor{keywordtype}{double} consumed)}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (consumed == 0)}
+\DoxyCodeLine{00265                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             \textcolor{keywordflow}{if} (consumed > 0)}
+\DoxyCodeLine{00268                 DisruptDecay();}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             \textcolor{keywordflow}{if} (consumed < 0)}
+\DoxyCodeLine{00271                 DisruptRegen();}
+\DoxyCodeLine{00272         \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DisruptRegen()}
+\DoxyCodeLine{00275         \{}
+\DoxyCodeLine{00276             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = vitalCount; i < cnt; ++i)}
+\DoxyCodeLine{00277                 vitalArray[i].DisruptRegen();}
+\DoxyCodeLine{00278         \}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DisruptDecay()}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = vitalCount; i < cnt; ++i)}
+\DoxyCodeLine{00283                 vitalArray[i].DisruptDecay();}
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnVitalValueChange(Vital vital)}
+\DoxyCodeLine{00287         \{}
+\DoxyCodeLine{00288             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnVitalValueChangeCallbacks.Count; i < cnt; ++i)}
+\DoxyCodeLine{00289                 OnVitalValueChangeCallbacks[i].OnVitalValueChange(vital);}
+\DoxyCodeLine{00290         \}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnVitalParamChange(Vital vital)}
+\DoxyCodeLine{00293         \{}
+\DoxyCodeLine{00294             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = OnVitalParamChangeCallbacks.Count; i < cnt; ++i)}
+\DoxyCodeLine{00295                 OnVitalParamChangeCallbacks[i].OnVitalParamChange(vital);}
+\DoxyCodeLine{00296         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Simulate()}
+\DoxyCodeLine{00299         \{}
+\DoxyCodeLine{00300             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = vitalCount; i < cnt; ++i)}
+\DoxyCodeLine{00301                 vitalArray[i].Simulate();}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303     \}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307     [CustomPropertyDrawer(typeof(Vitals))]}
+\DoxyCodeLine{00308     [CanEditMultipleObjects]}
+\DoxyCodeLine{00309     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalsDrawer : PropertyDrawer}
+\DoxyCodeLine{00310     \{}
+\DoxyCodeLine{00311         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00312         \{}
+\DoxyCodeLine{00313             \textcolor{keyword}{property}.serializedObject.Update();}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315             SerializedProperty vitalDefs = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}vitalDefs"{}});}
+\DoxyCodeLine{00316             Vitals ivitals = (PropertyDrawerUtility.GetParent(vitalDefs) as Vitals);}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318             \textcolor{keywordtype}{int} vitalsCount = vitalDefs.arraySize;}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320             \textcolor{keywordtype}{int} addIndex = -\/1;}
+\DoxyCodeLine{00321             \textcolor{comment}{//int delIndex = -\/1;}}
+\DoxyCodeLine{00322             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00323             \{}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325                 var element = vitalDefs.GetArrayElementAtIndex(i);}
+\DoxyCodeLine{00326                 r.height = EditorGUI.GetPropertyHeight(element);}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328                 EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(r), element, \textcolor{keyword}{false});}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330                 \textcolor{keywordflow}{if} (i > 0)}
+\DoxyCodeLine{00331                 \{}
+\DoxyCodeLine{00332                     \textcolor{keyword}{const} \textcolor{keywordtype}{int} XWIDTH = 18;}
+\DoxyCodeLine{00333                     Rect xr = r;}
+\DoxyCodeLine{00334                     xr.xMin = xr.xMax -\/ XWIDTH -\/ VitalDefinitionDrawer.PAD;}
+\DoxyCodeLine{00335                     xr.yMin += VitalDefinitionDrawer.PAD;}
+\DoxyCodeLine{00336                     xr.height = ADD\_BUTTON\_HGHT;}
+\DoxyCodeLine{00337                     xr.width = XWIDTH;}
+\DoxyCodeLine{00338                     \textcolor{keywordflow}{if} (GUI.Button(xr, \textcolor{stringliteral}{"{}X"{}}))}
+\DoxyCodeLine{00339                     \{}
+\DoxyCodeLine{00340                         Undo.RecordObject(vitalDefs.serializedObject.targetObject, \textcolor{stringliteral}{"{}Delete Vital"{}});}
+\DoxyCodeLine{00341                         ivitals.VitalDefs.Remove(ivitals.VitalDefs[i]);}
+\DoxyCodeLine{00342                         EditorUtility.SetDirty(vitalDefs.serializedObject.targetObject);}
+\DoxyCodeLine{00343                         AssetDatabase.Refresh();}
+\DoxyCodeLine{00344                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00345                     \}}
+\DoxyCodeLine{00346                 \}}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348                 r.yMin += r.height + VitalDefinitionDrawer.PAD + 2;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350                 r.height = ADD\_BUTTON\_HGHT;}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352                 \textcolor{keyword}{const} \textcolor{keywordtype}{int} ADDMARGIN = 80;}
+\DoxyCodeLine{00353                 Rect addrect = \textcolor{keyword}{new} Rect(r) \{ xMin = r.xMin + 4 + ADDMARGIN, xMax = r.xMax -\/ ADDMARGIN \};}
+\DoxyCodeLine{00354                 \textcolor{keywordflow}{if} (GUI.Button(addrect, \textcolor{stringliteral}{"{}Add Vital"{}}, (GUIStyle)\textcolor{stringliteral}{"{}MiniToolbarButton"{}}))}
+\DoxyCodeLine{00355                     addIndex = i + 1;}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357                 r.yMin += r.height + VitalDefinitionDrawer.PAD;}
+\DoxyCodeLine{00358             \}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360             \textcolor{keywordflow}{if} (addIndex != -\/1)}
+\DoxyCodeLine{00361             \{}
+\DoxyCodeLine{00362                 Undo.RecordObject(vitalDefs.serializedObject.targetObject, \textcolor{stringliteral}{"{}Add Vital"{}});}
+\DoxyCodeLine{00363                 vitalDefs.InsertArrayElementAtIndex(addIndex);}
+\DoxyCodeLine{00364                 EditorUtility.SetDirty(vitalDefs.serializedObject.targetObject);}
+\DoxyCodeLine{00365                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00366                 AssetDatabase.Refresh();}
+\DoxyCodeLine{00367             \}}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00369         \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} ADD\_BUTTON\_HGHT = 16;}
+\DoxyCodeLine{00372         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00373         \{}
+\DoxyCodeLine{00374             \textcolor{keyword}{property}.serializedObject.Update();}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376             SerializedProperty vitalDefs = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}vitalDefs"{}});}
+\DoxyCodeLine{00377             Vitals ivitals = (PropertyDrawerUtility.GetParent(vitalDefs) as Vitals);}
+\DoxyCodeLine{00378             \textcolor{keywordtype}{int} vitalsCount = ivitals.vitalDefs.Count;}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380             \textcolor{keywordtype}{float} h = 0;}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < vitalsCount; ++i)}
+\DoxyCodeLine{00383             \{}
+\DoxyCodeLine{00384                 h += EditorGUI.GetPropertyHeight(vitalDefs.GetArrayElementAtIndex(i));}
+\DoxyCodeLine{00385                 h += ADD\_BUTTON\_HGHT + VitalDefinitionDrawer.PAD * 2 + 2;}
+\DoxyCodeLine{00386             \}}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388             \textcolor{keywordflow}{return} h;}
+\DoxyCodeLine{00389         \}}
+\DoxyCodeLine{00390     \}}
+\DoxyCodeLine{00391 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00392 \}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394 }
+
+\end{DoxyCode}

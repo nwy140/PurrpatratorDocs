@@ -1,0 +1,358 @@
+\doxysection{Super\+Basic\+Controller.\+cs}
+\label{_super_basic_controller_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Example/Scripts/SuperBasicController.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Example/Scripts/SuperBasicController.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{//Copyright 2019, Davin Carten, All rights reserved}}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} Photon.Pun.Simple;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} emotitron.Utilities;}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{public} \textcolor{keyword}{class }SuperBasicController : NetComponent}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} is2D = \textcolor{keyword}{false};}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     [Range(0, 300)]}
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keywordtype}{float} turnSpeed = 150f;}
+\DoxyCodeLine{00022     [Range(0, 4f)]}
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keywordtype}{float} moveSpeed = 4f;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} autoMove = \textcolor{keyword}{true};}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00031     \textcolor{keyword}{private} Vector3 targRotDelta, targPosDelta;}
+\DoxyCodeLine{00032     \textcolor{keyword}{private} \textcolor{keywordtype}{float} appliedDeltaT;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     \textcolor{keyword}{private} Animator animator;}
+\DoxyCodeLine{00035     \textcolor{keyword}{private} SyncAnimator syncAnimator;}
+\DoxyCodeLine{00036     \textcolor{keyword}{private} SyncTransform syncTransform;}
+\DoxyCodeLine{00037     \textcolor{keyword}{private} SyncCannon syncLauncher;}
+\DoxyCodeLine{00038     \textcolor{keyword}{private} SyncContactScan syncHitscan;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerJump;}
+\DoxyCodeLine{00041     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerFade;}
+\DoxyCodeLine{00042     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerTurnLeft;}
+\DoxyCodeLine{00043     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerUpperBodyRun;}
+\DoxyCodeLine{00044     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerUpperBodyIdle;}
+\DoxyCodeLine{00045     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerTeleport;}
+\DoxyCodeLine{00046     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} freakingOut;}
+\DoxyCodeLine{00047     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerHitscan;}
+\DoxyCodeLine{00048     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerProjectile;}
+\DoxyCodeLine{00049     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} triggerBlend;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052     \textcolor{comment}{// Start is called before the first frame update}}
+\DoxyCodeLine{00053     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00054     \{}
+\DoxyCodeLine{00055         base.OnAwake();}
+\DoxyCodeLine{00056         animator = transform.GetNestedComponentInChildren<Animator, NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00057         syncAnimator = transform.GetNestedComponentInChildren<SyncAnimator, NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00058         syncTransform = GetComponent<SyncTransform>();}
+\DoxyCodeLine{00059         syncLauncher = transform.GetNestedComponentInChildren<SyncCannon, NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00060         syncHitscan = transform.GetNestedComponentInChildren<SyncContactScan, NetObject>(\textcolor{keyword}{true});}
+\DoxyCodeLine{00061     \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00065     \{}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{keywordtype}{float} t = (Time.time -\/ Time.fixedTime) / Time.fixedDeltaTime;}
+\DoxyCodeLine{00071         Interpolate(t);}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Space))}
+\DoxyCodeLine{00074             triggerJump = \textcolor{keyword}{true};}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Alpha2))}
+\DoxyCodeLine{00077             triggerFade = \textcolor{keyword}{true};}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Alpha1))}
+\DoxyCodeLine{00080             triggerTurnLeft = \textcolor{keyword}{true};}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.Alpha4))}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (freakingOut)}
+\DoxyCodeLine{00086                 triggerUpperBodyIdle = \textcolor{keyword}{true};}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00088                 triggerUpperBodyRun = \textcolor{keyword}{true};}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             freakingOut = !freakingOut;}
+\DoxyCodeLine{00091         \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.F))}
+\DoxyCodeLine{00094             triggerProjectile = \textcolor{keyword}{true};}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.R))}
+\DoxyCodeLine{00097             triggerHitscan = \textcolor{keyword}{true};}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.T))}
+\DoxyCodeLine{00100             triggerTeleport = \textcolor{keyword}{true};}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keywordflow}{if} (Input.GetKeyDown(KeyCode.B))}
+\DoxyCodeLine{00103             triggerBlend = \textcolor{keyword}{true};}
+\DoxyCodeLine{00104     \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107     \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00108     \{}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00111             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         Vector3 move = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00114         Vector3 turn = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keywordflow}{if} (animator \&\& animator.isActiveAndEnabled)}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.W))}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00122                 animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, 1);}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.S))}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00127                 animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, -\/.5f);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00132                 animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, 0);}
+\DoxyCodeLine{00133             \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             \textcolor{keywordflow}{if} (triggerJump)}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{if} (syncAnimator)}
+\DoxyCodeLine{00138                     syncAnimator.SetTrigger(\textcolor{stringliteral}{"{}jump"{}});}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 triggerJump = \textcolor{keyword}{false};}
+\DoxyCodeLine{00141             \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (triggerTurnLeft)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{if} (syncAnimator)}
+\DoxyCodeLine{00146                     syncAnimator.SetTrigger(\textcolor{stringliteral}{"{}turnLeft"{}});}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148                 triggerTurnLeft = \textcolor{keyword}{false};}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (triggerFade)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (syncAnimator)}
+\DoxyCodeLine{00154                     syncAnimator.CrossFadeInFixedTime(\textcolor{stringliteral}{"{}Jump"{}}, .25f);}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156                 triggerFade = \textcolor{keyword}{false};}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (triggerBlend)}
+\DoxyCodeLine{00160                 animator.SetFloat(\textcolor{stringliteral}{"{}blender"{}}, Mathf.Abs(Mathf.Sin(Time.time)));}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162                 animator.SetFloat(\textcolor{stringliteral}{"{}blender"{}}, -\/1);}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{keywordflow}{if} (triggerUpperBodyRun)}
+\DoxyCodeLine{00165             \{}
+\DoxyCodeLine{00166                 \textcolor{keywordflow}{if} (syncAnimator)}
+\DoxyCodeLine{00167                     syncAnimator.SetTrigger(\textcolor{stringliteral}{"{}upperBodyRun"{}});}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                 triggerUpperBodyRun = \textcolor{keyword}{false};}
+\DoxyCodeLine{00170             \}}
+\DoxyCodeLine{00171             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (triggerUpperBodyIdle)}
+\DoxyCodeLine{00172             \{}
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{if} (syncAnimator)}
+\DoxyCodeLine{00174                     syncAnimator.SetTrigger(\textcolor{stringliteral}{"{}upperBodyIdle"{}});}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176                 triggerUpperBodyIdle = \textcolor{keyword}{false};}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keywordflow}{if} (!animator || !animator.applyRootMotion)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.W))}
+\DoxyCodeLine{00183             \{}
+\DoxyCodeLine{00184                 move += Vector3.forward;}
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.S))}
+\DoxyCodeLine{00187             \{}
+\DoxyCodeLine{00188                 move -\/= Vector3.forward;}
+\DoxyCodeLine{00189             \}}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.A))}
+\DoxyCodeLine{00193             move -\/= Vector3.right;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.D))}
+\DoxyCodeLine{00196             move += Vector3.right;}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.E))}
+\DoxyCodeLine{00199             turn += Vector3.up;}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201         \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.Q))}
+\DoxyCodeLine{00202             turn -\/= Vector3.up;}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         \textcolor{keywordflow}{if} (Input.touchCount > 0)}
+\DoxyCodeLine{00205         \{}
+\DoxyCodeLine{00206             var touch = Input.GetTouch(0);}
+\DoxyCodeLine{00207             Vector2 normTouch = \textcolor{keyword}{new} Vector2(touch.rawPosition.x / Screen.width, touch.rawPosition.y / Screen.height);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordflow}{if} (normTouch.y > .66f)}
+\DoxyCodeLine{00210             \{}
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{if} (normTouch.x > .66f)}
+\DoxyCodeLine{00212                     triggerHitscan = \textcolor{keyword}{true};}
+\DoxyCodeLine{00213                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (normTouch.x < .33f)}
+\DoxyCodeLine{00214                     triggerJump = \textcolor{keyword}{true};}
+\DoxyCodeLine{00215             \}}
+\DoxyCodeLine{00216             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (normTouch.y < .33f)}
+\DoxyCodeLine{00217             \{}
+\DoxyCodeLine{00218                 \textcolor{keywordflow}{if} (normTouch.x > .66f)}
+\DoxyCodeLine{00219                     move += Vector3.right;}
+\DoxyCodeLine{00220                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (normTouch.x < .33f)}
+\DoxyCodeLine{00221                     move -\/= Vector3.right;}
+\DoxyCodeLine{00222                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00223                 \{}
+\DoxyCodeLine{00224                     \textcolor{keywordflow}{if} (animator)}
+\DoxyCodeLine{00225                     \{}
+\DoxyCodeLine{00226                         animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00227                         animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, -\/0.5f);}
+\DoxyCodeLine{00228                     \}}
+\DoxyCodeLine{00229                 \}}
+\DoxyCodeLine{00230             \}}
+\DoxyCodeLine{00231             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00232             \{}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{if} (normTouch.x > .66f)}
+\DoxyCodeLine{00234                     turn += Vector3.up;}
+\DoxyCodeLine{00235                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (normTouch.x < .33f)}
+\DoxyCodeLine{00236                     turn -\/= Vector3.up;}
+\DoxyCodeLine{00237                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00238                 \{}
+\DoxyCodeLine{00239                     \textcolor{keywordflow}{if} (animator)}
+\DoxyCodeLine{00240                     \{}
+\DoxyCodeLine{00241                         animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00242                         animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, 1f);}
+\DoxyCodeLine{00243                     \}}
+\DoxyCodeLine{00244                 \}}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00249         \textcolor{keywordflow}{if} (autoMove \&\& !Application.isFocused)}
+\DoxyCodeLine{00250         \{}
+\DoxyCodeLine{00251             turn += \textcolor{keyword}{new} Vector3(0, Mathf.Sin(Time.time * .5f), 0);}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if} (animator)}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 animator.SetBool(\textcolor{stringliteral}{"{}walking"{}}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00255                 animator.SetFloat(\textcolor{stringliteral}{"{}speed"{}}, Mathf.Sin(Time.time) * .5f);}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257         \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259         Interpolate(1);}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261         Move(move, turn);}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{comment}{//Interpolate(1);}}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265         appliedDeltaT = 0;}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267         \textcolor{keywordflow}{if} (triggerHitscan)}
+\DoxyCodeLine{00268         \{}
+\DoxyCodeLine{00269             \textcolor{keywordflow}{if} (syncHitscan)}
+\DoxyCodeLine{00270                 syncHitscan.QueueTrigger();}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             triggerHitscan = \textcolor{keyword}{false};}
+\DoxyCodeLine{00273         \}}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{keywordflow}{if} (triggerProjectile)}
+\DoxyCodeLine{00276         \{}
+\DoxyCodeLine{00277             \textcolor{keywordflow}{if} (syncLauncher)}
+\DoxyCodeLine{00278                 syncLauncher.QueueTrigger();}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280             triggerProjectile = \textcolor{keyword}{false};}
+\DoxyCodeLine{00281         \}}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284         \textcolor{keywordflow}{if} (triggerTeleport)}
+\DoxyCodeLine{00285         \{}
+\DoxyCodeLine{00286             \textcolor{comment}{//triggerTeleport = true;}}
+\DoxyCodeLine{00287             \textcolor{comment}{//transform.position = new Vector3(0, 0, 0);}}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00290             \textcolor{keywordflow}{if} (syncTransform)}
+\DoxyCodeLine{00291             \{}
+\DoxyCodeLine{00292                 syncTransform.FlagTeleport();}
+\DoxyCodeLine{00293                 transform.localPosition = \textcolor{keyword}{new} Vector3();}
+\DoxyCodeLine{00294                 transform.localRotation = \textcolor{keyword}{new} Quaternion();}
+\DoxyCodeLine{00295             \}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297             triggerTeleport = \textcolor{keyword}{false};}
+\DoxyCodeLine{00298         \}}
+\DoxyCodeLine{00299     \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnAnimatorMove()}
+\DoxyCodeLine{00302     \{}
+\DoxyCodeLine{00303         \textcolor{keywordflow}{if} (!IsMine)}
+\DoxyCodeLine{00304             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306         animator.ApplyBuiltinRootMotion();}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308         transform.rotation = animator.rootRotation;}
+\DoxyCodeLine{00309         transform.position = animator.rootPosition;}
+\DoxyCodeLine{00310     \}}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313     \textcolor{keyword}{private} \textcolor{keywordtype}{void} Move(Vector3 move, Vector3 turn)}
+\DoxyCodeLine{00314     \{}
+\DoxyCodeLine{00315         \textcolor{keywordflow}{if} (is2D)}
+\DoxyCodeLine{00316         \{}
+\DoxyCodeLine{00317             move = \textcolor{keyword}{new} Vector3(move.x, move.z, 0);}
+\DoxyCodeLine{00318             turn = \textcolor{keyword}{new} Vector3(0, 0, turn.y);}
+\DoxyCodeLine{00319         \}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321         targRotDelta = turn * turnSpeed * Time.fixedDeltaTime;}
+\DoxyCodeLine{00322         targPosDelta = move * moveSpeed * Time.fixedDeltaTime;}
+\DoxyCodeLine{00323     \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325     \textcolor{keywordtype}{void} Interpolate(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00326     \{}
+\DoxyCodeLine{00327         t -\/= appliedDeltaT;}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329         appliedDeltaT += t;}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331         transform.rotation = (transform.rotation * Quaternion.Euler(targRotDelta * t));}
+\DoxyCodeLine{00332         transform.position += transform.rotation * (targPosDelta * t);}
+\DoxyCodeLine{00333     \}}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340     [CustomEditor(typeof(SuperBasicController))]}
+\DoxyCodeLine{00341     [CanEditMultipleObjects]}
+\DoxyCodeLine{00342     \textcolor{keyword}{public} \textcolor{keyword}{class }SuperBasicControllerEditor : SampleCodeHeaderEditor}
+\DoxyCodeLine{00343     \{}
+\DoxyCodeLine{00344         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00345         \{}
+\DoxyCodeLine{00346             \textcolor{keyword}{get}}
+\DoxyCodeLine{00347             \{}
+\DoxyCodeLine{00348                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Test controller used for demos. We don't recommend actually using this for anything of your own."{}};}
+\DoxyCodeLine{00349             \}}
+\DoxyCodeLine{00350         \}}
+\DoxyCodeLine{00351     \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00354 \}}
+\DoxyCodeLine{00355 }
+
+\end{DoxyCode}

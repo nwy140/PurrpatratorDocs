@@ -1,0 +1,80 @@
+\doxysection{Third\+Person\+User\+Control.\+cs}
+\label{_third_person_user_control_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/Shared Assets/Scripts/ThirdPersonUserControl.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/Shared Assets/Scripts/ThirdPersonUserControl.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00003 }
+\DoxyCodeLine{00004 \textcolor{keyword}{namespace }UnityStandardAssets.Characters.ThirdPerson.PunDemos}
+\DoxyCodeLine{00005 \{}
+\DoxyCodeLine{00006     [RequireComponent(typeof (ThirdPersonCharacter))]}
+\DoxyCodeLine{00007     \textcolor{keyword}{public} \textcolor{keyword}{class }ThirdPersonUserControl : MonoBehaviour}
+\DoxyCodeLine{00008     \{}
+\DoxyCodeLine{00009         \textcolor{keyword}{private} ThirdPersonCharacter m\_Character; \textcolor{comment}{// A reference to the ThirdPersonCharacter on the object}}
+\DoxyCodeLine{00010         \textcolor{keyword}{private} Transform m\_Cam;                  \textcolor{comment}{// A reference to the main camera in the scenes transform}}
+\DoxyCodeLine{00011         \textcolor{keyword}{private} Vector3 m\_CamForward;             \textcolor{comment}{// The current forward direction of the camera}}
+\DoxyCodeLine{00012         \textcolor{keyword}{private} Vector3 m\_Move;}
+\DoxyCodeLine{00013         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_Jump;                      \textcolor{comment}{// the world-\/relative desired move direction, calculated from the camForward and user input.}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015         }
+\DoxyCodeLine{00016         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00017         \{}
+\DoxyCodeLine{00018             \textcolor{comment}{// get the transform of the main camera}}
+\DoxyCodeLine{00019             \textcolor{keywordflow}{if} (Camera.main != \textcolor{keyword}{null})}
+\DoxyCodeLine{00020             \{}
+\DoxyCodeLine{00021                 m\_Cam = Camera.main.transform;}
+\DoxyCodeLine{00022             \}}
+\DoxyCodeLine{00023             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00024             \{}
+\DoxyCodeLine{00025                 Debug.LogWarning(}
+\DoxyCodeLine{00026                     \textcolor{stringliteral}{"{}Warning: no main camera found. Third person character needs a Camera tagged \(\backslash\)"{}MainCamera\(\backslash\)"{}, for camera-\/relative controls."{}}, gameObject);}
+\DoxyCodeLine{00027                 \textcolor{comment}{// we use self-\/relative controls in this case, which probably isn't what the user wants, but hey, we warned them!}}
+\DoxyCodeLine{00028             \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030             \textcolor{comment}{// get the third person character ( this should never be null due to require component )}}
+\DoxyCodeLine{00031             m\_Character = GetComponent<ThirdPersonCharacter>();}
+\DoxyCodeLine{00032         \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (!m\_Jump)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 m\_Jump = Input.GetButtonDown(\textcolor{stringliteral}{"{}Jump"{}});}
+\DoxyCodeLine{00040             \}}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{comment}{// Fixed update is called in sync with physics}}
+\DoxyCodeLine{00045         \textcolor{keyword}{private} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{comment}{// read inputs}}
+\DoxyCodeLine{00048             \textcolor{keywordtype}{float} h = Input.GetAxis(\textcolor{stringliteral}{"{}Horizontal"{}});}
+\DoxyCodeLine{00049             \textcolor{keywordtype}{float} v = Input.GetAxis(\textcolor{stringliteral}{"{}Vertical"{}});}
+\DoxyCodeLine{00050             \textcolor{keywordtype}{bool} crouch = Input.GetKey(KeyCode.C);}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052             \textcolor{comment}{// calculate move direction to pass to character}}
+\DoxyCodeLine{00053             \textcolor{keywordflow}{if} (m\_Cam != \textcolor{keyword}{null})}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 \textcolor{comment}{// calculate camera relative direction to move:}}
+\DoxyCodeLine{00056                 m\_CamForward = Vector3.Scale(m\_Cam.forward, \textcolor{keyword}{new} Vector3(1, 0, 1)).normalized;}
+\DoxyCodeLine{00057                 m\_Move = v*m\_CamForward + h*m\_Cam.right;}
+\DoxyCodeLine{00058             \}}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 \textcolor{comment}{// we use world-\/relative directions in the case of no main camera}}
+\DoxyCodeLine{00062                 m\_Move = v*Vector3.forward + h*Vector3.right;}
+\DoxyCodeLine{00063             \}}
+\DoxyCodeLine{00064 \textcolor{preprocessor}{\#if !MOBILE\_INPUT}}
+\DoxyCodeLine{00065             \textcolor{comment}{// walk speed multiplier}}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.LeftShift)) m\_Move *= 0.5f;}
+\DoxyCodeLine{00067 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{comment}{// pass all parameters to the character control script}}
+\DoxyCodeLine{00070             m\_Character.Move(m\_Move, crouch, m\_Jump);}
+\DoxyCodeLine{00071             m\_Jump = \textcolor{keyword}{false};}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073     \}}
+\DoxyCodeLine{00074 \}}
+
+\end{DoxyCode}

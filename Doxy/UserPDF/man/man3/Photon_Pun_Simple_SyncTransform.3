@@ -1,0 +1,389 @@
+.TH "Photon.Pun.Simple.SyncTransform" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Pun.Simple.SyncTransform
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBPhoton\&.Pun\&.Simple\&.SyncObject< SyncTransform\&.Frame >\fP, \fBPhoton\&.Pun\&.Simple\&.ISyncTransform\fP, \fBPhoton\&.Pun\&.Simple\&.IOnSnapshot\fP, \fBPhoton\&.Pun\&.Simple\&.IOnNetSerialize\fP, \fBPhoton\&.Pun\&.Simple\&.IOnAuthorityChanged\fP, \fBPhoton\&.Pun\&.Simple\&.IReadyable\fP, \fBPhoton\&.Pun\&.Simple\&.IUseKeyframes\fP, \fBPhoton\&.Pun\&.Simple\&.IDeltaFrameChangeDetect\fP, \fBPhoton\&.Pun\&.Simple\&.IOnInterpolate\fP, \fBPhoton\&.Pun\&.Simple\&.IOnCaptureState\fP, and \fBPhoton\&.Pun\&.Simple\&.IFlagTeleport\fP\&.
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBFrame\fP"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBFlagTeleport\fP ()"
+.br
+.RI "Be sure to call this in the Capture segment BEFORE you reparent the object\&. "
+.ti -1c
+.RI "void \fBUpdateParent\fP (\fBObjState\fP state, Transform newParent)"
+.br
+.RI "\fBInternal\fP\&. "
+.ti -1c
+.RI "override void \fBOnAwake\fP ()"
+.br
+.RI "Be sure to use base\&.OnAwake() when overriding\&. "
+.ti -1c
+.RI "virtual void \fBOnCaptureCurrentState\fP (int frameId)"
+.br
+.ti -1c
+.RI "\fBSerializationFlags\fP \fBOnNetSerialize\fP (int frameId, byte[] buffer, ref int bitposition, \fBSerializationFlags\fP writeFlags)"
+.br
+.ti -1c
+.RI "\fBSerializationFlags\fP \fBOnNetDeserialize\fP (int originFrameId, byte[] buffer, ref int bitposition, \fBFrameArrival\fP arrival)"
+.br
+.ti -1c
+.RI "override bool \fBOnSnapshot\fP (int prevFrameId, int snapFrameId, int targFrameId, bool prevIsValid, bool snapIsValid, bool targIsValid)"
+.br
+.ti -1c
+.RI "override bool \fBOnInterpolate\fP (int snapFrameId, int targFrameId, float t)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBInterpolation\fP \fBinterpolation\fP = \fBInterpolation\&.Linear\fP"
+.br
+.ti -1c
+.RI "float \fBextrapolateRatio\fP = \&.5f"
+.br
+.ti -1c
+.RI "float \fBteleportThreshold\fP = 5f"
+.br
+.ti -1c
+.RI "bool \fBteleportReliable\fP = false"
+.br
+.ti -1c
+.RI "Dictionary< int, \fBTransformCrusher\fP > \fBmasterSharedCrushers\fP = new Dictionary<int, \fBTransformCrusher\fP>()"
+.br
+.ti -1c
+.RI "\fBTransformCrusher\fP \fBtransformCrusher\fP"
+.br
+.ti -1c
+.RI "\fBFrame\fP \fBprevSentFrame\fP"
+.br
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "static Stack< \fBFrame\fP[]> \fBframePool\fP = new Stack<\fBFrame\fP[]>()"
+.br
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "override void \fBPopulateFrames\fP ()"
+.br
+.RI "We reuse frame buffers for Transforms\&. "
+.ti -1c
+.RI "void \fBCaptureCurrent\fP (\fBMatrix\fP m, \fBCompressedMatrix\fP cm, bool forceUseTransform=false)"
+.br
+.ti -1c
+.RI "void \fBApplyFrame\fP (\fBFrame\fP frame)"
+.br
+.ti -1c
+.RI "override void \fBInterpolateFrame\fP (\fBFrame\fP targframe, \fBFrame\fP startframe, \fBFrame\fP endframe, float t)"
+.br
+.ti -1c
+.RI "override void \fBExtrapolateFrame\fP (\fBFrame\fP prevframe, \fBFrame\fP snapframe, \fBFrame\fP targframe)"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBextrapolationCount\fP"
+.br
+.ti -1c
+.RI "bool \fBhasTeleported\fP"
+.br
+.RI "When IsMine: OnTeleport sets this true to indicate the next outgoing serialization should be flagged as a teleport\&. "
+.ti -1c
+.RI "int \fBteleNewParentId\fP"
+.br
+.ti -1c
+.RI "\fBMatrix\fP \fBpreTeleportM\fP = new \fBMatrix\fP()"
+.br
+.ti -1c
+.RI "\fBCompressedMatrix\fP \fBpreTeleportCM\fP = new \fBCompressedMatrix\fP()"
+.br
+.ti -1c
+.RI "bool \fBallowInterpolation\fP"
+.br
+.ti -1c
+.RI "bool \fBallowReconstructionOfEmpty\fP"
+.br
+.ti -1c
+.RI "bool \fBskipInterpolation\fP"
+.br
+.in -1c
+.SS "Properties"
+
+.in +1c
+.ti -1c
+.RI "override bool \fBAllowInterpolation\fP\fC [get]\fP"
+.br
+.ti -1c
+.RI "override bool \fBAllowReconstructionOfEmpty\fP\fC [get]\fP"
+.br
+.ti -1c
+.RI "override int \fBApplyOrder\fP\fC [get]\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line \fB28\fP of file \fBSyncTransform\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Pun\&.Simple\&.SyncTransform\&.ApplyFrame (\fBFrame\fP frame)\fC [protected]\fP"
+
+.PP
+Definition at line \fB604\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "void Photon\&.Pun\&.Simple\&.SyncTransform\&.CaptureCurrent (\fBMatrix\fP m, \fBCompressedMatrix\fP cm, bool forceUseTransform = \fCfalse\fP)\fC [protected]\fP"
+TODO: Not currently working
+.PP
+Definition at line \fB353\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.Simple\&.SyncTransform\&.ExtrapolateFrame (\fBFrame\fP prevframe, \fBFrame\fP snapframe, \fBFrame\fP targframe)\fC [protected]\fP"
+TODO: Not tested these uses of \&.Partial yet\&.
+.PP
+Don't extrapolate if we don't have a valid snapframe - this should never happen and may eventually be removable\&.
+.PP
+Copy Snap to get any teleport info copied over? (I forget what this was for)
+.PP
+If the previous frame was a teleport, we have nothing to extrapolate\&. We just copy the teleport pos/rot values\&.
+.PP
+Empty lerp prev, so just go with copying the snap
+.PP
+Don't lerp between prev and snap if prev was a teleport/parent change, or else the teleport delta will be treated as movement hash of -2 indicates 'Unknown'\&. Check for -2 because if both are that, they would look like match (when they are not)\&. THIS MAY NOT BE NEEDED NOW, THE LERP BELOW USES THE TELEPORT VALUE IF THERE WAS A TELEPORT ON PREV
+.PP
+Definition at line \fB674\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "void Photon\&.Pun\&.Simple\&.SyncTransform\&.FlagTeleport ()"
+
+.PP
+Be sure to call this in the Capture segment BEFORE you reparent the object\&. Captures and holds the current transform prior to changes you are about to make\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIpos\fP 
+.br
+\fIrot\fP 
+.br
+\fIscl\fP 
+.RE
+.PP
+
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IFlagTeleport\fP\&.
+.PP
+Definition at line \fB113\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.Simple\&.SyncTransform\&.InterpolateFrame (\fBFrame\fP targframe, \fBFrame\fP startframe, \fBFrame\fP endframe, float t)\fC [protected]\fP"
+Don't interpolate if parent has changed - -2 indicates unknown\&. Checking for -2 so that both being -2 doesn't get treated as 'same'\&.
+.PP
+Definition at line \fB654\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.Simple\&.SyncTransform\&.OnAwake ()\fC [virtual]\fP"
+
+.PP
+Be sure to use base\&.OnAwake() when overriding\&. This is called when the \fBNetObject\fP runs \fBAwake()\fP\&. All code that depends on the NetObj being initialized should use this rather than \fBAwake()\fP; 
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.Simple\&.NetComponent\fP\&.
+.PP
+Definition at line \fB177\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "virtual void Photon\&.Pun\&.Simple\&.SyncTransform\&.OnCaptureCurrentState (int frameId)\fC [virtual]\fP"
+We want to use the captured values for the m and cm, as they were captured before possible parent change post teleport\&.
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IOnCaptureState\fP\&.
+.PP
+Definition at line \fB375\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override bool Photon\&.Pun\&.Simple\&.SyncTransform\&.OnInterpolate (int snapFrameId, int targFrameId, float t)"
+TODO: teleport handling with Catmul non existant
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IOnInterpolate\fP\&.
+.PP
+Definition at line \fB610\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBSerializationFlags\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.OnNetDeserialize (int originFrameId, byte[] buffer, ref int bitposition, \fBFrameArrival\fP arrival)"
+If enabled flag is false, we are done here\&.
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IOnNetSerialize\fP\&.
+.PP
+Definition at line \fB477\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBSerializationFlags\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.OnNetSerialize (int frameId, byte[] buffer, ref int bitposition, \fBSerializationFlags\fP writeFlags)"
+Don't transmit data non-critical updates if this component is disabled\&. Allows for muting components Simply by disabling them at the authority side\&. Currently teleports and new connections still send even if disabled, but normal keyframes and changes are not sent\&.
+.PP
+Only check for changes if we aren't forced to send by a keyframe\&.
+.PP
+has content bool
+.PP
+Teleport handling
+.PP
+TRS handling
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IOnNetSerialize\fP\&.
+.PP
+Definition at line \fB408\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override bool Photon\&.Pun\&.Simple\&.SyncTransform\&.OnSnapshot (int prevFrameId, int snapFrameId, int targFrameId, bool prevIsValid, bool snapIsValid, bool targIsValid)"
+Clear the teleport flag every tick
+.PP
+Test for need to auto-teleport (excessive distance change)
+.PP
+If the targF is not a valid frame, we will use the current interpolated scene position for this test\&.
+.PP
+Implements \fBPhoton\&.Pun\&.Simple\&.IOnSnapshot\fP\&.
+.PP
+Definition at line \fB526\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.Simple\&.SyncTransform\&.PopulateFrames ()\fC [protected]\fP, \fC [virtual]\fP"
+
+.PP
+We reuse frame buffers for Transforms\&. Get frames from pool or create a new array\&.
+.PP
+Get the offtick frame the slow way, then just copy that for all the other frames\&.
+.PP
+Get pooled frame, and populate with starting values from this
+.PP
+Get the offtick frame the slow way, then just copy that for all the other frames\&.
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.Simple\&.SyncObject< SyncTransform\&.Frame >\fP\&.
+.PP
+Definition at line \fB327\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "void Photon\&.Pun\&.Simple\&.SyncTransform\&.UpdateParent (\fBObjState\fP state, Transform newParent)"
+
+.PP
+\fBInternal\fP\&. StateSync uses this method to tell the \fBSyncTransform\fP what the parent object is\&. \fBSyncTransform\fP needs to know about parent changes to avoid interpolating/extrapolating across parent changes\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIstate\fP 
+.br
+\fInewParent\fP 
+.RE
+.PP
+
+.PP
+Definition at line \fB131\fP of file \fBSyncTransform\&.cs\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "bool Photon\&.Pun\&.Simple\&.SyncTransform\&.allowInterpolation\fC [protected]\fP"
+
+.PP
+Definition at line \fB147\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "bool Photon\&.Pun\&.Simple\&.SyncTransform\&.allowReconstructionOfEmpty\fC [protected]\fP"
+
+.PP
+Definition at line \fB150\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "float Photon\&.Pun\&.Simple\&.SyncTransform\&.extrapolateRatio = \&.5f"
+
+.PP
+Definition at line \fB50\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "int Photon\&.Pun\&.Simple\&.SyncTransform\&.extrapolationCount\fC [protected]\fP"
+
+.PP
+Definition at line \fB51\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "Stack<\fBFrame\fP[]> Photon\&.Pun\&.Simple\&.SyncTransform\&.framePool = new Stack<\fBFrame\fP[]>()\fC [static]\fP"
+
+.PP
+Definition at line \fB322\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "bool Photon\&.Pun\&.Simple\&.SyncTransform\&.hasTeleported\fC [protected]\fP"
+
+.PP
+When IsMine: OnTeleport sets this true to indicate the next outgoing serialization should be flagged as a teleport\&. When !IsMine: Is set during Snapshot to indicate that interpolation should not occur\&. 
+.PP
+Definition at line \fB100\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBInterpolation\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.interpolation = \fBInterpolation\&.Linear\fP"
+
+.PP
+Definition at line \fB45\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "Dictionary<int, \fBTransformCrusher\fP> Photon\&.Pun\&.Simple\&.SyncTransform\&.masterSharedCrushers = new Dictionary<int, \fBTransformCrusher\fP>()"
+
+.PP
+Definition at line \fB60\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBCompressedMatrix\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.preTeleportCM = new \fBCompressedMatrix\fP()\fC [protected]\fP"
+
+.PP
+Definition at line \fB104\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBMatrix\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.preTeleportM = new \fBMatrix\fP()\fC [protected]\fP"
+
+.PP
+Definition at line \fB103\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBFrame\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.prevSentFrame"
+
+.PP
+Definition at line \fB475\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "bool Photon\&.Pun\&.Simple\&.SyncTransform\&.skipInterpolation\fC [protected]\fP"
+
+.PP
+Definition at line \fB524\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "int Photon\&.Pun\&.Simple\&.SyncTransform\&.teleNewParentId\fC [protected]\fP"
+
+.PP
+Definition at line \fB102\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "bool Photon\&.Pun\&.Simple\&.SyncTransform\&.teleportReliable = false"
+
+.PP
+Definition at line \fB58\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "float Photon\&.Pun\&.Simple\&.SyncTransform\&.teleportThreshold = 5f"
+
+.PP
+Definition at line \fB54\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "\fBTransformCrusher\fP Photon\&.Pun\&.Simple\&.SyncTransform\&.transformCrusher"
+\fBInitial value:\fP
+.PP
+.nf
+= new TransformCrusher()
+        {
+            PosCrusher = new ElementCrusher(TRSType\&.Position, false)
+            {
+                hideFieldName = true,
+                XCrusher = new FloatCrusher(Axis\&.X, TRSType\&.Position, true) { BitsDeterminedBy = BitsDeterminedBy\&.HalfFloat, AccurateCenter = true },
+                YCrusher = new FloatCrusher(Axis\&.Y, TRSType\&.Position, true) { BitsDeterminedBy = BitsDeterminedBy\&.HalfFloat, AccurateCenter = true },
+                ZCrusher = new FloatCrusher(Axis\&.Z, TRSType\&.Position, true) { BitsDeterminedBy = BitsDeterminedBy\&.HalfFloat, AccurateCenter = true },
+            },
+            RotCrusher = new ElementCrusher(TRSType\&.Quaternion, false)
+            {
+                hideFieldName = true,
+                XCrusher = new FloatCrusher(Axis\&.X, TRSType\&.Euler, true) { Bits = 12, AccurateCenter = true },
+                YCrusher = new FloatCrusher(Axis\&.Y, TRSType\&.Euler, true) { Bits = 12, AccurateCenter = true },
+                ZCrusher = new FloatCrusher(Axis\&.Z, TRSType\&.Euler, true) { Bits = 12, AccurateCenter = true },
+                QCrusher = new QuatCrusher(44, true, false),
+
+                
+            },
+            SclCrusher = new ElementCrusher(TRSType\&.Scale, false)
+            {
+                hideFieldName = true,
+                uniformAxes = ElementCrusher\&.UniformAxes\&.NonUniform,
+                
+                XCrusher = new FloatCrusher(BitPresets\&.Bits8, -1, 1, Axis\&.X, TRSType\&.Scale, true) { TRSType = TRSType\&.Scale, AccurateCenter = true, BitsDeterminedBy = BitsDeterminedBy\&.SetBits },
+                YCrusher = new FloatCrusher(BitPresets\&.Bits8, -1, 1, Axis\&.Y, TRSType\&.Scale, true) { TRSType = TRSType\&.Scale, AccurateCenter = true, BitsDeterminedBy = BitsDeterminedBy\&.SetBits, Enabled = false },
+                ZCrusher = new FloatCrusher(BitPresets\&.Bits8, -1, 1, Axis\&.Z, TRSType\&.Scale, true) { TRSType = TRSType\&.Scale, AccurateCenter = true, BitsDeterminedBy = BitsDeterminedBy\&.SetBits, Enabled = false },
+            }
+        }
+.fi
+.PP
+Definition at line \fB61\fP of file \fBSyncTransform\&.cs\fP\&.
+.SH "Property Documentation"
+.PP 
+.SS "override bool Photon\&.Pun\&.Simple\&.SyncTransform\&.AllowInterpolation\fC [get]\fP"
+
+.PP
+Definition at line \fB148\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override bool Photon\&.Pun\&.Simple\&.SyncTransform\&.AllowReconstructionOfEmpty\fC [get]\fP"
+
+.PP
+Definition at line \fB151\fP of file \fBSyncTransform\&.cs\fP\&.
+.SS "override int Photon\&.Pun\&.Simple\&.SyncTransform\&.ApplyOrder\fC [get]\fP"
+
+.PP
+Definition at line \fB153\fP of file \fBSyncTransform\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

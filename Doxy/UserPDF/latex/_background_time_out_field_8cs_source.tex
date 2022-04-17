@@ -1,0 +1,71 @@
+\doxysection{Background\+Time\+Out\+Field.\+cs}
+\label{_background_time_out_field_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Autonomous UI/BackgroundTimeOutField.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/Scripts/Autonomous UI/BackgroundTimeOutField.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}BackgroundTimeOutField.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit Demo}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{class }BackgroundTimeOutField : MonoBehaviour}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} InputField PropertyValueInput;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020         \textcolor{keywordtype}{float} \_cache;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keywordtype}{bool} registered;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{keywordflow}{if} (!registered)}
+\DoxyCodeLine{00027             \{}
+\DoxyCodeLine{00028                 registered = \textcolor{keyword}{true};}
+\DoxyCodeLine{00029                 PropertyValueInput.onEndEdit.AddListener(OnEndEdit);}
+\DoxyCodeLine{00030             \}}
+\DoxyCodeLine{00031         \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00034         \{}
+\DoxyCodeLine{00035             registered = \textcolor{keyword}{false};}
+\DoxyCodeLine{00036             PropertyValueInput.onEndEdit.RemoveListener(OnEndEdit);}
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00040         \{}
+\DoxyCodeLine{00041             \textcolor{keywordflow}{if} (PhotonNetwork.KeepAliveInBackground != \_cache)}
+\DoxyCodeLine{00042             \{}
+\DoxyCodeLine{00043                 \_cache = PhotonNetwork.KeepAliveInBackground;}
+\DoxyCodeLine{00044                 PropertyValueInput.text = \_cache.ToString(\textcolor{stringliteral}{"{}F1"{}});}
+\DoxyCodeLine{00045             \}}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{comment}{// new UI will fire "{}EndEdit"{} event also when loosing focus. So check "{}enter"{} key and only then StartChat.}}
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnEndEdit(\textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter) || Input.GetKey(KeyCode.Tab))}
+\DoxyCodeLine{00052             \{}
+\DoxyCodeLine{00053                 this.SubmitForm(value.Trim());}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 this.SubmitForm(value);}
+\DoxyCodeLine{00058             \}}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SubmitForm(\textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             \_cache = \textcolor{keywordtype}{float}.Parse(value);}
+\DoxyCodeLine{00064             PhotonNetwork.KeepAliveInBackground = \_cache;}
+\DoxyCodeLine{00065             \textcolor{comment}{//Debug.Log("{}PhotonNetwork.BackgroundTimeout = "{} + PhotonNetwork.BackgroundTimeout, this);}}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067     \}}
+\DoxyCodeLine{00068 \}}
+
+\end{DoxyCode}

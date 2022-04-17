@@ -1,0 +1,612 @@
+\doxysection{Sync\+Var\+Attribute.\+cs}
+\label{_sync_var_attribute_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncVarAttribute.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/Attributes/SyncVarAttribute.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Compression.Internal;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncVarAttribute : SyncVarBaseAttribute,}
+\DoxyCodeLine{00019         IPackByte, IPackSByte,}
+\DoxyCodeLine{00020         IPackUInt16, IPackInt16,}
+\DoxyCodeLine{00021         IPackUInt32, IPackInt32,}
+\DoxyCodeLine{00022         IPackUInt64, IPackInt64,}
+\DoxyCodeLine{00023         IPackSingle, IPackDouble,}
+\DoxyCodeLine{00024         IPackString, IPackStringBuilder,}
+\DoxyCodeLine{00025         IPackVector2, IPackVector3,}
+\DoxyCodeLine{00026         IPackVector2Int, IPackVector3Int,}
+\DoxyCodeLine{00027         IPackBoolean, IPackChar}
+\DoxyCodeLine{00028         \textcolor{comment}{//IPackList<Int32>}}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAX\_STR\_LEN = 63;}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} STR\_LEN\_BITS = 6;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} WholeNumbers;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{public} SyncVarAttribute(KeyRate keyRate = KeyRate.UseDefault)}
+\DoxyCodeLine{00039         \{}
+\DoxyCodeLine{00040             this.keyRate = keyRate;}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042         }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetMaxBits(Type fieldType)}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (fieldType == typeof(String) || fieldType == typeof(StringBuilder))}
+\DoxyCodeLine{00046                 \textcolor{keywordflow}{return} (MAX\_STR\_LEN + 1) * 16 + STR\_LEN\_BITS;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (fieldType == typeof(Vector2))}
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{return} 64;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             \textcolor{keywordflow}{if} (fieldType == typeof(Vector2))}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return} 96;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             \textcolor{keywordflow}{return} base.GetMaxBits(fieldType);}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 \textcolor{preprocessor}{        \#region Test List}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare<T>(List<T> a, List<T> b) where T : \textcolor{keyword}{struct}}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{keywordtype}{int} acnt = a.Count;}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (acnt != b.Count)}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < acnt; ++i)}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{if} (a[i].Equals(b[i]) == \textcolor{keyword}{false})}
+\DoxyCodeLine{00067                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         }
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{comment}{//public void Copy(List<Int32> to, List<Int32> from)}}
+\DoxyCodeLine{00075         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00076         \textcolor{comment}{//  to.Clear();}}
+\DoxyCodeLine{00077         \textcolor{comment}{//  to.AddRange(from);}}
+\DoxyCodeLine{00078         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 \textcolor{preprocessor}{        \#region Bool}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{public} SerializationFlags Pack(ref Boolean value, Boolean prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090             buffer.Write((value ? (ulong)1 : 0), ref bitposition, 1);}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} SerializationFlags Unpack(ref Boolean value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             value = buffer.Read(ref bitposition, 1) == 0 ? false : \textcolor{keyword}{true};}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102 \textcolor{preprocessor}{        \#region 8 bits}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{public} SerializationFlags Pack(ref Byte value, Byte prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00107                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             buffer.Write(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00110             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} SerializationFlags Unpack(ref Byte value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             value = (byte)buffer.Read(ref bitposition, bitCount);}
+\DoxyCodeLine{00116             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{public} SerializationFlags Pack(ref SByte value, SByte prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             buffer.WriteSigned(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keyword}{public} SerializationFlags Unpack(ref SByte value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00129         \{}
+\DoxyCodeLine{00130             value = (sbyte)buffer.ReadSigned(ref bitposition, bitCount);}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136 \textcolor{preprocessor}{        \#region 16 bits}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \textcolor{keyword}{public} SerializationFlags Pack(ref UInt16 value, UInt16 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00141                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             buffer.Write(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00144             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00145         \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147         \textcolor{keyword}{public} SerializationFlags Unpack(ref UInt16 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149             value = (ushort)buffer.Read(ref bitposition, bitCount);}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{public} SerializationFlags Pack(ref Int16 value, Int16 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             Debug.Log(\textcolor{stringliteral}{"{}Pack "{}}+ bitCount);}
+\DoxyCodeLine{00156             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             buffer.WriteSigned(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163         \textcolor{keyword}{public} SerializationFlags Unpack(ref Int16 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165             value = (short)buffer.ReadSigned(ref bitposition, bitCount);}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 \textcolor{preprocessor}{        \#region 16 Char}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173         \textcolor{keyword}{public} SerializationFlags Pack(ref Char value, Char prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00174         \{}
+\DoxyCodeLine{00175             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             buffer.Write(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} SerializationFlags Unpack(ref Char value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             value = (Char)buffer.Read(ref bitposition, bitCount);}
+\DoxyCodeLine{00185             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00186         \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192 \textcolor{preprocessor}{        \#region 32 bits}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194         \textcolor{keyword}{public} SerializationFlags Pack(ref UInt32 value, UInt32 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00195         \{}
+\DoxyCodeLine{00196             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00197                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199             buffer.WritePackedBytes(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00201         \}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203         \textcolor{keyword}{public} SerializationFlags Unpack(ref UInt32 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205             value = (UInt32)buffer.ReadPackedBytes(ref bitposition, bitCount);}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00207         \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209         \textcolor{keyword}{public} SerializationFlags Pack(ref Int32 value, Int32 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00210         \{}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214             buffer.WriteSignedPackedBytes(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00215             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218         \textcolor{keyword}{public} SerializationFlags Unpack(ref Int32 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00219         \{}
+\DoxyCodeLine{00220             value = (Int32)buffer.ReadSignedPackedBytes(ref bitposition, bitCount);}
+\DoxyCodeLine{00221             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226 \textcolor{preprocessor}{        \#region 64 bits}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{public} SerializationFlags Pack(ref UInt64 value, UInt64 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00229         \{}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00231                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             buffer.WritePackedBytes(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00234             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00235         \}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237         \textcolor{keyword}{public} SerializationFlags Unpack(ref UInt64 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00238         \{}
+\DoxyCodeLine{00239             value = (UInt64)buffer.ReadPackedBytes(ref bitposition, bitCount);}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00241         \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243         \textcolor{keyword}{public} SerializationFlags Pack(ref Int64 value, Int64 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00244         \{}
+\DoxyCodeLine{00245             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue,  writeFlags))}
+\DoxyCodeLine{00246                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             buffer.WriteSignedPackedBytes64(value, ref bitposition, bitCount);}
+\DoxyCodeLine{00249             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00250         \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252         \textcolor{keyword}{public} SerializationFlags Unpack(ref Int64 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00253         \{}
+\DoxyCodeLine{00254             value = buffer.ReadSignedPackedBytes64(ref bitposition, bitCount);}
+\DoxyCodeLine{00255             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260 \textcolor{preprocessor}{        \#region Floating Point Singe/Double}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keyword}{public} SerializationFlags Pack(ref Single value, Single prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00265             \{}
+\DoxyCodeLine{00266                 \textcolor{keywordtype}{int} nval = (int)Math.Round(value);}
+\DoxyCodeLine{00267                 \textcolor{keywordtype}{int} pval = (int)Math.Round(prevValue);}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                 \textcolor{keywordflow}{if} (!IsForced(frameId, nval, pval, writeFlags))}
+\DoxyCodeLine{00270                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272                 buffer.WriteSignedPackedBytes(nval, ref bitposition, 32);}
+\DoxyCodeLine{00273                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00274             \}}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00277                 \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00278                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280                 buffer.Write((uint)(ByteConverter)value, ref bitposition, 32);}
+\DoxyCodeLine{00281                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00282             \}}
+\DoxyCodeLine{00283             }
+\DoxyCodeLine{00284         \}}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286         \textcolor{keyword}{public} SerializationFlags Unpack(ref Single value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00287         \{}
+\DoxyCodeLine{00288             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00289             \{}
+\DoxyCodeLine{00290                 value = buffer.ReadSignedPackedBytes(ref bitposition, 32);}
+\DoxyCodeLine{00291                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00292             \}}
+\DoxyCodeLine{00293             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00294             \{}
+\DoxyCodeLine{00295                 value = (ByteConverter)buffer.Read(ref bitposition, 32);}
+\DoxyCodeLine{00296                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00297             \}}
+\DoxyCodeLine{00298             }
+\DoxyCodeLine{00299         \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301         \textcolor{keyword}{public} SerializationFlags Pack(ref Double value, Double prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00302         \{}
+\DoxyCodeLine{00303             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00304             \{}
+\DoxyCodeLine{00305                 \textcolor{keywordtype}{long} nval = (int)Math.Round(value);}
+\DoxyCodeLine{00306                 \textcolor{keywordtype}{long} pval = (int)Math.Round(prevValue);}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308                 \textcolor{keywordflow}{if} (!IsForced(frameId, nval, pval, writeFlags))}
+\DoxyCodeLine{00309                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311                 buffer.WriteSignedPackedBytes64(nval, ref bitposition, 64);}
+\DoxyCodeLine{00312                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00313             \}}
+\DoxyCodeLine{00314             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00315             \{}
+\DoxyCodeLine{00316                 \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00317                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319                 buffer.Write((ByteConverter)value, ref bitposition, 64);}
+\DoxyCodeLine{00320                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00321             \}}
+\DoxyCodeLine{00322             }
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325         \textcolor{keyword}{public} SerializationFlags Unpack(ref Double value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00326         \{}
+\DoxyCodeLine{00327             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00328             \{}
+\DoxyCodeLine{00329                 value = buffer.ReadSignedPackedBytes64(ref bitposition, 64);}
+\DoxyCodeLine{00330                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00331             \}}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00333             \{}
+\DoxyCodeLine{00334                 value = (ByteConverter)buffer.Read(ref bitposition, 64);}
+\DoxyCodeLine{00335                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00336             \}}
+\DoxyCodeLine{00337             }
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342 \textcolor{preprocessor}{        \#region String}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344         \textcolor{keyword}{public} SerializationFlags Pack(ref String value, String prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00345         \{}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347             \textcolor{keywordflow}{if} (!IsForcedClass(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00348                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             \textcolor{keywordflow}{if} (value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00351             \{}
+\DoxyCodeLine{00352                 buffer.Write(0, ref bitposition, 6);}
+\DoxyCodeLine{00353                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00354             \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00357             \textcolor{keywordtype}{int} cnt = value.Length;}
+\DoxyCodeLine{00358             \textcolor{keywordflow}{if} (cnt > MAX\_STR\_LEN)}
+\DoxyCodeLine{00359             \{}
+\DoxyCodeLine{00360                 cnt = MAX\_STR\_LEN;}
+\DoxyCodeLine{00361 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00362                 Debug.LogWarning(\textcolor{stringliteral}{"{}Default Pack attribute has a max string length of 63 characters. Use PackString for more options."{}});}
+\DoxyCodeLine{00363 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00364             \}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00367             buffer.Write((uint)cnt, ref bitposition, 6);}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00370             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00371                 buffer.Write((ushort)value[i], ref bitposition, bitCount);}
+\DoxyCodeLine{00372             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sb = \textcolor{keyword}{new} StringBuilder(0);}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377         \textcolor{keyword}{public} SerializationFlags Unpack(ref String value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00378         \{}
+\DoxyCodeLine{00379             sb.Length = 0;}
+\DoxyCodeLine{00380             \textcolor{keywordtype}{int} cnt = (int)buffer.Read(ref bitposition, 6);}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00383                 sb.Append((Char)buffer.Read(ref bitposition, bitCount));}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385             value = sb.ToString();}
+\DoxyCodeLine{00386             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00387         \}}
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391 \textcolor{preprocessor}{        \#region StringBuilder}}
+\DoxyCodeLine{00392 }
+\DoxyCodeLine{00393         \textcolor{keyword}{public} SerializationFlags Pack(ref StringBuilder value, StringBuilder prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00394         \{}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00396             \textcolor{keywordflow}{if} (!IsForcedClass(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00397                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399             \textcolor{keywordflow}{if} (value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00400             \{}
+\DoxyCodeLine{00401                 buffer.Write(0, ref bitposition, STR\_LEN\_BITS);}
+\DoxyCodeLine{00402                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00403             \}}
+\DoxyCodeLine{00404 }
+\DoxyCodeLine{00406             \textcolor{keywordtype}{int} cnt = value.Length;}
+\DoxyCodeLine{00407             \textcolor{keywordflow}{if} (cnt > MAX\_STR\_LEN)}
+\DoxyCodeLine{00408             \{}
+\DoxyCodeLine{00409                 cnt = MAX\_STR\_LEN;}
+\DoxyCodeLine{00410 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00411                 Debug.LogWarning(\textcolor{stringliteral}{"{}Default Pack attribute has a max string length of "{}} + MAX\_STR\_LEN + \textcolor{stringliteral}{"{} characters. Use PackString for more options. Clamping string to \(\backslash\)"{}"{}} +}
+\DoxyCodeLine{00412                     value.ToString(0, MAX\_STR\_LEN) + \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}});}
+\DoxyCodeLine{00413 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00414             \}}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00417             buffer.Write((uint)cnt, ref bitposition, STR\_LEN\_BITS);}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00420             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00421                 buffer.Write((ushort)value[i], ref bitposition, bitCount);}
+\DoxyCodeLine{00422 }
+\DoxyCodeLine{00423             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00424         \}}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00426         \textcolor{keyword}{public} SerializationFlags Unpack(ref StringBuilder value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00427         \{}
+\DoxyCodeLine{00428             \textcolor{keywordflow}{if} (value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00429                 value = \textcolor{keyword}{new} StringBuilder(64);}
+\DoxyCodeLine{00430             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00431                 value.Length = 0;}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433             \textcolor{keywordtype}{int} cnt = (int)buffer.Read(ref bitposition, STR\_LEN\_BITS);}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < cnt; ++i)}
+\DoxyCodeLine{00436                 value.Append((Char)buffer.Read(ref bitposition, bitCount));}
+\DoxyCodeLine{00437             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00438         \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442 \textcolor{preprocessor}{        \#region Vector2}}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00444         \textcolor{keyword}{public} SerializationFlags Pack(ref Vector2 value, Vector2 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00445         \{}
+\DoxyCodeLine{00446             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00447             \{}
+\DoxyCodeLine{00448                 Vector2Int newval = \textcolor{keyword}{new} Vector2Int((\textcolor{keywordtype}{int})value.x, (\textcolor{keywordtype}{int})value.y);}
+\DoxyCodeLine{00449                 Vector2Int oldval = \textcolor{keyword}{new} Vector2Int((\textcolor{keywordtype}{int})prevValue.x, (\textcolor{keywordtype}{int})prevValue.y);}
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00451                 \textcolor{keywordflow}{if} (!IsForced(frameId, newval, oldval, writeFlags))}
+\DoxyCodeLine{00452                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454                 buffer.WriteSignedPackedBytes(newval.x, ref bitposition, 32);}
+\DoxyCodeLine{00455                 buffer.WriteSignedPackedBytes(newval.y, ref bitposition, 32);}
+\DoxyCodeLine{00456                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00457             \}}
+\DoxyCodeLine{00458             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00459             \{}
+\DoxyCodeLine{00460                 \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00461                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463                 buffer.Write((uint)(ByteConverter)value.x, ref bitposition, 32);}
+\DoxyCodeLine{00464                 buffer.Write((uint)(ByteConverter)value.y, ref bitposition, 32);}
+\DoxyCodeLine{00465                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00466             \}}
+\DoxyCodeLine{00467             }
+\DoxyCodeLine{00468         \}}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470         \textcolor{keyword}{public} SerializationFlags Unpack(ref Vector2 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00471         \{}
+\DoxyCodeLine{00472             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00473             \{}
+\DoxyCodeLine{00474                 value = \textcolor{keyword}{new} Vector2(}
+\DoxyCodeLine{00475                    buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00476                    buffer.ReadSignedPackedBytes(ref bitposition, 32)}
+\DoxyCodeLine{00477                    );}
+\DoxyCodeLine{00478                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00479             \}}
+\DoxyCodeLine{00480             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00481             \{}
+\DoxyCodeLine{00482                 value = \textcolor{keyword}{new} Vector2(}
+\DoxyCodeLine{00483                    (ByteConverter)buffer.Read(ref bitposition, 32),}
+\DoxyCodeLine{00484                    (ByteConverter)buffer.Read(ref bitposition, 32)}
+\DoxyCodeLine{00485                    );}
+\DoxyCodeLine{00486                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00487             \}}
+\DoxyCodeLine{00488            }
+\DoxyCodeLine{00489         \}}
+\DoxyCodeLine{00490 }
+\DoxyCodeLine{00491 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493 \textcolor{preprocessor}{        \#region Vector3}}
+\DoxyCodeLine{00494 }
+\DoxyCodeLine{00495         \textcolor{keyword}{public} SerializationFlags Pack(ref Vector3 value, Vector3 prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00496         \{}
+\DoxyCodeLine{00497             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00498             \{}
+\DoxyCodeLine{00499                 Vector3Int newval = \textcolor{keyword}{new} Vector3Int((\textcolor{keywordtype}{int})value.x, (\textcolor{keywordtype}{int})value.y, (\textcolor{keywordtype}{int})value.z);}
+\DoxyCodeLine{00500                 Vector3Int oldval = \textcolor{keyword}{new} Vector3Int((\textcolor{keywordtype}{int})prevValue.x, (\textcolor{keywordtype}{int})prevValue.y, (\textcolor{keywordtype}{int})prevValue.z);}
+\DoxyCodeLine{00501 }
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{if} (!IsForced(frameId, newval, oldval, writeFlags))}
+\DoxyCodeLine{00503                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505                 buffer.WriteSignedPackedBytes(newval.x, ref bitposition, 32);}
+\DoxyCodeLine{00506                 buffer.WriteSignedPackedBytes(newval.y, ref bitposition, 32);}
+\DoxyCodeLine{00507                 buffer.WriteSignedPackedBytes(newval.z, ref bitposition, 32);}
+\DoxyCodeLine{00508                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00509             \}}
+\DoxyCodeLine{00510             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00511             \{}
+\DoxyCodeLine{00512                 \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00513                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00514 }
+\DoxyCodeLine{00515                 buffer.Write((uint)(ByteConverter)value.x, ref bitposition, 32);}
+\DoxyCodeLine{00516                 buffer.Write((uint)(ByteConverter)value.y, ref bitposition, 32);}
+\DoxyCodeLine{00517                 buffer.Write((uint)(ByteConverter)value.z, ref bitposition, 32);}
+\DoxyCodeLine{00518                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00519             \}}
+\DoxyCodeLine{00520             }
+\DoxyCodeLine{00521         \}}
+\DoxyCodeLine{00522 }
+\DoxyCodeLine{00523         \textcolor{keyword}{public} SerializationFlags Unpack(ref Vector3 value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00524         \{}
+\DoxyCodeLine{00525             \textcolor{keywordflow}{if} (WholeNumbers)}
+\DoxyCodeLine{00526             \{}
+\DoxyCodeLine{00527                 value = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00528                     buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00529                     buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00530                     buffer.ReadSignedPackedBytes(ref bitposition, 32));}
+\DoxyCodeLine{00531                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00532             \}}
+\DoxyCodeLine{00533             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00534             \{}
+\DoxyCodeLine{00535                 value = \textcolor{keyword}{new} Vector3(}
+\DoxyCodeLine{00536                    (ByteConverter)buffer.Read(ref bitposition, 32),}
+\DoxyCodeLine{00537                    (ByteConverter)buffer.Read(ref bitposition, 32),}
+\DoxyCodeLine{00538                    (ByteConverter)buffer.Read(ref bitposition, 32));}
+\DoxyCodeLine{00539                 \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00540             \}}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542            }
+\DoxyCodeLine{00543         \}}
+\DoxyCodeLine{00544 }
+\DoxyCodeLine{00545 \textcolor{preprocessor}{        \#region Vector2Int}}
+\DoxyCodeLine{00546 }
+\DoxyCodeLine{00547         \textcolor{keyword}{public} SerializationFlags Pack(ref Vector2Int value, Vector2Int prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00548         \{}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00551                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00553             buffer.WriteSignedPackedBytes(value.x, ref bitposition, 32);}
+\DoxyCodeLine{00554             buffer.WriteSignedPackedBytes(value.y, ref bitposition, 32);}
+\DoxyCodeLine{00555             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00556         \}}
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558         \textcolor{keyword}{public} SerializationFlags Unpack(ref Vector2Int value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00559         \{}
+\DoxyCodeLine{00560             value = \textcolor{keyword}{new} Vector2Int(}
+\DoxyCodeLine{00561                 buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00562                 buffer.ReadSignedPackedBytes(ref bitposition, 32)}
+\DoxyCodeLine{00563                 );}
+\DoxyCodeLine{00564             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00565         \}}
+\DoxyCodeLine{00566 }
+\DoxyCodeLine{00567 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00568 }
+\DoxyCodeLine{00569 \textcolor{preprocessor}{        \#region Vector3Int}}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00571         \textcolor{keyword}{public} SerializationFlags Pack(ref Vector3Int value, Vector3Int prevValue, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00572         \{}
+\DoxyCodeLine{00573 }
+\DoxyCodeLine{00574             \textcolor{keywordflow}{if} (!IsForced(frameId, value, prevValue, writeFlags))}
+\DoxyCodeLine{00575                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00576 }
+\DoxyCodeLine{00577             buffer.WriteSignedPackedBytes(value.x, ref bitposition, 32);}
+\DoxyCodeLine{00578             buffer.WriteSignedPackedBytes(value.y, ref bitposition, 32);}
+\DoxyCodeLine{00579             buffer.WriteSignedPackedBytes(value.z, ref bitposition, 32);}
+\DoxyCodeLine{00580             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00581         \}}
+\DoxyCodeLine{00582 }
+\DoxyCodeLine{00583         \textcolor{keyword}{public} SerializationFlags Unpack(ref Vector3Int value, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{int} frameId, SerializationFlags writeFlags)}
+\DoxyCodeLine{00584         \{}
+\DoxyCodeLine{00585             value = \textcolor{keyword}{new} Vector3Int(}
+\DoxyCodeLine{00586                 buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00587                 buffer.ReadSignedPackedBytes(ref bitposition, 32),}
+\DoxyCodeLine{00588                 buffer.ReadSignedPackedBytes(ref bitposition, 32)}
+\DoxyCodeLine{00589                 );}
+\DoxyCodeLine{00590             \textcolor{keywordflow}{return} SerializationFlags.IsComplete;}
+\DoxyCodeLine{00591         \}}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{00593 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00594 }
+\DoxyCodeLine{00595 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00596 }
+\DoxyCodeLine{00597 \textcolor{preprocessor}{        \#region Vitals}}
+\DoxyCodeLine{00598 }
+\DoxyCodeLine{00599         \textcolor{comment}{//public SerializationFlags Pack(ref VitalsData value, VitalsData prevValue, byte[] buffer, ref int bitposition, int frameId, SerializationFlags writeFlags)}}
+\DoxyCodeLine{00600         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00601 }
+\DoxyCodeLine{00602         \textcolor{comment}{//  if (!IsForcedClass(frameId, value, prevValue,  writeFlags))}}
+\DoxyCodeLine{00603         \textcolor{comment}{//      return SerializationFlags.None;}}
+\DoxyCodeLine{00604 }
+\DoxyCodeLine{00605         \textcolor{comment}{//  bool isKeyFrame = IsKeyframe(frameId);}}
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00607         \textcolor{comment}{//  return value.vitals.Serialize(value, prevValue, buffer, ref bitposition, isKeyFrame);}}
+\DoxyCodeLine{00608         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00610         \textcolor{comment}{//public SerializationFlags Unpack(ref VitalsData value, byte[] buffer, ref int bitposition, int frameId, SerializationFlags writeFlags)}}
+\DoxyCodeLine{00611         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00612         \textcolor{comment}{//  return value.vitals.Deserialize(value, buffer, ref bitposition, IsKeyframe(frameId));}}
+\DoxyCodeLine{00613 }
+\DoxyCodeLine{00614         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00615 }
+\DoxyCodeLine{00616 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00617     \}}
+\DoxyCodeLine{00618 \}}
+
+\end{DoxyCode}

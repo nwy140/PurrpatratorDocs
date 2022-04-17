@@ -1,0 +1,121 @@
+\doxysection{Auto\+Zoom.\+cs}
+\label{_auto_zoom_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Camera/AutoZoom.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Camera/AutoZoom.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} emotitron.Utilities.GUIUtilities;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{class }AutoZoom : MonoBehaviour}
+\DoxyCodeLine{00017     \{}
+\DoxyCodeLine{00018         \textcolor{keyword}{public} \textcolor{keyword}{static} List<Transform> watched = \textcolor{keyword}{new} List<Transform>();}
+\DoxyCodeLine{00019         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} MAX\_FOV = 75;}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} MIN\_FOV = 15;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         [Range(.1f, .5f)]}
+\DoxyCodeLine{00023         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} window = .25f;}
+\DoxyCodeLine{00024         [ValueType(\textcolor{stringliteral}{"{}/sec"{}})]}
+\DoxyCodeLine{00025         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} panRate = 20f;}
+\DoxyCodeLine{00026         [ValueType(\textcolor{stringliteral}{"{}/sec"{}})]}
+\DoxyCodeLine{00027         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} zoomRate = 200f;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{comment}{// Cache}}
+\DoxyCodeLine{00030         \textcolor{keyword}{private} Camera cam;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00033         \{}
+\DoxyCodeLine{00034             cam = GetComponent<Camera>();}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (!cam)}
+\DoxyCodeLine{00038                 watched.Add(transform);}
+\DoxyCodeLine{00039         \}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00042         \{}
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (watched.Contains(transform))}
+\DoxyCodeLine{00044                 watched.Remove(transform);}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{if} (!cam || !cam.isActiveAndEnabled)}
+\DoxyCodeLine{00051                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             Bounds bounds = \textcolor{keyword}{new} Bounds();}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < watched.Count; ++i)}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 Vector2 screenpoint = cam.WorldToViewportPoint(watched[i].position);}
+\DoxyCodeLine{00058                 bounds.Encapsulate(screenpoint + \textcolor{keyword}{new} Vector2(-\/0.5f, -\/0.5f));}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (watched.Count > 0)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 cam.transform.Rotate(\textcolor{keyword}{new} Vector3(0, 1, 0), (bounds.center.x \textcolor{comment}{/*-\/ .25f*/}) * Time.deltaTime * panRate);}
+\DoxyCodeLine{00064                 \textcolor{keywordtype}{float} xAngle = bounds.extents.x -\/ window;}
+\DoxyCodeLine{00065                 \textcolor{keywordtype}{float} yAngle = bounds.extents.y -\/ window;}
+\DoxyCodeLine{00066                 \textcolor{keywordtype}{float} angle = xAngle > yAngle ? xAngle : yAngle;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068                 \textcolor{keywordtype}{float} fov = cam.fieldOfView + angle * Time.deltaTime * zoomRate;}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070                 cam.fieldOfView = Mathf.Clamp(fov, MIN\_FOV, MAX\_FOV);}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         [CustomEditor(typeof(AutoZoom))]}
+\DoxyCodeLine{00078         [CanEditMultipleObjects]}
+\DoxyCodeLine{00079         \textcolor{keyword}{public} \textcolor{keyword}{class }AutoZoomEditor : AutomationHeaderEditor}
+\DoxyCodeLine{00080         \{}
+\DoxyCodeLine{00081             \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00082             \{}
+\DoxyCodeLine{00083                 \textcolor{keyword}{get}}
+\DoxyCodeLine{00084                 \{}
+\DoxyCodeLine{00085                     \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Attach this component to your Camera as well as any GameObjects you would like the keep in Camera view. Automatically adjusts the FOV to ensure objects are visible."{}};}
+\DoxyCodeLine{00086                 \}}
+\DoxyCodeLine{00087             \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUIInjectMiddle()}
+\DoxyCodeLine{00090             \{}
+\DoxyCodeLine{00091                 base.OnInspectorGUIInjectMiddle();}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093                 var sp = serializedObject.GetIterator();}
+\DoxyCodeLine{00094                 sp.Next(\textcolor{keyword}{true});}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00097                 \textcolor{keywordflow}{if} ((target as AutoZoom).GetComponent<Camera>())}
+\DoxyCodeLine{00098                 \{}
+\DoxyCodeLine{00099                     sp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}window"{}});}
+\DoxyCodeLine{00100                     EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00102                     \{}
+\DoxyCodeLine{00103                         EditorGUILayout.PropertyField(sp);}
+\DoxyCodeLine{00104                     \} \textcolor{keywordflow}{while} (sp.Next(\textcolor{keyword}{false}));}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                     \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00107                     \{}
+\DoxyCodeLine{00108                         sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00109                     \}}
+\DoxyCodeLine{00110                 \}}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115     \}}
+\DoxyCodeLine{00116 \}}
+\DoxyCodeLine{00117 }
+
+\end{DoxyCode}

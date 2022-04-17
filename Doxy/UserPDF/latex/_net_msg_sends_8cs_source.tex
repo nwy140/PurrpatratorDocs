@@ -1,0 +1,117 @@
+\doxysection{Net\+Msg\+Sends.\+cs}
+\label{_net_msg_sends_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetAdapters/NetMsgSends.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Networking/NetAdapters/NetMsgSends.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple.Internal}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{enum} ReceiveGroup \{ Others, All, Master \}}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }NetMsgSends}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} unreliableCapable;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CacheSettings() }
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             \textcolor{comment}{// TODO: this check for UDP eventually can be removed. Workaround for known PUN2 bug in sending unreliable to websockets}}
+\DoxyCodeLine{00027             unreliableCapable = PhotonNetwork.NetworkingClient.LoadBalancingPeer.UsedProtocol == ConnectionProtocol.Udp;}
+\DoxyCodeLine{00028         \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte}[] reusableBuffer = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[16384];}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{byte}[] reusableNetObjBuffer = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[4096];}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} HashSet<int> newPlayers = \textcolor{keyword}{new} HashSet<int>();}
+\DoxyCodeLine{00034         \textcolor{comment}{//private static List<int> reliableTargets = new List<int>();}}
+\DoxyCodeLine{00035         \textcolor{comment}{//private static List<int> unreliableTargets = new List<int>();}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Send(\textcolor{keyword}{this} \textcolor{keywordtype}{byte}[] buffer, \textcolor{keywordtype}{int} bitposition, UnityEngine.Object refObj, SerializationFlags flags, \textcolor{keywordtype}{bool} flush = \textcolor{keyword}{false})}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040             var currentRoom = PhotonNetwork.CurrentRoom;}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042             \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode || currentRoom == \textcolor{keyword}{null} || currentRoom.Players == \textcolor{keyword}{null})}
+\DoxyCodeLine{00043             \{}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00045             \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             \textcolor{keywordtype}{bool} sendToSelf = (flags \& SerializationFlags.SendToSelf) != 0;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049             \textcolor{comment}{// no need to send OnSerialize messages while being alone (these are not buffered anyway)}}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{if} (!sendToSelf \&\& !TickEngineSettings.single.sendWhenSolo \&\& currentRoom.Players.Count <= 1)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             ReceiveGroup sendTo = sendToSelf ? ReceiveGroup.All : ReceiveGroup.Others;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058             \textcolor{keywordtype}{int} bytecount = (bitposition + 7) >> 3;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             var nc = PhotonNetwork.NetworkingClient;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             DeliveryMode deliveryMode;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (newPlayers.Count > 0)}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 deliveryMode = DeliveryMode.Reliable;}
+\DoxyCodeLine{00067                 newPlayers.Clear();}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070             \{}
+\DoxyCodeLine{00071                 \textcolor{keywordtype}{bool} forceReliable = (flags \& SerializationFlags.ForceReliable) != 0;}
+\DoxyCodeLine{00072                 deliveryMode = unreliableCapable ? (forceReliable ? DeliveryMode.ReliableUnsequenced : DeliveryMode.Unreliable) : DeliveryMode.Reliable;}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075             \textcolor{comment}{//if (deliveryMode != DeliveryMode.Unreliable)}}
+\DoxyCodeLine{00076             \textcolor{comment}{//    Debug.LogError("{}Forced Reliable Send"{});}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078             SendOptions sendOptions = \textcolor{keyword}{new} SendOptions() \{ DeliveryMode = deliveryMode \};}
+\DoxyCodeLine{00079             var peer = PhotonNetwork.NetworkingClient.LoadBalancingPeer;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 \textcolor{preprocessor}{\#if PUN\_2\_19\_OR\_NEWER}}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (peer.SerializationProtocolType == SerializationProtocol.GpBinaryV16)}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 System.ArraySegment<\textcolor{keywordtype}{byte}> slice = \textcolor{keyword}{new} System.ArraySegment<\textcolor{keywordtype}{byte}>(buffer, 0, bytecount);}
+\DoxyCodeLine{00085                 nc.OpRaiseEvent(NetMsgCallbacks.DEF\_MSG\_ID, slice, opts[(\textcolor{keywordtype}{int})sendTo], sendOptions);}
+\DoxyCodeLine{00086             \}}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 ByteArraySlice slice = peer.ByteArraySlicePool.Acquire(buffer, 0, bytecount);}
+\DoxyCodeLine{00090                 nc.OpRaiseEvent(NetMsgCallbacks.DEF\_MSG\_ID, slice, opts[(\textcolor{keywordtype}{int})sendTo], sendOptions);}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00093             System.ArraySegment<\textcolor{keywordtype}{byte}> slice = \textcolor{keyword}{new} System.ArraySegment<\textcolor{keywordtype}{byte}>(buffer, 0, bytecount);}
+\DoxyCodeLine{00094             nc.OpRaiseEvent(NetMsgCallbacks.DEF\_MSG\_ID, slice, opts[(\textcolor{keywordtype}{int})sendTo], sendOptions);}
+\DoxyCodeLine{00095 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00096             \textcolor{keywordflow}{if} (flush)}
+\DoxyCodeLine{00097             \{}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{while} (peer.SendOutgoingCommands());}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100         \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReadyToSend \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} PhotonNetwork.NetworkClientState == ClientState.Joined; \} \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         \textcolor{keyword}{private} \textcolor{keyword}{static} RaiseEventOptions[] opts = \textcolor{keyword}{new} RaiseEventOptions[3]}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.Others \},}
+\DoxyCodeLine{00107             \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.All \},}
+\DoxyCodeLine{00108             \textcolor{keyword}{new} RaiseEventOptions() \{ Receivers = ReceiverGroup.MasterClient \}}
+\DoxyCodeLine{00109         \};}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AmActiveServer \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \} \}}
+\DoxyCodeLine{00112     \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114 \}}
+
+\end{DoxyCode}

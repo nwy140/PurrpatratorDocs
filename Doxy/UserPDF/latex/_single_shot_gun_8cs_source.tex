@@ -1,0 +1,53 @@
+\doxysection{Single\+Shot\+Gun.\+cs}
+\label{_single_shot_gun_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/$\sim$Samples/SimpleFPSOnline/Scripts/SingleShotGun.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/\_Shared/\_NetcodePhoton/Scripts/$\sim$Samples/SimpleFPSOnline/Scripts/SingleShotGun.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }SInt.Netcode.PhotonPUN.Samples.SimpleFPSOnline}
+\DoxyCodeLine{00007 \{}
+\DoxyCodeLine{00008     \textcolor{keyword}{public} \textcolor{keyword}{class }SingleShotGun : Gun}
+\DoxyCodeLine{00009     \{}
+\DoxyCodeLine{00010         [SerializeField] Camera cam;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012         PhotonView PV;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00015         \{}
+\DoxyCodeLine{00016             PV = GetComponent<PhotonView>();}
+\DoxyCodeLine{00017         \}}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Use()}
+\DoxyCodeLine{00020         \{}
+\DoxyCodeLine{00021             Shoot();}
+\DoxyCodeLine{00022         \}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keywordtype}{void} Shoot()}
+\DoxyCodeLine{00025         \{}
+\DoxyCodeLine{00026             Ray ray = cam.ViewportPointToRay(\textcolor{keyword}{new} Vector3(0.5f, 0.5f));}
+\DoxyCodeLine{00027             ray.origin = cam.transform.position;}
+\DoxyCodeLine{00028             \textcolor{keywordflow}{if} (Physics.Raycast(ray, out RaycastHit hit))}
+\DoxyCodeLine{00029             \{}
+\DoxyCodeLine{00030                 hit.collider.gameObject.GetComponent<IDamageable>()?.TakeDamage(((GunInfo)itemInfo).damage);}
+\DoxyCodeLine{00031                 PV.RPC(\textcolor{stringliteral}{"{}RPC\_Shoot"{}}, RpcTarget.All, hit.point, hit.normal);}
+\DoxyCodeLine{00032             \}}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [PunRPC]}
+\DoxyCodeLine{00036         \textcolor{keywordtype}{void} RPC\_Shoot(Vector3 hitPosition, Vector3 hitNormal)}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             Collider[] colliders = Physics.OverlapSphere(hitPosition, 0.3f);}
+\DoxyCodeLine{00039             \textcolor{keywordflow}{if} (colliders.Length != 0)}
+\DoxyCodeLine{00040             \{}
+\DoxyCodeLine{00041                 GameObject bulletImpactObj = Instantiate(bulletImpactPrefab, hitPosition + hitNormal * 0.001f, Quaternion.LookRotation(hitNormal, Vector3.up) * bulletImpactPrefab.transform.rotation);}
+\DoxyCodeLine{00042                 Destroy(bulletImpactObj, 10f);}
+\DoxyCodeLine{00043                 bulletImpactObj.transform.SetParent(colliders[0].transform);}
+\DoxyCodeLine{00044             \}}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046     \}}
+\DoxyCodeLine{00047 \}}
+
+\end{DoxyCode}

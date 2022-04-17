@@ -1,0 +1,346 @@
+\doxysection{Projectile.\+cs}
+\label{_projectile_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/Projectile.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/Projectile.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{comment}{//using System.Collections.Generic;}}
+\DoxyCodeLine{00007 \textcolor{comment}{//using UnityEngine;}}
+\DoxyCodeLine{00008 \textcolor{comment}{//using Photon.Utilities;}}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{comment}{//using UnityEditor;}}
+\DoxyCodeLine{00012 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{comment}{//namespace Photon.Pun.Simple}}
+\DoxyCodeLine{00016 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00017 \textcolor{comment}{//    public class Projectile : MonoBehaviour}}
+\DoxyCodeLine{00018 \textcolor{comment}{//        , IProjectile}}
+\DoxyCodeLine{00019 \textcolor{comment}{//        , IOnPreSimulate}}
+\DoxyCodeLine{00020 \textcolor{comment}{//        //, IOnInterpolate}}
+\DoxyCodeLine{00021 \textcolor{comment}{//        , IOnContactEvent}}
+\DoxyCodeLine{00022 \textcolor{comment}{//        , IOnPreUpdate}}
+\DoxyCodeLine{00023 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00024 \textcolor{comment}{//        protected IProjectileCannon owner;}}
+\DoxyCodeLine{00025 \textcolor{comment}{//        public IProjectileCannon Owner \{ get \{ return owner; \} set \{ owner = value; \} \}}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{comment}{//        [System.NonSerialized] public Vector3 velocity;}}
+\DoxyCodeLine{00028 \textcolor{comment}{//        //[System.NonSerialized] public Vector3 angVelocity;}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{comment}{//        [System.NonSerialized] public int frameId;}}
+\DoxyCodeLine{00031 \textcolor{comment}{//        [System.NonSerialized] public int subFrameId;}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 \textcolor{comment}{//        \#region Inspector}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{comment}{//        [SerializeField]}}
+\DoxyCodeLine{00036 \textcolor{comment}{//        [EnumMask(true)]}}
+\DoxyCodeLine{00037 \textcolor{comment}{//        protected ContactType triggerOn = ContactType.Enter;}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039 \textcolor{comment}{//        [SerializeField] [EnumMask] protected RespondTo terminateOn = RespondTo.IContactTrigger | RespondTo.HitNetObj | RespondTo.HitNonNetObj;}}
+\DoxyCodeLine{00040 \textcolor{comment}{//        [SerializeField] [EnumMask] protected RespondTo damageOn = RespondTo.IContactTrigger | RespondTo.HitNetObj | RespondTo.HitNonNetObj;}}
+\DoxyCodeLine{00041 \textcolor{comment}{//        [SerializeField] protected bool ignoreOwner;}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 \textcolor{comment}{//        \#endregion}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 \textcolor{comment}{//        // Cache}}
+\DoxyCodeLine{00046 \textcolor{comment}{//        protected Rigidbody rb;}}
+\DoxyCodeLine{00047 \textcolor{comment}{//        protected Rigidbody2D rb2d;}}
+\DoxyCodeLine{00048 \textcolor{comment}{//        protected bool \_hasRigidBody;}}
+\DoxyCodeLine{00049 \textcolor{comment}{//        public bool HasRigidbody \{ get \{ return \_hasRigidBody; \} \}}}
+\DoxyCodeLine{00050 \textcolor{comment}{//        protected bool needsSnapshot;}}
+\DoxyCodeLine{00051 \textcolor{comment}{//        //protected IContactTrigger ownerContactTrigger;}}
+\DoxyCodeLine{00052 \textcolor{comment}{//        protected IContactTrigger localContactTrigger;}}
+\DoxyCodeLine{00053 \textcolor{comment}{//        protected bool useRbForces, useRb2dForces;}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055 \textcolor{comment}{//        public VitalNameType VitalNameType \{ get \{ return new VitalNameType(VitalType.None); \} \}}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 \textcolor{comment}{//        /// Hit callbacks}}
+\DoxyCodeLine{00058 \textcolor{comment}{//        public List<IOnNetworkHit> onHit = new List<IOnNetworkHit>();}}
+\DoxyCodeLine{00059 \textcolor{comment}{//        public List<IOnTerminate> onTerminate = new List<IOnTerminate>();}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061 \textcolor{comment}{//        private void Reset()}}
+\DoxyCodeLine{00062 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00063 \textcolor{comment}{//            /// Projectiles need to detect collisions with everything}}
+\DoxyCodeLine{00064 \textcolor{comment}{//            localContactTrigger = GetComponent<IContactTrigger>();}}
+\DoxyCodeLine{00065 \textcolor{comment}{//            if (ReferenceEquals(localContactTrigger, null))}}
+\DoxyCodeLine{00066 \textcolor{comment}{//                localContactTrigger = gameObject.AddComponent<ContactTrigger>();}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070 \textcolor{comment}{//        private void Awake()}}
+\DoxyCodeLine{00071 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00072 \textcolor{comment}{//            rb = GetComponentInParent<Rigidbody>();}}
+\DoxyCodeLine{00073 \textcolor{comment}{//            rb2d = GetComponentInParent<Rigidbody2D>();}}
+\DoxyCodeLine{00074 \textcolor{comment}{//            \_hasRigidBody = rb || rb2d;}}
+\DoxyCodeLine{00075 \textcolor{comment}{//            useRbForces = rb \&\& !rb.isKinematic;}}
+\DoxyCodeLine{00076 \textcolor{comment}{//            useRb2dForces = rb2d \&\& !rb2d.isKinematic;}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078 \textcolor{comment}{//            needsSnapshot = !\_hasRigidBody || (rb \&\& rb.isKinematic) || (rb2d \&\& rb2d.isKinematic);}}
+\DoxyCodeLine{00079 \textcolor{comment}{//            localContactTrigger = GetComponent<IContactTrigger>();}}
+\DoxyCodeLine{00080 \textcolor{comment}{//            /// Register timing callbacks with Master. }}
+\DoxyCodeLine{00081 \textcolor{comment}{//            /// TODO: We likely should slave timings off of the owner}}
+\DoxyCodeLine{00082 \textcolor{comment}{//            if (needsSnapshot)}}
+\DoxyCodeLine{00083 \textcolor{comment}{//                NetMasterCallbacks.RegisterCallbackInterfaces(this);}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085 \textcolor{comment}{//            /// No need for the interpolation callback if we are using forces.}}
+\DoxyCodeLine{00086 \textcolor{comment}{//            if (\_hasRigidBody)}}
+\DoxyCodeLine{00087 \textcolor{comment}{//                NetMasterCallbacks.onPreUpdates.Remove(this);}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 \textcolor{comment}{//            /// Find interfaces for termination callbacks}}
+\DoxyCodeLine{00090 \textcolor{comment}{//            GetComponents(onHit);}}
+\DoxyCodeLine{00091 \textcolor{comment}{//            GetComponents(onTerminate);}}
+\DoxyCodeLine{00092 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 \textcolor{comment}{//        private void OnDestroy()}}
+\DoxyCodeLine{00095 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00096 \textcolor{comment}{//            NetMasterCallbacks.RegisterCallbackInterfaces(this, false, true);}}
+\DoxyCodeLine{00097 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099 \textcolor{comment}{//        /// <summary>}}
+\DoxyCodeLine{00100 \textcolor{comment}{//        /// Override this method to implement more advanced initial lag compensated snap and velocity values. }}
+\DoxyCodeLine{00101 \textcolor{comment}{//        /// Advance the position/rotation of the projectile here, and set the velocity to a value it should be at AFTER the timeshift is applied, so that it accounts for gravity and drag.}}
+\DoxyCodeLine{00102 \textcolor{comment}{//        /// </summary>}}
+\DoxyCodeLine{00103 \textcolor{comment}{//        /// <param name="{}timeshift"{}></param>}}
+\DoxyCodeLine{00104 \textcolor{comment}{//        public virtual void LagCompensate(float timeshift)}}
+\DoxyCodeLine{00105 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00106 \textcolor{comment}{//            snapPos = transform.position + velocity * timeshift;}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108 \textcolor{comment}{//            velocity += Physics.gravity * timeshift;}}
+\DoxyCodeLine{00109 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 \textcolor{comment}{//        public void Initialize(IProjectileCannon owner, int frameId, int subFrameId, Vector3 localVelocity, RespondTo terminateOn, RespondTo damageOn, float timeshift = 0)}}
+\DoxyCodeLine{00112 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00113 \textcolor{comment}{//            this.owner = owner;}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115 \textcolor{comment}{//            // Convert velocity from local to global}}
+\DoxyCodeLine{00116 \textcolor{comment}{//            this.velocity = transform.TransformDirection(localVelocity);}}
+\DoxyCodeLine{00117 \textcolor{comment}{//            this.terminateOn = terminateOn;}}
+\DoxyCodeLine{00118 \textcolor{comment}{//            this.damageOn = damageOn;}}
+\DoxyCodeLine{00119 \textcolor{comment}{//            this.frameId = frameId;}}
+\DoxyCodeLine{00120 \textcolor{comment}{//            this.subFrameId = subFrameId;}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 \textcolor{comment}{//            if (timeshift != 0)}}
+\DoxyCodeLine{00123 \textcolor{comment}{//                LagCompensate(timeshift);}}
+\DoxyCodeLine{00124 \textcolor{comment}{//            else}}
+\DoxyCodeLine{00125 \textcolor{comment}{//                snapPos = transform.position;}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{comment}{//            if (useRbForces)}}
+\DoxyCodeLine{00128 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00129 \textcolor{comment}{//                //rb.position = transform.position;}}
+\DoxyCodeLine{00130 \textcolor{comment}{//                rb.MovePosition(snapPos);}}
+\DoxyCodeLine{00131 \textcolor{comment}{//                rb.velocity = this.velocity;}}
+\DoxyCodeLine{00132 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00133 \textcolor{comment}{//            /// TODO: NOT TESTED}}
+\DoxyCodeLine{00134 \textcolor{comment}{//            else if (rb2d)}}
+\DoxyCodeLine{00135 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00136 \textcolor{comment}{//                //rb2d.position = transform.position;}}
+\DoxyCodeLine{00137 \textcolor{comment}{//                rb2d.MovePosition(snapPos);}}
+\DoxyCodeLine{00138 \textcolor{comment}{//                rb2d.velocity = this.velocity;}}
+\DoxyCodeLine{00139 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00140 \textcolor{comment}{//            else}}
+\DoxyCodeLine{00141 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00142 \textcolor{comment}{//                transform.position = snapPos;}}
+\DoxyCodeLine{00143 \textcolor{comment}{//                targPos = snapPos + velocity * Time.fixedDeltaTime;}}
+\DoxyCodeLine{00144 \textcolor{comment}{//                transform.position = snapPos;}}
+\DoxyCodeLine{00145 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 \textcolor{comment}{//            localContactTrigger.Proxy = owner.ContactTrigger;}}
+\DoxyCodeLine{00148 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 \textcolor{comment}{//        public bool OnContactEvent(ref ContactEvent contactEvent)}}
+\DoxyCodeLine{00151 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00152 \textcolor{comment}{//            var contactType = contactEvent.contactType;}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154 \textcolor{comment}{//            if (triggerOn != 0 \&\& (triggerOn \& contactType) == 0)}}
+\DoxyCodeLine{00155 \textcolor{comment}{//                return false;}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157 \textcolor{comment}{//            if (ignoreOwner \&\& !ReferenceEquals(contactEvent.contactSystem, null) \&\& contactEvent.contactSystem.ViewID == owner.ViewID)}}
+\DoxyCodeLine{00158 \textcolor{comment}{//                return false;}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 \textcolor{comment}{//            OnHit(contactEvent);}}
+\DoxyCodeLine{00161 \textcolor{comment}{//            return true;}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{comment}{//        Vector3 snapPos, targPos;}}
+\DoxyCodeLine{00167 \textcolor{comment}{//        Quaternion snapRot, targRot;}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169 \textcolor{comment}{//        /// Pre Fixed}}
+\DoxyCodeLine{00170 \textcolor{comment}{//        public void OnPreSimulate(int frameId, int subFrameId)}}
+\DoxyCodeLine{00171 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00172 \textcolor{comment}{//            if (!useRbForces \&\& !useRb2dForces)}}
+\DoxyCodeLine{00173 \textcolor{comment}{//                SimulateTime(Time.fixedDeltaTime);}}
+\DoxyCodeLine{00174 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176 \textcolor{comment}{//        //public void InitialSimulate(float t)}}
+\DoxyCodeLine{00177 \textcolor{comment}{//        //\{}}
+\DoxyCodeLine{00178 \textcolor{comment}{//        //    if (useRbForces)}}
+\DoxyCodeLine{00179 \textcolor{comment}{//        //    \{}}
+\DoxyCodeLine{00180 \textcolor{comment}{//        //        rb.MovePosition(rb.position + rb.rotation * velocity * t);}}
+\DoxyCodeLine{00181 \textcolor{comment}{//        //        if (rb.useGravity)}}
+\DoxyCodeLine{00182 \textcolor{comment}{//        //            velocity += Physics.gravity * t;}}
+\DoxyCodeLine{00183 \textcolor{comment}{//        //    \}}}
+\DoxyCodeLine{00184 \textcolor{comment}{//        //    /// UNTESTED}}
+\DoxyCodeLine{00185 \textcolor{comment}{//        //    else if (useRb2dForces)}}
+\DoxyCodeLine{00186 \textcolor{comment}{//        //    \{}}
+\DoxyCodeLine{00187 \textcolor{comment}{//        //        rb2d.MovePosition(rb2d.position + (Vector2)transform.TransformVector(velocity));}}
+\DoxyCodeLine{00188 \textcolor{comment}{//        //        if (rb2d.gravityScale != 0)}}
+\DoxyCodeLine{00189 \textcolor{comment}{//        //            velocity += Physics.gravity * rb2d.gravityScale * t;}}
+\DoxyCodeLine{00190 \textcolor{comment}{//        //    \}}}
+\DoxyCodeLine{00191 \textcolor{comment}{//        //    else}}
+\DoxyCodeLine{00192 \textcolor{comment}{//        //    \{}}
+\DoxyCodeLine{00193 \textcolor{comment}{//        //        targ = snap + transform.rotation * velocity * t;}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195 \textcolor{comment}{//        //        velocity += Physics.gravity * t;}}
+\DoxyCodeLine{00196 \textcolor{comment}{//        //        Interpolate(0);}}
+\DoxyCodeLine{00197 \textcolor{comment}{//        //    \}}}
+\DoxyCodeLine{00198 \textcolor{comment}{//        //\}}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 \textcolor{comment}{//        public virtual void SimulateTime(float t)}}
+\DoxyCodeLine{00201 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00202 \textcolor{comment}{//            var oldtarget = targPos;}}
+\DoxyCodeLine{00203 \textcolor{comment}{//            targPos = oldtarget + velocity * t;}}
+\DoxyCodeLine{00204 \textcolor{comment}{//            snapPos = oldtarget;}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206 \textcolor{comment}{//            if (useRb2dForces)}}
+\DoxyCodeLine{00207 \textcolor{comment}{//                velocity += Physics.gravity * rb2d.gravityScale * t;}}
+\DoxyCodeLine{00208 \textcolor{comment}{//            else}}
+\DoxyCodeLine{00209 \textcolor{comment}{//                velocity += Physics.gravity * t;}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 \textcolor{comment}{//            Interpolate(0);}}
+\DoxyCodeLine{00212 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214 \textcolor{comment}{//        /// Interpolation}}
+\DoxyCodeLine{00215 \textcolor{comment}{//        public virtual void OnPreUpdate()}}
+\DoxyCodeLine{00216 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00217 \textcolor{comment}{//            if (!useRbForces \&\& !useRb2dForces)}}
+\DoxyCodeLine{00218 \textcolor{comment}{//                Interpolate(NetMaster.NormTimeSinceFixed);}}
+\DoxyCodeLine{00219 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221 \textcolor{comment}{//        protected void Interpolate(float t)}}
+\DoxyCodeLine{00222 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00223 \textcolor{comment}{//            transform.position = Vector3.Lerp(snapPos, targPos, t);}}
+\DoxyCodeLine{00224 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226 \textcolor{comment}{//        \#region Hit Triggers}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228 \textcolor{comment}{//        protected static List<NetObject> reusableNetObjects = new List<NetObject>();}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230 \textcolor{comment}{//        protected virtual void OnHit(ContactEvent contactEvent)}}
+\DoxyCodeLine{00231 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233 \textcolor{comment}{//            Debug.Log("{}OnHit"{});}}
+\DoxyCodeLine{00234 \textcolor{comment}{//            List<NetObject> netObjects = reusableNetObjects;}}
+\DoxyCodeLine{00235 \textcolor{comment}{//            /// Collect the nested parent NetObjs for correct self-\/hit testing. The first one returned is actual object that was hit.}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237 \textcolor{comment}{//            var other = contactEvent.contacter;}}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239 \textcolor{comment}{//\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00240 \textcolor{comment}{//            other.NetObj.transform.GetNestedComponentsInParents(netObjects);}}
+\DoxyCodeLine{00241 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00242 \textcolor{comment}{//            NetObject netObj = netObjects.Count == 0 ? null : netObjects[0];}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244 \textcolor{comment}{//            /// Hit was not NetOBj}}
+\DoxyCodeLine{00245 \textcolor{comment}{//            if (ReferenceEquals(netObj, null))}}
+\DoxyCodeLine{00246 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00247 \textcolor{comment}{//                bool terminateOnNonNetObj = (terminateOn \& RespondTo.HitNonNetObj) != 0;}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249 \textcolor{comment}{//                if (terminateOnNonNetObj)}}
+\DoxyCodeLine{00250 \textcolor{comment}{//                    Terminate();}}
+\DoxyCodeLine{00251 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00252 \textcolor{comment}{//            /// Hit was NetObj}}
+\DoxyCodeLine{00253 \textcolor{comment}{//            else}}
+\DoxyCodeLine{00254 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00255 \textcolor{comment}{//                int netObjId = netObj.ViewID;}}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257 \textcolor{comment}{//                /// Test all nested NetObjs for a match with self}}
+\DoxyCodeLine{00258 \textcolor{comment}{//                bool hitWasOwner = false;}}
+\DoxyCodeLine{00259 \textcolor{comment}{//                var ownerNetObj = owner.NetObj;}}
+\DoxyCodeLine{00260 \textcolor{comment}{//                foreach (var netobj in netObjects)}}
+\DoxyCodeLine{00261 \textcolor{comment}{//                    if (ReferenceEquals(netobj, ownerNetObj))}}
+\DoxyCodeLine{00262 \textcolor{comment}{//                    \{}}
+\DoxyCodeLine{00263 \textcolor{comment}{//                        hitWasOwner = true;}}
+\DoxyCodeLine{00264 \textcolor{comment}{//                        break;}}
+\DoxyCodeLine{00265 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267 \textcolor{comment}{//                /// Hit was self}}
+\DoxyCodeLine{00268 \textcolor{comment}{//                if (hitWasOwner)}}
+\DoxyCodeLine{00269 \textcolor{comment}{//                \{}}
+\DoxyCodeLine{00270 \textcolor{comment}{//                    if ((terminateOn \& RespondTo.HitSelf) != 0)}}
+\DoxyCodeLine{00271 \textcolor{comment}{//                    \{}}
+\DoxyCodeLine{00272 \textcolor{comment}{//                        Debug.LogError("{}Terminate On Self"{});}}
+\DoxyCodeLine{00273 \textcolor{comment}{//                        Terminate();}}
+\DoxyCodeLine{00274 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00276 \textcolor{comment}{//                    if ((damageOn \& RespondTo.HitSelf) == 0)}}
+\DoxyCodeLine{00277 \textcolor{comment}{//                        return;}}
+\DoxyCodeLine{00278 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280 \textcolor{comment}{//                /// TODO: this collider ID code is pretty hacked together. Need to decide if syncing the collider ID}}
+\DoxyCodeLine{00281 \textcolor{comment}{//                /// should even happen, and if so how colliders are determined for some events like triggers.}}
+\DoxyCodeLine{00282 \textcolor{comment}{//                bool isCollider = ((other is Collider) || (other is Collider2D));}}
+\DoxyCodeLine{00283 \textcolor{comment}{//                int colliderId = (isCollider) ? netObj.colliderLookup[other] : 0;}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285 \textcolor{comment}{//                /// Hit was NetObj}}
+\DoxyCodeLine{00286 \textcolor{comment}{//                var contactGroup = other.GetComponent<IContactGroupAssign>();}}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288 \textcolor{comment}{//                int mask = ReferenceEquals(contactGroup, null) ? 0 : contactGroup.Mask;}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290 \textcolor{comment}{//                ///// TEST}}
+\DoxyCodeLine{00291 \textcolor{comment}{//                //if (true)}}
+\DoxyCodeLine{00292 \textcolor{comment}{//                //\{}}
+\DoxyCodeLine{00293 \textcolor{comment}{//                //    localContactTrigger.Proxy.Trigger(contactEvent);}}
+\DoxyCodeLine{00294 \textcolor{comment}{//                //\}}}
+\DoxyCodeLine{00295 \textcolor{comment}{//                //else}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297 \textcolor{comment}{//                /// If this connection owns this launcher/projectile, log this hit}}
+\DoxyCodeLine{00298 \textcolor{comment}{//                owner.QueueHit(new NetworkHit(netObjId, mask, colliderId));}}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300 \textcolor{comment}{//                if ((terminateOn \& RespondTo.HitNetObj) != 0)}}
+\DoxyCodeLine{00301 \textcolor{comment}{//                    Terminate();}}
+\DoxyCodeLine{00302 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00303 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305 \textcolor{comment}{//        /// <summary>}}
+\DoxyCodeLine{00306 \textcolor{comment}{//        /// Override this and extend the base with your own projectile termination code, or place a component on this GameObject with IOnTerminate to define a response.}}
+\DoxyCodeLine{00307 \textcolor{comment}{//        /// </summary>}}
+\DoxyCodeLine{00308 \textcolor{comment}{//        protected virtual void Terminate()}}
+\DoxyCodeLine{00309 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00310 \textcolor{comment}{//            for (int i = 0, cnt = onTerminate.Count; i < cnt; ++i)}}
+\DoxyCodeLine{00311 \textcolor{comment}{//                onTerminate[i].OnTerminate();}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313 \textcolor{comment}{//            gameObject.SetActive(false);}}
+\DoxyCodeLine{00314 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316 \textcolor{comment}{//        \#endregion}}
+\DoxyCodeLine{00317 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319 \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321 \textcolor{comment}{//    [CustomEditor(typeof(Projectile), true)]}}
+\DoxyCodeLine{00322 \textcolor{comment}{//    [CanEditMultipleObjects]}}
+\DoxyCodeLine{00323 \textcolor{comment}{//    public class ProjectileEditor : ReactorHeaderEditor}}
+\DoxyCodeLine{00324 \textcolor{comment}{//    \{}}
+\DoxyCodeLine{00325 \textcolor{comment}{//        protected override string Instructions}}
+\DoxyCodeLine{00326 \textcolor{comment}{//        \{}}
+\DoxyCodeLine{00327 \textcolor{comment}{//            get}}
+\DoxyCodeLine{00328 \textcolor{comment}{//            \{}}
+\DoxyCodeLine{00329 \textcolor{comment}{//                return "{}Defines a projectile that can be used by "{} + typeof(SyncCannon).Name + "{}."{};}}
+\DoxyCodeLine{00330 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00331 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333 \textcolor{comment}{//        //protected override void OnInspectorGUIInjectMiddle()}}
+\DoxyCodeLine{00334 \textcolor{comment}{//        //\{}}
+\DoxyCodeLine{00335 \textcolor{comment}{//        //    base.OnInspectorGUIInjectMiddle();}}
+\DoxyCodeLine{00336 \textcolor{comment}{//        //    EditorGUILayout.LabelField("{}<b>OnTriggerEvent()</b>\(\backslash\)n\{\(\backslash\)n  Terminate()\(\backslash\)n  owner.QueueHit() \(\backslash\)n\}"{}, richBox);}}
+\DoxyCodeLine{00337 \textcolor{comment}{//        //\}}}
+\DoxyCodeLine{00338 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00339 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00340 \textcolor{comment}{//\}}}
+
+\end{DoxyCode}

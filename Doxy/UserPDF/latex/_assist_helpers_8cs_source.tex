@@ -1,0 +1,336 @@
+\doxysection{Assist\+Helpers.\+cs}
+\label{_assist_helpers_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/AssistHelpers.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/AssistHelpers.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple.Assists}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{enum} Dynamics \{ Static, Variable, Dynamic \}}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{enum} Space\_XD \{ SPACE\_3D, SPACE\_2D \}}
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{enum} SystemPresence \{ Absent, Incomplete, Partial, Nested, Complete \}}
+\DoxyCodeLine{00017     \textcolor{keyword}{public} \textcolor{keyword}{enum} Preset}
+\DoxyCodeLine{00018     \{}
+\DoxyCodeLine{00019         Defaults = 0,}
+\DoxyCodeLine{00020         HealthPickup,}
+\DoxyCodeLine{00021         RechargeZone,}
+\DoxyCodeLine{00022         DamageZone,}
+\DoxyCodeLine{00023         WeaponMelee,}
+\DoxyCodeLine{00024         WeaponCannon,}
+\DoxyCodeLine{00025         WeaponScan,}
+\DoxyCodeLine{00026         ContactScan,}
+\DoxyCodeLine{00027         VitalsScan,}
+\DoxyCodeLine{00028         InventorysScan,}
+\DoxyCodeLine{00029         Poke = 1 << 29,}
+\DoxyCodeLine{00030         Grab = 1 << 30,}
+\DoxyCodeLine{00031         Damaging = 1 << 31,}
+\DoxyCodeLine{00032     \}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     \textcolor{keyword}{public} \textcolor{keyword}{enum} AssistColor \{ Black, Red, Green, Blue, Cyan, Yellow, Magenta, Orange, LiteGray, DarkGray \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036     \textcolor{keyword}{public} delegate SystemPresence GetSystemPresenceDelegate(GameObject selection, params MonoBehaviour[] dependencies);}
+\DoxyCodeLine{00037     \textcolor{keyword}{public} delegate \textcolor{keywordtype}{void} SystemAddDelegate(GameObject selection, \textcolor{keywordtype}{bool} add, params MonoBehaviour[] dependencies);}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }AssistHelpers}
+\DoxyCodeLine{00040     \{}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} PRIORITY = -\/100;}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} CONVERTTO\_PRIORITY = -\/50;}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} TUTORIAL\_PRIORITY = 100;}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} SIMPLE\_MENU\_ROOT = \textcolor{stringliteral}{"{}GameObject/Simple/"{}};}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} TUTORIAL\_FOLDER = SIMPLE\_MENU\_ROOT + \textcolor{stringliteral}{"{}Tutorial/"{}};}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CONVERT\_TO\_FOLDER = SIMPLE\_MENU\_ROOT + \textcolor{stringliteral}{"{}Convert To/"{}};}
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ADD\_TO\_OBJ\_FOLDER = SIMPLE\_MENU\_ROOT + \textcolor{stringliteral}{"{}Add To Object/"{}};}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ADD\_TO\_SCENE\_TXT = SIMPLE\_MENU\_ROOT + \textcolor{stringliteral}{"{}Add To Scene/"{}};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00051         \textcolor{keyword}{static} AssistHelpers()}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             PopulateObjStateArrays();}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject GetSelectedGameObject()}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             GameObject selection = Selection.activeGameObject;}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (!selection)}
+\DoxyCodeLine{00060                 Debug.LogWarning(\textcolor{stringliteral}{"{}No gameobject selected, cannot Assist aborted."{}});}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{return} selection;}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject CreateEmptyChildGameObject(\textcolor{keyword}{this} Transform t, \textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             var go = \textcolor{keyword}{new} GameObject(name);}
+\DoxyCodeLine{00068             go.transform.parent = t;}
+\DoxyCodeLine{00069             go.transform.localPosition = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00070             go.transform.localRotation = \textcolor{keyword}{new} Quaternion(0, 0, 0, 1);}
+\DoxyCodeLine{00071             go.transform.localScale = \textcolor{keyword}{new} Vector3(1, 1, 1);}
+\DoxyCodeLine{00072             \textcolor{keywordflow}{return} go;}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keyword}{static} T EnsureComponentExists<T>(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} checkParents = \textcolor{keyword}{false}) where T : MonoBehaviour}
+\DoxyCodeLine{00076         \{}
+\DoxyCodeLine{00077             \textcolor{keywordflow}{if} (go == \textcolor{keyword}{null})}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             T found = checkParents ? go.GetComponentInParent<T>() : go.GetComponent<T>();}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (found)}
+\DoxyCodeLine{00083                 \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{keywordflow}{return} go.AddComponent<T>();}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureComponentOnNestedChildren<T>(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} allowMultiples, \textcolor{keywordtype}{bool} recurse = \textcolor{keyword}{false}) where T : Component}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < go.transform.childCount; ++i)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 var child = go.transform.GetChild(i);}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00095                 \textcolor{keywordflow}{if} (child.GetComponent<NetObject>())}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00099                 \textcolor{keywordflow}{if} (recurse \& child.childCount > 0)}
+\DoxyCodeLine{00100                     EnsureComponentOnNestedChildren<T>(child.gameObject, allowMultiples, recurse);}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{if} (!allowMultiples)}
+\DoxyCodeLine{00103                     \textcolor{keywordflow}{if} (child.GetComponent<T>())}
+\DoxyCodeLine{00104                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                 child.gameObject.AddComponent<T>();}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{static} List<Component> reusableComponents = \textcolor{keyword}{new} List<Component>();}
+\DoxyCodeLine{00111         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyComponentOnNestedChildren<T>(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} recurse = \textcolor{keyword}{false}) where T : Component}
+\DoxyCodeLine{00112         \{}
+\DoxyCodeLine{00113             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < go.transform.childCount; ++i)}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 var child = go.transform.GetChild(i);}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{if} (child.GetComponent<NetObject>())}
+\DoxyCodeLine{00118                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{if} (recurse \& child.childCount > 0)}
+\DoxyCodeLine{00122                     EnsureComponentOnNestedChildren<T>(child.gameObject, recurse);}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 child.GetComponents(reusableComponents);}
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} c = reusableComponents.Count -\/ 1; c >= 0; -\/-\/c)}
+\DoxyCodeLine{00126                     \textcolor{keywordflow}{if} (reusableComponents[c] is T)}
+\DoxyCodeLine{00127                         Object.DestroyImmediate(reusableComponents[c]);}
+\DoxyCodeLine{00128             \}}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keyword}{static} Component AddRigidbody(\textcolor{keyword}{this} GameObject go, Space\_XD space)}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (space == Space\_XD.SPACE\_3D)}
+\DoxyCodeLine{00134             \{}
+\DoxyCodeLine{00135                 var rb = go.GetComponent<Rigidbody>();}
+\DoxyCodeLine{00136                 \textcolor{keywordflow}{if} (!rb)}
+\DoxyCodeLine{00137                     rb = go.AddComponent<Rigidbody>();}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139                 rb.isKinematic = \textcolor{keyword}{true};}
+\DoxyCodeLine{00140                 rb.interpolation = RigidbodyInterpolation.Interpolate;}
+\DoxyCodeLine{00141                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143                 \textcolor{keywordflow}{return} rb;}
+\DoxyCodeLine{00144             \}}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 var rb = go.GetComponent<Rigidbody2D>();}
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{if} (!rb)}
+\DoxyCodeLine{00149                     rb = go.AddComponent<Rigidbody2D>();}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151                 rb.isKinematic = \textcolor{keyword}{true};}
+\DoxyCodeLine{00152                 rb.interpolation = RigidbodyInterpolation2D.Interpolate;}
+\DoxyCodeLine{00153                 rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;}
+\DoxyCodeLine{00154                 \textcolor{keywordflow}{return} rb;}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157         }
+\DoxyCodeLine{00158         \textcolor{keyword}{public} \textcolor{keyword}{enum} ColliderType \{ None, Trigger, Full \};}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject CreateNewPrimitiveAsChild(\textcolor{keyword}{this} GameObject go, PrimitiveType primitiveType, ColliderType coltype, }
+\DoxyCodeLine{00161             \textcolor{keywordtype}{string} name, \textcolor{keywordtype}{float} scale = 1, AssistColor color = AssistColor.Magenta, params System.Type[] components)}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             var prim = GameObject.CreatePrimitive(primitiveType);}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             \textcolor{keywordflow}{if} (primitiveType == PrimitiveType.Sphere)}
+\DoxyCodeLine{00166                 prim.transform.localScale = \textcolor{keyword}{new} Vector3(.5f, .5f, .5f) * scale;}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (primitiveType == PrimitiveType.Cube)}
+\DoxyCodeLine{00168                 prim.transform.localScale = \textcolor{keyword}{new} Vector3(.35f, .35f, .35f) * scale;}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (primitiveType == PrimitiveType.Capsule)}
+\DoxyCodeLine{00170                 prim.transform.localScale = \textcolor{keyword}{new} Vector3(.3f, .3f, .3f) * scale;}
+\DoxyCodeLine{00171             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (primitiveType == PrimitiveType.Cylinder)}
+\DoxyCodeLine{00172                 prim.transform.localScale = \textcolor{keyword}{new} Vector3(.51f, .1f, .51f) * scale;}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             prim.transform.parent = go.transform;}
+\DoxyCodeLine{00175             prim.transform.localPosition = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00176             prim.transform.localRotation = \textcolor{keyword}{new} Quaternion(0, 0, 0, 1);}
+\DoxyCodeLine{00177             prim.name = name;}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             \textcolor{keywordflow}{switch} (coltype)}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{case} ColliderType.None:}
+\DoxyCodeLine{00182                     \{}
+\DoxyCodeLine{00183                         Object.DestroyImmediate(prim.GetComponent<Collider>());}
+\DoxyCodeLine{00184                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00185                     \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{case} ColliderType.Trigger:}
+\DoxyCodeLine{00188                     \{}
+\DoxyCodeLine{00189                         prim.GetComponent<Collider>().isTrigger = \textcolor{keyword}{true};}
+\DoxyCodeLine{00190                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00191                     \}}
+\DoxyCodeLine{00192                 \textcolor{keywordflow}{case} ColliderType.Full:}
+\DoxyCodeLine{00193                     \{}
+\DoxyCodeLine{00194                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00195                     \}}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \textcolor{keywordflow}{foreach}(var c \textcolor{keywordflow}{in} components)}
+\DoxyCodeLine{00199             \{}
+\DoxyCodeLine{00200                 prim.AddComponent(c);}
+\DoxyCodeLine{00201             \}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             prim.GetComponent<Renderer>().material = GetMaterial(color);}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordflow}{return} prim;}
+\DoxyCodeLine{00206         \}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{keyword}{public} \textcolor{keyword}{static} List<string> itemStateEnumNames = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00209         \textcolor{keyword}{public} \textcolor{keyword}{static} List<ObjStateEditor> itemStateEnumValues = \textcolor{keyword}{new} List<ObjStateEditor>();}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} PopulateObjStateArrays()}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             var enumnames = System.Enum.GetNames(typeof(ObjStateEditor));}
+\DoxyCodeLine{00214             var enumvals = (ObjStateEditor[])System.Enum.GetValues(typeof(ObjStateEditor));}
+\DoxyCodeLine{00215             itemStateEnumNames.AddRange(enumnames);}
+\DoxyCodeLine{00216             itemStateEnumValues.AddRange(enumvals);}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             itemStateEnumNames.Add(\textcolor{stringliteral}{"{}Unmounted"{}});}
+\DoxyCodeLine{00219             itemStateEnumValues.Add((ObjStateEditor)(-\/1));}
+\DoxyCodeLine{00220         \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222   \textcolor{comment}{//      public static void CreateChildStatePlaceholders(this GameObject go, Space\_XD space, Dynamics dynamics, float scale = 1)}}
+\DoxyCodeLine{00223         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00224         \textcolor{comment}{//  /// Create a placeholder for each State enum value}}
+\DoxyCodeLine{00225         \textcolor{comment}{//  for (int i = 0; i < itemStateEnumValues.Count; ++i)}}
+\DoxyCodeLine{00226         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00227         \textcolor{comment}{//      go.AddStatePlaceholder(i, space, dynamics, scale);}}
+\DoxyCodeLine{00228         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00229         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CreateChildStatePlaceholders(\textcolor{keyword}{this} GameObject go, Space\_XD space, Dynamics dynamics, \textcolor{keywordtype}{float} scale = 1)}
+\DoxyCodeLine{00232         \{}
+\DoxyCodeLine{00233             }
+\DoxyCodeLine{00234             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Despawned"{}}, MaskLogic.Operator.EQUALS, 0, 0, ColliderType.None, PrimitiveType.Capsule, AssistColor.Black, space, dynamics, scale);}
+\DoxyCodeLine{00235             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Visible"{}}, MaskLogic.Operator.AND, ObjState.Visible, 0, ColliderType.None, PrimitiveType.Sphere, AssistColor.Cyan, space, dynamics, scale);}
+\DoxyCodeLine{00236             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Mounted"{}}, MaskLogic.Operator.AND, ObjState.Visible | ObjState.Mounted, 0, ColliderType.None, PrimitiveType.Cube, AssistColor.Magenta, space, dynamics, scale);}
+\DoxyCodeLine{00237             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Unmounted"{}}, MaskLogic.Operator.AND, ObjState.Visible | ObjState.Anchored, ObjState.Anchored, ColliderType.Trigger, PrimitiveType.Cylinder, AssistColor.Red, space, dynamics, scale);}
+\DoxyCodeLine{00238             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Attached"{}}, MaskLogic.Operator.AND, ObjState.Visible | ObjState.Anchored, 0, ColliderType.None, PrimitiveType.Capsule, AssistColor.Green, space, dynamics, scale);}
+\DoxyCodeLine{00239             go.AddStatePlaceholder(\textcolor{stringliteral}{"{}Transit"{}}, MaskLogic.Operator.AND, ObjState.Visible | ObjState.Transit, 0, ColliderType.Full, PrimitiveType.Cube, AssistColor.Yellow, space, dynamics, scale)}
+\DoxyCodeLine{00240                 .transform.rotation = Quaternion.Euler(45, 45, 45);}
+\DoxyCodeLine{00241         \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243         \textcolor{keyword}{public} \textcolor{keyword}{static} Material blackMat, cyanMat, magentaMat, greenMat, redMat, yellowMat, blueMat, orangeMat, liteGrayMat, darkGrayMat;}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245         }
+\DoxyCodeLine{00246         \textcolor{keyword}{private} \textcolor{keyword}{static} Material GetMaterial(AssistColor color)}
+\DoxyCodeLine{00247         \{}
+\DoxyCodeLine{00248             \textcolor{keyword}{const} \textcolor{keywordtype}{string} path = \textcolor{stringliteral}{"{}Assets/Photon/Simple/Example/Materials/Simple"{}};}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             \textcolor{keywordflow}{switch} (color)}
+\DoxyCodeLine{00251             \{}
+\DoxyCodeLine{00252                }
+\DoxyCodeLine{00253                 \textcolor{keywordflow}{case} AssistColor.Red:}
+\DoxyCodeLine{00254                     \textcolor{keywordflow}{if} (redMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00255                         redMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Red.mat"{}}) as Material;}
+\DoxyCodeLine{00256                     \textcolor{keywordflow}{return} redMat;}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                 \textcolor{keywordflow}{case} AssistColor.Green:}
+\DoxyCodeLine{00259                     \textcolor{keywordflow}{if} (greenMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00260                         greenMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Green.mat"{}}) as Material;}
+\DoxyCodeLine{00261                     \textcolor{keywordflow}{return} greenMat;}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263                 \textcolor{keywordflow}{case} AssistColor.Blue:}
+\DoxyCodeLine{00264                     \textcolor{keywordflow}{if} (blueMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00265                         blueMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Blue.mat"{}}) as Material;}
+\DoxyCodeLine{00266                     \textcolor{keywordflow}{return} greenMat;}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268                 \textcolor{keywordflow}{case} AssistColor.Cyan:}
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{if} (cyanMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00270                         cyanMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Cyan.mat"{}}) as Material;}
+\DoxyCodeLine{00271                     \textcolor{keywordflow}{return} cyanMat;}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273                 \textcolor{keywordflow}{case} AssistColor.Yellow:}
+\DoxyCodeLine{00274                     \textcolor{keywordflow}{if} (yellowMat)}
+\DoxyCodeLine{00275                         yellowMat= AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Yellow.mat"{}}) as Material;}
+\DoxyCodeLine{00276                     \textcolor{keywordflow}{return} yellowMat;}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278                 \textcolor{keywordflow}{case} AssistColor.Magenta:}
+\DoxyCodeLine{00279                     \textcolor{keywordflow}{if} (magentaMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00280                         magentaMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Magenta.mat"{}}) as Material;}
+\DoxyCodeLine{00281                     \textcolor{keywordflow}{return} magentaMat;}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                 \textcolor{keywordflow}{case} AssistColor.Black:}
+\DoxyCodeLine{00284                     \textcolor{keywordflow}{if} (blackMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00285                         blackMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Black.mat"{}}) as Material;}
+\DoxyCodeLine{00286                     \textcolor{keywordflow}{return} blackMat;}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288                 \textcolor{keywordflow}{case} AssistColor.Orange:}
+\DoxyCodeLine{00289                     \textcolor{keywordflow}{if} (orangeMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00290                         orangeMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Orange.mat"{}}) as Material;}
+\DoxyCodeLine{00291                     \textcolor{keywordflow}{return} orangeMat;}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                 \textcolor{keywordflow}{case} AssistColor.LiteGray:}
+\DoxyCodeLine{00294                     \textcolor{keywordflow}{if} (liteGrayMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00295                         liteGrayMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}LiteGray.mat"{}}) as Material;}
+\DoxyCodeLine{00296                     \textcolor{keywordflow}{return} liteGrayMat;}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{case} AssistColor.DarkGray:}
+\DoxyCodeLine{00299                     \textcolor{keywordflow}{if} (darkGrayMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00300                         darkGrayMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}DarkGray.mat"{}}) as Material;}
+\DoxyCodeLine{00301                     \textcolor{keywordflow}{return} darkGrayMat;}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00304                     \textcolor{keywordflow}{if} (magentaMat == \textcolor{keyword}{null})}
+\DoxyCodeLine{00305                         magentaMat = AssetDatabase.LoadAssetAtPath<Material>(path + \textcolor{stringliteral}{"{}Magenta.mat"{}}) as Material;}
+\DoxyCodeLine{00306                     \textcolor{keywordflow}{return} magentaMat;}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308         \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject AddStatePlaceholder(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{string} name, }
+\DoxyCodeLine{00312             ObjStateLogic.Operator op, ObjState mask, ObjState notmask, ColliderType colliderType, PrimitiveType primitiveType,}
+\DoxyCodeLine{00313             AssistColor color, Space\_XD space, Dynamics dynamics, \textcolor{keywordtype}{float} scale = 1)}
+\DoxyCodeLine{00314         \{}
+\DoxyCodeLine{00315             \textcolor{keywordtype}{string} label = name + \textcolor{stringliteral}{"{} Model"{}};}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             var visObj = \textcolor{keyword}{new} GameObject(label);}
+\DoxyCodeLine{00318             visObj.transform.parent = go.transform;}
+\DoxyCodeLine{00319             var toggle = visObj.AddComponent<OnStateChangeToggle>();}
+\DoxyCodeLine{00320            }
+\DoxyCodeLine{00321             toggle.stateLogic.notMask = (int)notmask;}
+\DoxyCodeLine{00322             toggle.stateLogic.operation = op;}
+\DoxyCodeLine{00323             toggle.stateLogic.stateMask = (int)mask;}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325             visObj.CreateNewPrimitiveAsChild(primitiveType, colliderType, label + \textcolor{stringliteral}{"{} Placeholder"{}}, scale, color);}
+\DoxyCodeLine{00326             \textcolor{keywordflow}{return} visObj;}
+\DoxyCodeLine{00327         \}}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329     \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331 \}}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

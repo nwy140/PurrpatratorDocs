@@ -1,0 +1,397 @@
+\doxysection{Photon\+View\+Inspector.\+cs}
+\label{_photon_view_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonViewInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/PhotonViewInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonViewInspector.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Custom inspector for the PhotonView component.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     [CustomEditor(typeof(PhotonView))]}
+\DoxyCodeLine{00020     [CanEditMultipleObjects]}
+\DoxyCodeLine{00021     \textcolor{keyword}{internal} \textcolor{keyword}{class }PhotonViewInspector : Editor}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023         \textcolor{keyword}{private} PhotonView m\_Target;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent ownerTransferGuiContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Ownership Transfer"{}}, \textcolor{stringliteral}{"{}Determines how ownership changes may be initiated."{}});}
+\DoxyCodeLine{00026         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent syncronizationGuiContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Synchronization"{}}, \textcolor{stringliteral}{"{}Determines how sync updates are culled and sent."{}});}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent observableSearchGuiContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Observable Search"{}}, \textcolor{stringliteral}{"{}When set to Auto, On Awake, Observables on this GameObject (and child GameObjects) will be found and populate the Observables List."{}} +}
+\DoxyCodeLine{00028                 \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)nNested PhotonViews (children with a PhotonView) and their children will not be included in the search."{}});}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             this.m\_Target = (PhotonView)this.target;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034             \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00035                 m\_Target.FindObservables();}
+\DoxyCodeLine{00036         \}}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             this.m\_Target = (PhotonView)this.target;}
+\DoxyCodeLine{00042             \textcolor{keywordtype}{bool} isProjectPrefab = PhotonEditorUtils.IsPrefab(this.m\_Target.gameObject);}
+\DoxyCodeLine{00043             \textcolor{keywordtype}{bool} multiSelected = Selection.gameObjects.Length > 1;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (this.m\_Target.ObservedComponents == \textcolor{keyword}{null})}
+\DoxyCodeLine{00046             \{}
+\DoxyCodeLine{00047                 this.m\_Target.ObservedComponents = \textcolor{keyword}{new} System.Collections.Generic.List<Component>();}
+\DoxyCodeLine{00048             \}}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             \textcolor{keywordflow}{if} (this.m\_Target.ObservedComponents.Count == 0)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 this.m\_Target.ObservedComponents.Add(\textcolor{keyword}{null});}
+\DoxyCodeLine{00053             \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055             GUILayout.Space(5);}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             EditorGUILayout.BeginVertical((GUIStyle)\textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00058             \textcolor{comment}{// View ID -\/ Hide if we are multi-\/selected}}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (!multiSelected)}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{if} (isProjectPrefab)}
+\DoxyCodeLine{00062                 \{}
+\DoxyCodeLine{00063                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}View ID"{}}, \textcolor{stringliteral}{"{}<i>Set at runtime</i>"{}}, \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}Label"{}}) \{ richText = \textcolor{keyword}{true} \});}
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (EditorApplication.isPlaying)}
+\DoxyCodeLine{00066                 \{}
+\DoxyCodeLine{00067                     EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}View ID"{}}, this.m\_Target.ViewID.ToString());}
+\DoxyCodeLine{00068                 \}}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00070                 \{}
+\DoxyCodeLine{00071                     \textcolor{comment}{// this is an object in a scene, modified at edit-\/time. we can store this as sceneViewId}}
+\DoxyCodeLine{00072                     \textcolor{keywordtype}{int} idValue = EditorGUILayout.IntField(\textcolor{stringliteral}{"{}View ID [1.."{}} + (PhotonNetwork.MAX\_VIEW\_IDS -\/ 1) + \textcolor{stringliteral}{"{}]"{}}, this.m\_Target.sceneViewId);}
+\DoxyCodeLine{00073                     \textcolor{keywordflow}{if} (this.m\_Target.sceneViewId != idValue)}
+\DoxyCodeLine{00074                     \{}
+\DoxyCodeLine{00075                         Undo.RecordObject(this.m\_Target, \textcolor{stringliteral}{"{}Change PhotonView viewID"{}});}
+\DoxyCodeLine{00076                         this.m\_Target.sceneViewId = idValue;}
+\DoxyCodeLine{00077                     \}}
+\DoxyCodeLine{00078                 \}}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             \textcolor{comment}{// Locally Controlled}}
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (EditorApplication.isPlaying)}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 \textcolor{keywordtype}{string} masterClientHint = PhotonNetwork.IsMasterClient ? \textcolor{stringliteral}{"{} (master)"{}} : \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00085                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}IsMine:"{}}, this.m\_Target.IsMine.ToString() + masterClientHint);}
+\DoxyCodeLine{00086                 Room room = PhotonNetwork.CurrentRoom;}
+\DoxyCodeLine{00087                 \textcolor{keywordtype}{int} cretrId = this.m\_Target.CreatorActorNr;}
+\DoxyCodeLine{00088                 Player cretr = (room != \textcolor{keyword}{null}) ? room.GetPlayer(cretrId) : \textcolor{keyword}{null};}
+\DoxyCodeLine{00089                 Player owner = this.m\_Target.Owner;}
+\DoxyCodeLine{00090                 Player ctrlr = this.m\_Target.Controller;}
+\DoxyCodeLine{00091                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Controller:"{}}, (ctrlr != \textcolor{keyword}{null} ? (\textcolor{stringliteral}{"{}["{}} + ctrlr.ActorNumber + \textcolor{stringliteral}{"{}] '"{}} + ctrlr.NickName + \textcolor{stringliteral}{"{}' "{}} + (ctrlr.IsMasterClient ? \textcolor{stringliteral}{"{} (master)"{}} : \textcolor{stringliteral}{"{}"{}})) : \textcolor{stringliteral}{"{}[0] <null>"{}}));}
+\DoxyCodeLine{00092                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Owner:"{}}, (owner != \textcolor{keyword}{null} ? (\textcolor{stringliteral}{"{}["{}} + owner.ActorNumber + \textcolor{stringliteral}{"{}] '"{}} + owner.NickName + \textcolor{stringliteral}{"{}' "{}} + (owner.IsMasterClient ? \textcolor{stringliteral}{"{} (master)"{}} : \textcolor{stringliteral}{"{}"{}})) : \textcolor{stringliteral}{"{}[0] <null>"{}}));}
+\DoxyCodeLine{00093                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Creator:"{}}, (cretr != \textcolor{keyword}{null} ? (\textcolor{stringliteral}{"{}["{}} +cretrId + \textcolor{stringliteral}{"{}] '"{}} + cretr.NickName + \textcolor{stringliteral}{"{}' "{}} + (cretr.IsMasterClient ? \textcolor{stringliteral}{"{} (master)"{}} : \textcolor{stringliteral}{"{}"{}})) : \textcolor{stringliteral}{"{}[0] <null>"{}}));}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             EditorGUI.BeginDisabledGroup(Application.isPlaying);}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             GUILayout.Space(5);}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             \textcolor{comment}{// Ownership section}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Ownership"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             OwnershipOption own = (OwnershipOption)EditorGUILayout.EnumPopup(ownerTransferGuiContent, \textcolor{keyword}{this}.m\_Target.OwnershipTransfer\textcolor{comment}{/*, GUILayout.MaxWidth(68), GUILayout.MinWidth(68)*/});}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (own != this.m\_Target.OwnershipTransfer)}
+\DoxyCodeLine{00109             \{}
+\DoxyCodeLine{00110                 \textcolor{comment}{// jf: fixed 5 and up prefab not accepting changes if you quit Unity straight after change.}}
+\DoxyCodeLine{00111                 \textcolor{comment}{// not touching the define nor the rest of the code to avoid bringing more problem than solving.}}
+\DoxyCodeLine{00112                 EditorUtility.SetDirty(this.m\_Target);}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114                 Undo.RecordObject(this.m\_Target, \textcolor{stringliteral}{"{}Change PhotonView Ownership Transfer"{}});}
+\DoxyCodeLine{00115                 this.m\_Target.OwnershipTransfer = own;}
+\DoxyCodeLine{00116             \}}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118             }
+\DoxyCodeLine{00119             GUILayout.Space(5);}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             \textcolor{comment}{// Observables section}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Observables"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}Synchronization"{}}), syncronizationGuiContent);}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             \textcolor{keywordflow}{if} (this.m\_Target.Synchronization == ViewSynchronization.Off)}
+\DoxyCodeLine{00128             \{}
+\DoxyCodeLine{00129                 \textcolor{comment}{// Show warning if there are any observables. The null check is because the list allows nulls.}}
+\DoxyCodeLine{00130                 var observed = m\_Target.ObservedComponents;}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{if} (observed.Count > 0)}
+\DoxyCodeLine{00132                 \{}
+\DoxyCodeLine{00133                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = observed.Count; i < cnt; ++i)}
+\DoxyCodeLine{00134                         \textcolor{keywordflow}{if} (observed[i] != \textcolor{keyword}{null})}
+\DoxyCodeLine{00135                         \{}
+\DoxyCodeLine{00136                             EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Synchronization is set to Off. Select a Synchronization setting in order to sync the listed Observables."{}}, MessageType.Warning);}
+\DoxyCodeLine{00137                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00138                         \}}
+\DoxyCodeLine{00139                 \}}
+\DoxyCodeLine{00140              \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             PhotonView.ObservableSearch autoFindObservables = (PhotonView.ObservableSearch)EditorGUILayout.EnumPopup(observableSearchGuiContent, m\_Target.observableSearch);}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (m\_Target.observableSearch != autoFindObservables)}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 Undo.RecordObject(this.m\_Target, \textcolor{stringliteral}{"{}Change Auto Find Observables Toggle"{}});}
+\DoxyCodeLine{00148                 m\_Target.observableSearch = autoFindObservables;}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             m\_Target.FindObservables();}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (!multiSelected)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 \textcolor{keywordtype}{bool} disableList = Application.isPlaying || autoFindObservables != PhotonView.ObservableSearch.Manual;}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{if} (disableList)}
+\DoxyCodeLine{00158                     EditorGUI.BeginDisabledGroup(\textcolor{keyword}{true});}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                 this.DrawObservedComponentsList(disableList);}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{if} (disableList)}
+\DoxyCodeLine{00163                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00164             \}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             \textcolor{comment}{// Cleanup: save and fix look}}
+\DoxyCodeLine{00167             \textcolor{keywordflow}{if} (GUI.changed)}
+\DoxyCodeLine{00168             \{}
+\DoxyCodeLine{00169                 PhotonViewHandler.OnHierarchyChanged(); \textcolor{comment}{// TODO: check if needed}}
+\DoxyCodeLine{00170             \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177         \textcolor{keyword}{private} \textcolor{keywordtype}{int} GetObservedComponentsCount()}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordtype}{int} count = 0;}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_Target.ObservedComponents.Count; ++i)}
+\DoxyCodeLine{00182             \{}
+\DoxyCodeLine{00183                 \textcolor{keywordflow}{if} (this.m\_Target.ObservedComponents[i] != \textcolor{keyword}{null})}
+\DoxyCodeLine{00184                 \{}
+\DoxyCodeLine{00185                     count++;}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187             \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189             \textcolor{keywordflow}{return} count;}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00195         \textcolor{keyword}{private} \textcolor{keywordtype}{void} EditorFindObservables()}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             Undo.RecordObject(serializedObject.targetObject, \textcolor{stringliteral}{"{}Find Observables"{}});}
+\DoxyCodeLine{00198             var \textcolor{keyword}{property} = serializedObject.FindProperty(\textcolor{stringliteral}{"{}ObservedComponents"{}});}
+\DoxyCodeLine{00199             }
+\DoxyCodeLine{00200             \textcolor{comment}{// Just doing a Find updates the Observables list, but Unity fails to save that change.}}
+\DoxyCodeLine{00201             \textcolor{comment}{// Instead we do the find, and then iterate the found objects into the serialize property, then apply that.}}
+\DoxyCodeLine{00202             \textcolor{keyword}{property}.ClearArray();}
+\DoxyCodeLine{00203             m\_Target.FindObservables(\textcolor{keyword}{true});}
+\DoxyCodeLine{00204             \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i <  m\_Target.ObservedComponents.Count; ++i)}
+\DoxyCodeLine{00205             \{}
+\DoxyCodeLine{00206                 \textcolor{keyword}{property}.InsertArrayElementAtIndex(i);}
+\DoxyCodeLine{00207                 \textcolor{keyword}{property}.GetArrayElementAtIndex(i).objectReferenceValue = m\_Target.ObservedComponents[i];}
+\DoxyCodeLine{00208             \}}
+\DoxyCodeLine{00209             serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawObservedComponentsList(\textcolor{keywordtype}{bool} disabled = \textcolor{keyword}{false})}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214             SerializedProperty listProperty = this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}ObservedComponents"{}});}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             \textcolor{keywordflow}{if} (listProperty == \textcolor{keyword}{null})}
+\DoxyCodeLine{00217             \{}
+\DoxyCodeLine{00218                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00219             \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{keywordtype}{float} containerElementHeight = 22;}
+\DoxyCodeLine{00222             \textcolor{keywordtype}{float} containerHeight = listProperty.arraySize * containerElementHeight;}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             \textcolor{keywordtype}{string} foldoutLabel = \textcolor{stringliteral}{"{}Observed Components ("{}} + this.GetObservedComponentsCount() + \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00225             \textcolor{keywordtype}{bool} isOpen = PhotonGUI.ContainerHeaderFoldout(foldoutLabel, this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}ObservedComponentsFoldoutOpen"{}}).boolValue, () => EditorFindObservables(), \textcolor{stringliteral}{"{}Find"{}});}
+\DoxyCodeLine{00226             this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}ObservedComponentsFoldoutOpen"{}}).boolValue = isOpen;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             \textcolor{keywordflow}{if} (isOpen == \textcolor{keyword}{false})}
+\DoxyCodeLine{00229             \{}
+\DoxyCodeLine{00230                 containerHeight = 0;}
+\DoxyCodeLine{00231             \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             \textcolor{comment}{//Texture2D statsIcon = AssetDatabase.LoadAssetAtPath( "{}Assets/Photon Unity Networking/Editor/PhotonNetwork/PhotonViewStats.png"{}, typeof( Texture2D ) ) as Texture2D;}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             Rect containerRect = PhotonGUI.ContainerBody(containerHeight);}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordtype}{bool} wasObservedComponentsEmpty = this.m\_Target.ObservedComponents.FindAll(item => item != \textcolor{keyword}{null}).Count == 0;}
+\DoxyCodeLine{00239             \textcolor{keywordflow}{if} (isOpen == \textcolor{keyword}{true})}
+\DoxyCodeLine{00240             \{}
+\DoxyCodeLine{00241                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < listProperty.arraySize; ++i)}
+\DoxyCodeLine{00242                 \{}
+\DoxyCodeLine{00243                     Rect elementRect = \textcolor{keyword}{new} Rect(containerRect.xMin, containerRect.yMin + containerElementHeight * i, containerRect.width, containerElementHeight);}
+\DoxyCodeLine{00244                     \{}
+\DoxyCodeLine{00245                         Rect texturePosition = \textcolor{keyword}{new} Rect(elementRect.xMin + 6, elementRect.yMin + elementRect.height / 2f -\/ 1, 9, 5);}
+\DoxyCodeLine{00246                         ReorderableListResources.DrawTexture(texturePosition, ReorderableListResources.texGrabHandle);}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248                         Rect propertyPosition = \textcolor{keyword}{new} Rect(elementRect.xMin + 20, elementRect.yMin + 3, elementRect.width -\/ 45, 16);}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250                         \textcolor{comment}{// keep track of old type to catch when a new type is observed}}
+\DoxyCodeLine{00251                         Type \_oldType = listProperty.GetArrayElementAtIndex(i).objectReferenceValue != \textcolor{keyword}{null} ? listProperty.GetArrayElementAtIndex(i).objectReferenceValue.GetType() : \textcolor{keyword}{null};}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253                         EditorGUI.PropertyField(propertyPosition, listProperty.GetArrayElementAtIndex(i), \textcolor{keyword}{new} GUIContent());}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255                         \textcolor{comment}{// new type, could be different from old type}}
+\DoxyCodeLine{00256                         Type \_newType = listProperty.GetArrayElementAtIndex(i).objectReferenceValue != \textcolor{keyword}{null} ? listProperty.GetArrayElementAtIndex(i).objectReferenceValue.GetType() : \textcolor{keyword}{null};}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258                         \textcolor{comment}{// the user dropped a Transform, we must change it by adding a PhotonTransformView and observe that instead}}
+\DoxyCodeLine{00259                         \textcolor{keywordflow}{if} (\_oldType != \_newType)}
+\DoxyCodeLine{00260                         \{}
+\DoxyCodeLine{00261                             \textcolor{keywordflow}{if} (\_newType == typeof(PhotonView))}
+\DoxyCodeLine{00262                             \{}
+\DoxyCodeLine{00263                                 listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \textcolor{keyword}{null};}
+\DoxyCodeLine{00264                                 Debug.LogError(\textcolor{stringliteral}{"{}PhotonView Detected you dropped a PhotonView, this is not allowed. \(\backslash\)n It's been removed from observed field."{}});}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266                             \}}
+\DoxyCodeLine{00267                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\_newType == typeof(Transform))}
+\DoxyCodeLine{00268                             \{}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270                                 \textcolor{comment}{// try to get an existing PhotonTransformView ( we don't want any duplicates...)}}
+\DoxyCodeLine{00271                                 PhotonTransformView \_ptv = this.m\_Target.gameObject.GetComponent<PhotonTransformView>();}
+\DoxyCodeLine{00272                                 \textcolor{keywordflow}{if} (\_ptv == \textcolor{keyword}{null})}
+\DoxyCodeLine{00273                                 \{}
+\DoxyCodeLine{00274                                     \textcolor{comment}{// no ptv yet, we create one and enable position and rotation, no scaling, as it's too rarely needed to take bandwidth for nothing}}
+\DoxyCodeLine{00275                                     \_ptv = Undo.AddComponent<PhotonTransformView>(this.m\_Target.gameObject);}
+\DoxyCodeLine{00276                                 \}}
+\DoxyCodeLine{00277                                 \textcolor{comment}{// switch observe from transform to \_ptv}}
+\DoxyCodeLine{00278                                 listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \_ptv;}
+\DoxyCodeLine{00279                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonView has detected you dropped a Transform. Instead it's better to observe a PhotonTransformView for better control and performances"{}});}
+\DoxyCodeLine{00280                             \}}
+\DoxyCodeLine{00281                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\_newType == typeof(Rigidbody))}
+\DoxyCodeLine{00282                             \{}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284                                 Rigidbody \_rb = listProperty.GetArrayElementAtIndex(i).objectReferenceValue as Rigidbody;}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286                                 \textcolor{comment}{// try to get an existing PhotonRigidbodyView ( we don't want any duplicates...)}}
+\DoxyCodeLine{00287                                 PhotonRigidbodyView \_prbv = \_rb.gameObject.GetComponent<PhotonRigidbodyView>();}
+\DoxyCodeLine{00288                                 \textcolor{keywordflow}{if} (\_prbv == \textcolor{keyword}{null})}
+\DoxyCodeLine{00289                                 \{}
+\DoxyCodeLine{00290                                     \textcolor{comment}{// no \_prbv yet, we create one}}
+\DoxyCodeLine{00291                                     \_prbv = Undo.AddComponent<PhotonRigidbodyView>(\_rb.gameObject);}
+\DoxyCodeLine{00292                                 \}}
+\DoxyCodeLine{00293                                 \textcolor{comment}{// switch observe from transform to \_prbv}}
+\DoxyCodeLine{00294                                 listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \_prbv;}
+\DoxyCodeLine{00295                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonView has detected you dropped a RigidBody. Instead it's better to observe a PhotonRigidbodyView for better control and performances"{}});}
+\DoxyCodeLine{00296                             \}}
+\DoxyCodeLine{00297                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\_newType == typeof(Rigidbody2D))}
+\DoxyCodeLine{00298                             \{}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300                                 \textcolor{comment}{// try to get an existing PhotonRigidbody2DView ( we don't want any duplicates...)}}
+\DoxyCodeLine{00301                                 PhotonRigidbody2DView \_prb2dv = this.m\_Target.gameObject.GetComponent<PhotonRigidbody2DView>();}
+\DoxyCodeLine{00302                                 \textcolor{keywordflow}{if} (\_prb2dv == \textcolor{keyword}{null})}
+\DoxyCodeLine{00303                                 \{}
+\DoxyCodeLine{00304                                     \textcolor{comment}{// no \_prb2dv yet, we create one}}
+\DoxyCodeLine{00305                                     \_prb2dv = Undo.AddComponent<PhotonRigidbody2DView>(this.m\_Target.gameObject);}
+\DoxyCodeLine{00306                                 \}}
+\DoxyCodeLine{00307                                 \textcolor{comment}{// switch observe from transform to \_prb2dv}}
+\DoxyCodeLine{00308                                 listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \_prb2dv;}
+\DoxyCodeLine{00309                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonView has detected you dropped a Rigidbody2D. Instead it's better to observe a PhotonRigidbody2DView for better control and performances"{}});}
+\DoxyCodeLine{00310                             \}}
+\DoxyCodeLine{00311                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\_newType == typeof(Animator))}
+\DoxyCodeLine{00312                             \{}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314                                 \textcolor{comment}{// try to get an existing PhotonAnimatorView ( we don't want any duplicates...)}}
+\DoxyCodeLine{00315                                 PhotonAnimatorView \_pav = this.m\_Target.gameObject.GetComponent<PhotonAnimatorView>();}
+\DoxyCodeLine{00316                                 \textcolor{keywordflow}{if} (\_pav == \textcolor{keyword}{null})}
+\DoxyCodeLine{00317                                 \{}
+\DoxyCodeLine{00318                                     \textcolor{comment}{// no \_pav yet, we create one}}
+\DoxyCodeLine{00319                                     \_pav = Undo.AddComponent<PhotonAnimatorView>(this.m\_Target.gameObject);}
+\DoxyCodeLine{00320                                 \}}
+\DoxyCodeLine{00321                                 \textcolor{comment}{// switch observe from transform to \_prb2dv}}
+\DoxyCodeLine{00322                                 listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \_pav;}
+\DoxyCodeLine{00323                                 Debug.Log(\textcolor{stringliteral}{"{}PhotonView has detected you dropped a Animator, so we switched to PhotonAnimatorView so that you can serialized the Animator variables"{}});}
+\DoxyCodeLine{00324                             \}}
+\DoxyCodeLine{00325                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (!typeof(IPunObservable).IsAssignableFrom(\_newType))}
+\DoxyCodeLine{00326                             \{}
+\DoxyCodeLine{00327                                 \textcolor{keywordtype}{bool} \_ignore = \textcolor{keyword}{false};}
+\DoxyCodeLine{00328 \textcolor{preprocessor}{\#if PLAYMAKER}}
+\DoxyCodeLine{00329                                 \_ignore = \_newType == typeof(PlayMakerFSM);\textcolor{comment}{// Photon Integration for PlayMaker will swap at runtime to a proxy using iPunObservable.}}
+\DoxyCodeLine{00330 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332                                 \textcolor{keywordflow}{if} (\_newType == \textcolor{keyword}{null} || \_newType == typeof(Rigidbody) || \_newType == typeof(Rigidbody2D))}
+\DoxyCodeLine{00333                                 \{}
+\DoxyCodeLine{00334                                     \_ignore = \textcolor{keyword}{true};}
+\DoxyCodeLine{00335                                 \}}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00337                                 \textcolor{keywordflow}{if} (!\_ignore)}
+\DoxyCodeLine{00338                                 \{}
+\DoxyCodeLine{00339                                     listProperty.GetArrayElementAtIndex(i).objectReferenceValue = \textcolor{keyword}{null};}
+\DoxyCodeLine{00340                                     Debug.LogError(\textcolor{stringliteral}{"{}PhotonView Detected you dropped a Component missing IPunObservable Interface,\(\backslash\)n You dropped a <"{}} + \_newType + \textcolor{stringliteral}{"{}> instead. It's been removed from observed field."{}});}
+\DoxyCodeLine{00341                                 \}}
+\DoxyCodeLine{00342                             \}}
+\DoxyCodeLine{00343                         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345                         \textcolor{comment}{//Debug.Log( listProperty.GetArrayElementAtIndex( i ).objectReferenceValue.GetType() );}}
+\DoxyCodeLine{00346                         \textcolor{comment}{//Rect statsPosition = new Rect( propertyPosition.xMax + 7, propertyPosition.yMin, statsIcon.width, statsIcon.height );}}
+\DoxyCodeLine{00347                         \textcolor{comment}{//ReorderableListResources.DrawTexture( statsPosition, statsIcon );}}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349                         Rect removeButtonRect = \textcolor{keyword}{new} Rect(elementRect.xMax -\/ PhotonGUI.DefaultRemoveButtonStyle.fixedWidth,}
+\DoxyCodeLine{00350                                                          elementRect.yMin + 2,}
+\DoxyCodeLine{00351                                                          PhotonGUI.DefaultRemoveButtonStyle.fixedWidth,}
+\DoxyCodeLine{00352                                                          PhotonGUI.DefaultRemoveButtonStyle.fixedHeight);}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354                         GUI.enabled = !disabled \&\& listProperty.arraySize > 1;}
+\DoxyCodeLine{00355                         \textcolor{keywordflow}{if} (GUI.Button(removeButtonRect, \textcolor{keyword}{new} GUIContent(ReorderableListResources.texRemoveButton), PhotonGUI.DefaultRemoveButtonStyle))}
+\DoxyCodeLine{00356                         \{}
+\DoxyCodeLine{00357                             listProperty.DeleteArrayElementAtIndex(i);}
+\DoxyCodeLine{00358                         \}}
+\DoxyCodeLine{00359                         GUI.enabled = !disabled;}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361                         \textcolor{keywordflow}{if} (i < listProperty.arraySize -\/ 1)}
+\DoxyCodeLine{00362                         \{}
+\DoxyCodeLine{00363                             texturePosition = \textcolor{keyword}{new} Rect(elementRect.xMin + 2, elementRect.yMax, elementRect.width -\/ 4, 1);}
+\DoxyCodeLine{00364                             PhotonGUI.DrawSplitter(texturePosition);}
+\DoxyCodeLine{00365                         \}}
+\DoxyCodeLine{00366                     \}}
+\DoxyCodeLine{00367                 \}}
+\DoxyCodeLine{00368             \}}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370             \textcolor{keywordflow}{if} (PhotonGUI.AddButton())}
+\DoxyCodeLine{00371             \{}
+\DoxyCodeLine{00372                 listProperty.InsertArrayElementAtIndex(Mathf.Max(0, listProperty.arraySize -\/ 1));}
+\DoxyCodeLine{00373             \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375             this.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377             \textcolor{keywordtype}{bool} isObservedComponentsEmpty = this.m\_Target.ObservedComponents.FindAll(item => item != \textcolor{keyword}{null}).Count == 0;}
+\DoxyCodeLine{00378 }
+\DoxyCodeLine{00379             \textcolor{keywordflow}{if} (wasObservedComponentsEmpty == \textcolor{keyword}{true} \&\& isObservedComponentsEmpty == \textcolor{keyword}{false} \&\& this.m\_Target.Synchronization == ViewSynchronization.Off)}
+\DoxyCodeLine{00380             \{}
+\DoxyCodeLine{00381                 Undo.RecordObject(this.m\_Target, \textcolor{stringliteral}{"{}Change PhotonView"{}});}
+\DoxyCodeLine{00382                 this.m\_Target.Synchronization = ViewSynchronization.UnreliableOnChange;}
+\DoxyCodeLine{00383                 this.serializedObject.Update();}
+\DoxyCodeLine{00384             \}}
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00386             \textcolor{keywordflow}{if} (wasObservedComponentsEmpty == \textcolor{keyword}{false} \&\& isObservedComponentsEmpty == \textcolor{keyword}{true})}
+\DoxyCodeLine{00387             \{}
+\DoxyCodeLine{00388                 Undo.RecordObject(this.m\_Target, \textcolor{stringliteral}{"{}Change PhotonView"{}});}
+\DoxyCodeLine{00389                 this.m\_Target.Synchronization = ViewSynchronization.Off;}
+\DoxyCodeLine{00390                 this.serializedObject.Update();}
+\DoxyCodeLine{00391             \}}
+\DoxyCodeLine{00392         \}}
+\DoxyCodeLine{00393     \}}
+\DoxyCodeLine{00394 \}}
+
+\end{DoxyCode}

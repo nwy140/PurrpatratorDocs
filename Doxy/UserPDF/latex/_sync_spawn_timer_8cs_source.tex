@@ -1,0 +1,459 @@
+\doxysection{Sync\+Spawn\+Timer.\+cs}
+\label{_sync_spawn_timer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncSpawnTimer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncState/SyncSpawnTimer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{interface }ISpawnController}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{comment}{//ObjState SupressStateMask \{ get; \}}}
+\DoxyCodeLine{00023         \textcolor{keywordtype}{bool} AllowNetObjectReadyCallback(\textcolor{keywordtype}{bool} ready);}
+\DoxyCodeLine{00024     \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00029     [DisallowMultipleComponent]}
+\DoxyCodeLine{00030     [RequireComponent(typeof(SyncState))]}
+\DoxyCodeLine{00031     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncSpawnTimer : SyncObject<SyncSpawnTimer.Frame>}
+\DoxyCodeLine{00032         , ISpawnController}
+\DoxyCodeLine{00033         , ISerializationOptional}
+\DoxyCodeLine{00034         , IOnNetSerialize}
+\DoxyCodeLine{00035         , IUseKeyframes}
+\DoxyCodeLine{00036         , IOnSnapshot}
+\DoxyCodeLine{00037         , IOnCaptureState}
+\DoxyCodeLine{00038         , IOnStateChange}
+\DoxyCodeLine{00039     \{}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} ApplyOrderConstants.STATE\_TIMER; \} \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         [HideInInspector] [SerializeField]}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{float} initialDelay = 0;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         [HideInInspector] [SerializeField] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} respawnEnable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00049         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))]}
+\DoxyCodeLine{00050         [HideInInspector] [SerializeField] \textcolor{keyword}{public} ObjState despawnOn = ObjState.Mounted;}
+\DoxyCodeLine{00051         [Tooltip(\textcolor{stringliteral}{"{}Number of seconds after respawn trigger before respawn occurs."{}})]}
+\DoxyCodeLine{00052         [HideInInspector] [SerializeField] \textcolor{keyword}{public} \textcolor{keywordtype}{float} despawnDelay = 5f;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         [HideInInspector] [SerializeField] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} despawnEnable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00056         [EnumMask(\textcolor{keyword}{true}, typeof(ObjStateEditor))]}
+\DoxyCodeLine{00057         [HideInInspector] [SerializeField] \textcolor{keyword}{public} ObjState respawnOn = ObjState.Despawned;}
+\DoxyCodeLine{00058         [Tooltip(\textcolor{stringliteral}{"{}Number of seconds after respawn trigger before respawn occurs."{}})]}
+\DoxyCodeLine{00059         [HideInInspector] [SerializeField] \textcolor{keyword}{public} \textcolor{keywordtype}{float} respawnDelay = 5f;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{comment}{//[EnumMask(true, typeof(ObjStateEditor))]}}
+\DoxyCodeLine{00062         \textcolor{comment}{//public ObjState suppressionMask = ObjState.Visible | ObjState.Dropped | ObjState.Transit;}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064 \textcolor{preprocessor}{        \#endregion Inspector}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{protected} SyncState syncState;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00069         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             base.Reset();}
+\DoxyCodeLine{00072             serializeThis = \textcolor{keyword}{false};}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{comment}{// Current state}}
+\DoxyCodeLine{00077         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} ticksUntilRespawn = -\/1;}
+\DoxyCodeLine{00078         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} ticksUntilDespawn = -\/1;}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{comment}{// Cached values}}
+\DoxyCodeLine{00081         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} spawnWaitAsTicks;}
+\DoxyCodeLine{00082         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} respawnWaitAsTicks;}
+\DoxyCodeLine{00083         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} despawnWaitAsTicks;}
+\DoxyCodeLine{00084         [System.NonSerialized] \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} hadInitialSpawn;}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} bitsForTicksUntilRespawn;}
+\DoxyCodeLine{00087         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} bitsForTicksUntilDespawn;}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090 \textcolor{preprocessor}{        \#region Frame}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             \textcolor{keyword}{public} \textcolor{keywordtype}{int} ticksUntilRespawn;}
+\DoxyCodeLine{00095             \textcolor{keyword}{public} \textcolor{keywordtype}{int} ticksUntilDespawn;}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             \textcolor{keyword}{public} Frame() : base() \{ \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             \textcolor{keyword}{public} Frame(\textcolor{keywordtype}{int} frameId) : base(frameId) \{ \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00102             \{}
+\DoxyCodeLine{00103                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00104                 Frame src = sourceFrame as Frame;}
+\DoxyCodeLine{00105                 ticksUntilRespawn = src.ticksUntilRespawn;}
+\DoxyCodeLine{00106                 ticksUntilDespawn = src.ticksUntilDespawn;}
+\DoxyCodeLine{00107             \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Compare(Frame otherFrame)}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 \textcolor{keywordflow}{return} }
+\DoxyCodeLine{00112                     ticksUntilRespawn == otherFrame.ticksUntilRespawn \&\&}
+\DoxyCodeLine{00113                     ticksUntilDespawn == otherFrame.ticksUntilDespawn;}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 \textcolor{preprocessor}{        \#endregion Frame}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{        \#region Startup}}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00122         \{}
+\DoxyCodeLine{00123             base.OnAwake();}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             \textcolor{keywordflow}{if} (netObj)}
+\DoxyCodeLine{00126                 syncState = netObj.GetComponent<SyncState>();}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             \textcolor{comment}{//if (respawnEnable)}}
+\DoxyCodeLine{00129             \textcolor{comment}{//    syncState.respawnState = ObjState.Despawned;}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             spawnWaitAsTicks = ConvertSecsToTicks(initialDelay);}
+\DoxyCodeLine{00132             respawnWaitAsTicks = ConvertSecsToTicks(respawnDelay);}
+\DoxyCodeLine{00133             despawnWaitAsTicks = ConvertSecsToTicks(despawnDelay);}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             bitsForTicksUntilRespawn = System.Math.Max(respawnWaitAsTicks, spawnWaitAsTicks).GetBitsForMaxValue();}
+\DoxyCodeLine{00136             bitsForTicksUntilDespawn = despawnWaitAsTicks.GetBitsForMaxValue();}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AllowNetObjectReadyCallback(\textcolor{keywordtype}{bool} ready)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{comment}{// Returning false indicates that the object normal response to a ready should not happen.}}
+\DoxyCodeLine{00149             \textcolor{keywordflow}{if} (ready \&\& spawnWaitAsTicks >= 0)}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00153         \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00156         \{}
+\DoxyCodeLine{00157             base.OnJoinedRoom();}
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 \textcolor{comment}{//supressStateMask = spawnWaitAsTicks < 0 ? \string~ObjState.Despawned : \string~suppressionMask; ;}}
+\DoxyCodeLine{00161                 ticksUntilRespawn = spawnWaitAsTicks;}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00164             \{}
+\DoxyCodeLine{00165                 \textcolor{comment}{//supressStateMask = \string~ObjState.Despawned;}}
+\DoxyCodeLine{00166                 ticksUntilRespawn = -\/1;}
+\DoxyCodeLine{00167             \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00171         \{}
+\DoxyCodeLine{00172             base.OnStart();}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             ticksUntilRespawn = spawnWaitAsTicks;}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176             \textcolor{comment}{//Debug.Log(name + "{} "{} + photonView.ControllerActorNr + "{} countdown: <b>"{} + ticksUntilRespawn + "{}</b> "{} + hadInitialSpawn);}}
+\DoxyCodeLine{00177         \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179 \textcolor{preprocessor}{        \#endregion Startup}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181         \textcolor{comment}{//protected ObjState prevState = ObjState.Despawned;}}
+\DoxyCodeLine{00185 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStateChange(ObjState newState, ObjState previousState, Transform attachmentTransform, Mount attachTo = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} isReady = \textcolor{keyword}{true})}
+\DoxyCodeLine{00186         \{}
+\DoxyCodeLine{00187             }
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (newState == previousState)}
+\DoxyCodeLine{00189                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191             \textcolor{comment}{//if (IsMine)}}
+\DoxyCodeLine{00192             \{}
+\DoxyCodeLine{00193                 \textcolor{keywordflow}{if} (\textcolor{comment}{/*hadInitialSpawn \&\& */}respawnEnable)}
+\DoxyCodeLine{00194                 \{}
+\DoxyCodeLine{00195                     \textcolor{keywordflow}{if} (newState == ObjState.Despawned)}
+\DoxyCodeLine{00196                     \{}
+\DoxyCodeLine{00197                         \textcolor{comment}{//Debug.Log(Time.time + "{} "{} + name + "{} "{} + photonView.OwnerActorNr + "{} <b>Despawned State Chage</b>"{});}}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199                         ticksUntilRespawn = respawnWaitAsTicks;}
+\DoxyCodeLine{00200                     \}}
+\DoxyCodeLine{00202                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((previousState \& respawnOn) == 0 \&\& (newState \& respawnOn) != 0)}
+\DoxyCodeLine{00203                     \{}
+\DoxyCodeLine{00204                         Debug.Log(Time.time + \textcolor{stringliteral}{"{} "{}} + name + \textcolor{stringliteral}{"{} "{}} + photonView.OwnerActorNr + \textcolor{stringliteral}{"{} <b>Reset </b> "{}} + previousState + \textcolor{stringliteral}{"{} <> "{}} + newState);}
+\DoxyCodeLine{00205                         ticksUntilRespawn = respawnWaitAsTicks;}
+\DoxyCodeLine{00206                     \}}
+\DoxyCodeLine{00207                 \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00210                 \{}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{if} ((previousState \& despawnOn) == 0 \&\& (newState \& despawnOn) != 0)}
+\DoxyCodeLine{00214                     \{}
+\DoxyCodeLine{00215                         ticksUntilDespawn = despawnWaitAsTicks;}
+\DoxyCodeLine{00216                     \}}
+\DoxyCodeLine{00217                 \}}
+\DoxyCodeLine{00218             \}}
+\DoxyCodeLine{00219             }
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{comment}{//prevState = state;}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225         \textcolor{comment}{//protected ObjState supressStateMask;}}
+\DoxyCodeLine{00226         \textcolor{comment}{//public ObjState SupressStateMask \{ get \{ return supressStateMask; \} \}}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00229         \{}
+\DoxyCodeLine{00230             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00231             \textcolor{comment}{//    Debug.LogError(name + "{} "{} + ticksUntilRespawn);}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             Frame frame = frames[frameId];}
+\DoxyCodeLine{00234             \textcolor{comment}{//Debug.Log(name + "{} "{} + photonView.ControllerActorNr + "{} countdown: <b>"{} + ticksUntilRespawn + "{}</b> "{} + hadInitialSpawn);}}
+\DoxyCodeLine{00236 \textcolor{comment}{}            \textcolor{keywordflow}{if} (!hadInitialSpawn || respawnEnable)}
+\DoxyCodeLine{00237             \{}
+\DoxyCodeLine{00238                 \textcolor{keywordflow}{if} (ticksUntilRespawn == 0)}
+\DoxyCodeLine{00239                 \{}
+\DoxyCodeLine{00240                     syncState.Respawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00241                     hadInitialSpawn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00242                 \}}
+\DoxyCodeLine{00243                 ticksUntilRespawn-\/-\/;}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245                 frame.ticksUntilRespawn = ticksUntilRespawn;}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{if} (ticksUntilDespawn == 0)}
+\DoxyCodeLine{00251                 \{}
+\DoxyCodeLine{00252                     syncState.Despawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00253                 \}}
+\DoxyCodeLine{00254                 ticksUntilDespawn-\/-\/;}
+\DoxyCodeLine{00255                 frame.ticksUntilDespawn = ticksUntilDespawn;}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keyword}{public} \textcolor{keyword}{virtual} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             }
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             Frame frame = frames[frameId];}
+\DoxyCodeLine{00268             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             \textcolor{keywordtype}{bool} iskeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             \textcolor{keywordflow}{if} (!iskeyframe)}
+\DoxyCodeLine{00273                 \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275             \textcolor{keywordflow}{if} (respawnEnable)}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00278                 \textcolor{keywordtype}{int} ticks = frame.ticksUntilRespawn;}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280                 \textcolor{keywordflow}{if} (ticks >= 0)}
+\DoxyCodeLine{00281                 \{}
+\DoxyCodeLine{00283                     buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00284                     buffer.Write((ulong)ticks, ref bitposition, bitsForTicksUntilRespawn);}
+\DoxyCodeLine{00285                     flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00286                 \}}
+\DoxyCodeLine{00287                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00288                 \{}
+\DoxyCodeLine{00290                     buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00291                 \}}
+\DoxyCodeLine{00292             \}}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294             \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00295             \{}
+\DoxyCodeLine{00297                 \textcolor{keywordtype}{int} ticks = frame.ticksUntilDespawn;}
+\DoxyCodeLine{00298                 \textcolor{keywordflow}{if} (ticks >= 0)}
+\DoxyCodeLine{00299                 \{}
+\DoxyCodeLine{00301                     buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00302                     buffer.Write((ulong)ticks, ref bitposition, bitsForTicksUntilDespawn);}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304                     flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00305                 \}}
+\DoxyCodeLine{00306                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00307                 \{}
+\DoxyCodeLine{00309                     buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00310                 \}}
+\DoxyCodeLine{00311             \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00314         \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival frameArrival)}
+\DoxyCodeLine{00317         \{}
+\DoxyCodeLine{00318            }
+\DoxyCodeLine{00319             Frame frame = frames[originFrameId];}
+\DoxyCodeLine{00320             SerializationFlags flags = SerializationFlags.None;}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             \textcolor{keywordtype}{bool} iskeyframe = IsKeyframe(originFrameId);}
+\DoxyCodeLine{00323             \textcolor{keywordflow}{if} (!iskeyframe)}
+\DoxyCodeLine{00324             \{}
+\DoxyCodeLine{00325                 frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00326                 \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00327             \}}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329             \textcolor{keywordflow}{if} (respawnEnable)}
+\DoxyCodeLine{00330             \{}
+\DoxyCodeLine{00332                 \textcolor{keywordflow}{if} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00333                 \{}
+\DoxyCodeLine{00334                     frame.ticksUntilRespawn = (int)buffer.Read(ref bitposition, bitsForTicksUntilRespawn);}
+\DoxyCodeLine{00335                     flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00336                 \}}
+\DoxyCodeLine{00337                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00338                     frame.ticksUntilRespawn = -\/1;}
+\DoxyCodeLine{00339             \}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341             \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00342             \{}
+\DoxyCodeLine{00343                 \textcolor{keywordflow}{if} (buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00344                 \{}
+\DoxyCodeLine{00345                     frame.ticksUntilDespawn = (int)buffer.Read(ref bitposition, bitsForTicksUntilDespawn);}
+\DoxyCodeLine{00346                     flags |= SerializationFlags.HasContent;}
+\DoxyCodeLine{00347                 \}}
+\DoxyCodeLine{00348                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00349                     frame.ticksUntilDespawn = -\/1;}
+\DoxyCodeLine{00350             \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352             frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00353             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00354         \}}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356 \textcolor{preprocessor}{        \#endregion Serialization}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ApplySnapshot(Frame snapframe, Frame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00359         \{}
+\DoxyCodeLine{00361             \textcolor{keywordflow}{if} (snapIsValid \&\& snapframe.content > FrameContents.Empty)}
+\DoxyCodeLine{00362             \{}
+\DoxyCodeLine{00363                 \textcolor{comment}{//Debug.Log("{}snap change  tr: "{} + snapFrame.ticksUntilRespawn + "{} td:"{} + snapFrame.ticksUntilDespawn);}}
+\DoxyCodeLine{00364                 \textcolor{keywordflow}{if} (respawnEnable)}
+\DoxyCodeLine{00365                     ticksUntilRespawn = snapframe.ticksUntilRespawn;}
+\DoxyCodeLine{00366                 \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00367                     ticksUntilDespawn = snapframe.ticksUntilDespawn;}
+\DoxyCodeLine{00368             \}}
+\DoxyCodeLine{00369             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00370             \{}
+\DoxyCodeLine{00371                 \textcolor{comment}{//Debug.Log("{}snap no change"{});}}
+\DoxyCodeLine{00372                 \textcolor{keywordflow}{if} (respawnEnable)}
+\DoxyCodeLine{00373                 \{}
+\DoxyCodeLine{00374                     ticksUntilRespawn-\/-\/;}
+\DoxyCodeLine{00375                     targframe.ticksUntilRespawn = ticksUntilRespawn;}
+\DoxyCodeLine{00376                 \}}
+\DoxyCodeLine{00377                 \textcolor{keywordflow}{if} (despawnEnable)}
+\DoxyCodeLine{00378                 \{}
+\DoxyCodeLine{00379                     ticksUntilDespawn-\/-\/;}
+\DoxyCodeLine{00380                     targframe.ticksUntilDespawn = ticksUntilDespawn;}
+\DoxyCodeLine{00381                 \}}
+\DoxyCodeLine{00382             \}}
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00384             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00385             \{}
+\DoxyCodeLine{00386                 \textcolor{keywordflow}{if} (respawnEnable \&\& ticksUntilRespawn == 0)}
+\DoxyCodeLine{00387                 \{}
+\DoxyCodeLine{00388                     syncState.Respawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00389                     \textcolor{comment}{//Debug.Log("{}snap change  tr: "{} + snapFrame.ticksUntilRespawn + "{} td:"{} + snapFrame.ticksUntilDespawn);}}
+\DoxyCodeLine{00390                 \}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392                 \textcolor{keywordflow}{if} (despawnEnable \&\& ticksUntilDespawn == 0)}
+\DoxyCodeLine{00393                 \{}
+\DoxyCodeLine{00394                     syncState.Despawn(\textcolor{keyword}{false});}
+\DoxyCodeLine{00395                     \textcolor{comment}{//Debug.Log("{}snap change  tr: "{} + ticksUntilRespawn + "{}:"{} + snapFrame.ticksUntilRespawn + "{} td: "{} + ticksUntilRespawn + "{} "{} + snapFrame.ticksUntilDespawn);}}
+\DoxyCodeLine{00396                 \}}
+\DoxyCodeLine{00397 }
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399         \}}
+\DoxyCodeLine{00400     \}}
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00402 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404     [CustomEditor(typeof(SyncSpawnTimer))]}
+\DoxyCodeLine{00405     [CanEditMultipleObjects]}
+\DoxyCodeLine{00406     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncSpawnTimerEditor : SyncObjectEditor}
+\DoxyCodeLine{00407     \{}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00411             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.SYNCCOMPS\_PATH + \textcolor{stringliteral}{"{}\#syncspawntimer\_component"{}}; \}}
+\DoxyCodeLine{00412         \}}
+\DoxyCodeLine{00413         }
+\DoxyCodeLine{00414         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} UseThinHeader \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00415 }
+\DoxyCodeLine{00416         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00417         \{}
+\DoxyCodeLine{00418             \textcolor{keyword}{get}}
+\DoxyCodeLine{00419             \{}
+\DoxyCodeLine{00420                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Responds to "{}} + typeof(IOnStateChange).Name + \textcolor{stringliteral}{"{} callbacks, and produces Spawn/Despawn calls to "{}} + typeof(SyncState).Name + \textcolor{stringliteral}{"{}."{}};}
+\DoxyCodeLine{00421             \}}
+\DoxyCodeLine{00422         \}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424         \textcolor{keyword}{protected} \textcolor{keyword}{const} \textcolor{keywordtype}{int} BOX\_PAD = 4;}
+\DoxyCodeLine{00425         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00426         \{}
+\DoxyCodeLine{00427             base.OnInspectorGUI();}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429             \textcolor{keywordflow}{if} (spawnBox == \textcolor{keyword}{null})}
+\DoxyCodeLine{00430                 spawnBox = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(BOX\_PAD, BOX\_PAD, BOX\_PAD, BOX\_PAD) \};}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00432             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00433 }
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00436             SerializedProperty initialDelay = serializedObject.FindProperty(\textcolor{stringliteral}{"{}initialDelay"{}});}
+\DoxyCodeLine{00437             EditorGUILayout.PropertyField(initialDelay, GUILayout.MinWidth(42));}
+\DoxyCodeLine{00438             EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Secs"{}}), GUILayout.Width(42));}
+\DoxyCodeLine{00439             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00440 }
+\DoxyCodeLine{00441             DrawBox(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Respawn Trigger"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}respawnEnable"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}respawnOn"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}respawnDelay"{}}));}
+\DoxyCodeLine{00442             DrawBox(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Despawn Trigger"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}despawnEnable"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}despawnOn"{}}), serializedObject.FindProperty(\textcolor{stringliteral}{"{}despawnDelay"{}}));}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00444             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00445                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00446         \}}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448         \textcolor{keyword}{protected} \textcolor{keyword}{static} GUIStyle spawnBox;}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DrawBox(GUIContent label, SerializedProperty enabled, SerializedProperty p, SerializedProperty delay)}
+\DoxyCodeLine{00451         \{}
+\DoxyCodeLine{00452             var lwidth = GUILayout.MaxWidth((EditorGUIUtility.labelWidth -\/ BOX\_PAD) -\/ 4);}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454             EditorGUILayout.BeginVertical(spawnBox);}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00457             EditorGUILayout.LabelField(label, lwidth);}
+\DoxyCodeLine{00458             EditorGUILayout.PropertyField(enabled, GUIContent.none, GUILayout.MinWidth(42));}
+\DoxyCodeLine{00459             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00460 }
+\DoxyCodeLine{00461             \textcolor{keywordflow}{if} (enabled.boolValue)}
+\DoxyCodeLine{00462             \{}
+\DoxyCodeLine{00463                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00464                 EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Trigger On"{}}, p.tooltip), lwidth);}
+\DoxyCodeLine{00465                 EditorGUILayout.PropertyField(p, GUIContent.none);}
+\DoxyCodeLine{00466                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00469                 EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Delay"{}}, delay.tooltip), lwidth);}
+\DoxyCodeLine{00470                 EditorGUILayout.PropertyField(delay, GUIContent.none, GUILayout.MinWidth(42));}
+\DoxyCodeLine{00471                 EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Secs"{}}), GUILayout.Width(42));}
+\DoxyCodeLine{00472                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00473             \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00476         \}}
+\DoxyCodeLine{00477 }
+\DoxyCodeLine{00478     \}}
+\DoxyCodeLine{00479 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00480 \}}
+
+\end{DoxyCode}

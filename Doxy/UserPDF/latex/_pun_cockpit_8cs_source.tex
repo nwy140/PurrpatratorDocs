@@ -1,0 +1,799 @@
+\doxysection{Pun\+Cockpit.\+cs}
+\label{_pun_cockpit_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/PunCockpit.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunCockpit/PunCockpit.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PunCockpit.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Pun Cockpit Demo}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{using} Photon.Pun.Demo.Cockpit.Forms;}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Pun.Demo.Shared;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00019 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{keyword}{namespace }Photon.Pun.Demo.Cockpit}
+\DoxyCodeLine{00022 \{}
+\DoxyCodeLine{00026     \textcolor{keyword}{public} \textcolor{keyword}{class }PunCockpit : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{static} PunCockpit Instance;}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} Embedded;}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} EmbeddedGameTitle = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} debug = \textcolor{keyword}{false};}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} Text Title;}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} Text StateText; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} Text UserIdText; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [Header(\textcolor{stringliteral}{"{}Demo Integration"{}})]}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} CanvasGroup MinimalCanvasGroup;}
+\DoxyCodeLine{00043         \textcolor{keyword}{public} CanvasGroup MaximalCanvasGroup;}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} GameObject MinimizeButton;}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} GameObject MinimalUIEmbeddHelp;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [Header(\textcolor{stringliteral}{"{}Connection UI"{}})]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} GameObject ConnectingLabel;}
+\DoxyCodeLine{00049         \textcolor{keyword}{public} GameObject ConnectionPanel;}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} GameObject AdvancedConnectionPanel;}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} Dropdown ConnectAsDropDown;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [Header(\textcolor{stringliteral}{"{}Common UI"{}})]}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} GameObject InfosPanel;}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} GameObject MinimalUiInfosPanel;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         [Header(\textcolor{stringliteral}{"{}Lobby UI"{}})]}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} GameObject LobbyPanel;}
+\DoxyCodeLine{00059         \textcolor{keyword}{public} Selectable JoinLobbyButton;}
+\DoxyCodeLine{00060         \textcolor{keyword}{public} RoomListView RoomListManager;}
+\DoxyCodeLine{00061         \textcolor{keyword}{public} FriendListView FriendListManager;}
+\DoxyCodeLine{00062         \textcolor{keyword}{public} GameObject RoomListMatchMakingForm;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         [Header(\textcolor{stringliteral}{"{}Game UI"{}})]}
+\DoxyCodeLine{00065         \textcolor{keyword}{public} GameObject GamePanel;}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} PlayerListView PlayerListManager;}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} PlayerDetailsController PlayerDetailsManager;}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} InputField RoomCustomPropertyInputfield;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         [Header(\textcolor{stringliteral}{"{}Photon Settings"{}})]}
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keywordtype}{string} GameVersionOverride = String.Empty;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00082         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ResetBestRegionCodeInPreferences = \textcolor{keyword}{false};}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         [Header(\textcolor{stringliteral}{"{}Room Options"{}})]}
+\DoxyCodeLine{00085         \textcolor{keyword}{public} \textcolor{keywordtype}{int} MaxPlayers = 4;}
+\DoxyCodeLine{00086         \textcolor{keyword}{public} \textcolor{keywordtype}{int} PlayerTtl = 0;}
+\DoxyCodeLine{00087         \textcolor{keyword}{public} \textcolor{keywordtype}{int} EmptyRoomTtl = 0;}
+\DoxyCodeLine{00088         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Plugins = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} PublishUserId = \textcolor{keyword}{true};}
+\DoxyCodeLine{00090         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsVisible = \textcolor{keyword}{true};}
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsOpen = \textcolor{keyword}{true};}
+\DoxyCodeLine{00092         \textcolor{comment}{//public bool CheckUserOnJoin = false;}}
+\DoxyCodeLine{00093         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CleanupCacheOnLeave = \textcolor{keyword}{true};}
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} DeleteNullProperties = \textcolor{keyword}{false};}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096         [Header(\textcolor{stringliteral}{"{}Room Options UI"{}})]}
+\DoxyCodeLine{00097         \textcolor{keyword}{public} IntInputField PlayerTtlField;}
+\DoxyCodeLine{00098         \textcolor{keyword}{public} IntInputField EmptyRoomTtlField;}
+\DoxyCodeLine{00099         \textcolor{keyword}{public} IntInputField MaxPlayersField;}
+\DoxyCodeLine{00100         \textcolor{keyword}{public} StringInputField PluginsField;}
+\DoxyCodeLine{00101         \textcolor{keyword}{public} BoolInputField PublishUserIdField;}
+\DoxyCodeLine{00102         \textcolor{keyword}{public} BoolInputField IsVisibleField;}
+\DoxyCodeLine{00103         \textcolor{keyword}{public} BoolInputField IsOpenField;}
+\DoxyCodeLine{00104         \textcolor{keyword}{public} BoolInputField CleanupCacheOnLeaveField;}
+\DoxyCodeLine{00105         \textcolor{comment}{//  public BoolInputField CheckUserOnJoinField;}}
+\DoxyCodeLine{00106         \textcolor{keyword}{public} BoolInputField DeleteNullPropertiesField;}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108         [Header(\textcolor{stringliteral}{"{}Friends Options"{}})]}
+\DoxyCodeLine{00109         \textcolor{keyword}{public} FriendListView.FriendDetail[] FriendsList =}
+\DoxyCodeLine{00110             \textcolor{keyword}{new} FriendListView.FriendDetail[]\{}
+\DoxyCodeLine{00111             \textcolor{keyword}{new} FriendListView.FriendDetail(\textcolor{stringliteral}{"{}Joe"{}},\textcolor{stringliteral}{"{}Joe"{}}),}
+\DoxyCodeLine{00112             \textcolor{keyword}{new} FriendListView.FriendDetail(\textcolor{stringliteral}{"{}Jane"{}},\textcolor{stringliteral}{"{}Jane"{}}),}
+\DoxyCodeLine{00113             \textcolor{keyword}{new} FriendListView.FriendDetail(\textcolor{stringliteral}{"{}Bob"{}},\textcolor{stringliteral}{"{}Bob"{}})}
+\DoxyCodeLine{00114             \};}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116         [Header(\textcolor{stringliteral}{"{}Modal window"{}})]}
+\DoxyCodeLine{00117         \textcolor{keyword}{public} CanvasGroup ModalWindow;}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{public} RegionListView RegionListView;}
+\DoxyCodeLine{00120         \textcolor{keyword}{public} Text RegionListLoadingFeedback;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00123         \{}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             Instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             \textcolor{comment}{// doc setup}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             DocLinks.Language = DocLinks.Languages.English;}
+\DoxyCodeLine{00130             DocLinks.Product = DocLinks.Products.Pun;}
+\DoxyCodeLine{00131             DocLinks.Version = DocLinks.Versions.V2;}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{comment}{//}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             ModalWindow.gameObject.SetActive (\textcolor{keyword}{false});}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             MaximalCanvasGroup.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             this.UserIdText.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00140             this.StateText.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00141             this.StateText.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00142             this.UserIdText.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00143             this.Title.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00146             this.LobbyPanel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00147             this.GamePanel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(UserId))}
+\DoxyCodeLine{00150             \{}
+\DoxyCodeLine{00151                 UserId = \textcolor{stringliteral}{"{}user"{}} + Environment.TickCount \% 99; \textcolor{comment}{//made-\/up username}}
+\DoxyCodeLine{00152             \}}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             PlayerTtlField.SetValue(this.PlayerTtl);}
+\DoxyCodeLine{00155             EmptyRoomTtlField.SetValue(this.EmptyRoomTtl);}
+\DoxyCodeLine{00156             MaxPlayersField.SetValue(this.MaxPlayers);}
+\DoxyCodeLine{00157             PluginsField.SetValue(this.Plugins);}
+\DoxyCodeLine{00158             PublishUserIdField.SetValue(this.PublishUserId);}
+\DoxyCodeLine{00159             IsVisibleField.SetValue(this.IsVisible);}
+\DoxyCodeLine{00160             IsOpenField.SetValue(this.IsOpen);}
+\DoxyCodeLine{00161             CleanupCacheOnLeaveField.SetValue(this.CleanupCacheOnLeave);}
+\DoxyCodeLine{00162             \textcolor{comment}{//CheckUserOnJoinField.SetValue (this.CheckUserOnJoin);}}
+\DoxyCodeLine{00163             DeleteNullPropertiesField.SetValue(this.DeleteNullProperties);}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{comment}{// prefill dropdown selection of users}}
+\DoxyCodeLine{00168             ConnectAsDropDown.ClearOptions();}
+\DoxyCodeLine{00169             ConnectAsDropDown.AddOptions(FriendsList.Select(x => x.NickName).ToList());}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             \textcolor{comment}{// check the current network status}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (PhotonNetwork.IsConnected)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 \textcolor{keywordflow}{if} (PhotonNetwork.Server == ServerConnection.GameServer)}
+\DoxyCodeLine{00177                 \{}
+\DoxyCodeLine{00178                     this.OnJoinedRoom ();}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180                 \}}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (PhotonNetwork.Server == ServerConnection.MasterServer || PhotonNetwork.Server == ServerConnection.NameServer)}
+\DoxyCodeLine{00182                 \{}
+\DoxyCodeLine{00183             }
+\DoxyCodeLine{00184                     \textcolor{keywordflow}{if} (PhotonNetwork.InLobby)}
+\DoxyCodeLine{00185                     \{}
+\DoxyCodeLine{00186                         this.OnJoinedLobby ();}
+\DoxyCodeLine{00187                     \}}
+\DoxyCodeLine{00188                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00189                     \{}
+\DoxyCodeLine{00190                         this.OnConnectedToMaster ();}
+\DoxyCodeLine{00191                     \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                 \}}
+\DoxyCodeLine{00194             \}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00195             \{}
+\DoxyCodeLine{00196                 this.SwitchToSimpleConnection();}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198                 \textcolor{keywordflow}{if} (!Embedded)}
+\DoxyCodeLine{00199                 \{}
+\DoxyCodeLine{00200                     MinimizeButton.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00201                     SwitchtoMaximalPanel();}
+\DoxyCodeLine{00202                 \}}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00204                 \{}
+\DoxyCodeLine{00205                     this.Title.text = EmbeddedGameTitle;}
+\DoxyCodeLine{00206                     SwitchtoMinimalPanel();}
+\DoxyCodeLine{00207                 \}}
+\DoxyCodeLine{00208             \}}
+\DoxyCodeLine{00209         \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SwitchtoMinimalPanel()}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             MinimalCanvasGroup.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00214             MaximalCanvasGroup.alpha = 0f;}
+\DoxyCodeLine{00215             MaximalCanvasGroup.blocksRaycasts = \textcolor{keyword}{false};}
+\DoxyCodeLine{00216             MaximalCanvasGroup.interactable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SwitchtoMaximalPanel()}
+\DoxyCodeLine{00220         \{}
+\DoxyCodeLine{00221             MinimalUIEmbeddHelp.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00222             MinimalCanvasGroup.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             MaximalCanvasGroup.alpha = 1f;}
+\DoxyCodeLine{00225             MaximalCanvasGroup.blocksRaycasts = \textcolor{keyword}{true};}
+\DoxyCodeLine{00226             MaximalCanvasGroup.interactable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SwitchToAdvancedConnection()}
+\DoxyCodeLine{00230         \{}
+\DoxyCodeLine{00231             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00232             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00233         \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SwitchToSimpleConnection()}
+\DoxyCodeLine{00236         \{}
+\DoxyCodeLine{00237             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00238             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00239         \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ToggleInfosInMinimalPanel()}
+\DoxyCodeLine{00242         \{}
+\DoxyCodeLine{00243             MinimalUiInfosPanel.SetActive(!MinimalUiInfosPanel.activeSelf);}
+\DoxyCodeLine{00244         \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RequestInfosPanel(GameObject Parent)}
+\DoxyCodeLine{00247         \{}
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (Parent != \textcolor{keyword}{null})}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 InfosPanel.transform.SetParent(Parent.transform, \textcolor{keyword}{false});}
+\DoxyCodeLine{00251             \}}
+\DoxyCodeLine{00252         \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnUserIdSubmited(\textcolor{keywordtype}{string} userId)}
+\DoxyCodeLine{00255         \{}
+\DoxyCodeLine{00256             this.UserId = userId;}
+\DoxyCodeLine{00257             this.Connect();}
+\DoxyCodeLine{00258         \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetPlayerTtlRoomOption(\textcolor{keywordtype}{int} value)}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             this.PlayerTtl = value;}
+\DoxyCodeLine{00263             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:PlayerTtl = "{}} + this.PlayerTtl);}
+\DoxyCodeLine{00264         \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetEmptyRoomTtlRoomOption(\textcolor{keywordtype}{int} value)}
+\DoxyCodeLine{00267         \{}
+\DoxyCodeLine{00268             this.EmptyRoomTtl = value;}
+\DoxyCodeLine{00269             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:EmptyRoomTtl = "{}} + this.EmptyRoomTtl);}
+\DoxyCodeLine{00270         \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetMaxPlayersRoomOption(\textcolor{keywordtype}{int} value)}
+\DoxyCodeLine{00273         \{}
+\DoxyCodeLine{00274             this.MaxPlayers = value;}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:MaxPlayers = "{}} + this.MaxPlayers);}
+\DoxyCodeLine{00276         \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetPluginsRoomOption(\textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{00279         \{}
+\DoxyCodeLine{00280             this.Plugins = value;}
+\DoxyCodeLine{00281             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:Plugins = "{}} + this.Plugins);}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetPublishUserId(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00285         \{}
+\DoxyCodeLine{00286             this.PublishUserId = value;}
+\DoxyCodeLine{00287             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:PublishUserId = "{}} + this.PublishUserId);}
+\DoxyCodeLine{00288         \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetIsVisible(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00291         \{}
+\DoxyCodeLine{00292             this.IsVisible = value;}
+\DoxyCodeLine{00293             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:IsVisible = "{}} + this.IsVisible);}
+\DoxyCodeLine{00294         \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetIsOpen(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00297         \{}
+\DoxyCodeLine{00298             this.IsOpen = value;}
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:IsOpen = "{}} + this.IsOpen);}
+\DoxyCodeLine{00300         \}}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302         \textcolor{comment}{//  public void SetCheckUserOnJoin(bool value)}}
+\DoxyCodeLine{00303         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00304         \textcolor{comment}{//      this.CheckUserOnJoin = value;}}
+\DoxyCodeLine{00305         \textcolor{comment}{//      Debug.Log ("{}CheckUserOnJoin = "{} + this.CheckUserOnJoin);}}
+\DoxyCodeLine{00306         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetResetBestRegionCodeInPreferences(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00309         \{}
+\DoxyCodeLine{00310             this.ResetBestRegionCodeInPreferences = value;}
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:ResetBestRegionCodeInPreferences = "{}} + this.ResetBestRegionCodeInPreferences);}
+\DoxyCodeLine{00312         \}}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetCleanupCacheOnLeave(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00315         \{}
+\DoxyCodeLine{00316             this.CleanupCacheOnLeave = value;}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:CleanupCacheOnLeave = "{}} + this.CleanupCacheOnLeave);}
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetDeleteNullProperties(\textcolor{keywordtype}{bool} value)}
+\DoxyCodeLine{00321         \{}
+\DoxyCodeLine{00322             this.DeleteNullProperties = value;}
+\DoxyCodeLine{00323             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:DeleteNullProperties = "{}} + this.DeleteNullProperties);}
+\DoxyCodeLine{00324         \}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326         LoadBalancingClient \_lbc;}
+\DoxyCodeLine{00327         \textcolor{keywordtype}{bool} \_regionPingProcessActive;}
+\DoxyCodeLine{00328         List<Region> RegionsList;}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00333         \textcolor{keyword}{public} \textcolor{keywordtype}{void} PingRegions()}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             ModalWindow.gameObject.SetActive (\textcolor{keyword}{true});}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00337             RegionListLoadingFeedback.text = \textcolor{stringliteral}{"{}Connecting to NameServer..."{}};}
+\DoxyCodeLine{00338             \_regionPingProcessActive = \textcolor{keyword}{true};}
+\DoxyCodeLine{00339             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:PingRegions:ConnectToNameServer"{}});}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00342             \_lbc = \textcolor{keyword}{new} LoadBalancingClient();}
+\DoxyCodeLine{00343             }
+\DoxyCodeLine{00344             \_lbc.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347             \_lbc.StateChanged += OnStateChanged;}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349             \_lbc.AppId = PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime;}
+\DoxyCodeLine{00350             \_lbc.ConnectToNameServer ();}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352         \}}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354         \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00356             \textcolor{keywordflow}{if} (\_lbc!=\textcolor{keyword}{null}) \_lbc.Service();}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358             \textcolor{keywordflow}{if} (RegionsList !=\textcolor{keyword}{null})}
+\DoxyCodeLine{00359             \{}
+\DoxyCodeLine{00360                 \textcolor{keywordflow}{if} (this.ModalWindow.gameObject.activeInHierarchy) \{}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362                     \textcolor{keywordflow}{if} (PunCockpit.Instance.debug)   Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnRegionsPinged"{}});}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364                     this.RegionListView.OnRegionListUpdate (RegionsList);}
+\DoxyCodeLine{00365                 \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00367                 \_lbc = \textcolor{keyword}{null};}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00369                 RegionListLoadingFeedback.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371                 RegionsList = \textcolor{keyword}{null};}
+\DoxyCodeLine{00372             \}}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376         \textcolor{keywordtype}{void} OnStateChanged(ClientState previousState, ClientState state)}
+\DoxyCodeLine{00377         \{}
+\DoxyCodeLine{00378             \textcolor{keywordflow}{if} (state == ClientState.ConnectedToNameServer) \{}
+\DoxyCodeLine{00379                 \_lbc.StateChanged -\/= this.OnStateChanged;}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381                 \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnStateChanged: ClientState.ConnectedToNameServer. Waiting for OnRegionListReceived callback."{}});}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383                 RegionListLoadingFeedback.text = \textcolor{stringliteral}{"{}Waiting for application Region List..."{}};}
+\DoxyCodeLine{00384             \}}
+\DoxyCodeLine{00385         \}}
+\DoxyCodeLine{00386 }
+\DoxyCodeLine{00387         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRegionListReceived(RegionHandler regionHandler)}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             \textcolor{keywordflow}{if} (PunCockpit.Instance.debug)}
+\DoxyCodeLine{00390                 Debug.Log (\textcolor{stringliteral}{"{}PunCockpit:OnRegionListReceived: "{}} + regionHandler);}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392             \textcolor{keywordflow}{if} (\_regionPingProcessActive)}
+\DoxyCodeLine{00393             \{}
+\DoxyCodeLine{00394                 RegionListLoadingFeedback.text = \textcolor{stringliteral}{"{}Pinging Regions..."{}};}
+\DoxyCodeLine{00395                 \_regionPingProcessActive = \textcolor{keyword}{false};}
+\DoxyCodeLine{00396                 regionHandler.PingMinimumOfRegions (OnRegionsPinged, \textcolor{keyword}{null});}
+\DoxyCodeLine{00397             \}}
+\DoxyCodeLine{00398         \}}
+\DoxyCodeLine{00399         }
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnRegionsPinged(RegionHandler regionHandler)}
+\DoxyCodeLine{00402         \{}
+\DoxyCodeLine{00403                 RegionsList = regionHandler.EnabledRegions.OrderBy(x=>x.Ping).ToList();}
+\DoxyCodeLine{00404                 \textcolor{comment}{// will check this on Update() to get back to the main thread.}}
+\DoxyCodeLine{00405 }
+\DoxyCodeLine{00406         \}}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CloseRegionListView()}
+\DoxyCodeLine{00409         \{}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411             RegionsList = \textcolor{keyword}{null};}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413             \textcolor{keywordflow}{if} (\_lbc != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00414                 \_lbc.Disconnect ();}
+\DoxyCodeLine{00415                 \_lbc = \textcolor{keyword}{null};}
+\DoxyCodeLine{00416             \}}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418             \_regionPingProcessActive = \textcolor{keyword}{false};}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420             this.RegionListView.ResetList ();}
+\DoxyCodeLine{00421             this.ModalWindow.gameObject.SetActive (\textcolor{keyword}{false});}
+\DoxyCodeLine{00422         \}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LoadLevel(\textcolor{keywordtype}{string} level)}
+\DoxyCodeLine{00425         \{}
+\DoxyCodeLine{00426             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:LoadLevel("{}} +level+\textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00427             PhotonNetwork.LoadLevel(level);}
+\DoxyCodeLine{00428         \}}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetRoomCustomProperty(\textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{00431         \{}
+\DoxyCodeLine{00432             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:SetRoomCustomProperty() c0 = "{}} + value);}
+\DoxyCodeLine{00433             PhotonNetwork.CurrentRoom.SetCustomProperties(\textcolor{keyword}{new} Hashtable() \{ \{ \textcolor{stringliteral}{"{}C0"{}}, value \} \});}
+\DoxyCodeLine{00434         \}}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436         \textcolor{keyword}{private} \textcolor{keywordtype}{string} roomNameToEnter;}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438         \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinRoom(\textcolor{keywordtype}{string} roomName)}
+\DoxyCodeLine{00439         \{}
+\DoxyCodeLine{00440             this.RoomListManager.ResetList();}
+\DoxyCodeLine{00441             this.LobbyPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00442             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00443             this.roomNameToEnter = roomName;}
+\DoxyCodeLine{00444             PhotonNetwork.JoinRoom(roomName);}
+\DoxyCodeLine{00445         \}}
+\DoxyCodeLine{00446 }
+\DoxyCodeLine{00447         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CreateRoom()}
+\DoxyCodeLine{00448         \{}
+\DoxyCodeLine{00449             this.CreateRoom(\textcolor{keyword}{null}, \textcolor{keyword}{null}, LobbyType.Default);}
+\DoxyCodeLine{00450         \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CreateRoom(\textcolor{keywordtype}{string} roomName, \textcolor{keywordtype}{string} lobbyName = \textcolor{stringliteral}{"{}MyLobby"{}}, LobbyType lobbyType = LobbyType.SqlLobby, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{00453         \{}
+\DoxyCodeLine{00454             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:CreateRoom roomName:"{}} + roomName + \textcolor{stringliteral}{"{} lobbyName:"{}} + lobbyName + \textcolor{stringliteral}{"{} lobbyType:"{}} + lobbyType + \textcolor{stringliteral}{"{} expectedUsers:"{}} + (expectedUsers == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}null"{}} : expectedUsers.ToStringFull()));}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456             this.RoomListManager.ResetList();}
+\DoxyCodeLine{00457             this.LobbyPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00458             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460             RoomOptions \_roomOptions = this.GetRoomOptions();}
+\DoxyCodeLine{00461             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:Room options  <"{}} + \_roomOptions + \textcolor{stringliteral}{"{}>"{}});}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463             TypedLobby sqlLobby = \textcolor{keyword}{new} TypedLobby(lobbyName, lobbyType);}
+\DoxyCodeLine{00464             \textcolor{keywordtype}{bool} \_result = PhotonNetwork.CreateRoom(roomName, \_roomOptions, sqlLobby, expectedUsers);}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:CreateRoom() -\/> "{}} + \_result);}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468         \}}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470         \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinRandomRoom()}
+\DoxyCodeLine{00471         \{}
+\DoxyCodeLine{00472             PhotonNetwork.JoinRandomRoom();}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LeaveRoom()}
+\DoxyCodeLine{00476         \{}
+\DoxyCodeLine{00477             PlayerListManager.ResetList();}
+\DoxyCodeLine{00478             this.GamePanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00479             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00480 }
+\DoxyCodeLine{00481             PhotonNetwork.LeaveRoom();}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00483         \}}
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00485         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Connect()}
+\DoxyCodeLine{00486         \{}
+\DoxyCodeLine{00487             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00488             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490             PhotonNetwork.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00491             PhotonNetwork.AuthValues.UserId = this.UserId;}
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00494 }
+\DoxyCodeLine{00495             PhotonNetwork.ConnectUsingSettings();}
+\DoxyCodeLine{00496             \textcolor{comment}{//if (GameVersionOverride != string.Empty) \{}}
+\DoxyCodeLine{00497         \textcolor{comment}{//      PhotonNetwork.GameVersion = "{}28"{}; // GameVersionOverride;}}
+\DoxyCodeLine{00498         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00499         \}}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReConnect()}
+\DoxyCodeLine{00502         \{}
+\DoxyCodeLine{00503             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00504             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506             PhotonNetwork.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00507             PhotonNetwork.AuthValues.UserId = this.UserId;}
+\DoxyCodeLine{00508 }
+\DoxyCodeLine{00509             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             PhotonNetwork.Reconnect();}
+\DoxyCodeLine{00512         \}}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00514         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ReconnectAndRejoin()}
+\DoxyCodeLine{00515         \{}
+\DoxyCodeLine{00516             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00517             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519             PhotonNetwork.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00520             PhotonNetwork.AuthValues.UserId = this.UserId;}
+\DoxyCodeLine{00521 }
+\DoxyCodeLine{00522             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524             PhotonNetwork.ReconnectAndRejoin();}
+\DoxyCodeLine{00525         \}}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527 }
+\DoxyCodeLine{00528         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ConnectToBestCloudServer()}
+\DoxyCodeLine{00529         \{}
+\DoxyCodeLine{00530 }
+\DoxyCodeLine{00531             PhotonNetwork.NetworkingClient.AppId = PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime;}
+\DoxyCodeLine{00532 }
+\DoxyCodeLine{00533             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00534             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536             PhotonNetwork.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00537             PhotonNetwork.AuthValues.UserId = this.UserId;}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00540 }
+\DoxyCodeLine{00541             \textcolor{keywordflow}{if} (this.ResetBestRegionCodeInPreferences) \{}
+\DoxyCodeLine{00542                 ServerSettings.ResetBestRegionCodeInPreferences ();}
+\DoxyCodeLine{00543             \}}
+\DoxyCodeLine{00544 }
+\DoxyCodeLine{00545             PhotonNetwork.ConnectToBestCloudServer();}
+\DoxyCodeLine{00546             \textcolor{keywordflow}{if} (GameVersionOverride != \textcolor{keywordtype}{string}.Empty) \{}
+\DoxyCodeLine{00547                 PhotonNetwork.GameVersion = GameVersionOverride;}
+\DoxyCodeLine{00548             \}}
+\DoxyCodeLine{00549         \}}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ConnectToRegion(\textcolor{keywordtype}{string} region)}
+\DoxyCodeLine{00552         \{}
+\DoxyCodeLine{00553 }
+\DoxyCodeLine{00554             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:ConnectToRegion("{}} + region + \textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556             PhotonNetwork.NetworkingClient.AppId = PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime;}
+\DoxyCodeLine{00557 }
+\DoxyCodeLine{00558             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00559             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00560 }
+\DoxyCodeLine{00561             PhotonNetwork.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00562             PhotonNetwork.AuthValues.UserId = this.UserId;}
+\DoxyCodeLine{00563 }
+\DoxyCodeLine{00564             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00565 }
+\DoxyCodeLine{00566             \textcolor{keywordtype}{bool} \_result = PhotonNetwork.ConnectToRegion(region);}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568             \textcolor{keywordflow}{if} (GameVersionOverride != \textcolor{keywordtype}{string}.Empty) \{}
+\DoxyCodeLine{00569                 PhotonNetwork.GameVersion = GameVersionOverride;}
+\DoxyCodeLine{00570             \}}
+\DoxyCodeLine{00571 }
+\DoxyCodeLine{00572             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:ConnectToRegion("{}} + region + \textcolor{stringliteral}{"{}) -\/>"{}} + \_result);}
+\DoxyCodeLine{00573         \}}
+\DoxyCodeLine{00574 }
+\DoxyCodeLine{00575 }
+\DoxyCodeLine{00576 }
+\DoxyCodeLine{00577         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ConnectOffline()}
+\DoxyCodeLine{00578         \{}
+\DoxyCodeLine{00579             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:ConnectOffline()"{}});}
+\DoxyCodeLine{00580             PhotonNetwork.OfflineMode = \textcolor{keyword}{true};}
+\DoxyCodeLine{00581         \}}
+\DoxyCodeLine{00582 }
+\DoxyCodeLine{00583         \textcolor{keyword}{public} \textcolor{keywordtype}{void} JoinLobby()}
+\DoxyCodeLine{00584         \{}
+\DoxyCodeLine{00585             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:JoinLobby()"{}});}
+\DoxyCodeLine{00586             \textcolor{keywordtype}{bool} \_result =  PhotonNetwork.JoinLobby();}
+\DoxyCodeLine{00587 }
+\DoxyCodeLine{00588             \textcolor{keywordflow}{if} (!\_result) \{}
+\DoxyCodeLine{00589                 Debug.LogError (\textcolor{stringliteral}{"{}PunCockpit: Could not joinLobby"{}});}
+\DoxyCodeLine{00590             \}}
+\DoxyCodeLine{00591 }
+\DoxyCodeLine{00592         \}}
+\DoxyCodeLine{00593 }
+\DoxyCodeLine{00594         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Disconnect()}
+\DoxyCodeLine{00595         \{}
+\DoxyCodeLine{00596             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:Disconnect()"{}});}
+\DoxyCodeLine{00597             PhotonNetwork.Disconnect();}
+\DoxyCodeLine{00598         \}}
+\DoxyCodeLine{00599 }
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OpenDashboard()}
+\DoxyCodeLine{00602         \{}
+\DoxyCodeLine{00603             Application.OpenURL(\textcolor{stringliteral}{"{}https://dashboard.photonengine.com"{}});}
+\DoxyCodeLine{00604         \}}
+\DoxyCodeLine{00605 }
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00607 \textcolor{preprocessor}{        \#region CONNECT UI}}
+\DoxyCodeLine{00608         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDropdownConnectAs(\textcolor{keywordtype}{int} dropdownIndex)}
+\DoxyCodeLine{00609         \{}
+\DoxyCodeLine{00610             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnDropdownConnectAs("{}} + dropdownIndex + \textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612             this.UserId = this.FriendsList[dropdownIndex].UserId;}
+\DoxyCodeLine{00613             PlayerPrefs.SetString(UserIdUiForm.UserIdPlayerPref, \textcolor{keyword}{this}.UserId);}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615             StartCoroutine(OnDropdownConnectAs\_CB());}
+\DoxyCodeLine{00616         \}}
+\DoxyCodeLine{00617 }
+\DoxyCodeLine{00618         IEnumerator OnDropdownConnectAs\_CB()}
+\DoxyCodeLine{00619         \{}
+\DoxyCodeLine{00620             \textcolor{comment}{// wait for the dropdown to animate.}}
+\DoxyCodeLine{00621             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForSeconds(0.2f);}
+\DoxyCodeLine{00622 }
+\DoxyCodeLine{00623             this.Connect();}
+\DoxyCodeLine{00624         \}}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00627 \textcolor{preprocessor}{        \#region IN LOBBY UI}}
+\DoxyCodeLine{00628 }
+\DoxyCodeLine{00629         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLobbyToolsViewTabChanged(\textcolor{keywordtype}{string} tabId)}
+\DoxyCodeLine{00630         \{}
+\DoxyCodeLine{00631             \textcolor{comment}{//  Debug.Log("{}PunCockpit:OnLobbyToolsViewTabChanged("{}+tabId+"{})"{});}}
+\DoxyCodeLine{00632         \}}
+\DoxyCodeLine{00633 }
+\DoxyCodeLine{00634 }
+\DoxyCodeLine{00635 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00636 }
+\DoxyCodeLine{00637 \textcolor{preprocessor}{        \#region IN ROOM UI }}
+\DoxyCodeLine{00638 }
+\DoxyCodeLine{00639         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnSelectPlayer()}
+\DoxyCodeLine{00640         \{}
+\DoxyCodeLine{00641 }
+\DoxyCodeLine{00642         \}}
+\DoxyCodeLine{00643 }
+\DoxyCodeLine{00644 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00645 }
+\DoxyCodeLine{00646 \textcolor{preprocessor}{        \#region PUN CallBacks}}
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnConnected()}
+\DoxyCodeLine{00649         \{}
+\DoxyCodeLine{00650             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnConnected()"{}});}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00653 }
+\DoxyCodeLine{00654             this.UserIdText.text = \textcolor{stringliteral}{"{}UserId:"{}} + this.UserId + \textcolor{stringliteral}{"{} Nickname:"{}} + PhotonNetwork.NickName;}
+\DoxyCodeLine{00655         \}}
+\DoxyCodeLine{00656 }
+\DoxyCodeLine{00657         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisconnected(DisconnectCause cause)}
+\DoxyCodeLine{00658         \{}
+\DoxyCodeLine{00659             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnDisconnected("{}}+cause+\textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00660 }
+\DoxyCodeLine{00661             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00662             this.UserIdText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00663             this.StateText.text = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00664 }
+\DoxyCodeLine{00665             this.GamePanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00666             this.LobbyPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00667             this.ConnectionPanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00668 }
+\DoxyCodeLine{00669         \}}
+\DoxyCodeLine{00670 }
+\DoxyCodeLine{00671         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnConnectedToMaster()}
+\DoxyCodeLine{00672         \{}
+\DoxyCodeLine{00673             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnConnectedToMaster()"{}});}
+\DoxyCodeLine{00674 }
+\DoxyCodeLine{00675 }
+\DoxyCodeLine{00676             this.StateText.text = \textcolor{stringliteral}{"{}Connected to Master"{}} + (PhotonNetwork.OfflineMode ? \textcolor{stringliteral}{"{} <Color=Red><b>Offline</b></color>"{}} : \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00677 }
+\DoxyCodeLine{00678             this.SetUpLobbyGenericUI();}
+\DoxyCodeLine{00679         \}}
+\DoxyCodeLine{00680 }
+\DoxyCodeLine{00681         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedLobby()}
+\DoxyCodeLine{00682         \{}
+\DoxyCodeLine{00683             this.StateText.text = \textcolor{stringliteral}{"{}Connected to Lobby"{}};}
+\DoxyCodeLine{00684 }
+\DoxyCodeLine{00685             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnJoinedLobby()"{}});}
+\DoxyCodeLine{00686             this.SetUpLobbyGenericUI();}
+\DoxyCodeLine{00687         \}}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689         \textcolor{keywordtype}{void} SetUpLobbyGenericUI()}
+\DoxyCodeLine{00690         \{}
+\DoxyCodeLine{00691             this.ConnectingLabel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00692             this.AdvancedConnectionPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00693             this.LobbyPanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00694             this.RoomListManager.OnJoinedLobbyCallBack();}
+\DoxyCodeLine{00695             this.FriendListManager.SetFriendDetails(this.FriendsList);}
+\DoxyCodeLine{00696 }
+\DoxyCodeLine{00697             JoinLobbyButton.interactable = !PhotonNetwork.InLobby \&\& !PhotonNetwork.OfflineMode;}
+\DoxyCodeLine{00698 }
+\DoxyCodeLine{00699 }
+\DoxyCodeLine{00700             RoomListManager.gameObject.SetActive(!PhotonNetwork.OfflineMode);}
+\DoxyCodeLine{00701             FriendListManager.gameObject.SetActive(!PhotonNetwork.OfflineMode);}
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703             RoomListMatchMakingForm.SetActive(!PhotonNetwork.InLobby);}
+\DoxyCodeLine{00704         \}}
+\DoxyCodeLine{00705 }
+\DoxyCodeLine{00706         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00707         \{}
+\DoxyCodeLine{00708             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnRoomPropertiesUpdate() "{}} + propertiesThatChanged.ToStringFull());}
+\DoxyCodeLine{00709 }
+\DoxyCodeLine{00710             \textcolor{keywordflow}{if} (propertiesThatChanged.ContainsKey(\textcolor{stringliteral}{"{}C0"{}}))}
+\DoxyCodeLine{00711             \{}
+\DoxyCodeLine{00712                 RoomCustomPropertyInputfield.text = propertiesThatChanged[\textcolor{stringliteral}{"{}C0"{}}].ToString();}
+\DoxyCodeLine{00713             \}}
+\DoxyCodeLine{00714         \}}
+\DoxyCodeLine{00715 }
+\DoxyCodeLine{00716         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftLobby()}
+\DoxyCodeLine{00717         \{}
+\DoxyCodeLine{00718             \textcolor{keywordflow}{if} (debug) Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnLeftLobby()"{}});}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720             this.RoomListManager.ResetList();}
+\DoxyCodeLine{00721             this.LobbyPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00722         \}}
+\DoxyCodeLine{00723 }
+\DoxyCodeLine{00724         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00725         \{}
+\DoxyCodeLine{00726             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnCreateRoomFailed("{}} + returnCode + \textcolor{stringliteral}{"{},"{}} + message + \textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00727         \}}
+\DoxyCodeLine{00728 }
+\DoxyCodeLine{00729         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00730         \{}
+\DoxyCodeLine{00731             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnJoinRandomFailed("{}} + returnCode + \textcolor{stringliteral}{"{},"{}} + message + \textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00732         \}}
+\DoxyCodeLine{00733 }
+\DoxyCodeLine{00734         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00735         \{}
+\DoxyCodeLine{00736 }
+\DoxyCodeLine{00737             this.StateText.text = \textcolor{stringliteral}{"{}Connected to GameServer "{}} + (PhotonNetwork.OfflineMode ? \textcolor{stringliteral}{"{} <Color=Red><b>Offline</b></color>"{}} : \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00738 }
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00740             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnJoinedRoom()"{}});}
+\DoxyCodeLine{00741 }
+\DoxyCodeLine{00742             this.ConnectingLabel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00743 }
+\DoxyCodeLine{00744             this.PlayerListManager.ResetList();}
+\DoxyCodeLine{00745 }
+\DoxyCodeLine{00746             this.GamePanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00747 }
+\DoxyCodeLine{00748             this.PlayerDetailsManager.SetPlayerTarget(PhotonNetwork.LocalPlayer);}
+\DoxyCodeLine{00749 }
+\DoxyCodeLine{00750         \}}
+\DoxyCodeLine{00751 }
+\DoxyCodeLine{00752         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00753         \{}
+\DoxyCodeLine{00754             \textcolor{keywordflow}{switch} (returnCode)}
+\DoxyCodeLine{00755             \{}
+\DoxyCodeLine{00756                 \textcolor{keywordflow}{case} ErrorCode.JoinFailedFoundInactiveJoiner:}
+\DoxyCodeLine{00757                     \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(this.roomNameToEnter))}
+\DoxyCodeLine{00758                     \{}
+\DoxyCodeLine{00759                         PhotonNetwork.RejoinRoom(this.roomNameToEnter);}
+\DoxyCodeLine{00760                         this.roomNameToEnter = \textcolor{keyword}{null};}
+\DoxyCodeLine{00761                     \}}
+\DoxyCodeLine{00762                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00763             \}}
+\DoxyCodeLine{00764         \}}
+\DoxyCodeLine{00765 }
+\DoxyCodeLine{00766         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00767         \{}
+\DoxyCodeLine{00768             \textcolor{keywordflow}{if} (debug)  Debug.Log(\textcolor{stringliteral}{"{}PunCockpit:OnLeftRoom()"{}});}
+\DoxyCodeLine{00769             this.GamePanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00770 }
+\DoxyCodeLine{00771             \textcolor{keywordflow}{if} (PhotonNetwork.OfflineMode)}
+\DoxyCodeLine{00772             \{}
+\DoxyCodeLine{00773                 this.ConnectingLabel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00774                 this.ConnectionPanel.gameObject.SetActive (\textcolor{keyword}{true});}
+\DoxyCodeLine{00775             \}}
+\DoxyCodeLine{00776         \}}
+\DoxyCodeLine{00777 }
+\DoxyCodeLine{00778 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00779 }
+\DoxyCodeLine{00780 }
+\DoxyCodeLine{00781         RoomOptions GetRoomOptions()}
+\DoxyCodeLine{00782         \{}
+\DoxyCodeLine{00783             RoomOptions \_roomOptions = \textcolor{keyword}{new} RoomOptions();}
+\DoxyCodeLine{00784 }
+\DoxyCodeLine{00785             \_roomOptions.MaxPlayers = (byte)this.MaxPlayers;}
+\DoxyCodeLine{00786 }
+\DoxyCodeLine{00787             \_roomOptions.IsOpen = this.IsOpen;}
+\DoxyCodeLine{00788 }
+\DoxyCodeLine{00789             \_roomOptions.IsVisible = this.IsVisible;}
+\DoxyCodeLine{00790 }
+\DoxyCodeLine{00791             \_roomOptions.EmptyRoomTtl = this.EmptyRoomTtl;}
+\DoxyCodeLine{00792 }
+\DoxyCodeLine{00793             \_roomOptions.PlayerTtl = this.PlayerTtl;}
+\DoxyCodeLine{00794 }
+\DoxyCodeLine{00795             \_roomOptions.PublishUserId = this.PublishUserId;}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797             \_roomOptions.CleanupCacheOnLeave = this.CleanupCacheOnLeave;}
+\DoxyCodeLine{00798             \_roomOptions.DeleteNullProperties = this.DeleteNullProperties;}
+\DoxyCodeLine{00799 }
+\DoxyCodeLine{00800             \_roomOptions.CustomRoomProperties = \textcolor{keyword}{new} ExitGames.Client.Photon.Hashtable() \{ \{ \textcolor{stringliteral}{"{}C0"{}}, \textcolor{stringliteral}{"{}Hello"{}} \} \};}
+\DoxyCodeLine{00801             \_roomOptions.CustomRoomPropertiesForLobby = \textcolor{keyword}{new} \textcolor{keywordtype}{string}[] \{ \textcolor{stringliteral}{"{}C0"{}} \};}
+\DoxyCodeLine{00802 }
+\DoxyCodeLine{00803 }
+\DoxyCodeLine{00804             \textcolor{keywordflow}{return} \_roomOptions;}
+\DoxyCodeLine{00805         \}}
+\DoxyCodeLine{00806     \}}
+\DoxyCodeLine{00807 \}}
+
+\end{DoxyCode}

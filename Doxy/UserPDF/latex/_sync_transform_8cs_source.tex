@@ -1,0 +1,718 @@
+\doxysection{Sync\+Transform.\+cs}
+\label{_sync_transform_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncTransform/SyncTransform.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncTransform/SyncTransform.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{public} \textcolor{keyword}{interface }ISyncTransform}
+\DoxyCodeLine{00014     \{}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     \}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{interface }ITransformController}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00021         \textcolor{keywordtype}{bool} AutoSync \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00023         \textcolor{keywordtype}{bool} HandlesInterpolation \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00024         \textcolor{keywordtype}{bool} HandlesExtrapolation \{ \textcolor{keyword}{get}; \}}
+\DoxyCodeLine{00025     \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027     [DisallowMultipleComponent]}
+\DoxyCodeLine{00028     \textcolor{keyword}{public} \textcolor{keyword}{class }SyncTransform : SyncObject<SyncTransform.Frame>}
+\DoxyCodeLine{00029         , ISyncTransform}
+\DoxyCodeLine{00030         , IOnSnapshot}
+\DoxyCodeLine{00031         , IOnNetSerialize}
+\DoxyCodeLine{00032         , IOnAuthorityChanged}
+\DoxyCodeLine{00033         , IReadyable}
+\DoxyCodeLine{00034         , IUseKeyframes}
+\DoxyCodeLine{00035         , IDeltaFrameChangeDetect}
+\DoxyCodeLine{00036         \textcolor{comment}{//, IAdjustableApplyOrder}}
+\DoxyCodeLine{00037         , IOnInterpolate}
+\DoxyCodeLine{00038         , IOnCaptureState}
+\DoxyCodeLine{00039         , IFlagTeleport}
+\DoxyCodeLine{00040     \{}
+\DoxyCodeLine{00041 \textcolor{preprocessor}{        \#region Inspector Fields}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         [Tooltip(\textcolor{stringliteral}{"{}How lerping between tick states is achieved. 'Standard' is Linear. 'None' holds the previous state until t = 1. "{}} +}
+\DoxyCodeLine{00044             \textcolor{stringliteral}{"{}'Catmull Rom' is experimental."{}})]}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} Interpolation interpolation = Interpolation.Linear;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [Tooltip(\textcolor{stringliteral}{"{}Percentage of extrapolation from previous values. [0 = No Extrapolation] [.5 = 50\% extrapolation] [1 = Undampened]. "{}} +}
+\DoxyCodeLine{00048             \textcolor{stringliteral}{"{}This allows for gradual slowing down of motion when the buffer runs dry."{}})]}
+\DoxyCodeLine{00049         [Range(0f, 1f)]}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{float} extrapolateRatio = .5f;}
+\DoxyCodeLine{00051         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} extrapolationCount;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [Tooltip(\textcolor{stringliteral}{"{}If the distance delta between snapshots exceeds this amount, object will move to new location without lerping. Set this to zero or less to disable (for some tiny CPU savings). You can manually flag a teleport by setting the HasTeleported property to True."{}})]}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{float} teleportThreshold = 5f;}
+\DoxyCodeLine{00055         \textcolor{keyword}{private} \textcolor{keywordtype}{float} teleportThresholdSqrMag;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         [Tooltip(\textcolor{stringliteral}{"{}Entire tick update from this client (all objects being serialized) will be sent as Reliable when FlagTeleport() has been called."{}})]}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} teleportReliable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} Dictionary<int, TransformCrusher> masterSharedCrushers = \textcolor{keyword}{new} Dictionary<int, TransformCrusher>();}
+\DoxyCodeLine{00061         \textcolor{keyword}{public} TransformCrusher transformCrusher = \textcolor{keyword}{new} TransformCrusher()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             PosCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Position, \textcolor{keyword}{false})}
+\DoxyCodeLine{00064             \{}
+\DoxyCodeLine{00065                 hideFieldName = \textcolor{keyword}{true},}
+\DoxyCodeLine{00066                 XCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.X, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00067                 YCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Y, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00068                 ZCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Z, TRSType.Position, \textcolor{keyword}{true}) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00069             \},}
+\DoxyCodeLine{00070             RotCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Quaternion, \textcolor{keyword}{false})}
+\DoxyCodeLine{00071             \{}
+\DoxyCodeLine{00072                 hideFieldName = \textcolor{keyword}{true},}
+\DoxyCodeLine{00073                 XCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.X, TRSType.Euler, \textcolor{keyword}{true}) \{ Bits = 12, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00074                 YCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Y, TRSType.Euler, \textcolor{keyword}{true}) \{ Bits = 12, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00075                 ZCrusher = \textcolor{keyword}{new} FloatCrusher(Axis.Z, TRSType.Euler, \textcolor{keyword}{true}) \{ Bits = 12, AccurateCenter = \textcolor{keyword}{true} \},}
+\DoxyCodeLine{00076                 QCrusher = \textcolor{keyword}{new} QuatCrusher(44, \textcolor{keyword}{true}, \textcolor{keyword}{false}),}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078                 \textcolor{comment}{//QCrusher = new QuatCrusher(CompressLevel.uint64Hi, false, false)}}
+\DoxyCodeLine{00079             \},}
+\DoxyCodeLine{00080             SclCrusher = \textcolor{keyword}{new} ElementCrusher(TRSType.Scale, \textcolor{keyword}{false})}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 hideFieldName = \textcolor{keyword}{true},}
+\DoxyCodeLine{00083                 uniformAxes = ElementCrusher.UniformAxes.NonUniform,}
+\DoxyCodeLine{00084                 \textcolor{comment}{//UCrusher = new FloatCrusher(Axis.Uniform, TRSType.Scale, true) \{ BitsDeterminedBy = BitsDeterminedBy.HalfFloat, axis = Axis.Uniform, TRSType = TRSType.Scale \}}}
+\DoxyCodeLine{00085                 XCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Bits8, -\/1, 1, Axis.X, TRSType.Scale, \textcolor{keyword}{true}) \{ TRSType = TRSType.Scale, AccurateCenter = \textcolor{keyword}{true}, BitsDeterminedBy = BitsDeterminedBy.SetBits \},}
+\DoxyCodeLine{00086                 YCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Bits8, -\/1, 1, Axis.Y, TRSType.Scale, \textcolor{keyword}{true}) \{ TRSType = TRSType.Scale, AccurateCenter = \textcolor{keyword}{true}, BitsDeterminedBy = BitsDeterminedBy.SetBits, Enabled = \textcolor{keyword}{false} \},}
+\DoxyCodeLine{00087                 ZCrusher = \textcolor{keyword}{new} FloatCrusher(BitPresets.Bits8, -\/1, 1, Axis.Z, TRSType.Scale, \textcolor{keyword}{true}) \{ TRSType = TRSType.Scale, AccurateCenter = \textcolor{keyword}{true}, BitsDeterminedBy = BitsDeterminedBy.SetBits, Enabled = \textcolor{keyword}{false} \},}
+\DoxyCodeLine{00088             \}}
+\DoxyCodeLine{00089         \};}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 \textcolor{preprocessor}{        \#region Teleport}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00100         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} hasTeleported;}
+\DoxyCodeLine{00101         \textcolor{comment}{//protected bool parentChanged;}}
+\DoxyCodeLine{00102         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} teleNewParentId;}
+\DoxyCodeLine{00103         \textcolor{keyword}{protected} Matrix preTeleportM = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00104         \textcolor{keyword}{protected} CompressedMatrix preTeleportCM = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00113         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FlagTeleport()}
+\DoxyCodeLine{00114         \{}
+\DoxyCodeLine{00115             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00116             \{}
+\DoxyCodeLine{00117                 \textcolor{keywordflow}{if} (!hasTeleported)}
+\DoxyCodeLine{00118                     CaptureCurrent(preTeleportM, preTeleportCM\textcolor{comment}{/*, Realm.Primary, true*/});}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120                 \textcolor{comment}{//Debug.LogError(Time.time + "{} "{} + name + "{} Flag TELE "{});}}
+\DoxyCodeLine{00121                 this.hasTeleported = \textcolor{keyword}{true};}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keywordtype}{void} UpdateParent(ObjState state, Transform newParent)}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             teleNewParentId = newParent ? newParent.GetInstanceID() :}
+\DoxyCodeLine{00134                 (state \& ObjState.Mounted) != 0 ? -\/2 : -\/1;}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136             \textcolor{comment}{//if (GetComponent<SyncState>())}}
+\DoxyCodeLine{00137             \textcolor{comment}{//  Debug.Log(Time.time + "{} <b><color=green>UpdateParent </color></b>"{} + teleNewParentId);}}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{comment}{// Cached}}
+\DoxyCodeLine{00143         \textcolor{keyword}{private} Rigidbody rb;}
+\DoxyCodeLine{00144         \textcolor{keyword}{private} Rigidbody2D rb2d;}
+\DoxyCodeLine{00145         \textcolor{keyword}{private} List<ITransformController> iTransformControllers = \textcolor{keyword}{new} List<ITransformController>(1);}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} allowInterpolation;}
+\DoxyCodeLine{00148         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AllowInterpolation \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} allowInterpolation; \} \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} allowReconstructionOfEmpty;}
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} AllowReconstructionOfEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} allowReconstructionOfEmpty; \} \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} ApplyOrder}
+\DoxyCodeLine{00154         \{}
+\DoxyCodeLine{00155             \textcolor{keyword}{get}}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{return} ApplyOrderConstants.TRANSFORM;}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159         \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00162         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00163         \{}
+\DoxyCodeLine{00164             base.Reset();}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00167             transformCrusher.PosCrusher.local = \textcolor{keyword}{true};}
+\DoxyCodeLine{00168             transformCrusher.RotCrusher.local = \textcolor{keyword}{true};}
+\DoxyCodeLine{00169             transformCrusher.RotCrusher.TRSType = TRSType.Euler;}
+\DoxyCodeLine{00170             transformCrusher.SclCrusher.local = \textcolor{keyword}{true};}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00173             \_alwaysReady = transform.parent != \textcolor{keyword}{null};}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             base.OnAwake();}
+\DoxyCodeLine{00180             rb = GetComponent<Rigidbody>();}
+\DoxyCodeLine{00181             rb2d = GetComponent<Rigidbody2D>();}
+\DoxyCodeLine{00182             GetComponents(iTransformControllers);}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             teleportThresholdSqrMag = teleportThreshold <= 0 ? 0 : teleportThreshold * teleportThreshold;}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186             ConnectSharedCaches();}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188             allowInterpolation = \textcolor{keyword}{true};}
+\DoxyCodeLine{00189             allowReconstructionOfEmpty = \textcolor{keyword}{true};}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191             \textcolor{comment}{// cache whether this syncTransform is allowed to reconstruct missing frames}}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < iTransformControllers.Count; ++i)}
+\DoxyCodeLine{00193             \{}
+\DoxyCodeLine{00194                 var controller = iTransformControllers[i];}
+\DoxyCodeLine{00195                 allowInterpolation \&= !controller.HandlesInterpolation;}
+\DoxyCodeLine{00196                 allowReconstructionOfEmpty \&= !controller.HandlesExtrapolation;}
+\DoxyCodeLine{00197             \}}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConnectSharedCaches()}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (masterSharedCrushers.ContainsKey(prefabInstanceId))}
+\DoxyCodeLine{00203                 transformCrusher = masterSharedCrushers[prefabInstanceId];}
+\DoxyCodeLine{00204             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00205                 masterSharedCrushers.Add(prefabInstanceId, transformCrusher);}
+\DoxyCodeLine{00206         \}}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00209         \{}
+\DoxyCodeLine{00210             framePool.Push(frames);}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213 \textcolor{preprocessor}{        \#region Frames}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215         \textcolor{keyword}{public} \textcolor{keyword}{class }Frame : FrameBase}
+\DoxyCodeLine{00216         \{}
+\DoxyCodeLine{00217             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} hasTeleported;}
+\DoxyCodeLine{00218             \textcolor{keyword}{public} Matrix m;}
+\DoxyCodeLine{00219             \textcolor{keyword}{public} CompressedMatrix cm;}
+\DoxyCodeLine{00220             \textcolor{keyword}{public} SyncTransform owner;}
+\DoxyCodeLine{00221             \textcolor{keyword}{public} Matrix telem;}
+\DoxyCodeLine{00222             \textcolor{keyword}{public} CompressedMatrix telecm;}
+\DoxyCodeLine{00223             \textcolor{keyword}{public} \textcolor{keywordtype}{int} parentHash;}
+\DoxyCodeLine{00224             \textcolor{keyword}{public} \textcolor{keywordtype}{int} telePparentHash;}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keyword}{public} Frame() : base()}
+\DoxyCodeLine{00227             \{}
+\DoxyCodeLine{00228                 m = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00229                 cm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00230                 telem = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00231                 telecm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00232                 parentHash = -\/2;}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keyword}{public} Frame(SyncTransform sst, \textcolor{keywordtype}{int} frameId) : base(frameId)}
+\DoxyCodeLine{00236             \{}
+\DoxyCodeLine{00237                 m = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00238                 cm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00239                 telem = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00240                 telecm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00241                 sst.transformCrusher.Capture(sst.transform, cm, m);}
+\DoxyCodeLine{00242                 var par = sst.transform.parent;}
+\DoxyCodeLine{00243                 parentHash = par ? par.GetInstanceID() : -\/1;}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \textcolor{keyword}{public} Frame(Frame srcFrame, \textcolor{keywordtype}{int} frameId) : base(frameId)}
+\DoxyCodeLine{00247             \{}
+\DoxyCodeLine{00248                 m = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00249                 cm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00250                 telem = \textcolor{keyword}{new} Matrix();}
+\DoxyCodeLine{00251                 telecm = \textcolor{keyword}{new} CompressedMatrix();}
+\DoxyCodeLine{00252                 CopyFrom(srcFrame);}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255             \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(SyncTransform sst, \textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00256             \{}
+\DoxyCodeLine{00257                 sst.transformCrusher.Capture(sst.transform, cm, m);}
+\DoxyCodeLine{00258             \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} CopyFrom(FrameBase sourceFrame)}
+\DoxyCodeLine{00261             \{}
+\DoxyCodeLine{00262                 base.CopyFrom(sourceFrame);}
+\DoxyCodeLine{00263                 Frame src = sourceFrame as Frame;}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00266                 \textcolor{keywordflow}{if} (src.hasTeleported)}
+\DoxyCodeLine{00267                 \{}
+\DoxyCodeLine{00268                     m.CopyFrom(src.telem);}
+\DoxyCodeLine{00269                     cm.CopyFrom(src.telecm);}
+\DoxyCodeLine{00270                 \}}
+\DoxyCodeLine{00271                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00272                 \{}
+\DoxyCodeLine{00273                     m.CopyFrom(src.m);}
+\DoxyCodeLine{00274                     cm.CopyFrom(src.cm);}
+\DoxyCodeLine{00275                 \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277                 hasTeleported = \textcolor{keyword}{false}; \textcolor{comment}{// src.hasTeleported;}}
+\DoxyCodeLine{00278                 parentHash = src.parentHash;}
+\DoxyCodeLine{00279             \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281             \textcolor{comment}{//static readonly StringBuilder strb = new StringBuilder();}}
+\DoxyCodeLine{00285 \textcolor{comment}{}            \textcolor{keyword}{public} \textcolor{keywordtype}{bool} FastCompareCompressed(Frame other)}
+\DoxyCodeLine{00286             \{}
+\DoxyCodeLine{00287                 \textcolor{keywordtype}{bool} match = cm.Equals(other.cm);}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289                 \textcolor{keywordflow}{if} (match)}
+\DoxyCodeLine{00290                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00293             \}}
+\DoxyCodeLine{00297             \textcolor{keyword}{public} \textcolor{keywordtype}{bool} FastCompareUncompressed(Frame other)}
+\DoxyCodeLine{00298             \{}
+\DoxyCodeLine{00299                 \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00300                     m.position == other.m.position \&\&}
+\DoxyCodeLine{00301                     m.rotation == other.m.rotation \&\&}
+\DoxyCodeLine{00302                     m.scale == other.m.scale;}
+\DoxyCodeLine{00303             \}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00306             \{}
+\DoxyCodeLine{00307                 base.Clear();}
+\DoxyCodeLine{00308                 hasTeleported = \textcolor{keyword}{false};}
+\DoxyCodeLine{00309                 parentHash = -\/2;}
+\DoxyCodeLine{00310             \}}
+\DoxyCodeLine{00311             \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00312             \{}
+\DoxyCodeLine{00313                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}["{}} + frameId + \textcolor{stringliteral}{"{} "{}} + m.position + \textcolor{stringliteral}{"{} / "{}} + m.rotation + \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00314             \}}
+\DoxyCodeLine{00315         \}}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320 \textcolor{preprocessor}{        \#region Frame Pooling}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322         \textcolor{keyword}{public} \textcolor{keyword}{static} Stack<Frame[]> framePool = \textcolor{keyword}{new} Stack<Frame[]>();}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00327         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} PopulateFrames()}
+\DoxyCodeLine{00328         \{}
+\DoxyCodeLine{00329             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00332             \textcolor{keywordflow}{if} (framePool.Count == 0)}
+\DoxyCodeLine{00333             \{}
+\DoxyCodeLine{00334                 frames = \textcolor{keyword}{new} Frame[frameCount + 1];}
+\DoxyCodeLine{00336                 frames[frameCount] = \textcolor{keyword}{new} Frame(\textcolor{keyword}{this}, frameCount);}
+\DoxyCodeLine{00337                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i <= frameCount; ++i)}
+\DoxyCodeLine{00338                     frames[i] = \textcolor{keyword}{new} Frame(frames[frameCount], i);}
+\DoxyCodeLine{00339             \}}
+\DoxyCodeLine{00340             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00341             \{}
+\DoxyCodeLine{00343                 frames = framePool.Pop();}
+\DoxyCodeLine{00345                 frames[frameCount].Set(\textcolor{keyword}{this}, frameCount);}
+\DoxyCodeLine{00346                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < frameCount; ++i)}
+\DoxyCodeLine{00347                     frames[i].CopyFrom(frames[frameCount]);}
+\DoxyCodeLine{00348             \}}
+\DoxyCodeLine{00349         \}}
+\DoxyCodeLine{00350 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} CaptureCurrent(Matrix m, CompressedMatrix cm, \textcolor{keywordtype}{bool} forceUseTransform = \textcolor{keyword}{false})}
+\DoxyCodeLine{00354         \{}
+\DoxyCodeLine{00355             \textcolor{keywordflow}{if} (forceUseTransform)}
+\DoxyCodeLine{00356             \{}
+\DoxyCodeLine{00357                 transformCrusher.Capture(transform, cm, m);}
+\DoxyCodeLine{00358             \}}
+\DoxyCodeLine{00359             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rb)}
+\DoxyCodeLine{00360             \{}
+\DoxyCodeLine{00361                 transformCrusher.Capture(rb, cm, m);}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363             \}}
+\DoxyCodeLine{00365             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (rb2d)}
+\DoxyCodeLine{00366             \{}
+\DoxyCodeLine{00367                 transformCrusher.Capture(rb2d, cm, m);}
+\DoxyCodeLine{00368             \}}
+\DoxyCodeLine{00369             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00370             \{}
+\DoxyCodeLine{00371                 transformCrusher.Capture(transform, cm, m);}
+\DoxyCodeLine{00372             \}}
+\DoxyCodeLine{00373         \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCaptureCurrentState(\textcolor{keywordtype}{int} frameId)}
+\DoxyCodeLine{00376         \{}
+\DoxyCodeLine{00377             Frame frame = frames[frameId];}
+\DoxyCodeLine{00378             frame.hasTeleported = hasTeleported;}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380             \textcolor{keywordflow}{if} (hasTeleported)}
+\DoxyCodeLine{00381             \{}
+\DoxyCodeLine{00382                 \textcolor{comment}{//Debug.LogError(frameId + "{} <color=blue>SST HasTeleported</color> m: "{} + frame.m.position + "{} -\/> tm: "{} + frame.telem.position + "{} "{}}}
+\DoxyCodeLine{00383                 \textcolor{comment}{//  + (transform.parent ? transform.parent.name : "{}null"{}));}}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00386                 frame.cm.CopyFrom(preTeleportCM);}
+\DoxyCodeLine{00387                 frame.m.CopyFrom(preTeleportM);}
+\DoxyCodeLine{00388                 CaptureCurrent(frame.telem, frame.telecm, \textcolor{keyword}{true});}
+\DoxyCodeLine{00389                 transformCrusher.Apply(transform, frame.telem);}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00392                 \textcolor{comment}{//  Debug.Log(Time.time + "{} "{} + name + "{} "{} + frameId + "{} <b>TELE</b> "{} + frame.telem.position + "{} : "{} + frame.m.position + "{} "{} + (transform.parent ? transform.parent.name : "{}null"{}));}}
+\DoxyCodeLine{00393 }
+\DoxyCodeLine{00394                 hasTeleported = \textcolor{keyword}{false};}
+\DoxyCodeLine{00395             \}}
+\DoxyCodeLine{00396             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00397             \{}
+\DoxyCodeLine{00398                 CaptureCurrent(frame.m, frame.cm);}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00401                 \textcolor{comment}{//  Debug.Log(Time.time + "{} "{} + name + "{} "{} + frameId + "{} <b>CAP</b> "{} + frame.telem.position + "{} : "{} + frame.m.position + "{} "{} + (transform.parent ? transform.parent.name : "{}null"{}));}}
+\DoxyCodeLine{00402             \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404         \}}
+\DoxyCodeLine{00405 }
+\DoxyCodeLine{00406 \textcolor{preprocessor}{        \#region Serialization}}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408         \textcolor{keyword}{public} SerializationFlags OnNetSerialize(\textcolor{keywordtype}{int} frameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, SerializationFlags writeFlags)}
+\DoxyCodeLine{00409         \{}
+\DoxyCodeLine{00410             Frame frame = frames[frameId];}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412             \textcolor{keywordtype}{bool} hasTeleported = frame.hasTeleported;}
+\DoxyCodeLine{00413             \textcolor{keywordtype}{bool} mustSend = hasTeleported || (writeFlags \& SerializationFlags.NewConnection) != 0;}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00418             \textcolor{keywordflow}{if} (!mustSend \&\& !isActiveAndEnabled)}
+\DoxyCodeLine{00419             \{}
+\DoxyCodeLine{00420                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00422             \}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424             \textcolor{keywordtype}{bool} isKeyframe = IsKeyframe(frameId);}
+\DoxyCodeLine{00425 }
+\DoxyCodeLine{00427             \textcolor{keywordflow}{if} (!mustSend \&\& !isKeyframe)}
+\DoxyCodeLine{00428             \{}
+\DoxyCodeLine{00429                 \textcolor{keywordtype}{bool} hascontent = useDeltas \&\& (prevSentFrame == \textcolor{keyword}{null} || !frame.cm.Equals(prevSentFrame.cm));}
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00431                 \textcolor{keywordflow}{if} (!hascontent)}
+\DoxyCodeLine{00432                 \{}
+\DoxyCodeLine{00433                     buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00434                     prevSentFrame = frame;}
+\DoxyCodeLine{00435                     \textcolor{comment}{//Debug.LogError("{}Skipping "{} + frameId);}}
+\DoxyCodeLine{00436                     \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00437                 \}}
+\DoxyCodeLine{00438             \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440             SerializationFlags flags = SerializationFlags.HasContent;}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442             \textcolor{comment}{//Debug.LogError("{}OUT "{} + frameId + "{} "{} + frame.m.position);}}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00445             buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00446 }
+\DoxyCodeLine{00448             buffer.WriteBool(hasTeleported, ref bitposition);}
+\DoxyCodeLine{00449             \textcolor{keywordflow}{if} (hasTeleported)}
+\DoxyCodeLine{00450             \{}
+\DoxyCodeLine{00451                 \textcolor{comment}{//Debug.LogError(Time.time + "{} "{} + name + "{} "{} + frameId + "{} <b>SER TELE</b>"{});}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453                 transformCrusher.Write(frame.telecm, buffer, ref bitposition);}
+\DoxyCodeLine{00454                 \textcolor{keywordflow}{if} (teleportReliable)}
+\DoxyCodeLine{00455                     flags |= SerializationFlags.ForceReliable;}
+\DoxyCodeLine{00456             \}}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00460             transformCrusher.Write(frame.cm, buffer, ref bitposition);}
+\DoxyCodeLine{00461             transformCrusher.Decompress(frame.m, frame.cm);}
+\DoxyCodeLine{00462             prevSentFrame = frame;}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464             \textcolor{comment}{//if (frame.hasTeleported)}}
+\DoxyCodeLine{00465             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00466             \textcolor{comment}{//    Debug.LogError(Time.time + "{} "{} + frame.frameId + "{}:"{} + frameId + "{} <b> TELE </b>"{} + frame.m.position + "{} -\/> "{} + frame.telem.position);}}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468             \textcolor{comment}{//if (\_hasTeleported)}}
+\DoxyCodeLine{00469             \textcolor{comment}{//  return SerializationFlags.HasChanged | SerializationFlags.ForceReliable;}}
+\DoxyCodeLine{00470             \textcolor{comment}{//else}}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472             \textcolor{keywordflow}{return} flags;}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475         \textcolor{keyword}{public} Frame prevSentFrame;}
+\DoxyCodeLine{00476 }
+\DoxyCodeLine{00477         \textcolor{keyword}{public} SerializationFlags OnNetDeserialize(\textcolor{keywordtype}{int} originFrameId, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, FrameArrival arrival)}
+\DoxyCodeLine{00478         \{}
+\DoxyCodeLine{00479             \textcolor{comment}{//if (arrival != FrameArrival.IsFuture \&\& snapFrame != null)}}
+\DoxyCodeLine{00480             \textcolor{comment}{//  Debug.Log("{}arrival lcl: "{} + localFrameId + "{} sn:"{} + snapFrame.frameId + "{} "{} + arrival);}}
+\DoxyCodeLine{00481 }
+\DoxyCodeLine{00482 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00484             var frame = (photonView.IsMine) ? offtickFrame : frames[originFrameId];}
+\DoxyCodeLine{00485 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00486             Frame frame = \textcolor{keyword}{null};}
+\DoxyCodeLine{00487 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00489             \textcolor{keywordflow}{if} (!buffer.ReadBool(ref bitposition))}
+\DoxyCodeLine{00490             \{}
+\DoxyCodeLine{00491                 frame.content = FrameContents.Empty;}
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493                 \textcolor{keywordflow}{return} SerializationFlags.None;}
+\DoxyCodeLine{00494             \}}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00496             frame.content = FrameContents.Complete;}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498             \textcolor{keywordtype}{bool} \_hasTeleported = buffer.ReadBool(ref bitposition);}
+\DoxyCodeLine{00499             frame.hasTeleported = \_hasTeleported;}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501             \textcolor{keywordflow}{if} (\_hasTeleported)}
+\DoxyCodeLine{00502             \{}
+\DoxyCodeLine{00503                 \textcolor{comment}{//Debug.Log(localFrameId + "{} RCV TELE : trgf: "{} + (targFrame != null ? targFrame.frameId.ToString() : "{}null"{}));}}
+\DoxyCodeLine{00504                 transformCrusher.Read(frame.telecm, buffer, ref bitposition);}
+\DoxyCodeLine{00505                 transformCrusher.Decompress(frame.telem, frame.telecm);}
+\DoxyCodeLine{00506             \}}
+\DoxyCodeLine{00507 }
+\DoxyCodeLine{00508             transformCrusher.Read(frame.cm, buffer, ref bitposition);}
+\DoxyCodeLine{00509             transformCrusher.Decompress(frame.m, frame.cm);}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00512             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00513             \textcolor{comment}{//    if (\_hasTeleported)}}
+\DoxyCodeLine{00514             \textcolor{comment}{//        Debug.Log(Time.time + "{} "{} + name + "{} <b>fr: "{} + originFrameId + "{} <color=blue>DES TRANS TELE</color></b> "{} + frame.m.position + "{} <b><color=red>tele: "{} + frame.telem.position + "{}</color></b> "{}+ frame.content);}}
+\DoxyCodeLine{00515             \textcolor{comment}{//    else}}
+\DoxyCodeLine{00516             \textcolor{comment}{//        Debug.Log(Time.time + "{} "{} + name + "{} <b>fr: "{} + originFrameId + "{} <color=blue>DES TRANS</color></b> "{} + frame.m.position + "{} "{} + frame.content);}}
+\DoxyCodeLine{00517             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00518 }
+\DoxyCodeLine{00519             \textcolor{keywordflow}{return} \textcolor{comment}{/*frame.hasTeleported ? SerializationFlags.ForceReliable :*/} SerializationFlags.HasContent;}
+\DoxyCodeLine{00520         \}}
+\DoxyCodeLine{00521 }
+\DoxyCodeLine{00522 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} skipInterpolation;}
+\DoxyCodeLine{00525 }
+\DoxyCodeLine{00526         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} OnSnapshot(\textcolor{keywordtype}{int} prevFrameId, \textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{bool} prevIsValid, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00527         \{}
+\DoxyCodeLine{00528 }
+\DoxyCodeLine{00529             \textcolor{keywordtype}{bool} ready = base.OnSnapshot(prevFrameId, snapFrameId, targFrameId, prevIsValid, snapIsValid, targIsValid);}
+\DoxyCodeLine{00530 }
+\DoxyCodeLine{00531             \textcolor{comment}{//if (snapFrame.content == FrameContents.Empty || targFrame.content == FrameContents.Empty)}}
+\DoxyCodeLine{00532             \textcolor{comment}{//    Debug.LogError(newTargetFrameId + "{} "{} + ready + "{} ST Cant SNAP "{} + snapFrame.frameId + "{}:"{} + snapFrame.content + "{} "{} + targFrame.frameId + "{}:"{} + targFrame.content);}}
+\DoxyCodeLine{00533 }
+\DoxyCodeLine{00534             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00535             \textcolor{comment}{//    Debug.Log(Time.time + "{} "{} + name + "{} <b>"{} + snapFrame.frameId + "{} <color=green>APPLY TRNS</color></b> "{} + snapFrame.content + "{} "{} + ready + "{} "{} + snapFrame);}}
+\DoxyCodeLine{00536 }
+\DoxyCodeLine{00537             \textcolor{keywordflow}{if} (!ready)}
+\DoxyCodeLine{00538             \{}
+\DoxyCodeLine{00539                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00540             \}}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542             \textcolor{keywordflow}{if} (snapFrame.content == FrameContents.Empty)}
+\DoxyCodeLine{00543                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00544 }
+\DoxyCodeLine{00545             \textcolor{keywordflow}{if} (targFrame.content == FrameContents.Empty)}
+\DoxyCodeLine{00546                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00547 }
+\DoxyCodeLine{00548             \textcolor{keywordtype}{bool} snapTeleported = snapFrame.hasTeleported;}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00550             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00551             \textcolor{comment}{//    Debug.Log(}}
+\DoxyCodeLine{00552             \textcolor{comment}{//        "{}snap: "{} + snapFrame.frameId + "{} snap par: "{} + targFrame.parentHash + "{} <-\/ newPar: "{} + teleNewParentId +}}
+\DoxyCodeLine{00553             \textcolor{comment}{//        "{}targ: "{} + targFrame.frameId + "{} targ par: "{} + targFrame.parentHash + "{} <-\/ newPar: "{} + teleNewParentId);}}
+\DoxyCodeLine{00554 }
+\DoxyCodeLine{00555             targFrame.parentHash = teleNewParentId;}
+\DoxyCodeLine{00556 }
+\DoxyCodeLine{00558             skipInterpolation = \textcolor{keyword}{false};}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560             \textcolor{comment}{//if (snapFrame.hasTeleported)}}
+\DoxyCodeLine{00561             \textcolor{comment}{//    Debug.LogWarning(Time.time + "{} "{} + name + "{} TELEFRAME fr: "{} + snapFrame.frameId + "{}>"{} + targFrame.frameId + "{} "{} + snapFrame.m.position + "{} -\/> "{} + snapFrame.telem.position);}}
+\DoxyCodeLine{00562 }
+\DoxyCodeLine{00564             \textcolor{keywordflow}{if} (!snapTeleported \textcolor{comment}{/*\&\& targFrame.content != FrameContents.Empty*/})}
+\DoxyCodeLine{00565             \{}
+\DoxyCodeLine{00566                 \textcolor{keywordflow}{if} (teleportThresholdSqrMag > 0)}
+\DoxyCodeLine{00567                 \{}
+\DoxyCodeLine{00569                     var newpos = targFrame.m.position;}
+\DoxyCodeLine{00570                     var oldpos = snapTeleported ? snapFrame.telem.position : snapFrame.m.position;}
+\DoxyCodeLine{00571 }
+\DoxyCodeLine{00572                     \textcolor{keywordflow}{if} (Vector3.SqrMagnitude(newpos -\/ oldpos) > teleportThresholdSqrMag)}
+\DoxyCodeLine{00573                     \{}
+\DoxyCodeLine{00574 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00575                         Debug.LogWarning(Time.time + \textcolor{stringliteral}{"{} "{}} + name + \textcolor{stringliteral}{"{} fr: "{}} + snapFrame.frameId + \textcolor{stringliteral}{"{}>"{}} + targFrame.frameId + \textcolor{stringliteral}{"{} teleportThreshold distance exceeded. Teleport Distance: "{}} + Vector3.Distance(newpos, oldpos) + \textcolor{stringliteral}{"{} / "{}} + teleportThreshold}
+\DoxyCodeLine{00576                             + \textcolor{stringliteral}{"{}  sqrmag: "{}} + Vector3.SqrMagnitude(newpos -\/ oldpos) + \textcolor{stringliteral}{"{} / "{}} + teleportThresholdSqrMag + \textcolor{stringliteral}{"{} "{}} + newpos + \textcolor{stringliteral}{"{} "{}} + oldpos);}
+\DoxyCodeLine{00577 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00578                         skipInterpolation = \textcolor{keyword}{true};}
+\DoxyCodeLine{00579                     \}}
+\DoxyCodeLine{00580                 \}}
+\DoxyCodeLine{00581             \}}
+\DoxyCodeLine{00582 }
+\DoxyCodeLine{00583             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00584             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00585             \textcolor{comment}{//    var str = Time.time + "{} <b><color=green>Apply Trans</color></b> "{} + name + "{} <b>SNAP</b> "{} + snapFrame.content + "{} "{} + snapFrame.frameId + "{}:"{} + targFrame.frameId + (snapFrame.hasTeleported ? "{} <b>TELEP</b> "{} : "{} "{});}}
+\DoxyCodeLine{00586             \textcolor{comment}{//    str += (transform.parent ? ("{}<b>"{} + transform.parent.name + "{}</b>"{}) : "{}<b>null</b>"{}) + "{} SNAP TRANS"{};}}
+\DoxyCodeLine{00587 }
+\DoxyCodeLine{00588             \textcolor{comment}{//    if (snapFrame.hasTeleported)}}
+\DoxyCodeLine{00589             \textcolor{comment}{//        str += "{} snappos: "{} + snapFrame.m.position + "{} <b><color=red>tele: </color>"{} + snapFrame.telem.position + "{} </b>"{} + "{} -\/> "{};}}
+\DoxyCodeLine{00590             \textcolor{comment}{//    else}}
+\DoxyCodeLine{00591             \textcolor{comment}{//        str += "{} snappos: <b>"{} + snapFrame.telem.position + "{}</b> -\/> "{};}}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{00593             \textcolor{comment}{//    str += "{} targpos: <b>"{} + targFrame.m.position + "{} </b>"{};}}
+\DoxyCodeLine{00594 }
+\DoxyCodeLine{00595             \textcolor{comment}{//    str += "{}par: "{} + (transform.parent ? transform.parent.name : "{}noparent"{}) + "{} lclpos: "{} + transform.localPosition;}}
+\DoxyCodeLine{00596             \textcolor{comment}{//    Debug.Log(str);}}
+\DoxyCodeLine{00597             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00598 }
+\DoxyCodeLine{00599             ApplyFrame(snapFrame);}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00602         \}}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} ApplyFrame(Frame frame)}
+\DoxyCodeLine{00605         \{}
+\DoxyCodeLine{00606             transformCrusher.Apply(transform, frame.hasTeleported ? frame.telem : frame.m);}
+\DoxyCodeLine{00607 }
+\DoxyCodeLine{00608         \}}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00610         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} OnInterpolate(\textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00611         \{}
+\DoxyCodeLine{00612             \textcolor{keywordflow}{if} (skipInterpolation)}
+\DoxyCodeLine{00613                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615             \textcolor{keywordtype}{bool} ready = base.OnInterpolate(snapFrameId, targFrameId, t);}
+\DoxyCodeLine{00616 }
+\DoxyCodeLine{00617             \textcolor{keywordflow}{if} (!ready)}
+\DoxyCodeLine{00618                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00620             \textcolor{keywordflow}{if} (interpolation == Interpolation.None)}
+\DoxyCodeLine{00621                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00622 }
+\DoxyCodeLine{00623             \textcolor{keywordflow}{if} (ReferenceEquals(targFrame, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00624                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626             \textcolor{keywordflow}{if} (snapFrame.content == FrameContents.Empty)}
+\DoxyCodeLine{00627                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00628 }
+\DoxyCodeLine{00629             \textcolor{keywordflow}{if} (targFrame.content == FrameContents.Empty)}
+\DoxyCodeLine{00630                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00631 }
+\DoxyCodeLine{00632             \textcolor{keywordflow}{if} (snapFrame.parentHash != targFrame.parentHash)}
+\DoxyCodeLine{00633                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00634 }
+\DoxyCodeLine{00635             var snapM = snapFrame.hasTeleported ? snapFrame.telem : snapFrame.m;}
+\DoxyCodeLine{00636 }
+\DoxyCodeLine{00637             \textcolor{keywordflow}{if} (interpolation == Interpolation.Linear\textcolor{comment}{/* || pre1Frame.content != FrameContents.Complete*/})}
+\DoxyCodeLine{00638                 Matrix.Lerp(Matrix.reusable, snapM, targFrame.m, t);}
+\DoxyCodeLine{00640             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00641                 Matrix.CatmullRomLerpUnclamped(Matrix.reusable, prevFrame.m, snapFrame.m, targFrame.m, t);}
+\DoxyCodeLine{00642 }
+\DoxyCodeLine{00643             \textcolor{comment}{//if (transform.GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00644             \textcolor{comment}{//Debug.Log(name + "{} OnInterpolate Completed "{} + targFrame.m.position);}}
+\DoxyCodeLine{00645 }
+\DoxyCodeLine{00646             transformCrusher.Apply(transform, Matrix.reusable);}
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00649         \}}
+\DoxyCodeLine{00650 }
+\DoxyCodeLine{00651 \textcolor{preprocessor}{        \#region Reconstruction}}
+\DoxyCodeLine{00652 }
+\DoxyCodeLine{00653 }
+\DoxyCodeLine{00654         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} InterpolateFrame(Frame targframe, Frame startframe, Frame endframe, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00655         \{}
+\DoxyCodeLine{00657             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00658             \textcolor{comment}{//    Debug.Log("{}<b> Interp Frame</b> "{} + prevFrame.content + "{} : "{} + snapFrame.content + "{} "{} + start.parentHash + "{} : "{} + end.parentHash);}}
+\DoxyCodeLine{00659 }
+\DoxyCodeLine{00661             \textcolor{keywordflow}{if} (startframe.parentHash == -\/2 || startframe.parentHash != endframe.parentHash)}
+\DoxyCodeLine{00662             \{}
+\DoxyCodeLine{00663                 targFrame.content = FrameContents.Empty;}
+\DoxyCodeLine{00664                 \textcolor{comment}{//targ.CopyFrom(end);}}
+\DoxyCodeLine{00665             \}}
+\DoxyCodeLine{00666             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00667             \{}
+\DoxyCodeLine{00668                 targframe.CopyFrom(endframe);}
+\DoxyCodeLine{00669                 Matrix.Lerp(targframe.m, startframe.hasTeleported ? startframe.telem : startframe.m, endframe.m, t);}
+\DoxyCodeLine{00670                 transformCrusher.Compress(targframe.cm, targframe.m);}
+\DoxyCodeLine{00671             \}}
+\DoxyCodeLine{00672         \}}
+\DoxyCodeLine{00673 }
+\DoxyCodeLine{00674         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} ExtrapolateFrame(Frame prevframe, Frame snapframe, Frame targframe)}
+\DoxyCodeLine{00675         \{}
+\DoxyCodeLine{00676             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00677             \textcolor{comment}{//    Debug.Log(snapFrame.frameId + "{} par: "{} + snapFrame.parentHash + "{}/"{} + teleNewParentId);}}
+\DoxyCodeLine{00678 }
+\DoxyCodeLine{00679             \textcolor{comment}{//if (extrapolateRatio == 0)}}
+\DoxyCodeLine{00680             \textcolor{comment}{//  return FrameContents.Empty;}}
+\DoxyCodeLine{00681 }
+\DoxyCodeLine{00683 }
+\DoxyCodeLine{00685             \textcolor{keywordflow}{if} (snapframe.content == FrameContents.Empty)}
+\DoxyCodeLine{00686             \{}
+\DoxyCodeLine{00687                 Debug.LogError(targframe.frameId + \textcolor{stringliteral}{"{} Failed to extrapolate due to empty snapshot. Failsafing to current transform value."{}});}
+\DoxyCodeLine{00688                 targframe.content = FrameContents.Empty;}
+\DoxyCodeLine{00689                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00690                 \textcolor{comment}{//CaptureCurrent(targFrame.m, targFrame.cm);}}
+\DoxyCodeLine{00691                 \textcolor{comment}{//return FrameContents.Extrapolated;}}
+\DoxyCodeLine{00692             \}}
+\DoxyCodeLine{00693 }
+\DoxyCodeLine{00695             targframe.CopyFrom(snapframe);}
+\DoxyCodeLine{00696             targframe.parentHash = teleNewParentId;}
+\DoxyCodeLine{00697 }
+\DoxyCodeLine{00699             \textcolor{keywordflow}{if} (snapframe.hasTeleported)}
+\DoxyCodeLine{00700             \{}
+\DoxyCodeLine{00701                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00702                 \textcolor{comment}{//    Debug.Log(Time.time + "{} <b>"{} + targFrame.frameId }}
+\DoxyCodeLine{00703                 \textcolor{comment}{//        + "{} ["{} + prevFrame.parentHash + "{} : "{} + snapFrame.parentHash + "{}]   <color=red>Trans Extrap</color></b> by copy snapFrame "{}}}
+\DoxyCodeLine{00704                 \textcolor{comment}{//        + snapFrame.m.position + "{} -\/> "{} + snapFrame.telem.position + (prevFrame.hasTeleported ? "{} <b><color=red>tele</color></b>"{} : "{}"{}));}}
+\DoxyCodeLine{00705 }
+\DoxyCodeLine{00706                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00707             \}}
+\DoxyCodeLine{00708 }
+\DoxyCodeLine{00709 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00710 }
+\DoxyCodeLine{00713             \textcolor{keywordflow}{if} (snapframe.parentHash != teleNewParentId)}
+\DoxyCodeLine{00714             \{}
+\DoxyCodeLine{00715                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00716                 \textcolor{comment}{//    Debug.LogError("{}<b>SHOULDNT HAPPEN -\/ THIS IF SEGMENT IS JUST HERE TO DETECT SOME CODE THAT NEEDS REVISITING</b> "{} + snapFrame.parentHash + "{} "{} + teleNewParentId);}}
+\DoxyCodeLine{00717 }
+\DoxyCodeLine{00718                 targframe.content = FrameContents.Empty;}
+\DoxyCodeLine{00719                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00720             \}}
+\DoxyCodeLine{00721 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00723             var prevContent = prevframe.content;}
+\DoxyCodeLine{00724             \textcolor{keywordflow}{if} (prevContent == FrameContents.Empty)}
+\DoxyCodeLine{00725             \{}
+\DoxyCodeLine{00726                 \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00727                 \textcolor{comment}{//    Debug.Log(Time.time + "{} <b>targframe: "{} + targFrame.frameId + "{}   "{} + targFrame.m.position + "{} "{}}}
+\DoxyCodeLine{00728                 \textcolor{comment}{//        + "{}  <color=red>Extraped</color></b> by copy snapFrame "{} }}
+\DoxyCodeLine{00729                 \textcolor{comment}{//        + snapFrame.m.position + "{} snap tele-\/> "{} + (snapFrame.hasTeleported ? "{} <b>tele</b> "{} + snapFrame.telem.position : "{}"{}));}}
+\DoxyCodeLine{00730 }
+\DoxyCodeLine{00731                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00732             \}}
+\DoxyCodeLine{00733 }
+\DoxyCodeLine{00734 }
+\DoxyCodeLine{00738             \textcolor{keywordflow}{if} (prevContent == FrameContents.Complete)}
+\DoxyCodeLine{00739             \{}
+\DoxyCodeLine{00740                 var prevpar = prevframe.parentHash;}
+\DoxyCodeLine{00741                 \textcolor{keywordflow}{if} (prevpar == -\/2 || prevframe.hasTeleported || prevpar != snapframe.parentHash)}
+\DoxyCodeLine{00742                 \{}
+\DoxyCodeLine{00743                     \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00744                     \textcolor{comment}{//    Debug.Log(Time.time + "{} <b>"{} + targFrame.frameId}}
+\DoxyCodeLine{00745                     \textcolor{comment}{//        + "{} ["{} + prevFrame.parentHash + "{} : "{} + snapFrame.parentHash + "{}]  <color=red>Can't Extrap due to par change -\/ </color></b> snapFrame "{} + snapFrame.frameId + "{} "{}}}
+\DoxyCodeLine{00746                     \textcolor{comment}{//        + snapFrame.m.position}}
+\DoxyCodeLine{00747                     \textcolor{comment}{//        + (snapFrame.hasTeleported ? "{} <color=red>tele:</color> "{} + snapFrame.telem.position : "{}"{})}}
+\DoxyCodeLine{00748                     \textcolor{comment}{//        + (prevFrame.hasTeleported ? "{} <b>prevframe teleported</b>"{} : "{}"{}));}}
+\DoxyCodeLine{00749 }
+\DoxyCodeLine{00750                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00751                 \}}
+\DoxyCodeLine{00752             \}}
+\DoxyCodeLine{00753 }
+\DoxyCodeLine{00754             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00755             \textcolor{comment}{//Debug.Log(Time.time + "{} "{} + targFrame.frameId + "{} <b>Extrap</b> by LERP Pre1 "{} + pre1Frame.frameId + "{}:"{} + snapFrame.frameId + "{} "{}}}
+\DoxyCodeLine{00756             \textcolor{comment}{//    + ((pre1Frame.m.position -\/ snapFrame.m.position).magnitude > 1 ? "{}<color=red>"{} : "{}<color=blue>"{})}}
+\DoxyCodeLine{00757             \textcolor{comment}{//    + pre1Frame.parentHash + "{}:"{} + snapFrame.parentHash + "{} "{} + pre1Frame.m.position + "{} "{} + snapFrame.m.position + "{}</color>"{});}}
+\DoxyCodeLine{00758 }
+\DoxyCodeLine{00759             Matrix.LerpUnclamped(targframe.m, prevframe.hasTeleported ? prevframe.telem : prevframe.m, snapframe.m, 1 + extrapolateRatio);}
+\DoxyCodeLine{00760             transformCrusher.Compress(targframe.cm, targframe.m);}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762             \textcolor{comment}{//if (GetComponent<SyncPickup>())}}
+\DoxyCodeLine{00763             \textcolor{comment}{//    Debug.Log(name + "{} <color=red>Extrap </color>"{} + prevFrame.frameId + "{} > "{} + snapFrame.frameId + "{} = "{} + targFrame.m.position);}}
+\DoxyCodeLine{00764 }
+\DoxyCodeLine{00765             \textcolor{comment}{//return FrameContents.Extrapolated;}}
+\DoxyCodeLine{00766         \}}
+\DoxyCodeLine{00767 }
+\DoxyCodeLine{00768 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00769 }
+\DoxyCodeLine{00770     \}}
+\DoxyCodeLine{00771 \}}
+\DoxyCodeLine{00772 }
+
+\end{DoxyCode}

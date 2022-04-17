@@ -1,0 +1,82 @@
+\doxysection{Flat\+Kit\+Readme.\+cs}
+\label{_flat_kit_readme_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Utils/Readme/Editor/FlatKitReadme.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/Utils/Readme/Editor/FlatKitReadme.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} JetBrains.Annotations;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEditor.PackageManager;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} PackageInfo = UnityEditor.PackageManager.PackageInfo;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{comment}{// ReSharper disable UnusedMember.Local}}
+\DoxyCodeLine{00009 \textcolor{comment}{// ReSharper disable MemberCanBePrivate.Global}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }FlatKit \{}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if FLAT\_KIT\_DEV}}
+\DoxyCodeLine{00013 [CreateAssetMenu(fileName = \textcolor{stringliteral}{"{}Readme"{}}, menuName = \textcolor{stringliteral}{"{}FlatKit/Internal/Readme"{}}, order = 0)]}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif }\textcolor{comment}{// FLAT\_KIT\_DEV}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 [ExecuteAlways]}
+\DoxyCodeLine{00017 \textcolor{keyword}{public} \textcolor{keyword}{class }FlatKitReadme : ScriptableObject \{}
+\DoxyCodeLine{00018     [NonSerialized]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keywordtype}{bool} FlatKitInstalled;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     [NonSerialized]}
+\DoxyCodeLine{00022     \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} FlatKitVersion = \textcolor{stringliteral}{"{}2.8.1"{}};}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024     [NonSerialized]}
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keywordtype}{bool}? UrpInstalled;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027     [NonSerialized]}
+\DoxyCodeLine{00028     [CanBeNull]}
+\DoxyCodeLine{00029     \textcolor{keyword}{public} \textcolor{keywordtype}{string} PackageManagerError;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031     [NonSerialized]}
+\DoxyCodeLine{00032     \textcolor{keyword}{public} \textcolor{keywordtype}{string} UrpVersionInstalled = \textcolor{stringliteral}{"{}N/A"{}};}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     [NonSerialized]}
+\DoxyCodeLine{00035     \textcolor{keyword}{public} \textcolor{keywordtype}{string} UnityVersion = Application.unityVersion;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037     \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} UrpPackageID = \textcolor{stringliteral}{"{}com.unity.render-\/pipelines.universal"{}};}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     \textcolor{keyword}{private} \textcolor{keyword}{static} readonly GUID StylizedShaderGuid =}
+\DoxyCodeLine{00040         \textcolor{keyword}{new} GUID(\textcolor{stringliteral}{"{}bee44b4a58655ee4cbff107302a3e131"{}});}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042     \textcolor{keyword}{public} \textcolor{keywordtype}{void} Refresh() \{}
+\DoxyCodeLine{00043         UrpInstalled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00044         FlatKitInstalled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00045         PackageManagerError = \textcolor{keyword}{null};}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         PackageCollection packages = GetPackageList();}
+\DoxyCodeLine{00048         \textcolor{keywordflow}{foreach} (PackageInfo p \textcolor{keywordflow}{in} packages) \{}
+\DoxyCodeLine{00049             \textcolor{keywordflow}{if} (p.name == UrpPackageID) \{}
+\DoxyCodeLine{00050                 UrpInstalled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00051                 UrpVersionInstalled = p.version;}
+\DoxyCodeLine{00052             \}}
+\DoxyCodeLine{00053         \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keywordtype}{string} path = AssetDatabase.GUIDToAssetPath(StylizedShaderGuid.ToString());}
+\DoxyCodeLine{00056         var flatKitSourceAsset = AssetDatabase.LoadAssetAtPath<Shader>(path);}
+\DoxyCodeLine{00057         FlatKitInstalled = flatKitSourceAsset != \textcolor{keyword}{null};}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         UnityVersion = Application.unityVersion;}
+\DoxyCodeLine{00060     \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062     \textcolor{keyword}{private} PackageCollection GetPackageList() \{}
+\DoxyCodeLine{00063         var listRequest = Client.List(\textcolor{keyword}{true});}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keywordflow}{while} (listRequest.Status == StatusCode.InProgress) \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keywordflow}{if} (listRequest.Status == StatusCode.Failure) \{}
+\DoxyCodeLine{00068             PackageManagerError = listRequest.Error.message;}
+\DoxyCodeLine{00069             Debug.LogWarning(\textcolor{stringliteral}{"{}[Flat Kit] Failed to get packages from Package Manager."{}});}
+\DoxyCodeLine{00070             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keywordflow}{return} listRequest.Result;}
+\DoxyCodeLine{00074     \}}
+\DoxyCodeLine{00075 \}}
+\DoxyCodeLine{00076 \}}
+
+\end{DoxyCode}

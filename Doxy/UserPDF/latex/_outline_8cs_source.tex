@@ -1,0 +1,315 @@
+\doxysection{Outline.\+cs}
+\label{_outline_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/QuickOutline/Scripts/Outline.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/QuickOutline/Scripts/Outline.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{//}}
+\DoxyCodeLine{00002 \textcolor{comment}{//  Outline.cs}}
+\DoxyCodeLine{00003 \textcolor{comment}{//  QuickOutline}}
+\DoxyCodeLine{00004 \textcolor{comment}{//}}
+\DoxyCodeLine{00005 \textcolor{comment}{//  Created by Chris Nolet on 3/30/18.}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Copyright © 2018 Chris Nolet. All rights reserved.}}
+\DoxyCodeLine{00007 \textcolor{comment}{//}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 [DisallowMultipleComponent]}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{public} \textcolor{keyword}{class }Outline : MonoBehaviour \{}
+\DoxyCodeLine{00017   \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<Mesh> registeredMeshes = \textcolor{keyword}{new} HashSet<Mesh>();}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019   \textcolor{keyword}{public} \textcolor{keyword}{enum} Mode \{}
+\DoxyCodeLine{00020     OutlineAll,}
+\DoxyCodeLine{00021     OutlineVisible,}
+\DoxyCodeLine{00022     OutlineHidden,}
+\DoxyCodeLine{00023     OutlineAndSilhouette,}
+\DoxyCodeLine{00024     SilhouetteOnly}
+\DoxyCodeLine{00025   \}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027   \textcolor{keyword}{public} Mode OutlineMode \{}
+\DoxyCodeLine{00028     \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} outlineMode; \}}
+\DoxyCodeLine{00029     \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00030       outlineMode = value;}
+\DoxyCodeLine{00031       needsUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00032     \}}
+\DoxyCodeLine{00033   \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035   \textcolor{keyword}{public} Color OutlineColor \{}
+\DoxyCodeLine{00036     \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} outlineColor; \}}
+\DoxyCodeLine{00037     \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00038       outlineColor = value;}
+\DoxyCodeLine{00039       needsUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00040     \}}
+\DoxyCodeLine{00041   \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043   \textcolor{keyword}{public} \textcolor{keywordtype}{float} OutlineWidth \{}
+\DoxyCodeLine{00044     \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} outlineWidth; \}}
+\DoxyCodeLine{00045     \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00046       outlineWidth = value;}
+\DoxyCodeLine{00047       needsUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00048     \}}
+\DoxyCodeLine{00049   \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051   [Serializable]}
+\DoxyCodeLine{00052   \textcolor{keyword}{private} \textcolor{keyword}{class }ListVector3 \{}
+\DoxyCodeLine{00053     \textcolor{keyword}{public} List<Vector3> data;}
+\DoxyCodeLine{00054   \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056   [SerializeField]}
+\DoxyCodeLine{00057   \textcolor{keyword}{private} Mode outlineMode;}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059   [SerializeField]}
+\DoxyCodeLine{00060   \textcolor{keyword}{private} Color outlineColor = Color.white;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062   [SerializeField, Range(0f, 10f)]}
+\DoxyCodeLine{00063   \textcolor{keyword}{private} \textcolor{keywordtype}{float} outlineWidth = 2f;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065   [Header(\textcolor{stringliteral}{"{}Optional"{}})]}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067   [SerializeField, Tooltip(\textcolor{stringliteral}{"{}Precompute enabled: Per-\/vertex calculations are performed in the editor and serialized with the object. "{}}}
+\DoxyCodeLine{00068   + \textcolor{stringliteral}{"{}Precompute disabled: Per-\/vertex calculations are performed at runtime in Awake(). This may cause a pause for large meshes."{}})]}
+\DoxyCodeLine{00069   \textcolor{keyword}{private} \textcolor{keywordtype}{bool} precomputeOutline;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071   [SerializeField, HideInInspector]}
+\DoxyCodeLine{00072   \textcolor{keyword}{private} List<Mesh> bakeKeys = \textcolor{keyword}{new} List<Mesh>();}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074   [SerializeField, HideInInspector]}
+\DoxyCodeLine{00075   \textcolor{keyword}{private} List<ListVector3> bakeValues = \textcolor{keyword}{new} List<ListVector3>();}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077   \textcolor{keyword}{private} Renderer[] renderers;}
+\DoxyCodeLine{00078   \textcolor{keyword}{private} Material outlineMaskMaterial;}
+\DoxyCodeLine{00079   \textcolor{keyword}{private} Material outlineFillMaterial;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081   \textcolor{keyword}{private} \textcolor{keywordtype}{bool} needsUpdate;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083   \textcolor{keywordtype}{void} Awake() \{}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085     \textcolor{comment}{// Cache renderers}}
+\DoxyCodeLine{00086     renderers = GetComponentsInChildren<Renderer>();}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088     \textcolor{comment}{// Instantiate outline materials}}
+\DoxyCodeLine{00089     outlineMaskMaterial = Instantiate(Resources.Load<Material>(\textcolor{stringliteral}{@"{}Materials/OutlineMask"{}}));}
+\DoxyCodeLine{00090     outlineFillMaterial = Instantiate(Resources.Load<Material>(\textcolor{stringliteral}{@"{}Materials/OutlineFill"{}}));}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092     outlineMaskMaterial.name = \textcolor{stringliteral}{"{}OutlineMask (Instance)"{}};}
+\DoxyCodeLine{00093     outlineFillMaterial.name = \textcolor{stringliteral}{"{}OutlineFill (Instance)"{}};}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095     \textcolor{comment}{// Retrieve or generate smooth normals}}
+\DoxyCodeLine{00096     LoadSmoothNormals();}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098     \textcolor{comment}{// Apply material properties immediately}}
+\DoxyCodeLine{00099     needsUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00100   \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102   \textcolor{keywordtype}{void} OnEnable() \{}
+\DoxyCodeLine{00103     \textcolor{keywordflow}{foreach} (var renderer \textcolor{keywordflow}{in} renderers) \{}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105       \textcolor{comment}{// Append outline shaders}}
+\DoxyCodeLine{00106       var materials = renderer.sharedMaterials.ToList();}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108       materials.Add(outlineMaskMaterial);}
+\DoxyCodeLine{00109       materials.Add(outlineFillMaterial);}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111       renderer.materials = materials.ToArray();}
+\DoxyCodeLine{00112     \}}
+\DoxyCodeLine{00113   \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115   \textcolor{keywordtype}{void} OnValidate() \{}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117     \textcolor{comment}{// Update material properties}}
+\DoxyCodeLine{00118     needsUpdate = \textcolor{keyword}{true};}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120     \textcolor{comment}{// Clear cache when baking is disabled or corrupted}}
+\DoxyCodeLine{00121     \textcolor{keywordflow}{if} (!precomputeOutline \&\& bakeKeys.Count != 0 || bakeKeys.Count != bakeValues.Count) \{}
+\DoxyCodeLine{00122       bakeKeys.Clear();}
+\DoxyCodeLine{00123       bakeValues.Clear();}
+\DoxyCodeLine{00124     \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126     \textcolor{comment}{// Generate smooth normals when baking is enabled}}
+\DoxyCodeLine{00127     \textcolor{keywordflow}{if} (precomputeOutline \&\& bakeKeys.Count == 0) \{}
+\DoxyCodeLine{00128       Bake();}
+\DoxyCodeLine{00129     \}}
+\DoxyCodeLine{00130   \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132   \textcolor{keywordtype}{void} Update() \{}
+\DoxyCodeLine{00133     \textcolor{keywordflow}{if} (needsUpdate) \{}
+\DoxyCodeLine{00134       needsUpdate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136       UpdateMaterialProperties();}
+\DoxyCodeLine{00137     \}}
+\DoxyCodeLine{00138   \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140   \textcolor{keywordtype}{void} OnDisable() \{}
+\DoxyCodeLine{00141     \textcolor{keywordflow}{foreach} (var renderer \textcolor{keywordflow}{in} renderers) \{}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143       \textcolor{comment}{// Remove outline shaders}}
+\DoxyCodeLine{00144       var materials = renderer.sharedMaterials.ToList();}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146       materials.Remove(outlineMaskMaterial);}
+\DoxyCodeLine{00147       materials.Remove(outlineFillMaterial);}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149       renderer.materials = materials.ToArray();}
+\DoxyCodeLine{00150     \}}
+\DoxyCodeLine{00151   \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153   \textcolor{keywordtype}{void} OnDestroy() \{}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155     \textcolor{comment}{// Destroy material instances}}
+\DoxyCodeLine{00156     Destroy(outlineMaskMaterial);}
+\DoxyCodeLine{00157     Destroy(outlineFillMaterial);}
+\DoxyCodeLine{00158   \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160   \textcolor{keywordtype}{void} Bake() \{}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162     \textcolor{comment}{// Generate smooth normals for each mesh}}
+\DoxyCodeLine{00163     var bakedMeshes = \textcolor{keyword}{new} HashSet<Mesh>();}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165     \textcolor{keywordflow}{foreach} (var meshFilter \textcolor{keywordflow}{in} GetComponentsInChildren<MeshFilter>()) \{}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167       \textcolor{comment}{// Skip duplicates}}
+\DoxyCodeLine{00168       \textcolor{keywordflow}{if} (!bakedMeshes.Add(meshFilter.sharedMesh)) \{}
+\DoxyCodeLine{00169         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00170       \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172       \textcolor{comment}{// Serialize smooth normals}}
+\DoxyCodeLine{00173       var smoothNormals = SmoothNormals(meshFilter.sharedMesh);}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175       bakeKeys.Add(meshFilter.sharedMesh);}
+\DoxyCodeLine{00176       bakeValues.Add(\textcolor{keyword}{new} ListVector3() \{ data = smoothNormals \});}
+\DoxyCodeLine{00177     \}}
+\DoxyCodeLine{00178   \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180   \textcolor{keywordtype}{void} LoadSmoothNormals() \{}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182     \textcolor{comment}{// Retrieve or generate smooth normals}}
+\DoxyCodeLine{00183     \textcolor{keywordflow}{foreach} (var meshFilter \textcolor{keywordflow}{in} GetComponentsInChildren<MeshFilter>()) \{}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185       \textcolor{comment}{// Skip if smooth normals have already been adopted}}
+\DoxyCodeLine{00186       \textcolor{keywordflow}{if} (!registeredMeshes.Add(meshFilter.sharedMesh)) \{}
+\DoxyCodeLine{00187         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00188       \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190       \textcolor{comment}{// Retrieve or generate smooth normals}}
+\DoxyCodeLine{00191       var index = bakeKeys.IndexOf(meshFilter.sharedMesh);}
+\DoxyCodeLine{00192       var smoothNormals = (index >= 0) ? bakeValues[index].data : SmoothNormals(meshFilter.sharedMesh);}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194       \textcolor{comment}{// Store smooth normals in UV3}}
+\DoxyCodeLine{00195       meshFilter.sharedMesh.SetUVs(3, smoothNormals);}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197       \textcolor{comment}{// Combine submeshes}}
+\DoxyCodeLine{00198       var renderer = meshFilter.GetComponent<Renderer>();}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200       \textcolor{keywordflow}{if} (renderer != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00201         CombineSubmeshes(meshFilter.sharedMesh, renderer.sharedMaterials);}
+\DoxyCodeLine{00202       \}}
+\DoxyCodeLine{00203     \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205     \textcolor{comment}{// Clear UV3 on skinned mesh renderers}}
+\DoxyCodeLine{00206     \textcolor{keywordflow}{foreach} (var skinnedMeshRenderer \textcolor{keywordflow}{in} GetComponentsInChildren<SkinnedMeshRenderer>()) \{}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208       \textcolor{comment}{// Skip if UV3 has already been reset}}
+\DoxyCodeLine{00209       \textcolor{keywordflow}{if} (!registeredMeshes.Add(skinnedMeshRenderer.sharedMesh)) \{}
+\DoxyCodeLine{00210         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00211       \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213       \textcolor{comment}{// Clear UV3}}
+\DoxyCodeLine{00214       skinnedMeshRenderer.sharedMesh.uv4 = \textcolor{keyword}{new} Vector2[skinnedMeshRenderer.sharedMesh.vertexCount];}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216       \textcolor{comment}{// Combine submeshes}}
+\DoxyCodeLine{00217       CombineSubmeshes(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.sharedMaterials);}
+\DoxyCodeLine{00218     \}}
+\DoxyCodeLine{00219   \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221   List<Vector3> SmoothNormals(Mesh mesh) \{}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223     \textcolor{comment}{// Group vertices by location}}
+\DoxyCodeLine{00224     var groups = mesh.vertices.Select((vertex, index) => \textcolor{keyword}{new} KeyValuePair<Vector3, int>(vertex, index)).GroupBy(pair => pair.Key);}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226     \textcolor{comment}{// Copy normals to a new list}}
+\DoxyCodeLine{00227     var smoothNormals = \textcolor{keyword}{new} List<Vector3>(mesh.normals);}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229     \textcolor{comment}{// Average normals for grouped vertices}}
+\DoxyCodeLine{00230     \textcolor{keywordflow}{foreach} (var group \textcolor{keywordflow}{in} groups) \{}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232       \textcolor{comment}{// Skip single vertices}}
+\DoxyCodeLine{00233       \textcolor{keywordflow}{if} (group.Count() == 1) \{}
+\DoxyCodeLine{00234         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00235       \}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237       \textcolor{comment}{// Calculate the average normal}}
+\DoxyCodeLine{00238       var smoothNormal = Vector3.zero;}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240       \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} group) \{}
+\DoxyCodeLine{00241         smoothNormal += smoothNormals[pair.Value];}
+\DoxyCodeLine{00242       \}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244       smoothNormal.Normalize();}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246       \textcolor{comment}{// Assign smooth normal to each vertex}}
+\DoxyCodeLine{00247       \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} group) \{}
+\DoxyCodeLine{00248         smoothNormals[pair.Value] = smoothNormal;}
+\DoxyCodeLine{00249       \}}
+\DoxyCodeLine{00250     \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252     \textcolor{keywordflow}{return} smoothNormals;}
+\DoxyCodeLine{00253   \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255   \textcolor{keywordtype}{void} CombineSubmeshes(Mesh mesh, Material[] materials) \{}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257     \textcolor{comment}{// Skip meshes with a single submesh}}
+\DoxyCodeLine{00258     \textcolor{keywordflow}{if} (mesh.subMeshCount == 1) \{}
+\DoxyCodeLine{00259       \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00260     \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262     \textcolor{comment}{// Skip if submesh count exceeds material count}}
+\DoxyCodeLine{00263     \textcolor{keywordflow}{if} (mesh.subMeshCount > materials.Length) \{}
+\DoxyCodeLine{00264       \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00265     \}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267     \textcolor{comment}{// Append combined submesh}}
+\DoxyCodeLine{00268     mesh.subMeshCount++;}
+\DoxyCodeLine{00269     mesh.SetTriangles(mesh.triangles, mesh.subMeshCount -\/ 1);}
+\DoxyCodeLine{00270   \}}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272   \textcolor{keywordtype}{void} UpdateMaterialProperties() \{}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274     \textcolor{comment}{// Apply properties according to mode}}
+\DoxyCodeLine{00275     outlineFillMaterial.SetColor(\textcolor{stringliteral}{"{}\_OutlineColor"{}}, outlineColor);}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277     \textcolor{keywordflow}{switch} (outlineMode) \{}
+\DoxyCodeLine{00278       \textcolor{keywordflow}{case} Mode.OutlineAll:}
+\DoxyCodeLine{00279         outlineMaskMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Always);}
+\DoxyCodeLine{00280         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Always);}
+\DoxyCodeLine{00281         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_OutlineWidth"{}}, outlineWidth);}
+\DoxyCodeLine{00282         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284       \textcolor{keywordflow}{case} Mode.OutlineVisible:}
+\DoxyCodeLine{00285         outlineMaskMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Always);}
+\DoxyCodeLine{00286         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.LessEqual);}
+\DoxyCodeLine{00287         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_OutlineWidth"{}}, outlineWidth);}
+\DoxyCodeLine{00288         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290       \textcolor{keywordflow}{case} Mode.OutlineHidden:}
+\DoxyCodeLine{00291         outlineMaskMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Always);}
+\DoxyCodeLine{00292         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Greater);}
+\DoxyCodeLine{00293         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_OutlineWidth"{}}, outlineWidth);}
+\DoxyCodeLine{00294         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296       \textcolor{keywordflow}{case} Mode.OutlineAndSilhouette:}
+\DoxyCodeLine{00297         outlineMaskMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.LessEqual);}
+\DoxyCodeLine{00298         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Always);}
+\DoxyCodeLine{00299         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_OutlineWidth"{}}, outlineWidth);}
+\DoxyCodeLine{00300         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302       \textcolor{keywordflow}{case} Mode.SilhouetteOnly:}
+\DoxyCodeLine{00303         outlineMaskMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.LessEqual);}
+\DoxyCodeLine{00304         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_ZTest"{}}, (\textcolor{keywordtype}{float})UnityEngine.Rendering.CompareFunction.Greater);}
+\DoxyCodeLine{00305         outlineFillMaterial.SetFloat(\textcolor{stringliteral}{"{}\_OutlineWidth"{}}, 0f);}
+\DoxyCodeLine{00306         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00307     \}}
+\DoxyCodeLine{00308   \}}
+\DoxyCodeLine{00309 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,625 @@
+\doxysection{Chat\+Gui.\+cs}
+\label{_chat_gui_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Demos/DemoChat/ChatGui.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Demos/DemoChat/ChatGui.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright company="{}Exit Games GmbH"{}/>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <summary>Demo code for Photon Chat in Unity.</summary>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{using} Photon.Chat;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} AuthenticationValues = Photon.Chat.AuthenticationValues;}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{\#if PHOTON\_UNITY\_NETWORKING}}
+\DoxyCodeLine{00017 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{keyword}{namespace }Photon.Chat.Demo}
+\DoxyCodeLine{00022 \{}
+\DoxyCodeLine{00040     \textcolor{keyword}{public} \textcolor{keyword}{class }ChatGui : MonoBehaviour, IChatClientListener}
+\DoxyCodeLine{00041     \{}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] ChannelsToJoinOnConnect; \textcolor{comment}{// set in inspector. Demo channels to join automatically.}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] FriendsList;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{int} HistoryLengthToFetch; \textcolor{comment}{// set in inspector. Up to a certain degree, previously sent messages can be fetched for context}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserName \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{private} \textcolor{keywordtype}{string} selectedChannelName; \textcolor{comment}{// mainly used for GUI/input}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} ChatClient chatClient;}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055 \textcolor{preprocessor}{        \#if !PHOTON\_UNITY\_NETWORKING}}
+\DoxyCodeLine{00056         [SerializeField]}
+\DoxyCodeLine{00057 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00058         \textcolor{keyword}{protected} \textcolor{keyword}{internal} ChatAppSettings chatAppSettings;}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{public} GameObject missingAppIdErrorPanel;}
+\DoxyCodeLine{00062         \textcolor{keyword}{public} GameObject ConnectingLabel;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         \textcolor{keyword}{public} RectTransform ChatPanel;     \textcolor{comment}{// set in inspector (to enable/disable panel)}}
+\DoxyCodeLine{00065         \textcolor{keyword}{public} GameObject UserIdFormPanel;}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} InputField InputFieldChat;   \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} Text CurrentChannelText;     \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00068         \textcolor{keyword}{public} Toggle ChannelToggleToInstantiate; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} GameObject FriendListUiItemtoInstantiate;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keyword}{private} readonly Dictionary<string, Toggle> channelToggles = \textcolor{keyword}{new} Dictionary<string, Toggle>();}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{private} readonly Dictionary<string,FriendItem> friendListItemLUT =  \textcolor{keyword}{new} Dictionary<string, FriendItem>();}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ShowState = \textcolor{keyword}{true};}
+\DoxyCodeLine{00078         \textcolor{keyword}{public} GameObject Title;}
+\DoxyCodeLine{00079         \textcolor{keyword}{public} Text StateText; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00080         \textcolor{keyword}{public} Text UserIdText; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{comment}{// private static string WelcomeText = "{}Welcome to chat. Type \(\backslash\)\(\backslash\)help to list commands."{};}}
+\DoxyCodeLine{00083         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} HelpText = \textcolor{stringliteral}{"{}\(\backslash\)n    -\/-\/ HELP -\/-\/\(\backslash\)n"{}} +}
+\DoxyCodeLine{00084             \textcolor{stringliteral}{"{}To subscribe to channel(s) (channelnames are case sensitive) :  \(\backslash\)n"{}} +}
+\DoxyCodeLine{00085                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)subscribe</color> <color=green><list of channelnames></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00086                 \textcolor{stringliteral}{"{}\(\backslash\)tor\(\backslash\)n"{}} +}
+\DoxyCodeLine{00087                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)s</color> <color=green><list of channelnames></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00088                 \textcolor{stringliteral}{"{}\(\backslash\)n"{}} +}
+\DoxyCodeLine{00089                 \textcolor{stringliteral}{"{}To leave channel(s):\(\backslash\)n"{}} +}
+\DoxyCodeLine{00090                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)unsubscribe</color> <color=green><list of channelnames></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00091                 \textcolor{stringliteral}{"{}\(\backslash\)tor\(\backslash\)n"{}} +}
+\DoxyCodeLine{00092                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)u</color> <color=green><list of channelnames></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00093                 \textcolor{stringliteral}{"{}\(\backslash\)n"{}} +}
+\DoxyCodeLine{00094                 \textcolor{stringliteral}{"{}To switch the active channel\(\backslash\)n"{}} +}
+\DoxyCodeLine{00095                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)join</color> <color=green><channelname></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00096                 \textcolor{stringliteral}{"{}\(\backslash\)tor\(\backslash\)n"{}} +}
+\DoxyCodeLine{00097                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)j</color> <color=green><channelname></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00098                 \textcolor{stringliteral}{"{}\(\backslash\)n"{}} +}
+\DoxyCodeLine{00099                 \textcolor{stringliteral}{"{}To send a private message: (username are case sensitive)\(\backslash\)n"{}} +}
+\DoxyCodeLine{00100                 \textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)\(\backslash\)<color=\#E07B00>msg</color> <color=green><username></color> <color=green><message></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00101                 \textcolor{stringliteral}{"{}\(\backslash\)n"{}} +}
+\DoxyCodeLine{00102                 \textcolor{stringliteral}{"{}To change status:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00103                 \textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)\(\backslash\)<color=\#E07B00>state</color> <color=green><stateIndex></color> <color=green><message></color>\(\backslash\)n"{}} +}
+\DoxyCodeLine{00104                 \textcolor{stringliteral}{"{}<color=green>0</color> = Offline "{}} +}
+\DoxyCodeLine{00105                 \textcolor{stringliteral}{"{}<color=green>1</color> = Invisible "{}} +}
+\DoxyCodeLine{00106                 \textcolor{stringliteral}{"{}<color=green>2</color> = Online "{}} +}
+\DoxyCodeLine{00107                 \textcolor{stringliteral}{"{}<color=green>3</color> = Away \(\backslash\)n"{}} +}
+\DoxyCodeLine{00108                 \textcolor{stringliteral}{"{}<color=green>4</color> = Do not disturb "{}} +}
+\DoxyCodeLine{00109                 \textcolor{stringliteral}{"{}<color=green>5</color> = Looking For Group "{}} +}
+\DoxyCodeLine{00110                 \textcolor{stringliteral}{"{}<color=green>6</color> = Playing"{}} +}
+\DoxyCodeLine{00111                 \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00112                 \textcolor{stringliteral}{"{}To clear the current chat tab (private chats get closed):\(\backslash\)n"{}} +}
+\DoxyCodeLine{00113                 \textcolor{stringliteral}{"{}\(\backslash\)t<color=\#E07B00>\(\backslash\)\(\backslash\)clear</color>"{}};}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             DontDestroyOnLoad(this.gameObject);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             this.UserIdText.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00121             this.StateText.text  = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00122             this.StateText.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00123             this.UserIdText.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00124             this.Title.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00125             this.ChatPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00126             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(this.UserName))}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 this.UserName = \textcolor{stringliteral}{"{}user"{}} + Environment.TickCount\%99; \textcolor{comment}{//made-\/up username}}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133 \textcolor{preprocessor}{            \#if PHOTON\_UNITY\_NETWORKING}}
+\DoxyCodeLine{00134             this.chatAppSettings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();}
+\DoxyCodeLine{00135 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             \textcolor{keywordtype}{bool} appIdPresent = !\textcolor{keywordtype}{string}.IsNullOrEmpty(this.chatAppSettings.AppIdChat);}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             this.missingAppIdErrorPanel.SetActive(!appIdPresent);}
+\DoxyCodeLine{00140             this.UserIdFormPanel.gameObject.SetActive(appIdPresent);}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (!appIdPresent)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 Debug.LogError(\textcolor{stringliteral}{"{}You need to set the chat app ID in the PhotonServerSettings file in order to continue."{}});}
+\DoxyCodeLine{00145             \}}
+\DoxyCodeLine{00146         \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Connect()}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             this.UserIdFormPanel.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             this.chatClient = \textcolor{keyword}{new} ChatClient(\textcolor{keyword}{this});}
+\DoxyCodeLine{00153 \textcolor{preprocessor}{            \#if !UNITY\_WEBGL}}
+\DoxyCodeLine{00154             this.chatClient.UseBackgroundWorkerForSending = \textcolor{keyword}{true};}
+\DoxyCodeLine{00155 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00156             this.chatClient.AuthValues = \textcolor{keyword}{new} AuthenticationValues(this.UserName);}
+\DoxyCodeLine{00157             this.chatClient.ConnectUsingSettings(this.chatAppSettings);}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             this.ChannelToggleToInstantiate.gameObject.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00160             Debug.Log(\textcolor{stringliteral}{"{}Connecting as: "{}} + this.UserName);}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             this.ConnectingLabel.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00166         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDestroy()}
+\DoxyCodeLine{00167         \{}
+\DoxyCodeLine{00168             \textcolor{keywordflow}{if} (this.chatClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{00169             \{}
+\DoxyCodeLine{00170                 this.chatClient.Disconnect();}
+\DoxyCodeLine{00171             \}}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00175         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnApplicationQuit()}
+\DoxyCodeLine{00176         \{}
+\DoxyCodeLine{00177             \textcolor{keywordflow}{if} (this.chatClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{00178             \{}
+\DoxyCodeLine{00179                 this.chatClient.Disconnect();}
+\DoxyCodeLine{00180             \}}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00184         \{}
+\DoxyCodeLine{00185             \textcolor{keywordflow}{if} (this.chatClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{00186             \{}
+\DoxyCodeLine{00187                 this.chatClient.Service(); \textcolor{comment}{// make sure to call this regularly! it limits effort internally, so calling often is ok!}}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             \textcolor{comment}{// check if we are missing context, which means we got kicked out to get back to the Photon Demo hub.}}
+\DoxyCodeLine{00191             \textcolor{keywordflow}{if} ( this.StateText == \textcolor{keyword}{null})}
+\DoxyCodeLine{00192             \{}
+\DoxyCodeLine{00193                 Destroy(this.gameObject);}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00195             \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197             this.StateText.gameObject.SetActive(this.ShowState); \textcolor{comment}{// this could be handled more elegantly, but for the demo it's ok.}}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnEnterSend()}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter))}
+\DoxyCodeLine{00204             \{}
+\DoxyCodeLine{00205                 this.SendChatMessage(this.InputFieldChat.text);}
+\DoxyCodeLine{00206                 this.InputFieldChat.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00207             \}}
+\DoxyCodeLine{00208         \}}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnClickSend()}
+\DoxyCodeLine{00211         \{}
+\DoxyCodeLine{00212             \textcolor{keywordflow}{if} (this.InputFieldChat != \textcolor{keyword}{null})}
+\DoxyCodeLine{00213             \{}
+\DoxyCodeLine{00214                 this.SendChatMessage(this.InputFieldChat.text);}
+\DoxyCodeLine{00215                 this.InputFieldChat.text = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} \textcolor{keywordtype}{int} TestLength = 2048;}
+\DoxyCodeLine{00221         \textcolor{keyword}{private} \textcolor{keywordtype}{byte}[] testBytes = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[2048];}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SendChatMessage(\textcolor{keywordtype}{string} inputLine)}
+\DoxyCodeLine{00224         \{}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(inputLine))}
+\DoxyCodeLine{00226             \{}
+\DoxyCodeLine{00227                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00228             \}}
+\DoxyCodeLine{00229             \textcolor{keywordflow}{if} (\textcolor{stringliteral}{"{}test"{}}.Equals(inputLine))}
+\DoxyCodeLine{00230             \{}
+\DoxyCodeLine{00231                 \textcolor{keywordflow}{if} (this.TestLength != this.testBytes.Length)}
+\DoxyCodeLine{00232                 \{}
+\DoxyCodeLine{00233                     this.testBytes = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[this.TestLength];}
+\DoxyCodeLine{00234                 \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236                 this.chatClient.SendPrivateMessage(this.chatClient.AuthValues.UserId, \textcolor{keyword}{this}.testBytes, \textcolor{keyword}{true});}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             \textcolor{keywordtype}{bool} doingPrivateChat = this.chatClient.PrivateChannels.ContainsKey(this.selectedChannelName);}
+\DoxyCodeLine{00241             \textcolor{keywordtype}{string} privateChatTarget = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00242             \textcolor{keywordflow}{if} (doingPrivateChat)}
+\DoxyCodeLine{00243             \{}
+\DoxyCodeLine{00244                 \textcolor{comment}{// the channel name for a private conversation is (on the client!!) always composed of both user's IDs: "{}this:remote"{}}}
+\DoxyCodeLine{00245                 \textcolor{comment}{// so the remote ID is simple to figure out}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247                 \textcolor{keywordtype}{string}[] splitNames = this.selectedChannelName.Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{ \textcolor{charliteral}{':'} \});}
+\DoxyCodeLine{00248                 privateChatTarget = splitNames[1];}
+\DoxyCodeLine{00249             \}}
+\DoxyCodeLine{00250             \textcolor{comment}{//UnityEngine.Debug.Log("{}selectedChannelName: "{} + selectedChannelName + "{} doingPrivateChat: "{} + doingPrivateChat + "{} privateChatTarget: "{} + privateChatTarget);}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             \textcolor{keywordflow}{if} (inputLine[0].Equals(\textcolor{charliteral}{'\(\backslash\)\(\backslash\)'}))}
+\DoxyCodeLine{00254             \{}
+\DoxyCodeLine{00255                 \textcolor{keywordtype}{string}[] tokens = inputLine.Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{\textcolor{charliteral}{' '}\}, 2);}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{if} (tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)help"{}}))}
+\DoxyCodeLine{00257                 \{}
+\DoxyCodeLine{00258                     this.PostHelpToCurrentChannel();}
+\DoxyCodeLine{00259                 \}}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{if} (tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)state"{}}))}
+\DoxyCodeLine{00261                 \{}
+\DoxyCodeLine{00262                     \textcolor{keywordtype}{int} newState = 0;}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265                     List<string> messages = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00266                     messages.Add (\textcolor{stringliteral}{"{}i am state "{}} + newState);}
+\DoxyCodeLine{00267                     \textcolor{keywordtype}{string}[] subtokens = tokens[1].Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{\textcolor{charliteral}{' '}, \textcolor{charliteral}{','}\});}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{if} (subtokens.Length > 0)}
+\DoxyCodeLine{00270                     \{}
+\DoxyCodeLine{00271                         newState = \textcolor{keywordtype}{int}.Parse(subtokens[0]);}
+\DoxyCodeLine{00272                     \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                     \textcolor{keywordflow}{if} (subtokens.Length > 1)}
+\DoxyCodeLine{00275                     \{}
+\DoxyCodeLine{00276                         messages.Add(subtokens[1]);}
+\DoxyCodeLine{00277                     \}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279                     this.chatClient.SetOnlineStatus(newState,messages.ToArray()); \textcolor{comment}{// this is how you set your own state and (any) message}}
+\DoxyCodeLine{00280                 \}}
+\DoxyCodeLine{00281                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)subscribe"{}}) || tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)s"{}})) \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(tokens[1]))}
+\DoxyCodeLine{00282                 \{}
+\DoxyCodeLine{00283                     this.chatClient.Subscribe(tokens[1].Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{\textcolor{charliteral}{' '}, \textcolor{charliteral}{','}\}));}
+\DoxyCodeLine{00284                 \}}
+\DoxyCodeLine{00285                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)unsubscribe"{}}) || tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)u"{}})) \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(tokens[1]))}
+\DoxyCodeLine{00286                 \{}
+\DoxyCodeLine{00287                     this.chatClient.Unsubscribe(tokens[1].Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{\textcolor{charliteral}{' '}, \textcolor{charliteral}{','}\}));}
+\DoxyCodeLine{00288                 \}}
+\DoxyCodeLine{00289                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)clear"{}}))}
+\DoxyCodeLine{00290                 \{}
+\DoxyCodeLine{00291                     \textcolor{keywordflow}{if} (doingPrivateChat)}
+\DoxyCodeLine{00292                     \{}
+\DoxyCodeLine{00293                         this.chatClient.PrivateChannels.Remove(this.selectedChannelName);}
+\DoxyCodeLine{00294                     \}}
+\DoxyCodeLine{00295                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00296                     \{}
+\DoxyCodeLine{00297                         ChatChannel channel;}
+\DoxyCodeLine{00298                         \textcolor{keywordflow}{if} (this.chatClient.TryGetChannel(\textcolor{keyword}{this}.selectedChannelName, doingPrivateChat, out channel))}
+\DoxyCodeLine{00299                         \{}
+\DoxyCodeLine{00300                             channel.ClearMessages();}
+\DoxyCodeLine{00301                         \}}
+\DoxyCodeLine{00302                     \}}
+\DoxyCodeLine{00303                 \}}
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)msg"{}}) \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(tokens[1]))}
+\DoxyCodeLine{00305                 \{}
+\DoxyCodeLine{00306                     \textcolor{keywordtype}{string}[] subtokens = tokens[1].Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{\textcolor{charliteral}{' '}, \textcolor{charliteral}{','}\}, 2);}
+\DoxyCodeLine{00307                     \textcolor{keywordflow}{if} (subtokens.Length < 2) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309                     \textcolor{keywordtype}{string} targetUser = subtokens[0];}
+\DoxyCodeLine{00310                     \textcolor{keywordtype}{string} message = subtokens[1];}
+\DoxyCodeLine{00311                     this.chatClient.SendPrivateMessage(targetUser, message);}
+\DoxyCodeLine{00312                 \}}
+\DoxyCodeLine{00313                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)join"{}}) || tokens[0].Equals(\textcolor{stringliteral}{"{}\(\backslash\)\(\backslash\)j"{}})) \&\& !\textcolor{keywordtype}{string}.IsNullOrEmpty(tokens[1]))}
+\DoxyCodeLine{00314                 \{}
+\DoxyCodeLine{00315                     \textcolor{keywordtype}{string}[] subtokens = tokens[1].Split(\textcolor{keyword}{new} \textcolor{keywordtype}{char}[] \{ \textcolor{charliteral}{' '}, \textcolor{charliteral}{','} \}, 2);}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317                     \textcolor{comment}{// If we are already subscribed to the channel we directly switch to it, otherwise we subscribe to it first and then switch to it implicitly}}
+\DoxyCodeLine{00318                     \textcolor{keywordflow}{if} (this.channelToggles.ContainsKey(subtokens[0]))}
+\DoxyCodeLine{00319                     \{}
+\DoxyCodeLine{00320                         this.ShowChannel(subtokens[0]);}
+\DoxyCodeLine{00321                     \}}
+\DoxyCodeLine{00322                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00323                     \{}
+\DoxyCodeLine{00324                         this.chatClient.Subscribe(\textcolor{keyword}{new} \textcolor{keywordtype}{string}[] \{ subtokens[0] \});}
+\DoxyCodeLine{00325                     \}}
+\DoxyCodeLine{00326                 \}}
+\DoxyCodeLine{00327                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00328                 \{}
+\DoxyCodeLine{00329                     Debug.Log(\textcolor{stringliteral}{"{}The command '"{}} + tokens[0] + \textcolor{stringliteral}{"{}' is invalid."{}});}
+\DoxyCodeLine{00330                 \}}
+\DoxyCodeLine{00331             \}}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00333             \{}
+\DoxyCodeLine{00334                 \textcolor{keywordflow}{if} (doingPrivateChat)}
+\DoxyCodeLine{00335                 \{}
+\DoxyCodeLine{00336                     this.chatClient.SendPrivateMessage(privateChatTarget, inputLine);}
+\DoxyCodeLine{00337                 \}}
+\DoxyCodeLine{00338                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00339                 \{}
+\DoxyCodeLine{00340                     this.chatClient.PublishMessage(this.selectedChannelName, inputLine);}
+\DoxyCodeLine{00341                 \}}
+\DoxyCodeLine{00342             \}}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{public} \textcolor{keywordtype}{void} PostHelpToCurrentChannel()}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             this.CurrentChannelText.text += HelpText;}
+\DoxyCodeLine{00348         \}}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DebugReturn(ExitGames.Client.Photon.DebugLevel level, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00351         \{}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{if} (level == ExitGames.Client.Photon.DebugLevel.ERROR)}
+\DoxyCodeLine{00353             \{}
+\DoxyCodeLine{00354                 Debug.LogError(message);}
+\DoxyCodeLine{00355             \}}
+\DoxyCodeLine{00356             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (level == ExitGames.Client.Photon.DebugLevel.WARNING)}
+\DoxyCodeLine{00357             \{}
+\DoxyCodeLine{00358                 Debug.LogWarning(message);}
+\DoxyCodeLine{00359             \}}
+\DoxyCodeLine{00360             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00361             \{}
+\DoxyCodeLine{00362                 Debug.Log(message);}
+\DoxyCodeLine{00363             \}}
+\DoxyCodeLine{00364         \}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnConnected()}
+\DoxyCodeLine{00367         \{}
+\DoxyCodeLine{00368             \textcolor{keywordflow}{if} (this.ChannelsToJoinOnConnect != \textcolor{keyword}{null} \&\& this.ChannelsToJoinOnConnect.Length > 0)}
+\DoxyCodeLine{00369             \{}
+\DoxyCodeLine{00370                 this.chatClient.Subscribe(this.ChannelsToJoinOnConnect, this.HistoryLengthToFetch);}
+\DoxyCodeLine{00371             \}}
+\DoxyCodeLine{00372 }
+\DoxyCodeLine{00373             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375             this.UserIdText.text = \textcolor{stringliteral}{"{}Connected as "{}}+ this.UserName;}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377             this.ChatPanel.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00378 }
+\DoxyCodeLine{00379             \textcolor{keywordflow}{if} (this.FriendsList!=\textcolor{keyword}{null}  \&\& this.FriendsList.Length>0)}
+\DoxyCodeLine{00380             \{}
+\DoxyCodeLine{00381                 this.chatClient.AddFriends(this.FriendsList); \textcolor{comment}{// Add some users to the server-\/list to get their status updates}}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383                 \textcolor{comment}{// add to the UI as well}}
+\DoxyCodeLine{00384                 \textcolor{keywordflow}{foreach}(\textcolor{keywordtype}{string} \_friend \textcolor{keywordflow}{in} this.FriendsList)}
+\DoxyCodeLine{00385                 \{}
+\DoxyCodeLine{00386                     \textcolor{keywordflow}{if} (this.FriendListUiItemtoInstantiate != \textcolor{keyword}{null} \&\& \_friend!= this.UserName)}
+\DoxyCodeLine{00387                     \{}
+\DoxyCodeLine{00388                         this.InstantiateFriendButton(\_friend);}
+\DoxyCodeLine{00389                     \}}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391                 \}}
+\DoxyCodeLine{00392 }
+\DoxyCodeLine{00393             \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395             \textcolor{keywordflow}{if} (this.FriendListUiItemtoInstantiate != \textcolor{keyword}{null})}
+\DoxyCodeLine{00396             \{}
+\DoxyCodeLine{00397                 this.FriendListUiItemtoInstantiate.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401             this.chatClient.SetOnlineStatus(ChatUserStatus.Online); \textcolor{comment}{// You can set your online state (without a mesage).}}
+\DoxyCodeLine{00402         \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnDisconnected()}
+\DoxyCodeLine{00405         \{}
+\DoxyCodeLine{00406             this.ConnectingLabel.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00407         \}}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnChatStateChange(ChatState state)}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00411             \textcolor{comment}{// use OnConnected() and OnDisconnected()}}
+\DoxyCodeLine{00412             \textcolor{comment}{// this method might become more useful in the future, when more complex states are being used.}}
+\DoxyCodeLine{00413 }
+\DoxyCodeLine{00414             this.StateText.text = state.ToString();}
+\DoxyCodeLine{00415         \}}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnSubscribed(\textcolor{keywordtype}{string}[] channels, \textcolor{keywordtype}{bool}[] results)}
+\DoxyCodeLine{00418         \{}
+\DoxyCodeLine{00419             \textcolor{comment}{// in this demo, we simply send a message into each channel. This is NOT a must have!}}
+\DoxyCodeLine{00420             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} channel \textcolor{keywordflow}{in} channels)}
+\DoxyCodeLine{00421             \{}
+\DoxyCodeLine{00422                 this.chatClient.PublishMessage(channel, \textcolor{stringliteral}{"{}says 'hi'."{}}); \textcolor{comment}{// you don't HAVE to send a msg on join but you could.}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424                 \textcolor{keywordflow}{if} (this.ChannelToggleToInstantiate != \textcolor{keyword}{null})}
+\DoxyCodeLine{00425                 \{}
+\DoxyCodeLine{00426                     this.InstantiateChannelButton(channel);}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428                 \}}
+\DoxyCodeLine{00429             \}}
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00431             Debug.Log(\textcolor{stringliteral}{"{}OnSubscribed: "{}} + \textcolor{keywordtype}{string}.Join(\textcolor{stringliteral}{"{}, "{}}, channels));}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433             \textcolor{comment}{/*}}
+\DoxyCodeLine{00434 \textcolor{comment}{            // select first subscribed channel in alphabetical order}}
+\DoxyCodeLine{00435 \textcolor{comment}{            if (this.chatClient.PublicChannels.Count > 0)}}
+\DoxyCodeLine{00436 \textcolor{comment}{            \{}}
+\DoxyCodeLine{00437 \textcolor{comment}{                var l = new List<string>(this.chatClient.PublicChannels.Keys);}}
+\DoxyCodeLine{00438 \textcolor{comment}{                l.Sort();}}
+\DoxyCodeLine{00439 \textcolor{comment}{                string selected = l[0];}}
+\DoxyCodeLine{00440 \textcolor{comment}{                if (this.channelToggles.ContainsKey(selected))}}
+\DoxyCodeLine{00441 \textcolor{comment}{                \{}}
+\DoxyCodeLine{00442 \textcolor{comment}{                    ShowChannel(selected);}}
+\DoxyCodeLine{00443 \textcolor{comment}{                    foreach (var c in this.channelToggles)}}
+\DoxyCodeLine{00444 \textcolor{comment}{                    \{}}
+\DoxyCodeLine{00445 \textcolor{comment}{                        c.Value.isOn = false;}}
+\DoxyCodeLine{00446 \textcolor{comment}{                    \}}}
+\DoxyCodeLine{00447 \textcolor{comment}{                    this.channelToggles[selected].isOn = true;}}
+\DoxyCodeLine{00448 \textcolor{comment}{                    AddMessageToSelectedChannel(WelcomeText);}}
+\DoxyCodeLine{00449 \textcolor{comment}{                \}}}
+\DoxyCodeLine{00450 \textcolor{comment}{            \}}}
+\DoxyCodeLine{00451 \textcolor{comment}{            */}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453             \textcolor{comment}{// Switch to the first newly created channel}}
+\DoxyCodeLine{00454             this.ShowChannel(channels[0]);}
+\DoxyCodeLine{00455         \}}
+\DoxyCodeLine{00456 }
+\DoxyCodeLine{00458         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnSubscribed(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string}[] users, Dictionary<object, object> properties)}
+\DoxyCodeLine{00459         \{}
+\DoxyCodeLine{00460             Debug.LogFormat(\textcolor{stringliteral}{"{}OnSubscribed: \{0\}, users.Count: \{1\} Channel-\/props: \{2\}."{}}, channel, users.Length, properties.ToStringFull());}
+\DoxyCodeLine{00461         \}}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463         \textcolor{keyword}{private} \textcolor{keywordtype}{void} InstantiateChannelButton(\textcolor{keywordtype}{string} channelName)}
+\DoxyCodeLine{00464         \{}
+\DoxyCodeLine{00465             \textcolor{keywordflow}{if} (this.channelToggles.ContainsKey(channelName))}
+\DoxyCodeLine{00466             \{}
+\DoxyCodeLine{00467                 Debug.Log(\textcolor{stringliteral}{"{}Skipping creation for an existing channel toggle."{}});}
+\DoxyCodeLine{00468                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00469             \}}
+\DoxyCodeLine{00470 }
+\DoxyCodeLine{00471             Toggle cbtn = (Toggle)Instantiate(this.ChannelToggleToInstantiate);}
+\DoxyCodeLine{00472             cbtn.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00473             cbtn.GetComponentInChildren<ChannelSelector>().SetChannel(channelName);}
+\DoxyCodeLine{00474             cbtn.transform.SetParent(this.ChannelToggleToInstantiate.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476             this.channelToggles.Add(channelName, cbtn);}
+\DoxyCodeLine{00477         \}}
+\DoxyCodeLine{00478 }
+\DoxyCodeLine{00479         \textcolor{keyword}{private} \textcolor{keywordtype}{void} InstantiateFriendButton(\textcolor{keywordtype}{string} friendId)}
+\DoxyCodeLine{00480         \{}
+\DoxyCodeLine{00481             GameObject fbtn = (GameObject)Instantiate(this.FriendListUiItemtoInstantiate);}
+\DoxyCodeLine{00482             fbtn.gameObject.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{00483             FriendItem  \_friendItem =   fbtn.GetComponent<FriendItem>();}
+\DoxyCodeLine{00484 }
+\DoxyCodeLine{00485             \_friendItem.FriendId = friendId;}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487             fbtn.transform.SetParent(this.FriendListUiItemtoInstantiate.transform.parent, \textcolor{keyword}{false});}
+\DoxyCodeLine{00488 }
+\DoxyCodeLine{00489             this.friendListItemLUT[friendId] = \_friendItem;}
+\DoxyCodeLine{00490         \}}
+\DoxyCodeLine{00491 }
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnUnsubscribed(\textcolor{keywordtype}{string}[] channels)}
+\DoxyCodeLine{00494         \{}
+\DoxyCodeLine{00495             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} channelName \textcolor{keywordflow}{in} channels)}
+\DoxyCodeLine{00496             \{}
+\DoxyCodeLine{00497                 \textcolor{keywordflow}{if} (this.channelToggles.ContainsKey(channelName))}
+\DoxyCodeLine{00498                 \{}
+\DoxyCodeLine{00499                     Toggle t = this.channelToggles[channelName];}
+\DoxyCodeLine{00500                     Destroy(t.gameObject);}
+\DoxyCodeLine{00501 }
+\DoxyCodeLine{00502                     this.channelToggles.Remove(channelName);}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00504                     Debug.Log(\textcolor{stringliteral}{"{}Unsubscribed from channel '"{}} + channelName + \textcolor{stringliteral}{"{}'."{}});}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00506                     \textcolor{comment}{// Showing another channel if the active channel is the one we unsubscribed from before}}
+\DoxyCodeLine{00507                     \textcolor{keywordflow}{if} (channelName == this.selectedChannelName \&\& this.channelToggles.Count > 0)}
+\DoxyCodeLine{00508                     \{}
+\DoxyCodeLine{00509                         IEnumerator<KeyValuePair<string, Toggle>> firstEntry = this.channelToggles.GetEnumerator();}
+\DoxyCodeLine{00510                         firstEntry.MoveNext();}
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512                         this.ShowChannel(firstEntry.Current.Key);}
+\DoxyCodeLine{00513 }
+\DoxyCodeLine{00514                         firstEntry.Current.Value.isOn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00515                     \}}
+\DoxyCodeLine{00516                 \}}
+\DoxyCodeLine{00517                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00518                 \{}
+\DoxyCodeLine{00519                     Debug.Log(\textcolor{stringliteral}{"{}Can't unsubscribe from channel '"{}} + channelName + \textcolor{stringliteral}{"{}' because you are currently not subscribed to it."{}});}
+\DoxyCodeLine{00520                 \}}
+\DoxyCodeLine{00521             \}}
+\DoxyCodeLine{00522         \}}
+\DoxyCodeLine{00523 }
+\DoxyCodeLine{00524         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnGetMessages(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{string}[] senders, \textcolor{keywordtype}{object}[] messages)}
+\DoxyCodeLine{00525         \{}
+\DoxyCodeLine{00526             \textcolor{keywordflow}{if} (channelName.Equals(\textcolor{keyword}{this}.selectedChannelName))}
+\DoxyCodeLine{00527             \{}
+\DoxyCodeLine{00528                 \textcolor{comment}{// update text}}
+\DoxyCodeLine{00529                 this.ShowChannel(this.selectedChannelName);}
+\DoxyCodeLine{00530             \}}
+\DoxyCodeLine{00531         \}}
+\DoxyCodeLine{00532 }
+\DoxyCodeLine{00533         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPrivateMessage(\textcolor{keywordtype}{string} sender, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{string} channelName)}
+\DoxyCodeLine{00534         \{}
+\DoxyCodeLine{00535             \textcolor{comment}{// as the ChatClient is buffering the messages for you, this GUI doesn't need to do anything here}}
+\DoxyCodeLine{00536             \textcolor{comment}{// you also get messages that you sent yourself. in that case, the channelName is determinded by the target of your msg}}
+\DoxyCodeLine{00537             this.InstantiateChannelButton(channelName);}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539             \textcolor{keywordtype}{byte}[] msgBytes = message as \textcolor{keywordtype}{byte}[];}
+\DoxyCodeLine{00540             \textcolor{keywordflow}{if} (msgBytes != \textcolor{keyword}{null})}
+\DoxyCodeLine{00541             \{}
+\DoxyCodeLine{00542                 Debug.Log(\textcolor{stringliteral}{"{}Message with byte[].Length: "{}}+ msgBytes.Length);}
+\DoxyCodeLine{00543             \}}
+\DoxyCodeLine{00544             \textcolor{keywordflow}{if} (this.selectedChannelName.Equals(channelName))}
+\DoxyCodeLine{00545             \{}
+\DoxyCodeLine{00546                 this.ShowChannel(channelName);}
+\DoxyCodeLine{00547             \}}
+\DoxyCodeLine{00548         \}}
+\DoxyCodeLine{00549 }
+\DoxyCodeLine{00558         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStatusUpdate(\textcolor{keywordtype}{string} user, \textcolor{keywordtype}{int} status, \textcolor{keywordtype}{bool} gotMessage, \textcolor{keywordtype}{object} message)}
+\DoxyCodeLine{00559         \{}
+\DoxyCodeLine{00560 }
+\DoxyCodeLine{00561             Debug.LogWarning(\textcolor{stringliteral}{"{}status: "{}} + \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} is \{1\}. Msg:\{2\}"{}}, user, status, message));}
+\DoxyCodeLine{00562 }
+\DoxyCodeLine{00563             \textcolor{keywordflow}{if} (this.friendListItemLUT.ContainsKey(user))}
+\DoxyCodeLine{00564             \{}
+\DoxyCodeLine{00565                 FriendItem \_friendItem = this.friendListItemLUT[user];}
+\DoxyCodeLine{00566                 \textcolor{keywordflow}{if} ( \_friendItem!=\textcolor{keyword}{null}) \_friendItem.OnFriendStatusUpdate(status,gotMessage,message);}
+\DoxyCodeLine{00567             \}}
+\DoxyCodeLine{00568         \}}
+\DoxyCodeLine{00569 }
+\DoxyCodeLine{00570         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnUserSubscribed(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string} user)}
+\DoxyCodeLine{00571         \{}
+\DoxyCodeLine{00572             Debug.LogFormat(\textcolor{stringliteral}{"{}OnUserSubscribed: channel=\(\backslash\)"{}\{0\}\(\backslash\)"{} userId=\(\backslash\)"{}\{1\}\(\backslash\)"{}"{}}, channel, user);}
+\DoxyCodeLine{00573         \}}
+\DoxyCodeLine{00574 }
+\DoxyCodeLine{00575         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnUserUnsubscribed(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string} user)}
+\DoxyCodeLine{00576         \{}
+\DoxyCodeLine{00577             Debug.LogFormat(\textcolor{stringliteral}{"{}OnUserUnsubscribed: channel=\(\backslash\)"{}\{0\}\(\backslash\)"{} userId=\(\backslash\)"{}\{1\}\(\backslash\)"{}"{}}, channel, user);}
+\DoxyCodeLine{00578         \}}
+\DoxyCodeLine{00579 }
+\DoxyCodeLine{00581         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnChannelPropertiesChanged(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string} userId, Dictionary<object, object> properties)}
+\DoxyCodeLine{00582         \{}
+\DoxyCodeLine{00583             Debug.LogFormat(\textcolor{stringliteral}{"{}OnChannelPropertiesChanged: \{0\} by \{1\}. Props: \{2\}."{}}, channel, userId, Extensions.ToStringFull(properties));}
+\DoxyCodeLine{00584         \}}
+\DoxyCodeLine{00585 }
+\DoxyCodeLine{00586         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnUserPropertiesChanged(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string} targetUserId, \textcolor{keywordtype}{string} senderUserId, Dictionary<object, object> properties)}
+\DoxyCodeLine{00587         \{}
+\DoxyCodeLine{00588             Debug.LogFormat(\textcolor{stringliteral}{"{}OnUserPropertiesChanged: (channel:\{0\} user:\{1\}) by \{2\}. Props: \{3\}."{}}, channel, targetUserId, senderUserId, Extensions.ToStringFull(properties));}
+\DoxyCodeLine{00589         \}}
+\DoxyCodeLine{00590 }
+\DoxyCodeLine{00592         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnErrorInfo(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{string} error, \textcolor{keywordtype}{object} data)}
+\DoxyCodeLine{00593         \{}
+\DoxyCodeLine{00594             Debug.LogFormat(\textcolor{stringliteral}{"{}OnErrorInfo for channel \{0\}. Error: \{1\} Data: \{2\}"{}}, channel, error, data);}
+\DoxyCodeLine{00595         \}}
+\DoxyCodeLine{00596 }
+\DoxyCodeLine{00597         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddMessageToSelectedChannel(\textcolor{keywordtype}{string} msg)}
+\DoxyCodeLine{00598         \{}
+\DoxyCodeLine{00599             ChatChannel channel = \textcolor{keyword}{null};}
+\DoxyCodeLine{00600             \textcolor{keywordtype}{bool} found = this.chatClient.TryGetChannel(this.selectedChannelName, out channel);}
+\DoxyCodeLine{00601             \textcolor{keywordflow}{if} (!found)}
+\DoxyCodeLine{00602             \{}
+\DoxyCodeLine{00603                 Debug.Log(\textcolor{stringliteral}{"{}AddMessageToSelectedChannel failed to find channel: "{}} + this.selectedChannelName);}
+\DoxyCodeLine{00604                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00605             \}}
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00607             \textcolor{keywordflow}{if} (channel != \textcolor{keyword}{null})}
+\DoxyCodeLine{00608             \{}
+\DoxyCodeLine{00609                 channel.Add(\textcolor{stringliteral}{"{}Bot"{}}, msg,0); \textcolor{comment}{//TODO: how to use msgID?}}
+\DoxyCodeLine{00610             \}}
+\DoxyCodeLine{00611         \}}
+\DoxyCodeLine{00612 }
+\DoxyCodeLine{00613 }
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ShowChannel(\textcolor{keywordtype}{string} channelName)}
+\DoxyCodeLine{00616         \{}
+\DoxyCodeLine{00617             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(channelName))}
+\DoxyCodeLine{00618             \{}
+\DoxyCodeLine{00619                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00620             \}}
+\DoxyCodeLine{00621 }
+\DoxyCodeLine{00622             ChatChannel channel = \textcolor{keyword}{null};}
+\DoxyCodeLine{00623             \textcolor{keywordtype}{bool} found = this.chatClient.TryGetChannel(channelName, out channel);}
+\DoxyCodeLine{00624             \textcolor{keywordflow}{if} (!found)}
+\DoxyCodeLine{00625             \{}
+\DoxyCodeLine{00626                 Debug.Log(\textcolor{stringliteral}{"{}ShowChannel failed to find channel: "{}} + channelName);}
+\DoxyCodeLine{00627                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00628             \}}
+\DoxyCodeLine{00629 }
+\DoxyCodeLine{00630             this.selectedChannelName = channelName;}
+\DoxyCodeLine{00631             this.CurrentChannelText.text = channel.ToStringMessages();}
+\DoxyCodeLine{00632             Debug.Log(\textcolor{stringliteral}{"{}ShowChannel: "{}} + this.selectedChannelName);}
+\DoxyCodeLine{00633 }
+\DoxyCodeLine{00634             \textcolor{keywordflow}{foreach} (KeyValuePair<string, Toggle> pair \textcolor{keywordflow}{in} this.channelToggles)}
+\DoxyCodeLine{00635             \{}
+\DoxyCodeLine{00636                 pair.Value.isOn = pair.Key == channelName ? true : \textcolor{keyword}{false};}
+\DoxyCodeLine{00637             \}}
+\DoxyCodeLine{00638         \}}
+\DoxyCodeLine{00639 }
+\DoxyCodeLine{00640         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OpenDashboard()}
+\DoxyCodeLine{00641         \{}
+\DoxyCodeLine{00642             Application.OpenURL(\textcolor{stringliteral}{"{}https://dashboard.photonengine.com"{}});}
+\DoxyCodeLine{00643         \}}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00645 }
+\DoxyCodeLine{00646 }
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648     \}}
+\DoxyCodeLine{00649 \}}
+
+\end{DoxyCode}

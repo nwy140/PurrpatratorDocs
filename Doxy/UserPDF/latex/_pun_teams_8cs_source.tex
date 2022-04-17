@@ -1,0 +1,140 @@
+\doxysection{Pun\+Teams.\+cs}
+\label{_pun_teams_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PunTeams.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/PhotonPlayer/PunTeams.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PunTeams.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities, }}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Implements teams in a room/game with help of player properties. Access them by Player.GetTeam extension.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <remarks>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// Teams are defined by enum Team. Change this to get more / different teams.}}
+\DoxyCodeLine{00010 \textcolor{comment}{// There are no rules when / if you can join a team. You could add this in JoinTeam or something.}}
+\DoxyCodeLine{00011 \textcolor{comment}{// </remarks>                                                                                           }}
+\DoxyCodeLine{00012 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00013 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00016 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00021 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00022 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00023 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00026 \{}
+\DoxyCodeLine{00034     [Obsolete(\textcolor{stringliteral}{"{}do not use this or add it to the scene. use PhotonTeamsManager instead"{}})]}
+\DoxyCodeLine{00035     \textcolor{keyword}{public} \textcolor{keyword}{class }PunTeams : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00036     \{}
+\DoxyCodeLine{00038         [Obsolete(\textcolor{stringliteral}{"{}use custom PhotonTeam instead"{}})]}
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keyword}{enum} Team : \textcolor{keywordtype}{byte} \{ none, red, blue \};}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00043         [Obsolete(\textcolor{stringliteral}{"{}use PhotonTeamsManager.Instance.TryGetTeamMembers instead"{}})]}
+\DoxyCodeLine{00044         \textcolor{keyword}{public} \textcolor{keyword}{static} Dictionary<Team, List<Player>> PlayersPerTeam;}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00047         [Obsolete(\textcolor{stringliteral}{"{}do not use this. PhotonTeamsManager.TeamPlayerProp is used internally instead."{}})]}
+\DoxyCodeLine{00048         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} TeamPlayerProp = \textcolor{stringliteral}{"{}team"{}};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 \textcolor{preprocessor}{        \#region Events by Unity and Photon}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             PlayersPerTeam = \textcolor{keyword}{new} Dictionary<Team, List<Player>>();}
+\DoxyCodeLine{00056             Array enumVals = Enum.GetValues(typeof(Team));}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{foreach} (var enumVal \textcolor{keywordflow}{in} enumVals)}
+\DoxyCodeLine{00058             \{}
+\DoxyCodeLine{00059                 PlayersPerTeam[(Team)enumVal] = \textcolor{keyword}{new} List<Player>();}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061         \}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             base.OnDisable();}
+\DoxyCodeLine{00066             this.Start();}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             this.UpdateTeams();}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             Start();}
+\DoxyCodeLine{00080         \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             this.UpdateTeams();}
+\DoxyCodeLine{00087         \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             this.UpdateTeams();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             this.UpdateTeams();}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101         [Obsolete(\textcolor{stringliteral}{"{}do not call this."{}})]}
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keywordtype}{void} UpdateTeams()}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             Array enumVals = Enum.GetValues(typeof(Team));}
+\DoxyCodeLine{00105             \textcolor{keywordflow}{foreach} (var enumVal \textcolor{keywordflow}{in} enumVals)}
+\DoxyCodeLine{00106             \{}
+\DoxyCodeLine{00107                 PlayersPerTeam[(Team)enumVal].Clear();}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < PhotonNetwork.PlayerList.Length; i++)}
+\DoxyCodeLine{00111             \{}
+\DoxyCodeLine{00112                 Player player = PhotonNetwork.PlayerList[i];}
+\DoxyCodeLine{00113                 Team playerTeam = player.GetTeam();}
+\DoxyCodeLine{00114                 PlayersPerTeam[playerTeam].Add(player);}
+\DoxyCodeLine{00115             \}}
+\DoxyCodeLine{00116         \}}
+\DoxyCodeLine{00117     \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00120     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }TeamExtensions}
+\DoxyCodeLine{00121     \{}
+\DoxyCodeLine{00124         [Obsolete(\textcolor{stringliteral}{"{}Use player.GetPhotonTeam"{}})]}
+\DoxyCodeLine{00125         \textcolor{keyword}{public} \textcolor{keyword}{static} PunTeams.Team GetTeam(\textcolor{keyword}{this} Player player)}
+\DoxyCodeLine{00126         \{}
+\DoxyCodeLine{00127             \textcolor{keywordtype}{object} teamId;}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (player.CustomProperties.TryGetValue(PunTeams.TeamPlayerProp, out teamId))}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{return} (PunTeams.Team)teamId;}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133             \textcolor{keywordflow}{return} PunTeams.Team.none;}
+\DoxyCodeLine{00134         \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00140         [Obsolete(\textcolor{stringliteral}{"{}Use player.JoinTeam"{}})]}
+\DoxyCodeLine{00141         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetTeam(\textcolor{keyword}{this} Player player, PunTeams.Team team)}
+\DoxyCodeLine{00142         \{}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (!PhotonNetwork.IsConnectedAndReady)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 Debug.LogWarning(\textcolor{stringliteral}{"{}JoinTeam was called in state: "{}} + PhotonNetwork.NetworkClientState + \textcolor{stringliteral}{"{}. Not IsConnectedAndReady."{}});}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             PunTeams.Team currentTeam = player.GetTeam();}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{if} (currentTeam != team)}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 player.SetCustomProperties(\textcolor{keyword}{new} Hashtable() \{ \{ PunTeams.TeamPlayerProp, (byte)team \} \});}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154         \}}
+\DoxyCodeLine{00155     \}}
+\DoxyCodeLine{00156 \}}
+
+\end{DoxyCode}

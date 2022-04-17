@@ -1,0 +1,389 @@
+\doxysection{Photon\+Handler.\+cs}
+\label{_photon_handler_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonHandler.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonHandler.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonHandler.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// PhotonHandler is a runtime MonoBehaviour to include PUN into the main loop.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} UnityEngine.Profiling;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonHandler : ConnectionHandler, IInRoomCallbacks, IMatchmakingCallbacks}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keyword}{static} PhotonHandler instance;}
+\DoxyCodeLine{00029         \textcolor{keyword}{internal} \textcolor{keyword}{static} PhotonHandler Instance}
+\DoxyCodeLine{00030         \{}
+\DoxyCodeLine{00031             \textcolor{keyword}{get}}
+\DoxyCodeLine{00032             \{}
+\DoxyCodeLine{00033                 \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00034                 \{}
+\DoxyCodeLine{00035                     instance = FindObjectOfType<PhotonHandler>();}
+\DoxyCodeLine{00036                     \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00037                     \{}
+\DoxyCodeLine{00038                         GameObject obj = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00039                         obj.name = \textcolor{stringliteral}{"{}PhotonMono"{}};}
+\DoxyCodeLine{00040                         instance = obj.AddComponent<PhotonHandler>();}
+\DoxyCodeLine{00041                     \}}
+\DoxyCodeLine{00042                 \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{return} instance;}
+\DoxyCodeLine{00045             \}}
+\DoxyCodeLine{00046         \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MaxDatagrams = 3;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SendAsap;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SerializeRateFrameCorrection = 8;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{int} UpdateInterval; \textcolor{comment}{// time [ms] between consecutive SendOutgoingCommands calls}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{int} UpdateIntervalOnSerialize; \textcolor{comment}{// time [ms] between consecutive RunViewUpdate calls (sending syncs, etc)}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{private} \textcolor{keywordtype}{int} nextSendTickCount;}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keyword}{private} \textcolor{keywordtype}{int} nextSendTickCountOnSerialize;}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{private} SupportLogger supportLoggerComponent;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null} || ReferenceEquals(\textcolor{keyword}{this}, instance))}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 instance = \textcolor{keyword}{this};}
+\DoxyCodeLine{00077                 base.Awake();}
+\DoxyCodeLine{00078             \}}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 Destroy(\textcolor{keyword}{this});}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (Instance != \textcolor{keyword}{this})}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 Debug.LogError(\textcolor{stringliteral}{"{}PhotonHandler is a singleton but there are multiple instances. this != Instance."{}});}
+\DoxyCodeLine{00090                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00091             \}}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             this.Client = PhotonNetwork.NetworkingClient;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (PhotonNetwork.PhotonServerSettings.EnableSupportLogger)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 SupportLogger supportLogger = this.gameObject.GetComponent<SupportLogger>();}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{if} (supportLogger == \textcolor{keyword}{null})}
+\DoxyCodeLine{00099                 \{}
+\DoxyCodeLine{00100                     supportLogger = this.gameObject.AddComponent<SupportLogger>();}
+\DoxyCodeLine{00101                 \}}
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{if} (this.supportLoggerComponent != \textcolor{keyword}{null})}
+\DoxyCodeLine{00103                 \{}
+\DoxyCodeLine{00104                     \textcolor{keywordflow}{if} (supportLogger.GetInstanceID() != this.supportLoggerComponent.GetInstanceID())}
+\DoxyCodeLine{00105                     \{}
+\DoxyCodeLine{00106                         Debug.LogWarningFormat(\textcolor{stringliteral}{"{}Cached SupportLogger component is different from the one attached to PhotonMono GameObject"{}});}
+\DoxyCodeLine{00107                     \}}
+\DoxyCodeLine{00108                 \}}
+\DoxyCodeLine{00109                 this.supportLoggerComponent = supportLogger;}
+\DoxyCodeLine{00110                 this.supportLoggerComponent.Client = PhotonNetwork.NetworkingClient;}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             this.UpdateInterval = 1000 / PhotonNetwork.SendRate;}
+\DoxyCodeLine{00114             this.UpdateIntervalOnSerialize = 1000 / PhotonNetwork.SerializationRate;}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             PhotonNetwork.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00117             this.StartFallbackSendAckThread();  \textcolor{comment}{// this is not done in the base class}}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, loadingMode) =>}
+\DoxyCodeLine{00123             \{}
+\DoxyCodeLine{00124                 PhotonNetwork.NewSceneLoaded();}
+\DoxyCodeLine{00125             \};}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00129         \{}
+\DoxyCodeLine{00130             PhotonNetwork.RemoveCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00131             base.OnDisable();}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00136         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} FixedUpdate()}
+\DoxyCodeLine{00137         \{}
+\DoxyCodeLine{00138 \textcolor{preprocessor}{            \#if PUN\_DISPATCH\_IN\_FIXEDUPDATE}}
+\DoxyCodeLine{00139             this.Dispatch();}
+\DoxyCodeLine{00140 \textcolor{preprocessor}{            \#elif PUN\_DISPATCH\_IN\_LATEUPDATE}}
+\DoxyCodeLine{00141             \textcolor{comment}{// do not dispatch here}}
+\DoxyCodeLine{00142 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00143             \textcolor{keywordflow}{if} (Time.timeScale > PhotonNetwork.MinimalTimeScaleToDispatchInFixedUpdate)}
+\DoxyCodeLine{00144             \{}
+\DoxyCodeLine{00145                 this.Dispatch();}
+\DoxyCodeLine{00146             \}}
+\DoxyCodeLine{00147 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00148         \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00151         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} LateUpdate()}
+\DoxyCodeLine{00152         \{}
+\DoxyCodeLine{00153 \textcolor{preprocessor}{            \#if PUN\_DISPATCH\_IN\_LATEUPDATE}}
+\DoxyCodeLine{00154             this.Dispatch();}
+\DoxyCodeLine{00155 \textcolor{preprocessor}{            \#elif PUN\_DISPATCH\_IN\_FIXEDUPDATE}}
+\DoxyCodeLine{00156             \textcolor{comment}{// do not dispatch here}}
+\DoxyCodeLine{00157 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00158             \textcolor{comment}{// see MinimalTimeScaleToDispatchInFixedUpdate and FixedUpdate for explanation:}}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (Time.timeScale <= PhotonNetwork.MinimalTimeScaleToDispatchInFixedUpdate)}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 this.Dispatch();}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             \textcolor{keywordtype}{int} currentMsSinceStart = (int)(Time.realtimeSinceStartup * 1000); \textcolor{comment}{// avoiding Environment.TickCount, which could be negative on long-\/running platforms}}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{if} (PhotonNetwork.IsMessageQueueRunning \&\& currentMsSinceStart > \textcolor{keyword}{this}.nextSendTickCountOnSerialize)}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 PhotonNetwork.RunViewUpdate();}
+\DoxyCodeLine{00169                 this.nextSendTickCountOnSerialize = currentMsSinceStart + this.UpdateIntervalOnSerialize -\/ SerializeRateFrameCorrection;}
+\DoxyCodeLine{00170                 this.nextSendTickCount = 0; \textcolor{comment}{// immediately send when synchronization code was running}}
+\DoxyCodeLine{00171             \}}
+\DoxyCodeLine{00172 }
+\DoxyCodeLine{00173             currentMsSinceStart = (int)(Time.realtimeSinceStartup * 1000);}
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (SendAsap || currentMsSinceStart > this.nextSendTickCount)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 SendAsap = \textcolor{keyword}{false};}
+\DoxyCodeLine{00177                 \textcolor{keywordtype}{bool} doSend = \textcolor{keyword}{true};}
+\DoxyCodeLine{00178                 \textcolor{keywordtype}{int} sendCounter = 0;}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{while} (PhotonNetwork.IsMessageQueueRunning \&\& doSend \&\& sendCounter < MaxDatagrams)}
+\DoxyCodeLine{00180                 \{}
+\DoxyCodeLine{00181                     \textcolor{comment}{// Send all outgoing commands}}
+\DoxyCodeLine{00182                     Profiler.BeginSample(\textcolor{stringliteral}{"{}SendOutgoingCommands"{}});}
+\DoxyCodeLine{00183                     doSend = PhotonNetwork.NetworkingClient.LoadBalancingPeer.SendOutgoingCommands();}
+\DoxyCodeLine{00184                     sendCounter++;}
+\DoxyCodeLine{00185                     Profiler.EndSample();}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188                 this.nextSendTickCount = currentMsSinceStart + this.UpdateInterval;}
+\DoxyCodeLine{00189             \}}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00199         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} Dispatch()}
+\DoxyCodeLine{00200         \{}
+\DoxyCodeLine{00201             \textcolor{keywordflow}{if} (PhotonNetwork.NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00202             \{}
+\DoxyCodeLine{00203                 Debug.LogError(\textcolor{stringliteral}{"{}NetworkPeer broke!"{}});}
+\DoxyCodeLine{00204                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207             \textcolor{comment}{//if (PhotonNetwork.NetworkClientState == ClientState.PeerCreated || PhotonNetwork.NetworkClientState == ClientState.Disconnected || PhotonNetwork.OfflineMode)}}
+\DoxyCodeLine{00208             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00209             \textcolor{comment}{//    return;}}
+\DoxyCodeLine{00210             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213             \textcolor{keywordtype}{bool} doDispatch = \textcolor{keyword}{true};}
+\DoxyCodeLine{00214             Exception ex = \textcolor{keyword}{null};}
+\DoxyCodeLine{00215             \textcolor{keywordtype}{int} exceptionCount = 0;}
+\DoxyCodeLine{00216             \textcolor{keywordflow}{while} (PhotonNetwork.IsMessageQueueRunning \&\& doDispatch)}
+\DoxyCodeLine{00217             \{}
+\DoxyCodeLine{00218                 \textcolor{comment}{// DispatchIncomingCommands() returns true of it dispatched any command (event, response or state change)}}
+\DoxyCodeLine{00219                 Profiler.BeginSample(\textcolor{stringliteral}{"{}DispatchIncomingCommands"{}});}
+\DoxyCodeLine{00220                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00221                 \{}
+\DoxyCodeLine{00222                     doDispatch = PhotonNetwork.NetworkingClient.LoadBalancingPeer.DispatchIncomingCommands();}
+\DoxyCodeLine{00223                 \}}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00225                 \{}
+\DoxyCodeLine{00226                     exceptionCount++;}
+\DoxyCodeLine{00227                     \textcolor{keywordflow}{if} (ex == \textcolor{keyword}{null})}
+\DoxyCodeLine{00228                     \{}
+\DoxyCodeLine{00229                         ex = e;}
+\DoxyCodeLine{00230                     \}}
+\DoxyCodeLine{00231                 \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233                 Profiler.EndSample();}
+\DoxyCodeLine{00234             \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordflow}{if} (ex != \textcolor{keyword}{null})}
+\DoxyCodeLine{00237             \{}
+\DoxyCodeLine{00238                 \textcolor{keywordflow}{throw} \textcolor{keyword}{new} AggregateException(\textcolor{stringliteral}{"{}Caught "{}} + exceptionCount + \textcolor{stringliteral}{"{} exception(s) in methods called by DispatchIncomingCommands(). Rethrowing first only (see above)."{}}, ex);}
+\DoxyCodeLine{00239             \}}
+\DoxyCodeLine{00240         \}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCreatedRoom()}
+\DoxyCodeLine{00244         \{}
+\DoxyCodeLine{00245             PhotonNetwork.SetLevelInPropsIfSynced(SceneManagerHelper.ActiveSceneName);}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)}
+\DoxyCodeLine{00249         \{}
+\DoxyCodeLine{00250             PhotonNetwork.LoadLevelIfSynced();}
+\DoxyCodeLine{00251         \}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps) \{ \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00257         \{}
+\DoxyCodeLine{00258             var views = PhotonNetwork.PhotonViewCollection;}
+\DoxyCodeLine{00259             \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} views)}
+\DoxyCodeLine{00260             \{}
+\DoxyCodeLine{00261                 \textcolor{keywordflow}{if} (view.IsRoomView)}
+\DoxyCodeLine{00262                 \{}
+\DoxyCodeLine{00263                     view.OwnerActorNr= newMasterClient.ActorNumber;}
+\DoxyCodeLine{00264                     view.ControllerActorNr = newMasterClient.ActorNumber;}
+\DoxyCodeLine{00265                 \}}
+\DoxyCodeLine{00266             \}}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnFriendListUpdate(System.Collections.Generic.List<FriendInfo> friendList) \{ \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277         \textcolor{keyword}{protected} List<int> reusableIntList = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282             \textcolor{keywordflow}{if} (PhotonNetwork.ViewCount == 0)}
+\DoxyCodeLine{00283                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285             var views = PhotonNetwork.PhotonViewCollection;}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             \textcolor{keywordtype}{bool} amMasterClient = PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00288             \textcolor{keywordtype}{bool} amRejoiningMaster = amMasterClient \&\& PhotonNetwork.CurrentRoom.PlayerCount > 1;}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             \textcolor{keywordflow}{if} (amRejoiningMaster)}
+\DoxyCodeLine{00291                 reusableIntList.Clear();}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293             \textcolor{comment}{// If this is the master rejoining, reassert ownership of non-\/creator owners}}
+\DoxyCodeLine{00294             \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} views)}
+\DoxyCodeLine{00295             \{}
+\DoxyCodeLine{00296                 \textcolor{keywordtype}{int} viewOwnerId = view.OwnerActorNr;}
+\DoxyCodeLine{00297                 \textcolor{keywordtype}{int} viewCreatorId = view.CreatorActorNr;}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299                 \textcolor{comment}{// on join / rejoin, assign control to either the Master Client (for room objects) or the owner (for anything else)}}
+\DoxyCodeLine{00300                     view.RebuildControllerCache();}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302                 \textcolor{comment}{// Rejoining master should enforce its world view, and override any changes that happened while it was soft disconnected}}
+\DoxyCodeLine{00303                 \textcolor{keywordflow}{if} (amRejoiningMaster)}
+\DoxyCodeLine{00304                     \textcolor{keywordflow}{if} (viewOwnerId != viewCreatorId)}
+\DoxyCodeLine{00305                     \{}
+\DoxyCodeLine{00306                         reusableIntList.Add(view.ViewID);}
+\DoxyCodeLine{00307                         reusableIntList.Add(viewOwnerId);}
+\DoxyCodeLine{00308                     \}}
+\DoxyCodeLine{00309             \}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (amRejoiningMaster \&\& reusableIntList.Count > 0)}
+\DoxyCodeLine{00312             \{}
+\DoxyCodeLine{00313                 PhotonNetwork.OwnershipUpdate(reusableIntList.ToArray());}
+\DoxyCodeLine{00314             \}}
+\DoxyCodeLine{00315         \}}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00318         \{}
+\DoxyCodeLine{00319             \textcolor{comment}{// Destroy spawned objects and reset scene objects}}
+\DoxyCodeLine{00320             PhotonNetwork.LocalCleanupAnythingInstantiated(\textcolor{keyword}{true});}
+\DoxyCodeLine{00321         \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00325         \{}
+\DoxyCodeLine{00326             \textcolor{comment}{// note: if the master client becomes inactive, someone else becomes master. so there is no case where the active master client reconnects}}
+\DoxyCodeLine{00327             \textcolor{comment}{// what may happen is that the Master Client disconnects locally and uses ReconnectAndRejoin before anyone (including the server) notices.}}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329             \textcolor{keywordtype}{bool} amMasterClient = PhotonNetwork.IsMasterClient;}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331             var views = PhotonNetwork.PhotonViewCollection;}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{if} (amMasterClient)}
+\DoxyCodeLine{00333             \{}
+\DoxyCodeLine{00334                 reusableIntList.Clear();}
+\DoxyCodeLine{00335             \}}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00337             \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} views)}
+\DoxyCodeLine{00338             \{}
+\DoxyCodeLine{00339                 view.RebuildControllerCache();  \textcolor{comment}{// all clients will potentially have to clean up owner and controller, if someone re-\/joins}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341                 \textcolor{comment}{// the master client notifies joining players of any non-\/creator ownership}}
+\DoxyCodeLine{00342                 \textcolor{keywordflow}{if} (amMasterClient)}
+\DoxyCodeLine{00343                 \{}
+\DoxyCodeLine{00344                     \textcolor{keywordtype}{int} viewOwnerId = view.OwnerActorNr;}
+\DoxyCodeLine{00345                     \textcolor{keywordflow}{if} (viewOwnerId != view.CreatorActorNr)}
+\DoxyCodeLine{00346                     \{}
+\DoxyCodeLine{00347                         reusableIntList.Add(view.ViewID);}
+\DoxyCodeLine{00348                         reusableIntList.Add(viewOwnerId);}
+\DoxyCodeLine{00349                     \}}
+\DoxyCodeLine{00350                 \}}
+\DoxyCodeLine{00351             \}}
+\DoxyCodeLine{00352 }
+\DoxyCodeLine{00353             \textcolor{comment}{// update the joining player of non-\/creator ownership in the room}}
+\DoxyCodeLine{00354             \textcolor{keywordflow}{if} (amMasterClient \&\& reusableIntList.Count > 0)}
+\DoxyCodeLine{00355             \{}
+\DoxyCodeLine{00356                 PhotonNetwork.OwnershipUpdate(reusableIntList.ToArray(), newPlayer.ActorNumber);}
+\DoxyCodeLine{00357             \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359         \}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00362         \{}
+\DoxyCodeLine{00363             var views = PhotonNetwork.PhotonViewCollection;}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365             \textcolor{keywordtype}{int} leavingPlayerId = otherPlayer.ActorNumber;}
+\DoxyCodeLine{00366             \textcolor{keywordtype}{bool} isInactive = otherPlayer.IsInactive;}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368             \textcolor{comment}{// SOFT DISCONNECT: A player has timed out to the relay but has not yet exceeded PlayerTTL and may reconnect.}}
+\DoxyCodeLine{00369             \textcolor{comment}{// Master will take control of this objects until the player hard disconnects, or returns.}}
+\DoxyCodeLine{00370             \textcolor{keywordflow}{if} (isInactive)}
+\DoxyCodeLine{00371             \{}
+\DoxyCodeLine{00372                 \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} views)}
+\DoxyCodeLine{00373                 \{}
+\DoxyCodeLine{00374                     \textcolor{comment}{// v2.27: changed from owner-\/check to controller-\/check}}
+\DoxyCodeLine{00375                     \textcolor{keywordflow}{if} (view.ControllerActorNr == leavingPlayerId)}
+\DoxyCodeLine{00376                         view.ControllerActorNr = PhotonNetwork.MasterClient.ActorNumber;}
+\DoxyCodeLine{00377                 \}}
+\DoxyCodeLine{00378 }
+\DoxyCodeLine{00379             \}}
+\DoxyCodeLine{00380             \textcolor{comment}{// HARD DISCONNECT: Player permanently removed. Remove that actor as owner for all items they created (Unless AutoCleanUp is false)}}
+\DoxyCodeLine{00381             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00382             \{}
+\DoxyCodeLine{00383                 \textcolor{keywordtype}{bool} autocleanup = PhotonNetwork.CurrentRoom.AutoCleanUp;}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385                 \textcolor{keywordflow}{foreach} (var view \textcolor{keywordflow}{in} views)}
+\DoxyCodeLine{00386                 \{}
+\DoxyCodeLine{00387                     \textcolor{comment}{// Skip changing Owner/Controller for items that will be cleaned up.}}
+\DoxyCodeLine{00388                     \textcolor{keywordflow}{if} (autocleanup \&\& view.CreatorActorNr == leavingPlayerId)}
+\DoxyCodeLine{00389                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00391                     \textcolor{comment}{// Any views owned by the leaving player, default to null owner (which will become master controlled).}}
+\DoxyCodeLine{00392                     \textcolor{keywordflow}{if} (view.OwnerActorNr == leavingPlayerId || view.ControllerActorNr == leavingPlayerId)}
+\DoxyCodeLine{00393                     \{}
+\DoxyCodeLine{00394                         view.OwnerActorNr = 0;}
+\DoxyCodeLine{00395                         view.ControllerActorNr = PhotonNetwork.MasterClient.ActorNumber;}
+\DoxyCodeLine{00396                     \}}
+\DoxyCodeLine{00397                 \}}
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399         \}}
+\DoxyCodeLine{00400     \}}
+\DoxyCodeLine{00401 \}}
+
+\end{DoxyCode}

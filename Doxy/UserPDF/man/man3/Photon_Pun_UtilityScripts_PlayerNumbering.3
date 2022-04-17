@@ -1,0 +1,204 @@
+.TH "Photon.Pun.UtilityScripts.PlayerNumbering" 3 "Mon Apr 18 2022" "Purrpatrator User manual" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Photon.Pun.UtilityScripts.PlayerNumbering \- Implements consistent numbering in a room/game with help of room properties\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "delegate void \fBPlayerNumberingChanged\fP ()"
+.br
+.RI "OnPlayerNumberingChanged delegate\&. "
+.ti -1c
+.RI "void \fBAwake\fP ()"
+.br
+.ti -1c
+.RI "override void \fBOnJoinedRoom\fP ()"
+.br
+.RI "Called when the LoadBalancingClient entered a room, no matter if this client created it or simply joined\&. "
+.ti -1c
+.RI "override void \fBOnLeftRoom\fP ()"
+.br
+.RI "Called when the local user/client left a room, so the game's logic can clean up it's internal state\&. "
+.ti -1c
+.RI "override void \fBOnPlayerEnteredRoom\fP (\fBPlayer\fP newPlayer)"
+.br
+.RI "Called when a remote player entered the room\&. "
+.ti -1c
+.RI "override void \fBOnPlayerLeftRoom\fP (\fBPlayer\fP otherPlayer)"
+.br
+.RI "Called when a remote player left the room or became inactive\&. "
+.ti -1c
+.RI "override void \fBOnPlayerPropertiesUpdate\fP (\fBPlayer\fP targetPlayer, \fBHashtable\fP changedProps)"
+.br
+.RI "Called when custom player-properties are changed\&. "
+.ti -1c
+.RI "void \fBRefreshData\fP ()"
+.br
+.RI "Internal call Refresh the cached data and call the OnPlayerNumberingChanged delegate\&. "
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "bool \fBdontDestroyOnLoad\fP = false"
+.br
+.RI "dont destroy on load flag for this Component's GameObject to survive Level Loading\&. "
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "static \fBPlayerNumbering\fP \fBinstance\fP"
+.br
+.RI "The instance\&. "
+.ti -1c
+.RI "static \fBPlayer\fP[] \fBSortedPlayers\fP"
+.br
+.ti -1c
+.RI "const string \fBRoomPlayerIndexedProp\fP = 'pNr'"
+.br
+.RI "Defines the room custom property name to use for room player indexing tracking\&."
+.in -1c
+.SS "Events"
+
+.in +1c
+.ti -1c
+.RI "static \fBPlayerNumberingChanged\fP \fBOnPlayerNumberingChanged\fP"
+.br
+.RI "Called everytime the room Indexing was updated\&. "
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+Implements consistent numbering in a room/game with help of room properties\&. 
+
+Access them by Player\&.GetPlayerNumber() extension\&. 
+.PP
+indexing ranges from 0 to the maximum number of Players\&. indexing remains for the player while in room\&. If a Player is numbered 2 and player numbered 1 leaves, numbered 1 become vacant and will assigned to the future player joining (the first available vacant number is assigned when joining) 
+.PP
+Definition at line \fB30\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.Awake ()"
+
+.PP
+Definition at line \fB67\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnJoinedRoom ()\fC [virtual]\fP"
+
+.PP
+Called when the LoadBalancingClient entered a room, no matter if this client created it or simply joined\&. When this is called, you can access the existing players in \fBRoom\&.Players\fP, their custom properties and \fBRoom\&.CustomProperties\fP\&.
+.PP
+In this callback, you could create player objects\&. For example in Unity, instantiate a prefab for the player\&.
+.PP
+If you want a match to be started 'actively', enable the user to signal 'ready' (using OpRaiseEvent or a Custom Property)\&. 
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.PP
+Definition at line \fB89\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnLeftRoom ()\fC [virtual]\fP"
+
+.PP
+Called when the local user/client left a room, so the game's logic can clean up it's internal state\&. When leaving a room, the LoadBalancingClient will disconnect the Game Server and connect to the Master Server\&. This wraps up multiple internal actions\&.
+.PP
+Wait for the callback OnConnectedToMaster, before you use lobbies and join or create rooms\&. 
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.PP
+Definition at line \fB94\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnPlayerEnteredRoom (\fBPlayer\fP newPlayer)\fC [virtual]\fP"
+
+.PP
+Called when a remote player entered the room\&. This Player is already added to the playerlist\&. 
+.PP
+If your game starts with a certain number of players, this callback can be useful to check the Room\&.playerCount and find out if you can start\&. 
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.PP
+Definition at line \fB99\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnPlayerLeftRoom (\fBPlayer\fP otherPlayer)\fC [virtual]\fP"
+
+.PP
+Called when a remote player left the room or became inactive\&. Check otherPlayer\&.IsInactive\&. 
+.PP
+If another player leaves the room or if the server detects a lost connection, this callback will be used to notify your game logic\&.
+.PP
+Depending on the room's setup, players may become inactive, which means they may return and retake their spot in the room\&. In such cases, the Player stays in the \fBRoom\&.Players\fP dictionary\&.
+.PP
+If the player is not just inactive, it gets removed from the \fBRoom\&.Players\fP dictionary, before the callback is called\&. 
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.PP
+Definition at line \fB104\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "override void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnPlayerPropertiesUpdate (\fBPlayer\fP targetPlayer, \fBHashtable\fP changedProps)\fC [virtual]\fP"
+
+.PP
+Called when custom player-properties are changed\&. Player and the changed properties are passed as object[]\&. 
+.PP
+Changing properties must be done by \fBPlayer\&.SetCustomProperties\fP, which causes this callback locally, too\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fItargetPlayer\fP Contains Player that changed\&.
+.br
+\fIchangedProps\fP Contains the properties that changed\&.
+.RE
+.PP
+
+.PP
+Reimplemented from \fBPhoton\&.Pun\&.MonoBehaviourPunCallbacks\fP\&.
+.PP
+Definition at line \fB109\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "delegate void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.PlayerNumberingChanged ()"
+
+.PP
+OnPlayerNumberingChanged delegate\&. Use 
+.SS "void Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.RefreshData ()"
+
+.PP
+Internal call Refresh the cached data and call the OnPlayerNumberingChanged delegate\&. 
+.PP
+Definition at line \fB126\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SH "Member Data Documentation"
+.PP 
+.SS "bool Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.dontDestroyOnLoad = false"
+
+.PP
+dont destroy on load flag for this Component's GameObject to survive Level Loading\&. 
+.PP
+Definition at line \fB59\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "\fBPlayerNumbering\fP Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.instance\fC [static]\fP"
+
+.PP
+The instance\&. EntryPoint to query about Room Indexing\&. 
+.PP
+Definition at line \fB39\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "const string Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.RoomPlayerIndexedProp = 'pNr'\fC [static]\fP"
+
+.PP
+Defines the room custom property name to use for room player indexing tracking\&.
+.PP
+Definition at line \fB54\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SS "\fBPlayer\fP [] Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.SortedPlayers\fC [static]\fP"
+
+.PP
+Definition at line \fB41\fP of file \fBPlayerNumbering\&.cs\fP\&.
+.SH "Event Documentation"
+.PP 
+.SS "\fBPlayerNumberingChanged\fP Photon\&.Pun\&.UtilityScripts\&.PlayerNumbering\&.OnPlayerNumberingChanged\fC [static]\fP"
+
+.PP
+Called everytime the room Indexing was updated\&. Use this for discrete updates\&. Always better than brute force calls every frame\&. 
+.PP
+Definition at line \fB50\fP of file \fBPlayerNumbering\&.cs\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Purrpatrator User manual from the source code\&.

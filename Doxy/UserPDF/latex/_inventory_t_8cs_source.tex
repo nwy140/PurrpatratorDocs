@@ -1,0 +1,147 @@
+\doxysection{Inventory\+T.\+cs}
+\label{_inventory_t_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncInventory/InventoryT.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncInventory/InventoryT.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Pun.Simple.ContactGroups;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00023     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }Inventory<T> : NetComponent}
+\DoxyCodeLine{00024         , IInventorySystem<T>}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 \textcolor{preprocessor}{        \#region Inspector}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [SerializeField]}
+\DoxyCodeLine{00030         \textcolor{keyword}{protected} MountSelector defaultMounting = \textcolor{keyword}{new} MountSelector(0);}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} Mount DefaultMount \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [SerializeField]}
+\DoxyCodeLine{00034         \textcolor{keyword}{protected} ContactGroupMaskSelector contactGroups = \textcolor{keyword}{new} ContactGroupMaskSelector();}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} IContactGroupMask ValidContactGroups \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} contactGroups; \} \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038 \textcolor{preprocessor}{        \#endregion Inspector}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} SystemIndex \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00041         }
+\DoxyCodeLine{00042         \textcolor{comment}{//cache}}
+\DoxyCodeLine{00043         \textcolor{keyword}{protected} MountsManager mountsLookup;}
+\DoxyCodeLine{00044         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} defaultMountingMask;}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ValidMountsMask \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} defaultMountingMask; \} \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwakeInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             base.OnAwakeInitialize(isNetObject);}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051             this.transform.EnsureRootComponentExists<ContactManager, NetObject>();}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             mountsLookup = netObj.transform.GetComponent<MountsManager>();}
+\DoxyCodeLine{00054             defaultMountingMask = 1 << (defaultMounting.id);}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             base.OnStart();}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordflow}{if} (mountsLookup)}
+\DoxyCodeLine{00062                 DefaultMount = mountsLookup.GetMount(defaultMounting);}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \textcolor{comment}{//Debug.Log("{}DEFMOUNT <b>"{}+ DefaultMount + "{} : "{} + mountIdx + "{} :</b> "{} + mountsLookup);}}
+\DoxyCodeLine{00065         \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keyword}{virtual} Consumption TryTrigger(IContactReactor reactor, ContactEvent contactEvent, \textcolor{keywordtype}{int} compatibleMounts)}
+\DoxyCodeLine{00068         \{}
+\DoxyCodeLine{00069             \textcolor{comment}{//Debug.Log("{}TryTrigger Basic Inv. compat with: "{} + compatibleMounts + "{} defMountId: "{} + defaultMounting.id + "{} defMask: "{} + defaultMountingMask);}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             IInventoryable<T> iven = reactor as IInventoryable<T>;}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (ReferenceEquals(iven, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076             \textcolor{keywordflow}{if} (contactGroups != 0)}
+\DoxyCodeLine{00077             \{}
+\DoxyCodeLine{00078                 IContactGroupsAssign groups = contactEvent.contactTrigger.ContactGroupsAssign;}
+\DoxyCodeLine{00079                 \textcolor{keywordtype}{int} triggermask = ReferenceEquals(groups, \textcolor{keyword}{null}) ? 0 : groups.Mask;}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} ((contactGroups.Mask \& triggermask) == 0)}
+\DoxyCodeLine{00081                 \{}
+\DoxyCodeLine{00082                     \textcolor{comment}{//Debug.Log("{}Try trigger... ContactGroup mismatch "{} + contactGroups.Mask + "{}<>"{} + triggermask);}}
+\DoxyCodeLine{00083                     \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00088             \textcolor{keywordflow}{if} (TestCapacity(reactor as IInventoryable<T>) == \textcolor{keyword}{false})}
+\DoxyCodeLine{00089             \{}
+\DoxyCodeLine{00090                 \textcolor{comment}{//Debug.Log(name + "{} failed"{});}}
+\DoxyCodeLine{00091                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00092             \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} ((compatibleMounts == defaultMountingMask) || (compatibleMounts \& defaultMountingMask) != 0)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 \textcolor{comment}{// TODO: partial consumption handling needed}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                 \textcolor{comment}{//Debug.Log(name + "{} <> "{} + (trigger as Component).name + "{} <b>success</b>: "{} + compatibleMounts + "{} <> "{} + defaultMountingMask);}}
+\DoxyCodeLine{00100                 \textcolor{keywordflow}{return} Consumption.All;}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 \textcolor{comment}{//Debug.Log(name + "{} <> "{} + (trigger as Component).name + "{} failed: "{} + compatibleMounts + "{} <> "{} + defaultMountingMask);}}
+\DoxyCodeLine{00105                 \textcolor{keywordflow}{return} Consumption.None;}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{virtual} Mount TryPickup(IContactReactor reactor, ContactEvent contactEvent)}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{return} DefaultMount;}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} TestCapacity(IInventoryable<T> inventoryable)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124     \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128     [CustomEditor(typeof(Inventory<>), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00129     [CanEditMultipleObjects]}
+\DoxyCodeLine{00130     \textcolor{keyword}{public} \textcolor{keyword}{class }InventoryTEditor : ContactSystemHeaderEditor}
+\DoxyCodeLine{00131     \{}
+\DoxyCodeLine{00132         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} SimpleDocsURLS.SYNCCOMPS\_PATH + \textcolor{stringliteral}{"{}\#inventory\_contact\_system"{}}; \}}
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             \textcolor{keyword}{get}}
+\DoxyCodeLine{00140             \{}
+\DoxyCodeLine{00141                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/InventorySystemText"{}};}
+\DoxyCodeLine{00142             \}}
+\DoxyCodeLine{00143         \}}
+\DoxyCodeLine{00144         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} Instructions}
+\DoxyCodeLine{00145         \{}
+\DoxyCodeLine{00146             \textcolor{keyword}{get}}
+\DoxyCodeLine{00147             \{}
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Associates a Mount with an Inventory. Picked up <i>IInventoryable</i> will attach to the associated mount."{}};}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151     \}}
+\DoxyCodeLine{00152 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00153 \}}
+\DoxyCodeLine{00154 }
+
+\end{DoxyCode}

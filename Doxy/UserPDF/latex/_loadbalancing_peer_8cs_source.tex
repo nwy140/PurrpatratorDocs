@@ -1,0 +1,1521 @@
+\doxysection{Loadbalancing\+Peer.\+cs}
+\label{_loadbalancing_peer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/LoadbalancingPeer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/LoadbalancingPeer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}LoadBalancingPeer.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Provides operations to use the LoadBalancing and Cloud photon servers.}}
+\DoxyCodeLine{00007 \textcolor{comment}{//   No logic is implemented here.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00022     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00025     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00026     \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00028 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00029     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00030     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00041     \textcolor{keyword}{public} \textcolor{keyword}{class }LoadBalancingPeer : PhotonPeer}
+\DoxyCodeLine{00042     \{}
+\DoxyCodeLine{00044         [Obsolete(\textcolor{stringliteral}{"{}Use RegionHandler.PingImplementation directly."{}})]}
+\DoxyCodeLine{00045         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{static} Type PingImplementation}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} RegionHandler.PingImplementation; \}}
+\DoxyCodeLine{00048             \textcolor{keyword}{set} \{ RegionHandler.PingImplementation = value; \}}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{private} readonly Pool<ParameterDictionary> paramDictionaryPool = \textcolor{keyword}{new} Pool<ParameterDictionary>(}
+\DoxyCodeLine{00053             () => \textcolor{keyword}{new} ParameterDictionary(),}
+\DoxyCodeLine{00054             x => x.Clear(),}
+\DoxyCodeLine{00055             1); \textcolor{comment}{// used in OpRaiseEvent() (avoids lots of new Dictionary() calls)}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} LoadBalancingPeer(ConnectionProtocol protocolType) : base(protocolType)}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             \textcolor{comment}{// this does not require a Listener, so:}}
+\DoxyCodeLine{00066             \textcolor{comment}{// make sure to set this.Listener before using a peer!}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068             this.ConfigUnitySockets();}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00074         \textcolor{keyword}{public} LoadBalancingPeer(IPhotonPeerListener listener, ConnectionProtocol protocolType) : this(protocolType)}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             this.Listener = listener;}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{comment}{// Sets up the socket implementations to use, depending on platform}}
+\DoxyCodeLine{00081         [System.Diagnostics.Conditional(\textcolor{stringliteral}{"{}SUPPORTED\_UNITY"{}})]}
+\DoxyCodeLine{00082         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ConfigUnitySockets()}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             Type websocketType = \textcolor{keyword}{null};}
+\DoxyCodeLine{00085 \textcolor{preprocessor}{            \#if (UNITY\_XBOXONE || UNITY\_GAMECORE) \&\& !UNITY\_EDITOR}}
+\DoxyCodeLine{00086             websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, Assembly-\/CSharp"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00087             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00088             \{}
+\DoxyCodeLine{00089                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, Assembly-\/CSharp-\/firstpass"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketNativeSource, PhotonRealtime"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (websocketType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 this.SocketImplementationConfig[ConnectionProtocol.Udp] = websocketType;    \textcolor{comment}{// on Xbox, the native socket plugin supports UDP as well}}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00100             \textcolor{comment}{// to support WebGL export in Unity, we find and assign the SocketWebTcp class (if it's in the project).}}
+\DoxyCodeLine{00101             \textcolor{comment}{// alternatively class SocketWebTcp might be in the Photon3Unity3D.dll}}
+\DoxyCodeLine{00102             websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, PhotonWebSocket"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00103             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00104             \{}
+\DoxyCodeLine{00105                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, Assembly-\/CSharp-\/firstpass"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107             \textcolor{keywordflow}{if} (websocketType == \textcolor{keyword}{null})}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 websocketType = Type.GetType(\textcolor{stringliteral}{"{}ExitGames.Client.Photon.SocketWebTcp, Assembly-\/CSharp"{}}, \textcolor{keyword}{false});}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (websocketType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00114             \{}
+\DoxyCodeLine{00115                 this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = websocketType;}
+\DoxyCodeLine{00116                 this.SocketImplementationConfig[ConnectionProtocol.WebSocketSecure] = websocketType;}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{            \#if NET\_4\_6 \&\& (UNITY\_EDITOR || !ENABLE\_IL2CPP) \&\& !NETFX\_CORE}}
+\DoxyCodeLine{00120             this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpAsync);}
+\DoxyCodeLine{00121             this.SocketImplementationConfig[ConnectionProtocol.Tcp] = typeof(SocketTcpAsync);}
+\DoxyCodeLine{00122 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpGetRegions(\textcolor{keywordtype}{string} appId)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>(1);}
+\DoxyCodeLine{00129             parameters[(byte)ParameterCode.ApplicationId] = appId;}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} \textcolor{keyword}{this}.SendOperation(OperationCode.GetRegions, parameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = \textcolor{keyword}{true}, Encrypt = \textcolor{keyword}{true} \});}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00140         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpJoinLobby(TypedLobby lobby = \textcolor{keyword}{null})}
+\DoxyCodeLine{00141         \{}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpJoinLobby()"{}});}
+\DoxyCodeLine{00145             \}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147             Dictionary<byte, object> parameters = \textcolor{keyword}{null};}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{if} (lobby != \textcolor{keyword}{null} \&\& !lobby.IsDefault)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 parameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00151                 parameters[(byte)ParameterCode.LobbyName] = lobby.Name;}
+\DoxyCodeLine{00152                 parameters[(\textcolor{keywordtype}{byte})ParameterCode.LobbyType] = (byte)lobby.Type;}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.JoinLobby, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00164         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpLeaveLobby()}
+\DoxyCodeLine{00165         \{}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpLeaveLobby()"{}});}
+\DoxyCodeLine{00169             \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.LeaveLobby, (Dictionary<byte, object>)\textcolor{keyword}{null}, SendOptions.SendReliable);}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00176         \textcolor{keyword}{private} \textcolor{keywordtype}{void} RoomOptionsToOpParameters(Dictionary<byte, object> op, RoomOptions roomOptions, \textcolor{keywordtype}{bool} usePropertiesKey = \textcolor{keyword}{false})}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178             \textcolor{keywordflow}{if} (roomOptions == \textcolor{keyword}{null})}
+\DoxyCodeLine{00179             \{}
+\DoxyCodeLine{00180                 roomOptions = \textcolor{keyword}{new} RoomOptions();}
+\DoxyCodeLine{00181             \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183             Hashtable gameProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00184             gameProperties[GamePropertyKey.IsOpen] = roomOptions.IsOpen;}
+\DoxyCodeLine{00185             gameProperties[GamePropertyKey.IsVisible] = roomOptions.IsVisible;}
+\DoxyCodeLine{00186             gameProperties[GamePropertyKey.PropsListedInLobby] = (roomOptions.CustomRoomPropertiesForLobby == \textcolor{keyword}{null}) ? \textcolor{keyword}{new} \textcolor{keywordtype}{string}[0] : roomOptions.CustomRoomPropertiesForLobby;}
+\DoxyCodeLine{00187             gameProperties.MergeStringKeys(roomOptions.CustomRoomProperties);}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{if} (roomOptions.MaxPlayers > 0)}
+\DoxyCodeLine{00189             \{}
+\DoxyCodeLine{00190                 gameProperties[GamePropertyKey.MaxPlayers] = roomOptions.MaxPlayers;}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193             \textcolor{keywordflow}{if} (!usePropertiesKey)}
+\DoxyCodeLine{00194             \{}
+\DoxyCodeLine{00195                 op[ParameterCode.GameProperties] = gameProperties;  \textcolor{comment}{// typically, the key for game props is 248}}
+\DoxyCodeLine{00196             \}}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 op[ParameterCode.Properties] = gameProperties;      \textcolor{comment}{// when an op uses 248 as filter, the "{}create room"{} props can be set as 251}}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203             \textcolor{keywordtype}{int} flags = 0;  \textcolor{comment}{// a new way to send the room options as bitwise-\/flags}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (roomOptions.CleanupCacheOnLeave)}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 op[ParameterCode.CleanupCacheOnLeave] = \textcolor{keyword}{true};                   \textcolor{comment}{// this defines the server's room settings and logic}}
+\DoxyCodeLine{00208                 flags = flags | (int)RoomOptionBit.DeleteCacheOnLeave;          \textcolor{comment}{// this defines the server's room settings and logic (for servers that support flags)}}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00211             \{}
+\DoxyCodeLine{00212                 op[ParameterCode.CleanupCacheOnLeave] = \textcolor{keyword}{false};                  \textcolor{comment}{// this defines the server's room settings and logic}}
+\DoxyCodeLine{00213                 gameProperties[GamePropertyKey.CleanupCacheOnLeave] = \textcolor{keyword}{false};    \textcolor{comment}{// this is only informational for the clients which join}}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216 \textcolor{preprocessor}{            \#if SERVERSDK}}
+\DoxyCodeLine{00217             op[ParameterCode.CheckUserOnJoin] = roomOptions.CheckUserOnJoin;}
+\DoxyCodeLine{00218             \textcolor{keywordflow}{if} (roomOptions.CheckUserOnJoin)}
+\DoxyCodeLine{00219             \{}
+\DoxyCodeLine{00220                 flags = flags | (int) RoomOptionBit.CheckUserOnJoin;}
+\DoxyCodeLine{00221             \}}
+\DoxyCodeLine{00222 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00223             \textcolor{comment}{// in PUN v1.88 and PUN 2, CheckUserOnJoin is set by default:}}
+\DoxyCodeLine{00224             flags = flags | (int) RoomOptionBit.CheckUserOnJoin;}
+\DoxyCodeLine{00225             op[ParameterCode.CheckUserOnJoin] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00226             \#endif}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             if (roomOptions.PlayerTtl > 0 || roomOptions.PlayerTtl == -\/1)}
+\DoxyCodeLine{00229             \{}
+\DoxyCodeLine{00230                 op[ParameterCode.PlayerTTL] = roomOptions.PlayerTtl;    \textcolor{comment}{// TURNBASED}}
+\DoxyCodeLine{00231             \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233             \textcolor{keywordflow}{if} (roomOptions.EmptyRoomTtl > 0)}
+\DoxyCodeLine{00234             \{}
+\DoxyCodeLine{00235                 op[ParameterCode.EmptyRoomTTL] = roomOptions.EmptyRoomTtl;   \textcolor{comment}{//TURNBASED}}
+\DoxyCodeLine{00236             \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{if} (roomOptions.SuppressRoomEvents)}
+\DoxyCodeLine{00239             \{}
+\DoxyCodeLine{00240                 flags = flags | (int)RoomOptionBit.SuppressRoomEvents;}
+\DoxyCodeLine{00241                 op[ParameterCode.SuppressRoomEvents] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00242             \}}
+\DoxyCodeLine{00243             \textcolor{keywordflow}{if} (roomOptions.SuppressPlayerInfo)}
+\DoxyCodeLine{00244             \{}
+\DoxyCodeLine{00245                 flags = flags | (int)RoomOptionBit.SuppressPlayerInfo;}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (roomOptions.Plugins != \textcolor{keyword}{null})}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 op[ParameterCode.Plugins] = roomOptions.Plugins;}
+\DoxyCodeLine{00251             \}}
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if} (roomOptions.PublishUserId)}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 flags = flags | (int)RoomOptionBit.PublishUserId;}
+\DoxyCodeLine{00255                 op[ParameterCode.PublishUserId] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (roomOptions.DeleteNullProperties)}
+\DoxyCodeLine{00258             \{}
+\DoxyCodeLine{00259                 flags = flags | (int)RoomOptionBit.DeleteNullProps; \textcolor{comment}{// this is only settable as flag}}
+\DoxyCodeLine{00260             \}}
+\DoxyCodeLine{00261             \textcolor{keywordflow}{if} (roomOptions.BroadcastPropsChangeToAll)}
+\DoxyCodeLine{00262             \{}
+\DoxyCodeLine{00263                 flags = flags | (int)RoomOptionBit.BroadcastPropsChangeToAll; \textcolor{comment}{// this is only settable as flag}}
+\DoxyCodeLine{00264             \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             op[ParameterCode.RoomOptionFlags] = flags;}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00280         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpCreateRoom(EnterRoomParams opParams)}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00283             \{}
+\DoxyCodeLine{00284                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpCreateRoom()"{}});}
+\DoxyCodeLine{00285             \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             Dictionary<byte, object> op = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(opParams.RoomName))}
+\DoxyCodeLine{00290             \{}
+\DoxyCodeLine{00291                 op[ParameterCode.RoomName] = opParams.RoomName;}
+\DoxyCodeLine{00292             \}}
+\DoxyCodeLine{00293             \textcolor{keywordflow}{if} (opParams.Lobby != \textcolor{keyword}{null} \&\& !opParams.Lobby.IsDefault)}
+\DoxyCodeLine{00294             \{}
+\DoxyCodeLine{00295                 op[ParameterCode.LobbyName] = opParams.Lobby.Name;}
+\DoxyCodeLine{00296                 op[ParameterCode.LobbyType] = (byte)opParams.Lobby.Type;}
+\DoxyCodeLine{00297             \}}
+\DoxyCodeLine{00298 }
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (opParams.ExpectedUsers != \textcolor{keyword}{null} \&\& opParams.ExpectedUsers.Length > 0)}
+\DoxyCodeLine{00300             \{}
+\DoxyCodeLine{00301                 op[ParameterCode.Add] = opParams.ExpectedUsers;}
+\DoxyCodeLine{00302             \}}
+\DoxyCodeLine{00303             \textcolor{keywordflow}{if} (opParams.OnGameServer)}
+\DoxyCodeLine{00304             \{}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{if} (opParams.PlayerProperties != \textcolor{keyword}{null} \&\& opParams.PlayerProperties.Count > 0)}
+\DoxyCodeLine{00306                 \{}
+\DoxyCodeLine{00307                     op[ParameterCode.PlayerProperties] = opParams.PlayerProperties;}
+\DoxyCodeLine{00308                 \}}
+\DoxyCodeLine{00309                 op[ParameterCode.Broadcast] = \textcolor{keyword}{true}; \textcolor{comment}{// broadcast actor properties}}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311                 this.RoomOptionsToOpParameters(op, opParams.RoomOptions);}
+\DoxyCodeLine{00312             \}}
+\DoxyCodeLine{00313 }
+\DoxyCodeLine{00314             \textcolor{comment}{//this.Listener.DebugReturn(DebugLevel.INFO, "{}OpCreateRoom: "{} + SupportClass.DictionaryToString(op));}}
+\DoxyCodeLine{00315             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.CreateGame, op, SendOptions.SendReliable);}
+\DoxyCodeLine{00316         \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00330         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpJoinRoom(EnterRoomParams opParams)}
+\DoxyCodeLine{00331         \{}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00333             \{}
+\DoxyCodeLine{00334                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpJoinRoom()"{}});}
+\DoxyCodeLine{00335             \}}
+\DoxyCodeLine{00336             Dictionary<byte, object> op = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(opParams.RoomName))}
+\DoxyCodeLine{00339             \{}
+\DoxyCodeLine{00340                 op[ParameterCode.RoomName] = opParams.RoomName;}
+\DoxyCodeLine{00341             \}}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343             \textcolor{keywordflow}{if} (opParams.JoinMode == JoinMode.CreateIfNotExists)}
+\DoxyCodeLine{00344             \{}
+\DoxyCodeLine{00345                 op[ParameterCode.JoinMode] = (byte)JoinMode.CreateIfNotExists;}
+\DoxyCodeLine{00346                 if (opParams.Lobby != \textcolor{keyword}{null} \&\& !opParams.Lobby.IsDefault)}
+\DoxyCodeLine{00347                 \{}
+\DoxyCodeLine{00348                     op[ParameterCode.LobbyName] = opParams.Lobby.Name;}
+\DoxyCodeLine{00349                     op[ParameterCode.LobbyType] = (byte)opParams.Lobby.Type;}
+\DoxyCodeLine{00350                 \}}
+\DoxyCodeLine{00351             \}}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (opParams.JoinMode == JoinMode.RejoinOnly)}
+\DoxyCodeLine{00353             \{}
+\DoxyCodeLine{00354                 op[ParameterCode.JoinMode] = (byte)JoinMode.RejoinOnly; \textcolor{comment}{// changed from JoinMode.JoinOrRejoin}}
+\DoxyCodeLine{00355             \}}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357             \textcolor{keywordflow}{if} (opParams.ExpectedUsers != \textcolor{keyword}{null} \&\& opParams.ExpectedUsers.Length > 0)}
+\DoxyCodeLine{00358             \{}
+\DoxyCodeLine{00359                 op[ParameterCode.Add] = opParams.ExpectedUsers;}
+\DoxyCodeLine{00360             \}}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             \textcolor{keywordflow}{if} (opParams.OnGameServer)}
+\DoxyCodeLine{00363             \{}
+\DoxyCodeLine{00364                 \textcolor{keywordflow}{if} (opParams.PlayerProperties != \textcolor{keyword}{null} \&\& opParams.PlayerProperties.Count > 0)}
+\DoxyCodeLine{00365                 \{}
+\DoxyCodeLine{00366                     op[ParameterCode.PlayerProperties] = opParams.PlayerProperties;}
+\DoxyCodeLine{00367                 \}}
+\DoxyCodeLine{00368                 op[ParameterCode.Broadcast] = \textcolor{keyword}{true}; \textcolor{comment}{// broadcast actor properties}}
+\DoxyCodeLine{00369             \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00371             \textcolor{keywordflow}{if} (opParams.OnGameServer || opParams.JoinMode == JoinMode.CreateIfNotExists)}
+\DoxyCodeLine{00372             \{}
+\DoxyCodeLine{00373                 this.RoomOptionsToOpParameters(op, opParams.RoomOptions);}
+\DoxyCodeLine{00374             \}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00376             \textcolor{comment}{//this.Listener.DebugReturn(DebugLevel.INFO, "{}OpJoinRoom: "{} + SupportClass.DictionaryToString(op));}}
+\DoxyCodeLine{00377             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.JoinGame, op, SendOptions.SendReliable);}
+\DoxyCodeLine{00378         \}}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00388         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpJoinRandomRoom(OpJoinRandomRoomParams opJoinRandomRoomParams)}
+\DoxyCodeLine{00389         \{}
+\DoxyCodeLine{00390             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00391             \{}
+\DoxyCodeLine{00392                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpJoinRandomRoom()"{}});}
+\DoxyCodeLine{00393             \}}
+\DoxyCodeLine{00394 }
+\DoxyCodeLine{00395             Hashtable expectedRoomProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00396             expectedRoomProperties.MergeStringKeys(opJoinRandomRoomParams.ExpectedCustomRoomProperties);}
+\DoxyCodeLine{00397             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.ExpectedMaxPlayers > 0)}
+\DoxyCodeLine{00398             \{}
+\DoxyCodeLine{00399                 expectedRoomProperties[GamePropertyKey.MaxPlayers] = opJoinRandomRoomParams.ExpectedMaxPlayers;}
+\DoxyCodeLine{00400             \}}
+\DoxyCodeLine{00401 }
+\DoxyCodeLine{00402             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00403             \textcolor{keywordflow}{if} (expectedRoomProperties.Count > 0)}
+\DoxyCodeLine{00404             \{}
+\DoxyCodeLine{00405                 opParameters[ParameterCode.GameProperties] = expectedRoomProperties;}
+\DoxyCodeLine{00406             \}}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.MatchingType != MatchmakingMode.FillRoom)}
+\DoxyCodeLine{00409             \{}
+\DoxyCodeLine{00410                 opParameters[ParameterCode.MatchMakingType] = (byte)opJoinRandomRoomParams.MatchingType;}
+\DoxyCodeLine{00411             \}}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.TypedLobby != \textcolor{keyword}{null} \&\& !opJoinRandomRoomParams.TypedLobby.IsDefault)}
+\DoxyCodeLine{00414             \{}
+\DoxyCodeLine{00415                 opParameters[ParameterCode.LobbyName] = opJoinRandomRoomParams.TypedLobby.Name;}
+\DoxyCodeLine{00416                 opParameters[ParameterCode.LobbyType] = (byte)opJoinRandomRoomParams.TypedLobby.Type;}
+\DoxyCodeLine{00417             \}}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00419             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(opJoinRandomRoomParams.SqlLobbyFilter))}
+\DoxyCodeLine{00420             \{}
+\DoxyCodeLine{00421                 opParameters[ParameterCode.Data] = opJoinRandomRoomParams.SqlLobbyFilter;}
+\DoxyCodeLine{00422             \}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.ExpectedUsers != \textcolor{keyword}{null} \&\& opJoinRandomRoomParams.ExpectedUsers.Length > 0)}
+\DoxyCodeLine{00425             \{}
+\DoxyCodeLine{00426                 opParameters[ParameterCode.Add] = opJoinRandomRoomParams.ExpectedUsers;}
+\DoxyCodeLine{00427             \}}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429             \textcolor{comment}{//this.Listener.DebugReturn(DebugLevel.INFO, "{}OpJoinRandomRoom: "{} + SupportClass.DictionaryToString(opParameters));}}
+\DoxyCodeLine{00430             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.JoinRandomGame, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00431         \}}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00437         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpJoinRandomOrCreateRoom(OpJoinRandomRoomParams opJoinRandomRoomParams, EnterRoomParams createRoomParams)}
+\DoxyCodeLine{00438         \{}
+\DoxyCodeLine{00439             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00440             \{}
+\DoxyCodeLine{00441                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpJoinRandomOrCreateRoom()"{}});}
+\DoxyCodeLine{00442             \}}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00444             \textcolor{comment}{// join random room parameters:}}
+\DoxyCodeLine{00445 }
+\DoxyCodeLine{00446             Hashtable expectedRoomProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00447             expectedRoomProperties.MergeStringKeys(opJoinRandomRoomParams.ExpectedCustomRoomProperties);}
+\DoxyCodeLine{00448             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.ExpectedMaxPlayers > 0)}
+\DoxyCodeLine{00449             \{}
+\DoxyCodeLine{00450                 expectedRoomProperties[GamePropertyKey.MaxPlayers] = opJoinRandomRoomParams.ExpectedMaxPlayers;}
+\DoxyCodeLine{00451             \}}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00454             \textcolor{keywordflow}{if} (expectedRoomProperties.Count > 0)}
+\DoxyCodeLine{00455             \{}
+\DoxyCodeLine{00456                 opParameters[ParameterCode.GameProperties] = expectedRoomProperties;    \textcolor{comment}{// used as filter. below, RoomOptionsToOpParameters has usePropertiesKey = true}}
+\DoxyCodeLine{00457             \}}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.MatchingType != MatchmakingMode.FillRoom)}
+\DoxyCodeLine{00460             \{}
+\DoxyCodeLine{00461                 opParameters[ParameterCode.MatchMakingType] = (byte)opJoinRandomRoomParams.MatchingType;}
+\DoxyCodeLine{00462             \}}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.TypedLobby != \textcolor{keyword}{null} \&\& !opJoinRandomRoomParams.TypedLobby.IsDefault)}
+\DoxyCodeLine{00465             \{}
+\DoxyCodeLine{00466                 opParameters[ParameterCode.LobbyName] = opJoinRandomRoomParams.TypedLobby.Name;}
+\DoxyCodeLine{00467                 opParameters[ParameterCode.LobbyType] = (byte)opJoinRandomRoomParams.TypedLobby.Type;}
+\DoxyCodeLine{00468             \}}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(opJoinRandomRoomParams.SqlLobbyFilter))}
+\DoxyCodeLine{00471             \{}
+\DoxyCodeLine{00472                 opParameters[ParameterCode.Data] = opJoinRandomRoomParams.SqlLobbyFilter;}
+\DoxyCodeLine{00473             \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475             \textcolor{keywordflow}{if} (opJoinRandomRoomParams.ExpectedUsers != \textcolor{keyword}{null} \&\& opJoinRandomRoomParams.ExpectedUsers.Length > 0)}
+\DoxyCodeLine{00476             \{}
+\DoxyCodeLine{00477                 opParameters[ParameterCode.Add] = opJoinRandomRoomParams.ExpectedUsers;}
+\DoxyCodeLine{00478             \}}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480 }
+\DoxyCodeLine{00481             \textcolor{comment}{// parameters for creating a room if needed ("{}or create"{} part of the operation)}}
+\DoxyCodeLine{00482             \textcolor{comment}{// partial copy of OpCreateRoom}}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484             opParameters[ParameterCode.JoinMode] = (byte)JoinMode.CreateIfNotExists;}
+\DoxyCodeLine{00485 }
+\DoxyCodeLine{00486             if (createRoomParams != \textcolor{keyword}{null})}
+\DoxyCodeLine{00487             \{}
+\DoxyCodeLine{00488                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(createRoomParams.RoomName))}
+\DoxyCodeLine{00489                 \{}
+\DoxyCodeLine{00490                     opParameters[ParameterCode.RoomName] = createRoomParams.RoomName;}
+\DoxyCodeLine{00491                 \}}
+\DoxyCodeLine{00492 }
+\DoxyCodeLine{00493                 this.RoomOptionsToOpParameters(opParameters, createRoomParams.RoomOptions, \textcolor{keyword}{true});}
+\DoxyCodeLine{00494             \}}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00496             \textcolor{comment}{//this.Listener.DebugReturn(DebugLevel.INFO, "{}OpJoinRandomOrCreateRoom: "{} + SupportClass.DictionaryToString(opParameters, false));}}
+\DoxyCodeLine{00497             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.JoinRandomGame, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00498         \}}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00507         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpLeaveRoom(\textcolor{keywordtype}{bool} becomeInactive, \textcolor{keywordtype}{bool} sendAuthCookie = \textcolor{keyword}{false})}
+\DoxyCodeLine{00508         \{}
+\DoxyCodeLine{00509             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00510             \textcolor{keywordflow}{if} (becomeInactive)}
+\DoxyCodeLine{00511             \{}
+\DoxyCodeLine{00512                 opParameters[ParameterCode.IsInactive] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00513             \}}
+\DoxyCodeLine{00514             \textcolor{keywordflow}{if} (sendAuthCookie)}
+\DoxyCodeLine{00515             \{}
+\DoxyCodeLine{00516                 opParameters[ParameterCode.EventForward] = WebFlags.SendAuthCookieConst;}
+\DoxyCodeLine{00517             \}}
+\DoxyCodeLine{00518             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.Leave, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00519         \}}
+\DoxyCodeLine{00520 }
+\DoxyCodeLine{00531         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpGetGameList(TypedLobby lobby, \textcolor{keywordtype}{string} queryData)}
+\DoxyCodeLine{00532         \{}
+\DoxyCodeLine{00533             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00534             \{}
+\DoxyCodeLine{00535                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpGetGameList()"{}});}
+\DoxyCodeLine{00536             \}}
+\DoxyCodeLine{00537 }
+\DoxyCodeLine{00538             \textcolor{keywordflow}{if} (lobby == \textcolor{keyword}{null})}
+\DoxyCodeLine{00539             \{}
+\DoxyCodeLine{00540                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00541                 \{}
+\DoxyCodeLine{00542                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpGetGameList not sent. Lobby cannot be null."{}});}
+\DoxyCodeLine{00543                 \}}
+\DoxyCodeLine{00544                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00545             \}}
+\DoxyCodeLine{00546 }
+\DoxyCodeLine{00547             \textcolor{keywordflow}{if} (lobby.Type != LobbyType.SqlLobby)}
+\DoxyCodeLine{00548             \{}
+\DoxyCodeLine{00549                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00550                 \{}
+\DoxyCodeLine{00551                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpGetGameList not sent. LobbyType must be SqlLobby."{}});}
+\DoxyCodeLine{00552                 \}}
+\DoxyCodeLine{00553                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00554             \}}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556             \textcolor{keywordflow}{if} (lobby.IsDefault)}
+\DoxyCodeLine{00557             \{}
+\DoxyCodeLine{00558                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00559                 \{}
+\DoxyCodeLine{00560                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpGetGameList not sent. LobbyName must be not null and not empty."{}});}
+\DoxyCodeLine{00561                 \}}
+\DoxyCodeLine{00562                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00563             \}}
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(queryData))}
+\DoxyCodeLine{00566             \{}
+\DoxyCodeLine{00567                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00568                 \{}
+\DoxyCodeLine{00569                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpGetGameList not sent. queryData must be not null and not empty."{}});}
+\DoxyCodeLine{00570                 \}}
+\DoxyCodeLine{00571                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00572             \}}
+\DoxyCodeLine{00573 }
+\DoxyCodeLine{00574             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00575             opParameters[(byte)ParameterCode.LobbyName] = lobby.Name;}
+\DoxyCodeLine{00576             opParameters[(\textcolor{keywordtype}{byte})ParameterCode.LobbyType] = (byte)lobby.Type;}
+\DoxyCodeLine{00577             opParameters[(\textcolor{keywordtype}{byte})ParameterCode.Data] = queryData;}
+\DoxyCodeLine{00578 }
+\DoxyCodeLine{00579             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.GetGameList, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00580         \}}
+\DoxyCodeLine{00581 }
+\DoxyCodeLine{00599         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpFindFriends(\textcolor{keywordtype}{string}[] friendsToFind, FindFriendsOptions options = \textcolor{keyword}{null})}
+\DoxyCodeLine{00600         \{}
+\DoxyCodeLine{00601             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00602             \textcolor{keywordflow}{if} (friendsToFind != \textcolor{keyword}{null} \&\& friendsToFind.Length > 0)}
+\DoxyCodeLine{00603             \{}
+\DoxyCodeLine{00604                 opParameters[ParameterCode.FindFriendsRequestList] = friendsToFind;}
+\DoxyCodeLine{00605             \}}
+\DoxyCodeLine{00606 }
+\DoxyCodeLine{00607             \textcolor{keywordflow}{if} (options != \textcolor{keyword}{null})}
+\DoxyCodeLine{00608             \{}
+\DoxyCodeLine{00609                 opParameters[ParameterCode.FindFriendsOptions] = options.ToIntFlags();}
+\DoxyCodeLine{00610             \}}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.FindFriends, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00613         \}}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} OpSetCustomPropertiesOfActor(\textcolor{keywordtype}{int} actorNr, Hashtable actorProperties)}
+\DoxyCodeLine{00616         \{}
+\DoxyCodeLine{00617             \textcolor{keywordflow}{return} this.OpSetPropertiesOfActor(actorNr, actorProperties.StripToStringKeys(), \textcolor{keyword}{null});}
+\DoxyCodeLine{00618         \}}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00629         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} OpSetPropertiesOfActor(\textcolor{keywordtype}{int} actorNr, Hashtable actorProperties, Hashtable expectedProperties = \textcolor{keyword}{null}, WebFlags webflags = \textcolor{keyword}{null})}
+\DoxyCodeLine{00630         \{}
+\DoxyCodeLine{00631             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00632             \{}
+\DoxyCodeLine{00633                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpSetPropertiesOfActor()"{}});}
+\DoxyCodeLine{00634             \}}
+\DoxyCodeLine{00635 }
+\DoxyCodeLine{00636             \textcolor{keywordflow}{if} (actorNr <= 0 || actorProperties == \textcolor{keyword}{null} || actorProperties.Count == 0)}
+\DoxyCodeLine{00637             \{}
+\DoxyCodeLine{00638                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00639                 \{}
+\DoxyCodeLine{00640                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpSetPropertiesOfActor not sent. ActorNr must be > 0 and actorProperties must be not null nor empty."{}});}
+\DoxyCodeLine{00641                 \}}
+\DoxyCodeLine{00642                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00643             \}}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00645             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00646             opParameters.Add(ParameterCode.Properties, actorProperties);}
+\DoxyCodeLine{00647             opParameters.Add(ParameterCode.ActorNr, actorNr);}
+\DoxyCodeLine{00648             opParameters.Add(ParameterCode.Broadcast, \textcolor{keyword}{true});}
+\DoxyCodeLine{00649             \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count != 0)}
+\DoxyCodeLine{00650             \{}
+\DoxyCodeLine{00651                 opParameters.Add(ParameterCode.ExpectedValues, expectedProperties);}
+\DoxyCodeLine{00652             \}}
+\DoxyCodeLine{00653 }
+\DoxyCodeLine{00654             \textcolor{keywordflow}{if} (webflags != \textcolor{keyword}{null} \&\& webflags.HttpForward)}
+\DoxyCodeLine{00655             \{}
+\DoxyCodeLine{00656                 opParameters[ParameterCode.EventForward] = webflags.WebhookFlags;}
+\DoxyCodeLine{00657             \}}
+\DoxyCodeLine{00658 }
+\DoxyCodeLine{00659             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.SetProperties, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661 }
+\DoxyCodeLine{00662 }
+\DoxyCodeLine{00663         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} OpSetPropertyOfRoom(\textcolor{keywordtype}{byte} propCode, \textcolor{keywordtype}{object} value)}
+\DoxyCodeLine{00664         \{}
+\DoxyCodeLine{00665             Hashtable properties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00666             properties[propCode] = value;}
+\DoxyCodeLine{00667             \textcolor{keywordflow}{return} this.OpSetPropertiesOfRoom(properties);}
+\DoxyCodeLine{00668         \}}
+\DoxyCodeLine{00669 }
+\DoxyCodeLine{00670         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} OpSetCustomPropertiesOfRoom(Hashtable gameProperties)}
+\DoxyCodeLine{00671         \{}
+\DoxyCodeLine{00672             \textcolor{keywordflow}{return} this.OpSetPropertiesOfRoom(gameProperties.StripToStringKeys());}
+\DoxyCodeLine{00673         \}}
+\DoxyCodeLine{00674 }
+\DoxyCodeLine{00683         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} OpSetPropertiesOfRoom(Hashtable gameProperties, Hashtable expectedProperties = \textcolor{keyword}{null}, WebFlags webflags = \textcolor{keyword}{null})}
+\DoxyCodeLine{00684         \{}
+\DoxyCodeLine{00685             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00686             \{}
+\DoxyCodeLine{00687                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpSetPropertiesOfRoom()"{}});}
+\DoxyCodeLine{00688             \}}
+\DoxyCodeLine{00689             \textcolor{keywordflow}{if} (gameProperties == \textcolor{keyword}{null} || gameProperties.Count == 0)}
+\DoxyCodeLine{00690             \{}
+\DoxyCodeLine{00691                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00692                 \{}
+\DoxyCodeLine{00693                     this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpSetPropertiesOfRoom not sent. gameProperties must be not null nor empty."{}});}
+\DoxyCodeLine{00694                 \}}
+\DoxyCodeLine{00695                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00696             \}}
+\DoxyCodeLine{00697 }
+\DoxyCodeLine{00698             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00699             opParameters.Add(ParameterCode.Properties, gameProperties);}
+\DoxyCodeLine{00700             opParameters.Add(ParameterCode.Broadcast, \textcolor{keyword}{true});}
+\DoxyCodeLine{00701             \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count != 0)}
+\DoxyCodeLine{00702             \{}
+\DoxyCodeLine{00703                 opParameters.Add(ParameterCode.ExpectedValues, expectedProperties);}
+\DoxyCodeLine{00704             \}}
+\DoxyCodeLine{00705 }
+\DoxyCodeLine{00706             \textcolor{keywordflow}{if} (webflags!=\textcolor{keyword}{null} \&\& webflags.HttpForward)}
+\DoxyCodeLine{00707             \{}
+\DoxyCodeLine{00708                 opParameters[ParameterCode.EventForward] = webflags.WebhookFlags;}
+\DoxyCodeLine{00709             \}}
+\DoxyCodeLine{00710 }
+\DoxyCodeLine{00711             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.SetProperties, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00712         \}}
+\DoxyCodeLine{00713 }
+\DoxyCodeLine{00729         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpAuthenticate(\textcolor{keywordtype}{string} appId, \textcolor{keywordtype}{string} appVersion, AuthenticationValues authValues, \textcolor{keywordtype}{string} regionCode, \textcolor{keywordtype}{bool} getLobbyStatistics)}
+\DoxyCodeLine{00730         \{}
+\DoxyCodeLine{00731             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00732             \{}
+\DoxyCodeLine{00733                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpAuthenticate()"{}});}
+\DoxyCodeLine{00734             \}}
+\DoxyCodeLine{00735 }
+\DoxyCodeLine{00736             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00737             \textcolor{keywordflow}{if} (getLobbyStatistics)}
+\DoxyCodeLine{00738             \{}
+\DoxyCodeLine{00739                 \textcolor{comment}{// must be sent in operation, even if a Token is available}}
+\DoxyCodeLine{00740                 opParameters[ParameterCode.LobbyStats] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00741             \}}
+\DoxyCodeLine{00742 }
+\DoxyCodeLine{00743             \textcolor{comment}{// shortcut, if we have a Token}}
+\DoxyCodeLine{00744             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null} \&\& authValues.Token != \textcolor{keyword}{null})}
+\DoxyCodeLine{00745             \{}
+\DoxyCodeLine{00746                 opParameters[ParameterCode.Token] = authValues.Token;}
+\DoxyCodeLine{00747                 \textcolor{keywordflow}{return} this.SendOperation(OperationCode.Authenticate, opParameters, SendOptions.SendReliable); \textcolor{comment}{// we don't have to encrypt, when we have a token (which is encrypted)}}
+\DoxyCodeLine{00748             \}}
+\DoxyCodeLine{00749 }
+\DoxyCodeLine{00750 }
+\DoxyCodeLine{00751             \textcolor{comment}{// without a token, we send a complete op auth}}
+\DoxyCodeLine{00752 }
+\DoxyCodeLine{00753             opParameters[ParameterCode.AppVersion] = appVersion;}
+\DoxyCodeLine{00754             opParameters[ParameterCode.ApplicationId] = appId;}
+\DoxyCodeLine{00755 }
+\DoxyCodeLine{00756             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(regionCode))}
+\DoxyCodeLine{00757             \{}
+\DoxyCodeLine{00758                 opParameters[ParameterCode.Region] = regionCode;}
+\DoxyCodeLine{00759             \}}
+\DoxyCodeLine{00760 }
+\DoxyCodeLine{00761             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{00762             \{}
+\DoxyCodeLine{00763 }
+\DoxyCodeLine{00764                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.UserId))}
+\DoxyCodeLine{00765                 \{}
+\DoxyCodeLine{00766                     opParameters[ParameterCode.UserId] = authValues.UserId;}
+\DoxyCodeLine{00767                 \}}
+\DoxyCodeLine{00768 }
+\DoxyCodeLine{00769                 \textcolor{keywordflow}{if} (authValues.AuthType != CustomAuthenticationType.None)}
+\DoxyCodeLine{00770                 \{}
+\DoxyCodeLine{00771                     opParameters[ParameterCode.ClientAuthenticationType] = (byte)authValues.AuthType;}
+\DoxyCodeLine{00772                     \textcolor{comment}{// if we had a token, the code above would use it. here, we send parameters:}}
+\DoxyCodeLine{00773                     if (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.AuthGetParameters))}
+\DoxyCodeLine{00774                     \{}
+\DoxyCodeLine{00775                         opParameters[ParameterCode.ClientAuthenticationParams] = authValues.AuthGetParameters;}
+\DoxyCodeLine{00776                     \}}
+\DoxyCodeLine{00777                     \textcolor{keywordflow}{if} (authValues.AuthPostData != \textcolor{keyword}{null})}
+\DoxyCodeLine{00778                     \{}
+\DoxyCodeLine{00779                         opParameters[ParameterCode.ClientAuthenticationData] = authValues.AuthPostData;}
+\DoxyCodeLine{00780                     \}}
+\DoxyCodeLine{00781                 \}}
+\DoxyCodeLine{00782             \}}
+\DoxyCodeLine{00783 }
+\DoxyCodeLine{00784             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.Authenticate, opParameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = \textcolor{keyword}{true}, Encrypt = \textcolor{keyword}{true} \});}
+\DoxyCodeLine{00785         \}}
+\DoxyCodeLine{00786 }
+\DoxyCodeLine{00787 }
+\DoxyCodeLine{00804         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpAuthenticateOnce(\textcolor{keywordtype}{string} appId, \textcolor{keywordtype}{string} appVersion, AuthenticationValues authValues, \textcolor{keywordtype}{string} regionCode, EncryptionMode encryptionMode, ConnectionProtocol expectedProtocol)}
+\DoxyCodeLine{00805         \{}
+\DoxyCodeLine{00806             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{00807             \{}
+\DoxyCodeLine{00808                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}OpAuthenticateOnce(): authValues = "{}}  + authValues + \textcolor{stringliteral}{"{}, region = "{}} + regionCode + \textcolor{stringliteral}{"{}, encryption = "{}} + encryptionMode);}
+\DoxyCodeLine{00809             \}}
+\DoxyCodeLine{00810 }
+\DoxyCodeLine{00811             var opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00812 }
+\DoxyCodeLine{00813             \textcolor{comment}{// shortcut, if we have a Token}}
+\DoxyCodeLine{00814             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null} \&\& authValues.Token != \textcolor{keyword}{null})}
+\DoxyCodeLine{00815             \{}
+\DoxyCodeLine{00816                 opParameters[ParameterCode.Token] = authValues.Token;}
+\DoxyCodeLine{00817                 \textcolor{keywordflow}{return} this.SendOperation(OperationCode.AuthenticateOnce, opParameters, SendOptions.SendReliable); \textcolor{comment}{// we don't have to encrypt, when we have a token (which is encrypted)}}
+\DoxyCodeLine{00818             \}}
+\DoxyCodeLine{00819 }
+\DoxyCodeLine{00820             \textcolor{keywordflow}{if} (encryptionMode == EncryptionMode.DatagramEncryption \&\& expectedProtocol != ConnectionProtocol.Udp)}
+\DoxyCodeLine{00821             \{}
+\DoxyCodeLine{00822                 \textcolor{comment}{// TODO disconnect?!}}
+\DoxyCodeLine{00823                 \textcolor{keywordflow}{throw} \textcolor{keyword}{new} NotSupportedException(\textcolor{stringliteral}{"{}Expected protocol set to UDP, due to encryption mode DatagramEncryption."{}});    \textcolor{comment}{// TODO use some other form of callback?!}}
+\DoxyCodeLine{00824             \}}
+\DoxyCodeLine{00825 }
+\DoxyCodeLine{00826             opParameters[ParameterCode.ExpectedProtocol] = (byte)expectedProtocol;}
+\DoxyCodeLine{00827             opParameters[ParameterCode.EncryptionMode] = (byte)encryptionMode;}
+\DoxyCodeLine{00828 }
+\DoxyCodeLine{00829             opParameters[ParameterCode.AppVersion] = appVersion;}
+\DoxyCodeLine{00830             opParameters[ParameterCode.ApplicationId] = appId;}
+\DoxyCodeLine{00831 }
+\DoxyCodeLine{00832             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(regionCode))}
+\DoxyCodeLine{00833             \{}
+\DoxyCodeLine{00834                 opParameters[ParameterCode.Region] = regionCode;}
+\DoxyCodeLine{00835             \}}
+\DoxyCodeLine{00836 }
+\DoxyCodeLine{00837             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{00838             \{}
+\DoxyCodeLine{00839                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.UserId))}
+\DoxyCodeLine{00840                 \{}
+\DoxyCodeLine{00841                     opParameters[ParameterCode.UserId] = authValues.UserId;}
+\DoxyCodeLine{00842                 \}}
+\DoxyCodeLine{00843 }
+\DoxyCodeLine{00844                 \textcolor{keywordflow}{if} (authValues.AuthType != CustomAuthenticationType.None)}
+\DoxyCodeLine{00845                 \{}
+\DoxyCodeLine{00846                     opParameters[ParameterCode.ClientAuthenticationType] = (byte)authValues.AuthType;}
+\DoxyCodeLine{00847                     if (authValues.Token != \textcolor{keyword}{null})}
+\DoxyCodeLine{00848                     \{}
+\DoxyCodeLine{00849                         opParameters[ParameterCode.Token] = authValues.Token;}
+\DoxyCodeLine{00850                     \}}
+\DoxyCodeLine{00851                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00852                     \{}
+\DoxyCodeLine{00853                         \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(authValues.AuthGetParameters))}
+\DoxyCodeLine{00854                         \{}
+\DoxyCodeLine{00855                             opParameters[ParameterCode.ClientAuthenticationParams] = authValues.AuthGetParameters;}
+\DoxyCodeLine{00856                         \}}
+\DoxyCodeLine{00857                         \textcolor{keywordflow}{if} (authValues.AuthPostData != \textcolor{keyword}{null})}
+\DoxyCodeLine{00858                         \{}
+\DoxyCodeLine{00859                             opParameters[ParameterCode.ClientAuthenticationData] = authValues.AuthPostData;}
+\DoxyCodeLine{00860                         \}}
+\DoxyCodeLine{00861                     \}}
+\DoxyCodeLine{00862                 \}}
+\DoxyCodeLine{00863             \}}
+\DoxyCodeLine{00864 }
+\DoxyCodeLine{00865             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.AuthenticateOnce, opParameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = \textcolor{keyword}{true}, Encrypt = \textcolor{keyword}{true} \});}
+\DoxyCodeLine{00866         \}}
+\DoxyCodeLine{00867 }
+\DoxyCodeLine{00882         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpChangeGroups(\textcolor{keywordtype}{byte}[] groupsToRemove, \textcolor{keywordtype}{byte}[] groupsToAdd)}
+\DoxyCodeLine{00883         \{}
+\DoxyCodeLine{00884             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ALL)}
+\DoxyCodeLine{00885             \{}
+\DoxyCodeLine{00886                 this.Listener.DebugReturn(DebugLevel.ALL, \textcolor{stringliteral}{"{}OpChangeGroups()"{}});}
+\DoxyCodeLine{00887             \}}
+\DoxyCodeLine{00888 }
+\DoxyCodeLine{00889             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00890             \textcolor{keywordflow}{if} (groupsToRemove != \textcolor{keyword}{null})}
+\DoxyCodeLine{00891             \{}
+\DoxyCodeLine{00892                 opParameters[(byte)ParameterCode.Remove] = groupsToRemove;}
+\DoxyCodeLine{00893             \}}
+\DoxyCodeLine{00894             \textcolor{keywordflow}{if} (groupsToAdd != \textcolor{keyword}{null})}
+\DoxyCodeLine{00895             \{}
+\DoxyCodeLine{00896                 opParameters[(byte)ParameterCode.Add] = groupsToAdd;}
+\DoxyCodeLine{00897             \}}
+\DoxyCodeLine{00898 }
+\DoxyCodeLine{00899             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.ChangeGroups, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00900         \}}
+\DoxyCodeLine{00901 }
+\DoxyCodeLine{00902 }
+\DoxyCodeLine{00912         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpRaiseEvent(\textcolor{keywordtype}{byte} eventCode, \textcolor{keywordtype}{object} customEventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)}
+\DoxyCodeLine{00913         \{}
+\DoxyCodeLine{00914             var paramDict = this.paramDictionaryPool.Acquire();}
+\DoxyCodeLine{00915             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00916             \{}
+\DoxyCodeLine{00917                 \textcolor{keywordflow}{if} (raiseEventOptions != \textcolor{keyword}{null})}
+\DoxyCodeLine{00918                 \{}
+\DoxyCodeLine{00919                     \textcolor{keywordflow}{if} (raiseEventOptions.CachingOption != EventCaching.DoNotCache)}
+\DoxyCodeLine{00920                     \{}
+\DoxyCodeLine{00921                         paramDict.Add(ParameterCode.Cache, (\textcolor{keywordtype}{byte})raiseEventOptions.CachingOption);}
+\DoxyCodeLine{00922                     \}}
+\DoxyCodeLine{00923                     \textcolor{keywordflow}{switch} (raiseEventOptions.CachingOption)}
+\DoxyCodeLine{00924                     \{}
+\DoxyCodeLine{00925                         \textcolor{keywordflow}{case} EventCaching.SliceSetIndex:}
+\DoxyCodeLine{00926                         \textcolor{keywordflow}{case} EventCaching.SlicePurgeIndex:}
+\DoxyCodeLine{00927                         \textcolor{keywordflow}{case} EventCaching.SlicePurgeUpToIndex:}
+\DoxyCodeLine{00928                             \textcolor{comment}{//this.opParameters[(byte) ParameterCode.CacheSliceIndex] =}}
+\DoxyCodeLine{00929                             \textcolor{comment}{//    (byte) raiseEventOptions.CacheSliceIndex;}}
+\DoxyCodeLine{00930                             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.RaiseEvent, paramDict, sendOptions);}
+\DoxyCodeLine{00931                         \textcolor{keywordflow}{case} EventCaching.SliceIncreaseIndex:}
+\DoxyCodeLine{00932                         \textcolor{keywordflow}{case} EventCaching.RemoveFromRoomCacheForActorsLeft:}
+\DoxyCodeLine{00933                             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.RaiseEvent, paramDict, sendOptions);}
+\DoxyCodeLine{00934                         \textcolor{keywordflow}{case} EventCaching.RemoveFromRoomCache:}
+\DoxyCodeLine{00935                             \textcolor{keywordflow}{if} (raiseEventOptions.TargetActors != \textcolor{keyword}{null})}
+\DoxyCodeLine{00936                             \{}
+\DoxyCodeLine{00937                                 paramDict.Add(ParameterCode.ActorList, raiseEventOptions.TargetActors);}
+\DoxyCodeLine{00938                             \}}
+\DoxyCodeLine{00939                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00940                         \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00941                             \textcolor{keywordflow}{if} (raiseEventOptions.TargetActors != \textcolor{keyword}{null})}
+\DoxyCodeLine{00942                             \{}
+\DoxyCodeLine{00943                                 paramDict.Add(ParameterCode.ActorList, raiseEventOptions.TargetActors);}
+\DoxyCodeLine{00944                             \}}
+\DoxyCodeLine{00945                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (raiseEventOptions.InterestGroup != 0)}
+\DoxyCodeLine{00946                             \{}
+\DoxyCodeLine{00947                                 paramDict.Add(ParameterCode.Group, (\textcolor{keywordtype}{byte})raiseEventOptions.InterestGroup);}
+\DoxyCodeLine{00948                             \}}
+\DoxyCodeLine{00949                             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (raiseEventOptions.Receivers != ReceiverGroup.Others)}
+\DoxyCodeLine{00950                             \{}
+\DoxyCodeLine{00951                                 paramDict.Add(ParameterCode.ReceiverGroup, (\textcolor{keywordtype}{byte})raiseEventOptions.Receivers);}
+\DoxyCodeLine{00952                             \}}
+\DoxyCodeLine{00953                             \textcolor{keywordflow}{if} (raiseEventOptions.Flags.HttpForward)}
+\DoxyCodeLine{00954                             \{}
+\DoxyCodeLine{00955                                 paramDict.Add(ParameterCode.EventForward, (\textcolor{keywordtype}{byte})raiseEventOptions.Flags.WebhookFlags);}
+\DoxyCodeLine{00956                             \}}
+\DoxyCodeLine{00957                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00958                     \}}
+\DoxyCodeLine{00959                 \}}
+\DoxyCodeLine{00960                 paramDict.Add(ParameterCode.Code, (\textcolor{keywordtype}{byte})eventCode);}
+\DoxyCodeLine{00961                 \textcolor{keywordflow}{if} (customEventContent != \textcolor{keyword}{null})}
+\DoxyCodeLine{00962                 \{}
+\DoxyCodeLine{00963                     paramDict.Add(ParameterCode.Data, (\textcolor{keywordtype}{object})customEventContent);}
+\DoxyCodeLine{00964                 \}}
+\DoxyCodeLine{00965                 \textcolor{keywordflow}{return} this.SendOperation(OperationCode.RaiseEvent, paramDict, sendOptions);}
+\DoxyCodeLine{00966             \}}
+\DoxyCodeLine{00967             \textcolor{keywordflow}{finally}}
+\DoxyCodeLine{00968             \{}
+\DoxyCodeLine{00969                 this.paramDictionaryPool.Release(paramDict);}
+\DoxyCodeLine{00970             \}}
+\DoxyCodeLine{00971         \}}
+\DoxyCodeLine{00972 }
+\DoxyCodeLine{00973 }
+\DoxyCodeLine{00979         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OpSettings(\textcolor{keywordtype}{bool} receiveLobbyStats)}
+\DoxyCodeLine{00980         \{}
+\DoxyCodeLine{00981             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ALL)}
+\DoxyCodeLine{00982             \{}
+\DoxyCodeLine{00983                 this.Listener.DebugReturn(DebugLevel.ALL, \textcolor{stringliteral}{"{}OpSettings()"{}});}
+\DoxyCodeLine{00984             \}}
+\DoxyCodeLine{00985 }
+\DoxyCodeLine{00986             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>();}
+\DoxyCodeLine{00987 }
+\DoxyCodeLine{00988             \textcolor{comment}{// implementation for Master Server:}}
+\DoxyCodeLine{00989             \textcolor{keywordflow}{if} (receiveLobbyStats)}
+\DoxyCodeLine{00990             \{}
+\DoxyCodeLine{00991                 opParameters[(byte)0] = receiveLobbyStats;}
+\DoxyCodeLine{00992             \}}
+\DoxyCodeLine{00993 }
+\DoxyCodeLine{00994             \textcolor{keywordflow}{if} (opParameters.Count == 0)}
+\DoxyCodeLine{00995             \{}
+\DoxyCodeLine{00996                 \textcolor{comment}{// no need to send op in case we set the default values}}
+\DoxyCodeLine{00997                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00998             \}}
+\DoxyCodeLine{00999 }
+\DoxyCodeLine{01000             \textcolor{keywordflow}{return} this.SendOperation(OperationCode.ServerSettings, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01001         \}}
+\DoxyCodeLine{01002     \}}
+\DoxyCodeLine{01003 }
+\DoxyCodeLine{01005     \textcolor{keyword}{internal} \textcolor{keyword}{enum} RoomOptionBit : \textcolor{keywordtype}{int}}
+\DoxyCodeLine{01006     \{}
+\DoxyCodeLine{01007         CheckUserOnJoin = 0x01,  \textcolor{comment}{// toggles a check of the UserId when joining (enabling returning to a game)}}
+\DoxyCodeLine{01008         DeleteCacheOnLeave = 0x02,  \textcolor{comment}{// deletes cache on leave}}
+\DoxyCodeLine{01009         SuppressRoomEvents = 0x04,  \textcolor{comment}{// suppresses all room events}}
+\DoxyCodeLine{01010         PublishUserId = 0x08,  \textcolor{comment}{// signals that we should publish userId}}
+\DoxyCodeLine{01011         DeleteNullProps = 0x10,  \textcolor{comment}{// signals that we should remove property if its value was set to null. see RoomOption to Delete Null Properties}}
+\DoxyCodeLine{01012         BroadcastPropsChangeToAll = 0x20,  \textcolor{comment}{// signals that we should send PropertyChanged event to all room players including initiator}}
+\DoxyCodeLine{01013         SuppressPlayerInfo = 0x40,  \textcolor{comment}{// disables events join and leave from the server as well as property broadcasts in a room (to minimize traffic)}}
+\DoxyCodeLine{01014     \}}
+\DoxyCodeLine{01015 }
+\DoxyCodeLine{01019     \textcolor{keyword}{public} \textcolor{keyword}{class }FindFriendsOptions}
+\DoxyCodeLine{01020     \{}
+\DoxyCodeLine{01022         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CreatedOnGs = \textcolor{keyword}{false};    \textcolor{comment}{//flag: 0x01}}
+\DoxyCodeLine{01024 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Visible = \textcolor{keyword}{false};        \textcolor{comment}{//flag: 0x02}}
+\DoxyCodeLine{01026 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Open = \textcolor{keyword}{false};           \textcolor{comment}{//flag: 0x04}}
+\DoxyCodeLine{01027 }
+\DoxyCodeLine{01030         \textcolor{keyword}{internal} \textcolor{keywordtype}{int} ToIntFlags()}
+\DoxyCodeLine{01031         \{}
+\DoxyCodeLine{01032             \textcolor{keywordtype}{int} optionFlags = 0;}
+\DoxyCodeLine{01033             \textcolor{keywordflow}{if} (this.CreatedOnGs)}
+\DoxyCodeLine{01034             \{}
+\DoxyCodeLine{01035                 optionFlags = optionFlags | 0x1;}
+\DoxyCodeLine{01036             \}}
+\DoxyCodeLine{01037             \textcolor{keywordflow}{if} (this.Visible)}
+\DoxyCodeLine{01038             \{}
+\DoxyCodeLine{01039                 optionFlags = optionFlags | 0x2;}
+\DoxyCodeLine{01040             \}}
+\DoxyCodeLine{01041             \textcolor{keywordflow}{if} (this.Open)}
+\DoxyCodeLine{01042             \{}
+\DoxyCodeLine{01043                 optionFlags = optionFlags | 0x4;}
+\DoxyCodeLine{01044             \}}
+\DoxyCodeLine{01045             \textcolor{keywordflow}{return} optionFlags;}
+\DoxyCodeLine{01046         \}}
+\DoxyCodeLine{01047     \}}
+\DoxyCodeLine{01048 }
+\DoxyCodeLine{01049 }
+\DoxyCodeLine{01056     \textcolor{keyword}{public} \textcolor{keyword}{class }OpJoinRandomRoomParams}
+\DoxyCodeLine{01057     \{}
+\DoxyCodeLine{01059         \textcolor{keyword}{public} Hashtable ExpectedCustomRoomProperties;}
+\DoxyCodeLine{01061         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} ExpectedMaxPlayers;}
+\DoxyCodeLine{01063         \textcolor{keyword}{public} MatchmakingMode MatchingType;}
+\DoxyCodeLine{01065         \textcolor{keyword}{public} TypedLobby TypedLobby;}
+\DoxyCodeLine{01067         \textcolor{keyword}{public} \textcolor{keywordtype}{string} SqlLobbyFilter;}
+\DoxyCodeLine{01070         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] ExpectedUsers;}
+\DoxyCodeLine{01071     \}}
+\DoxyCodeLine{01072 }
+\DoxyCodeLine{01074     \textcolor{keyword}{public} \textcolor{keyword}{class }EnterRoomParams}
+\DoxyCodeLine{01075     \{}
+\DoxyCodeLine{01077         \textcolor{keyword}{public} \textcolor{keywordtype}{string} RoomName;}
+\DoxyCodeLine{01079         \textcolor{keyword}{public} RoomOptions RoomOptions;}
+\DoxyCodeLine{01081         \textcolor{keyword}{public} TypedLobby Lobby;}
+\DoxyCodeLine{01083         \textcolor{keyword}{public} Hashtable PlayerProperties;}
+\DoxyCodeLine{01085         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} OnGameServer = \textcolor{keyword}{true}; \textcolor{comment}{// defaults to true! better send more parameter than too few (GS needs all)}}
+\DoxyCodeLine{01087 \textcolor{comment}{}        \textcolor{keyword}{protected} \textcolor{keyword}{internal} JoinMode JoinMode;}
+\DoxyCodeLine{01089         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] ExpectedUsers;}
+\DoxyCodeLine{01090     \}}
+\DoxyCodeLine{01091 }
+\DoxyCodeLine{01092 }
+\DoxyCodeLine{01096     \textcolor{keyword}{public} \textcolor{keyword}{class }ErrorCode}
+\DoxyCodeLine{01097     \{}
+\DoxyCodeLine{01099         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} Ok = 0;}
+\DoxyCodeLine{01100 }
+\DoxyCodeLine{01101         \textcolor{comment}{// server -\/ Photon low(er) level: <= 0}}
+\DoxyCodeLine{01102 }
+\DoxyCodeLine{01110         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} OperationNotAllowedInCurrentState = -\/3;}
+\DoxyCodeLine{01111 }
+\DoxyCodeLine{01113         [Obsolete(\textcolor{stringliteral}{"{}Use InvalidOperation."{}})]}
+\DoxyCodeLine{01114         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidOperationCode = -\/2;}
+\DoxyCodeLine{01115 }
+\DoxyCodeLine{01124         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidOperation = -\/2;}
+\DoxyCodeLine{01125 }
+\DoxyCodeLine{01127         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InternalServerError = -\/1;}
+\DoxyCodeLine{01128 }
+\DoxyCodeLine{01129         \textcolor{comment}{// server -\/ client: 0x7FFF and down}}
+\DoxyCodeLine{01130         \textcolor{comment}{// logic-\/level error codes start with short.max}}
+\DoxyCodeLine{01131 }
+\DoxyCodeLine{01133         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidAuthentication = 0x7FFF;}
+\DoxyCodeLine{01134 }
+\DoxyCodeLine{01136         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameIdAlreadyExists = 0x7FFF -\/ 1;}
+\DoxyCodeLine{01137 }
+\DoxyCodeLine{01139         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameFull = 0x7FFF -\/ 2;}
+\DoxyCodeLine{01140 }
+\DoxyCodeLine{01142         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameClosed = 0x7FFF -\/ 3;}
+\DoxyCodeLine{01143 }
+\DoxyCodeLine{01144         [Obsolete(\textcolor{stringliteral}{"{}No longer used, cause random matchmaking is no longer a process."{}})]}
+\DoxyCodeLine{01145         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} AlreadyMatched = 0x7FFF -\/ 4;}
+\DoxyCodeLine{01146 }
+\DoxyCodeLine{01154         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} ServerFull = 0x7FFF -\/ 5;}
+\DoxyCodeLine{01155 }
+\DoxyCodeLine{01157         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} UserBlocked = 0x7FFF -\/ 6;}
+\DoxyCodeLine{01158 }
+\DoxyCodeLine{01160         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} NoRandomMatchFound = 0x7FFF -\/ 7;}
+\DoxyCodeLine{01161 }
+\DoxyCodeLine{01163         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} GameDoesNotExist = 0x7FFF -\/ 9;}
+\DoxyCodeLine{01164 }
+\DoxyCodeLine{01176         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MaxCcuReached = 0x7FFF -\/ 10;}
+\DoxyCodeLine{01177 }
+\DoxyCodeLine{01187         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidRegion = 0x7FFF -\/ 11;}
+\DoxyCodeLine{01188 }
+\DoxyCodeLine{01192         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} CustomAuthenticationFailed = 0x7FFF -\/ 12;}
+\DoxyCodeLine{01193 }
+\DoxyCodeLine{01195         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} AuthenticationTicketExpired = 0x7FF1;}
+\DoxyCodeLine{01196 }
+\DoxyCodeLine{01200         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} PluginReportedError = 0x7FFF -\/ 15;}
+\DoxyCodeLine{01201 }
+\DoxyCodeLine{01205         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} PluginMismatch = 0x7FFF -\/ 16;}
+\DoxyCodeLine{01206 }
+\DoxyCodeLine{01210         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} JoinFailedPeerAlreadyJoined = 32750; \textcolor{comment}{// 0x7FFF -\/ 17,}}
+\DoxyCodeLine{01211 }
+\DoxyCodeLine{01215         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} JoinFailedFoundInactiveJoiner = 32749; \textcolor{comment}{// 0x7FFF -\/ 18,}}
+\DoxyCodeLine{01216 }
+\DoxyCodeLine{01220         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} JoinFailedWithRejoinerNotFound = 32748; \textcolor{comment}{// 0x7FFF -\/ 19,}}
+\DoxyCodeLine{01221 }
+\DoxyCodeLine{01225         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} JoinFailedFoundExcludedUserId = 32747; \textcolor{comment}{// 0x7FFF -\/ 20,}}
+\DoxyCodeLine{01226 }
+\DoxyCodeLine{01230         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} JoinFailedFoundActiveJoiner = 32746; \textcolor{comment}{// 0x7FFF -\/ 21,}}
+\DoxyCodeLine{01231 }
+\DoxyCodeLine{01235         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} HttpLimitReached = 32745; \textcolor{comment}{// 0x7FFF -\/ 22,}}
+\DoxyCodeLine{01236 }
+\DoxyCodeLine{01240         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} ExternalHttpCallFailed = 32744; \textcolor{comment}{// 0x7FFF -\/ 23,}}
+\DoxyCodeLine{01241 }
+\DoxyCodeLine{01245         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} OperationLimitReached = 32743; \textcolor{comment}{// 0x7FFF -\/ 24,}}
+\DoxyCodeLine{01246 }
+\DoxyCodeLine{01250         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SlotError = 32742; \textcolor{comment}{// 0x7FFF -\/ 25,}}
+\DoxyCodeLine{01251 }
+\DoxyCodeLine{01255         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} InvalidEncryptionParameters = 32741; \textcolor{comment}{// 0x7FFF -\/ 24,}}
+\DoxyCodeLine{01256 }
+\DoxyCodeLine{01257 \}}
+\DoxyCodeLine{01258 }
+\DoxyCodeLine{01259 }
+\DoxyCodeLine{01267     \textcolor{keyword}{public} \textcolor{keyword}{class }ActorProperties}
+\DoxyCodeLine{01268     \{}
+\DoxyCodeLine{01270         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PlayerName = 255; \textcolor{comment}{// was: 1}}
+\DoxyCodeLine{01271 }
+\DoxyCodeLine{01274         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} IsInactive = 254;}
+\DoxyCodeLine{01275 }
+\DoxyCodeLine{01277         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} UserId = 253;}
+\DoxyCodeLine{01278     \}}
+\DoxyCodeLine{01279 }
+\DoxyCodeLine{01280 }
+\DoxyCodeLine{01288     \textcolor{keyword}{public} \textcolor{keyword}{class }GamePropertyKey}
+\DoxyCodeLine{01289     \{}
+\DoxyCodeLine{01291         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} MaxPlayers = 255;}
+\DoxyCodeLine{01292 }
+\DoxyCodeLine{01294         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} IsVisible = 254;}
+\DoxyCodeLine{01295 }
+\DoxyCodeLine{01297         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} IsOpen = 253;}
+\DoxyCodeLine{01298 }
+\DoxyCodeLine{01300         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PlayerCount = 252;}
+\DoxyCodeLine{01301 }
+\DoxyCodeLine{01303         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Removed = 251;}
+\DoxyCodeLine{01304 }
+\DoxyCodeLine{01306         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PropsListedInLobby = 250;}
+\DoxyCodeLine{01307 }
+\DoxyCodeLine{01309         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CleanupCacheOnLeave = 249;}
+\DoxyCodeLine{01310 }
+\DoxyCodeLine{01313         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} MasterClientId = (byte)248;}
+\DoxyCodeLine{01314 }
+\DoxyCodeLine{01316         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ExpectedUsers = (byte)247;}
+\DoxyCodeLine{01317 }
+\DoxyCodeLine{01319         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PlayerTtl = (byte)246;}
+\DoxyCodeLine{01320 }
+\DoxyCodeLine{01322         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} EmptyRoomTtl = (byte)245;}
+\DoxyCodeLine{01323     \}}
+\DoxyCodeLine{01324 }
+\DoxyCodeLine{01325 }
+\DoxyCodeLine{01330     \textcolor{keyword}{public} \textcolor{keyword}{class }EventCode}
+\DoxyCodeLine{01331     \{}
+\DoxyCodeLine{01333         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GameList = 230;}
+\DoxyCodeLine{01334 }
+\DoxyCodeLine{01336         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GameListUpdate = 229;}
+\DoxyCodeLine{01337 }
+\DoxyCodeLine{01339         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} QueueState = 228;}
+\DoxyCodeLine{01340 }
+\DoxyCodeLine{01342         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Match = 227;}
+\DoxyCodeLine{01343 }
+\DoxyCodeLine{01345         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AppStats = 226;}
+\DoxyCodeLine{01346 }
+\DoxyCodeLine{01348         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} LobbyStats = 224;}
+\DoxyCodeLine{01349 }
+\DoxyCodeLine{01351         [Obsolete(\textcolor{stringliteral}{"{}TCP routing was removed after becoming obsolete."{}})]}
+\DoxyCodeLine{01352         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AzureNodeInfo = 210;}
+\DoxyCodeLine{01353 }
+\DoxyCodeLine{01355         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Join = (byte)255;}
+\DoxyCodeLine{01356 }
+\DoxyCodeLine{01358         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Leave = (byte)254;}
+\DoxyCodeLine{01359 }
+\DoxyCodeLine{01361         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PropertiesChanged = (byte)253;}
+\DoxyCodeLine{01362 }
+\DoxyCodeLine{01364         [Obsolete(\textcolor{stringliteral}{"{}Use PropertiesChanged now."{}})]}
+\DoxyCodeLine{01365         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SetProperties = (byte)253;}
+\DoxyCodeLine{01366 }
+\DoxyCodeLine{01369 }
+\DoxyCodeLine{01372         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ErrorInfo = 251;}
+\DoxyCodeLine{01373 }
+\DoxyCodeLine{01375         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CacheSliceChanged = 250;}
+\DoxyCodeLine{01376 }
+\DoxyCodeLine{01378         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AuthEvent = 223;}
+\DoxyCodeLine{01379     \}}
+\DoxyCodeLine{01380 }
+\DoxyCodeLine{01381 }
+\DoxyCodeLine{01384     \textcolor{keyword}{public} \textcolor{keyword}{class }ParameterCode}
+\DoxyCodeLine{01385     \{}
+\DoxyCodeLine{01387         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SuppressRoomEvents = 237;}
+\DoxyCodeLine{01388 }
+\DoxyCodeLine{01390         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} EmptyRoomTTL = 236;}
+\DoxyCodeLine{01391 }
+\DoxyCodeLine{01393         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PlayerTTL = 235;}
+\DoxyCodeLine{01394 }
+\DoxyCodeLine{01396         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} EventForward = 234;}
+\DoxyCodeLine{01397 }
+\DoxyCodeLine{01399         [Obsolete(\textcolor{stringliteral}{"{}Use: IsInactive"{}})]}
+\DoxyCodeLine{01400         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} IsComingBack = (byte)233;}
+\DoxyCodeLine{01401 }
+\DoxyCodeLine{01403         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} IsInactive = (byte)233;}
+\DoxyCodeLine{01404 }
+\DoxyCodeLine{01406         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CheckUserOnJoin = (byte)232;}
+\DoxyCodeLine{01407 }
+\DoxyCodeLine{01409         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ExpectedValues = (byte)231;}
+\DoxyCodeLine{01410 }
+\DoxyCodeLine{01412         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Address = 230;}
+\DoxyCodeLine{01413 }
+\DoxyCodeLine{01415         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PeerCount = 229;}
+\DoxyCodeLine{01416 }
+\DoxyCodeLine{01418         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GameCount = 228;}
+\DoxyCodeLine{01419 }
+\DoxyCodeLine{01421         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} MasterPeerCount = 227;}
+\DoxyCodeLine{01422 }
+\DoxyCodeLine{01424         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} UserId = 225;}
+\DoxyCodeLine{01425 }
+\DoxyCodeLine{01427         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ApplicationId = 224;}
+\DoxyCodeLine{01428 }
+\DoxyCodeLine{01430         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Position = 223;}
+\DoxyCodeLine{01431 }
+\DoxyCodeLine{01433         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} MatchMakingType = 223;}
+\DoxyCodeLine{01434 }
+\DoxyCodeLine{01436         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GameList = 222;}
+\DoxyCodeLine{01437 }
+\DoxyCodeLine{01439         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Token = 221;}
+\DoxyCodeLine{01440 }
+\DoxyCodeLine{01442         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AppVersion = 220;}
+\DoxyCodeLine{01443 }
+\DoxyCodeLine{01445         [Obsolete(\textcolor{stringliteral}{"{}TCP routing was removed after becoming obsolete."{}})]}
+\DoxyCodeLine{01446         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AzureNodeInfo = 210; \textcolor{comment}{// only used within events, so use: EventCode.AzureNodeInfo}}
+\DoxyCodeLine{01447 }
+\DoxyCodeLine{01449         [Obsolete(\textcolor{stringliteral}{"{}TCP routing was removed after becoming obsolete."{}})]}
+\DoxyCodeLine{01450         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AzureLocalNodeId = 209;}
+\DoxyCodeLine{01451 }
+\DoxyCodeLine{01453         [Obsolete(\textcolor{stringliteral}{"{}TCP routing was removed after becoming obsolete."{}})]}
+\DoxyCodeLine{01454         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AzureMasterNodeId = 208;}
+\DoxyCodeLine{01455 }
+\DoxyCodeLine{01457         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} RoomName = (byte)255;}
+\DoxyCodeLine{01458 }
+\DoxyCodeLine{01460         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Broadcast = (byte)250;}
+\DoxyCodeLine{01461 }
+\DoxyCodeLine{01463         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ActorList = (byte)252;}
+\DoxyCodeLine{01464 }
+\DoxyCodeLine{01466         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ActorNr = (byte)254;}
+\DoxyCodeLine{01467 }
+\DoxyCodeLine{01469         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PlayerProperties = (byte)249;}
+\DoxyCodeLine{01470 }
+\DoxyCodeLine{01472         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CustomEventContent = (byte)245;}
+\DoxyCodeLine{01473 }
+\DoxyCodeLine{01475         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Data = (byte)245;}
+\DoxyCodeLine{01476 }
+\DoxyCodeLine{01479         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Code = (byte)244;}
+\DoxyCodeLine{01480 }
+\DoxyCodeLine{01482         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GameProperties = (byte)248;}
+\DoxyCodeLine{01483 }
+\DoxyCodeLine{01488         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Properties = (byte)251;}
+\DoxyCodeLine{01489 }
+\DoxyCodeLine{01491         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} TargetActorNr = (byte)253;}
+\DoxyCodeLine{01492 }
+\DoxyCodeLine{01494         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ReceiverGroup = (byte)246;}
+\DoxyCodeLine{01495 }
+\DoxyCodeLine{01497         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Cache = (byte)247;}
+\DoxyCodeLine{01498 }
+\DoxyCodeLine{01500         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CleanupCacheOnLeave = (byte)241;}
+\DoxyCodeLine{01501 }
+\DoxyCodeLine{01503         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Group = 240;}
+\DoxyCodeLine{01504 }
+\DoxyCodeLine{01506         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Remove = 239;}
+\DoxyCodeLine{01507 }
+\DoxyCodeLine{01509         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PublishUserId = 239;}
+\DoxyCodeLine{01510 }
+\DoxyCodeLine{01512         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Add = 238;}
+\DoxyCodeLine{01513 }
+\DoxyCodeLine{01515         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Info = 218;}
+\DoxyCodeLine{01516 }
+\DoxyCodeLine{01518         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationType = 217;}
+\DoxyCodeLine{01519 }
+\DoxyCodeLine{01521         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationParams = 216;}
+\DoxyCodeLine{01522 }
+\DoxyCodeLine{01524         \textcolor{comment}{// public const byte CreateIfNotExists = 215;}}
+\DoxyCodeLine{01525 }
+\DoxyCodeLine{01528         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} JoinMode = 215;}
+\DoxyCodeLine{01529 }
+\DoxyCodeLine{01531         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ClientAuthenticationData = 214;}
+\DoxyCodeLine{01532 }
+\DoxyCodeLine{01535         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} MasterClientId = (byte)203;}
+\DoxyCodeLine{01536 }
+\DoxyCodeLine{01538         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} FindFriendsRequestList = (byte)1;}
+\DoxyCodeLine{01539 }
+\DoxyCodeLine{01541         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} FindFriendsOptions = (byte)2;}
+\DoxyCodeLine{01542 }
+\DoxyCodeLine{01544         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} FindFriendsResponseOnlineList = (byte)1;}
+\DoxyCodeLine{01545 }
+\DoxyCodeLine{01547         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} FindFriendsResponseRoomIdList = (byte)2;}
+\DoxyCodeLine{01548 }
+\DoxyCodeLine{01550         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} LobbyName = (byte)213;}
+\DoxyCodeLine{01551 }
+\DoxyCodeLine{01553         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} LobbyType = (byte)212;}
+\DoxyCodeLine{01554 }
+\DoxyCodeLine{01556         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} LobbyStats = (byte)211;}
+\DoxyCodeLine{01557 }
+\DoxyCodeLine{01559         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Region = (byte)210;}
+\DoxyCodeLine{01560 }
+\DoxyCodeLine{01562         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} UriPath = 209;}
+\DoxyCodeLine{01563 }
+\DoxyCodeLine{01565         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} WebRpcParameters = 208;}
+\DoxyCodeLine{01566 }
+\DoxyCodeLine{01568         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} WebRpcReturnCode = 207;}
+\DoxyCodeLine{01569 }
+\DoxyCodeLine{01571         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} WebRpcReturnMessage = 206;}
+\DoxyCodeLine{01572 }
+\DoxyCodeLine{01574         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CacheSliceIndex = 205;}
+\DoxyCodeLine{01575 }
+\DoxyCodeLine{01582         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Plugins = 204;}
+\DoxyCodeLine{01583 }
+\DoxyCodeLine{01585         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} NickName = 202;}
+\DoxyCodeLine{01586 }
+\DoxyCodeLine{01588         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PluginName = 201;}
+\DoxyCodeLine{01589 }
+\DoxyCodeLine{01591         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} PluginVersion = 200;}
+\DoxyCodeLine{01592 }
+\DoxyCodeLine{01594         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Cluster = 196;}
+\DoxyCodeLine{01595 }
+\DoxyCodeLine{01597         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ExpectedProtocol = 195;}
+\DoxyCodeLine{01598 }
+\DoxyCodeLine{01600         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CustomInitData = 194;}
+\DoxyCodeLine{01601 }
+\DoxyCodeLine{01603         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} EncryptionMode = 193;}
+\DoxyCodeLine{01604 }
+\DoxyCodeLine{01606         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} EncryptionData = 192;}
+\DoxyCodeLine{01607 }
+\DoxyCodeLine{01609         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} RoomOptionFlags = 191;}
+\DoxyCodeLine{01610     \}}
+\DoxyCodeLine{01611 }
+\DoxyCodeLine{01612 }
+\DoxyCodeLine{01617     \textcolor{keyword}{public} \textcolor{keyword}{class }OperationCode}
+\DoxyCodeLine{01618     \{}
+\DoxyCodeLine{01619         [Obsolete(\textcolor{stringliteral}{"{}Exchanging encrpytion keys is done internally in the lib now. Don't expect this operation-\/result."{}})]}
+\DoxyCodeLine{01620         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ExchangeKeysForEncryption = 250;}
+\DoxyCodeLine{01621 }
+\DoxyCodeLine{01623         [Obsolete]}
+\DoxyCodeLine{01624         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Join = 255;}
+\DoxyCodeLine{01625 }
+\DoxyCodeLine{01627         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} AuthenticateOnce = 231;}
+\DoxyCodeLine{01628 }
+\DoxyCodeLine{01630         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Authenticate = 230;}
+\DoxyCodeLine{01631 }
+\DoxyCodeLine{01633         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} JoinLobby = 229;}
+\DoxyCodeLine{01634 }
+\DoxyCodeLine{01636         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} LeaveLobby = 228;}
+\DoxyCodeLine{01637 }
+\DoxyCodeLine{01639         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} CreateGame = 227;}
+\DoxyCodeLine{01640 }
+\DoxyCodeLine{01642         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} JoinGame = 226;}
+\DoxyCodeLine{01643 }
+\DoxyCodeLine{01645         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} JoinRandomGame = 225;}
+\DoxyCodeLine{01646 }
+\DoxyCodeLine{01647         \textcolor{comment}{// public const byte CancelJoinRandom = 224; // obsolete, cause JoinRandom no longer is a "{}process"{}. now provides result immediately}}
+\DoxyCodeLine{01648 }
+\DoxyCodeLine{01650         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} Leave = (byte)254;}
+\DoxyCodeLine{01651 }
+\DoxyCodeLine{01653         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} RaiseEvent = (byte)253;}
+\DoxyCodeLine{01654 }
+\DoxyCodeLine{01656         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} SetProperties = (byte)252;}
+\DoxyCodeLine{01657 }
+\DoxyCodeLine{01659         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GetProperties = (byte)251;}
+\DoxyCodeLine{01660 }
+\DoxyCodeLine{01662         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ChangeGroups = (byte)248;}
+\DoxyCodeLine{01663 }
+\DoxyCodeLine{01665         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} FindFriends = 222;}
+\DoxyCodeLine{01666 }
+\DoxyCodeLine{01668         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GetLobbyStats = 221;}
+\DoxyCodeLine{01669 }
+\DoxyCodeLine{01671         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GetRegions = 220;}
+\DoxyCodeLine{01672 }
+\DoxyCodeLine{01674         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} WebRpc = 219;}
+\DoxyCodeLine{01675 }
+\DoxyCodeLine{01677         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} ServerSettings = 218;}
+\DoxyCodeLine{01678 }
+\DoxyCodeLine{01680         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} GetGameList = 217;}
+\DoxyCodeLine{01681     \}}
+\DoxyCodeLine{01682 }
+\DoxyCodeLine{01685     \textcolor{keyword}{public} \textcolor{keyword}{enum} JoinMode : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01686     \{}
+\DoxyCodeLine{01688         Default = 0,}
+\DoxyCodeLine{01689 }
+\DoxyCodeLine{01691         CreateIfNotExists = 1,}
+\DoxyCodeLine{01692 }
+\DoxyCodeLine{01694         JoinOrRejoin = 2,}
+\DoxyCodeLine{01695 }
+\DoxyCodeLine{01697         RejoinOnly = 3,}
+\DoxyCodeLine{01698     \}}
+\DoxyCodeLine{01699 }
+\DoxyCodeLine{01703     \textcolor{keyword}{public} \textcolor{keyword}{enum} MatchmakingMode : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01704     \{}
+\DoxyCodeLine{01707         FillRoom = 0,}
+\DoxyCodeLine{01708 }
+\DoxyCodeLine{01710         SerialMatching = 1,}
+\DoxyCodeLine{01711 }
+\DoxyCodeLine{01713         RandomMatching = 2}
+\DoxyCodeLine{01714     \}}
+\DoxyCodeLine{01715 }
+\DoxyCodeLine{01716 }
+\DoxyCodeLine{01721     \textcolor{keyword}{public} \textcolor{keyword}{enum} ReceiverGroup : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01722     \{}
+\DoxyCodeLine{01724         Others = 0,}
+\DoxyCodeLine{01725 }
+\DoxyCodeLine{01727         All = 1,}
+\DoxyCodeLine{01728 }
+\DoxyCodeLine{01731         MasterClient = 2,}
+\DoxyCodeLine{01732     \}}
+\DoxyCodeLine{01733 }
+\DoxyCodeLine{01742     \textcolor{keyword}{public} \textcolor{keyword}{enum} EventCaching : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01743     \{}
+\DoxyCodeLine{01745         DoNotCache = 0,}
+\DoxyCodeLine{01746 }
+\DoxyCodeLine{01748         [Obsolete]}
+\DoxyCodeLine{01749         MergeCache = 1,}
+\DoxyCodeLine{01750 }
+\DoxyCodeLine{01752         [Obsolete]}
+\DoxyCodeLine{01753         ReplaceCache = 2,}
+\DoxyCodeLine{01754 }
+\DoxyCodeLine{01756         [Obsolete]}
+\DoxyCodeLine{01757         RemoveCache = 3,}
+\DoxyCodeLine{01758 }
+\DoxyCodeLine{01760         AddToRoomCache = 4,}
+\DoxyCodeLine{01761 }
+\DoxyCodeLine{01763         AddToRoomCacheGlobal = 5,}
+\DoxyCodeLine{01764 }
+\DoxyCodeLine{01766         RemoveFromRoomCache = 6,}
+\DoxyCodeLine{01767 }
+\DoxyCodeLine{01769         RemoveFromRoomCacheForActorsLeft = 7,}
+\DoxyCodeLine{01770 }
+\DoxyCodeLine{01772         SliceIncreaseIndex = 10,}
+\DoxyCodeLine{01773 }
+\DoxyCodeLine{01775         SliceSetIndex = 11,}
+\DoxyCodeLine{01776 }
+\DoxyCodeLine{01778         SlicePurgeIndex = 12,}
+\DoxyCodeLine{01779 }
+\DoxyCodeLine{01781         SlicePurgeUpToIndex = 13,}
+\DoxyCodeLine{01782     \}}
+\DoxyCodeLine{01783 }
+\DoxyCodeLine{01787     [Flags]}
+\DoxyCodeLine{01788     \textcolor{keyword}{public} \textcolor{keyword}{enum} PropertyTypeFlag : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01789     \{}
+\DoxyCodeLine{01791         None = 0x00,}
+\DoxyCodeLine{01792 }
+\DoxyCodeLine{01794         Game = 0x01,}
+\DoxyCodeLine{01795 }
+\DoxyCodeLine{01797         Actor = 0x02,}
+\DoxyCodeLine{01798 }
+\DoxyCodeLine{01800         GameAndActor = Game | Actor}
+\DoxyCodeLine{01801     \}}
+\DoxyCodeLine{01802 }
+\DoxyCodeLine{01803 }
+\DoxyCodeLine{01806     \textcolor{keyword}{public} \textcolor{keyword}{class }RoomOptions}
+\DoxyCodeLine{01807     \{}
+\DoxyCodeLine{01816         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsVisible \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.isVisible; \} \textcolor{keyword}{set} \{ this.isVisible = value; \} \}}
+\DoxyCodeLine{01817         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isVisible = \textcolor{keyword}{true};}
+\DoxyCodeLine{01818 }
+\DoxyCodeLine{01825         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsOpen \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.isOpen; \} \textcolor{keyword}{set} \{ this.isOpen = value; \} \}}
+\DoxyCodeLine{01826         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isOpen = \textcolor{keyword}{true};}
+\DoxyCodeLine{01827 }
+\DoxyCodeLine{01829         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} MaxPlayers;}
+\DoxyCodeLine{01830 }
+\DoxyCodeLine{01832         \textcolor{keyword}{public} \textcolor{keywordtype}{int} PlayerTtl;}
+\DoxyCodeLine{01833 }
+\DoxyCodeLine{01835         \textcolor{keyword}{public} \textcolor{keywordtype}{int} EmptyRoomTtl;}
+\DoxyCodeLine{01836 }
+\DoxyCodeLine{01843         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CleanupCacheOnLeave \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.cleanupCacheOnLeave; \} \textcolor{keyword}{set} \{ this.cleanupCacheOnLeave = value; \} \}}
+\DoxyCodeLine{01844         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} cleanupCacheOnLeave = \textcolor{keyword}{true};}
+\DoxyCodeLine{01845 }
+\DoxyCodeLine{01852         \textcolor{keyword}{public} Hashtable CustomRoomProperties;}
+\DoxyCodeLine{01853 }
+\DoxyCodeLine{01862         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] CustomRoomPropertiesForLobby = \textcolor{keyword}{new} \textcolor{keywordtype}{string}[0];}
+\DoxyCodeLine{01863 }
+\DoxyCodeLine{01870         \textcolor{keyword}{public} \textcolor{keywordtype}{string}[] Plugins;}
+\DoxyCodeLine{01871 }
+\DoxyCodeLine{01880         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SuppressRoomEvents \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01881 }
+\DoxyCodeLine{01883         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SuppressPlayerInfo \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01884 }
+\DoxyCodeLine{01893         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} PublishUserId \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01894 }
+\DoxyCodeLine{01903         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} DeleteNullProperties \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01904 }
+\DoxyCodeLine{01916         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} BroadcastPropsChangeToAll \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.broadcastPropsChangeToAll; \} \textcolor{keyword}{set} \{ this.broadcastPropsChangeToAll = value; \} \}}
+\DoxyCodeLine{01917         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} broadcastPropsChangeToAll = \textcolor{keyword}{true};}
+\DoxyCodeLine{01918 }
+\DoxyCodeLine{01919 \textcolor{preprocessor}{        \#if SERVERSDK}}
+\DoxyCodeLine{01920         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CheckUserOnJoin \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01921 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{01922     \}}
+\DoxyCodeLine{01923 }
+\DoxyCodeLine{01924 }
+\DoxyCodeLine{01926     \textcolor{keyword}{public} \textcolor{keyword}{class }RaiseEventOptions}
+\DoxyCodeLine{01927     \{}
+\DoxyCodeLine{01929         \textcolor{keyword}{public} readonly \textcolor{keyword}{static} RaiseEventOptions Default = \textcolor{keyword}{new} RaiseEventOptions();}
+\DoxyCodeLine{01930 }
+\DoxyCodeLine{01935         \textcolor{keyword}{public} EventCaching CachingOption;}
+\DoxyCodeLine{01936 }
+\DoxyCodeLine{01938         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} InterestGroup;}
+\DoxyCodeLine{01939 }
+\DoxyCodeLine{01941         \textcolor{keyword}{public} \textcolor{keywordtype}{int}[] TargetActors;}
+\DoxyCodeLine{01942 }
+\DoxyCodeLine{01944         \textcolor{keyword}{public} ReceiverGroup Receivers;}
+\DoxyCodeLine{01945 }
+\DoxyCodeLine{01947         [Obsolete(\textcolor{stringliteral}{"{}Not used where SendOptions are a parameter too. Use SendOptions.Channel instead."{}})]}
+\DoxyCodeLine{01948         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} SequenceChannel;}
+\DoxyCodeLine{01949 }
+\DoxyCodeLine{01952         \textcolor{keyword}{public} WebFlags Flags = WebFlags.Default;}
+\DoxyCodeLine{01953 }
+\DoxyCodeLine{01955         \textcolor{comment}{//public int CacheSliceIndex;}}
+\DoxyCodeLine{01956     \}}
+\DoxyCodeLine{01957 }
+\DoxyCodeLine{01960     \textcolor{keyword}{public} \textcolor{keyword}{enum} LobbyType :\textcolor{keywordtype}{byte}}
+\DoxyCodeLine{01961     \{}
+\DoxyCodeLine{01963         Default = 0,}
+\DoxyCodeLine{01965         SqlLobby = 2,}
+\DoxyCodeLine{01967         AsyncRandomLobby = 3}
+\DoxyCodeLine{01968     \}}
+\DoxyCodeLine{01969 }
+\DoxyCodeLine{01976     \textcolor{keyword}{public} \textcolor{keyword}{class }TypedLobby}
+\DoxyCodeLine{01977     \{}
+\DoxyCodeLine{01984         \textcolor{keyword}{public} \textcolor{keywordtype}{string} Name;}
+\DoxyCodeLine{01985 }
+\DoxyCodeLine{01992         \textcolor{keyword}{public} LobbyType Type;}
+\DoxyCodeLine{01993 }
+\DoxyCodeLine{02002         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly TypedLobby Default = \textcolor{keyword}{new} TypedLobby();}
+\DoxyCodeLine{02003 }
+\DoxyCodeLine{02011         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsDefault \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.IsNullOrEmpty(this.Name); \} \}}
+\DoxyCodeLine{02012 }
+\DoxyCodeLine{02013 }
+\DoxyCodeLine{02017         \textcolor{keyword}{internal} TypedLobby()}
+\DoxyCodeLine{02018         \{}
+\DoxyCodeLine{02019         \}}
+\DoxyCodeLine{02020 }
+\DoxyCodeLine{02026         \textcolor{keyword}{public} TypedLobby(\textcolor{keywordtype}{string} name, LobbyType type)}
+\DoxyCodeLine{02027         \{}
+\DoxyCodeLine{02028             this.Name = name;}
+\DoxyCodeLine{02029             this.Type = type;}
+\DoxyCodeLine{02030         \}}
+\DoxyCodeLine{02031 }
+\DoxyCodeLine{02032         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{02033         \{}
+\DoxyCodeLine{02034             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}lobby '\{0\}'[\{1\}]"{}}, this.Name, this.Type);}
+\DoxyCodeLine{02035         \}}
+\DoxyCodeLine{02036     \}}
+\DoxyCodeLine{02037 }
+\DoxyCodeLine{02038 }
+\DoxyCodeLine{02042     \textcolor{keyword}{public} \textcolor{keyword}{class }TypedLobbyInfo : TypedLobby}
+\DoxyCodeLine{02043     \{}
+\DoxyCodeLine{02045         \textcolor{keyword}{public} \textcolor{keywordtype}{int} PlayerCount;}
+\DoxyCodeLine{02046 }
+\DoxyCodeLine{02048         \textcolor{keyword}{public} \textcolor{keywordtype}{int} RoomCount;}
+\DoxyCodeLine{02049 }
+\DoxyCodeLine{02050         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{02051         \{}
+\DoxyCodeLine{02052             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}TypedLobbyInfo '\{0\}'[\{1\}] rooms: \{2\} players: \{3\}"{}}, this.Name, this.Type, this.RoomCount, this.PlayerCount);}
+\DoxyCodeLine{02053         \}}
+\DoxyCodeLine{02054     \}}
+\DoxyCodeLine{02055 }
+\DoxyCodeLine{02056 }
+\DoxyCodeLine{02060     \textcolor{keyword}{public} \textcolor{keyword}{enum} AuthModeOption \{ Auth, AuthOnce, AuthOnceWss \}}
+\DoxyCodeLine{02061 }
+\DoxyCodeLine{02062 }
+\DoxyCodeLine{02066     \textcolor{keyword}{public} \textcolor{keyword}{enum} CustomAuthenticationType : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{02067     \{}
+\DoxyCodeLine{02069         Custom = 0,}
+\DoxyCodeLine{02070 }
+\DoxyCodeLine{02072         Steam = 1,}
+\DoxyCodeLine{02073 }
+\DoxyCodeLine{02075         Facebook = 2,}
+\DoxyCodeLine{02076 }
+\DoxyCodeLine{02078         Oculus = 3,}
+\DoxyCodeLine{02079 }
+\DoxyCodeLine{02081         PlayStation4 = 4,}
+\DoxyCodeLine{02082         [Obsolete(\textcolor{stringliteral}{"{}Use PlayStation4 or PlayStation5 as needed"{}})]}
+\DoxyCodeLine{02083         PlayStation = 4,}
+\DoxyCodeLine{02084 }
+\DoxyCodeLine{02086         Xbox = 5,}
+\DoxyCodeLine{02087 }
+\DoxyCodeLine{02089         Viveport = 10,}
+\DoxyCodeLine{02090 }
+\DoxyCodeLine{02092         NintendoSwitch = 11,}
+\DoxyCodeLine{02093 }
+\DoxyCodeLine{02095         PlayStation5 = 12,}
+\DoxyCodeLine{02096         [Obsolete(\textcolor{stringliteral}{"{}Use PlayStation4 or PlayStation5 as needed"{}})]}
+\DoxyCodeLine{02097         Playstation5 = 12,}
+\DoxyCodeLine{02098 }
+\DoxyCodeLine{02100         Epic = 13,}
+\DoxyCodeLine{02101 }
+\DoxyCodeLine{02103         FacebookGaming = 15,}
+\DoxyCodeLine{02104 }
+\DoxyCodeLine{02106         None = \textcolor{keywordtype}{byte}.MaxValue}
+\DoxyCodeLine{02107     \}}
+\DoxyCodeLine{02108 }
+\DoxyCodeLine{02109 }
+\DoxyCodeLine{02129     \textcolor{keyword}{public} \textcolor{keyword}{class }AuthenticationValues}
+\DoxyCodeLine{02130     \{}
+\DoxyCodeLine{02132         \textcolor{keyword}{private} CustomAuthenticationType authType = CustomAuthenticationType.None;}
+\DoxyCodeLine{02133 }
+\DoxyCodeLine{02136         \textcolor{keyword}{public} CustomAuthenticationType AuthType}
+\DoxyCodeLine{02137         \{}
+\DoxyCodeLine{02138             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} authType; \}}
+\DoxyCodeLine{02139             \textcolor{keyword}{set} \{ authType = value; \}}
+\DoxyCodeLine{02140         \}}
+\DoxyCodeLine{02141 }
+\DoxyCodeLine{02147         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AuthGetParameters \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{02148 }
+\DoxyCodeLine{02151         \textcolor{keyword}{public} \textcolor{keywordtype}{object} AuthPostData \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{02152 }
+\DoxyCodeLine{02155         \textcolor{keyword}{public} \textcolor{keywordtype}{object} Token \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{02156 }
+\DoxyCodeLine{02159         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{02160 }
+\DoxyCodeLine{02161 }
+\DoxyCodeLine{02163         \textcolor{keyword}{public} AuthenticationValues()}
+\DoxyCodeLine{02164         \{}
+\DoxyCodeLine{02165         \}}
+\DoxyCodeLine{02166 }
+\DoxyCodeLine{02169         \textcolor{keyword}{public} AuthenticationValues(\textcolor{keywordtype}{string} userId)}
+\DoxyCodeLine{02170         \{}
+\DoxyCodeLine{02171             this.UserId = userId;}
+\DoxyCodeLine{02172         \}}
+\DoxyCodeLine{02173 }
+\DoxyCodeLine{02177         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(\textcolor{keywordtype}{string} stringData)}
+\DoxyCodeLine{02178         \{}
+\DoxyCodeLine{02179             this.AuthPostData = (\textcolor{keywordtype}{string}.IsNullOrEmpty(stringData)) ? \textcolor{keyword}{null} : stringData;}
+\DoxyCodeLine{02180         \}}
+\DoxyCodeLine{02181 }
+\DoxyCodeLine{02185         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(\textcolor{keywordtype}{byte}[] byteData)}
+\DoxyCodeLine{02186         \{}
+\DoxyCodeLine{02187             this.AuthPostData = byteData;}
+\DoxyCodeLine{02188         \}}
+\DoxyCodeLine{02189 }
+\DoxyCodeLine{02193         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SetAuthPostData(Dictionary<string, object> dictData)}
+\DoxyCodeLine{02194         \{}
+\DoxyCodeLine{02195             this.AuthPostData = dictData;}
+\DoxyCodeLine{02196         \}}
+\DoxyCodeLine{02197 }
+\DoxyCodeLine{02202         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} AddAuthParameter(\textcolor{keywordtype}{string} key, \textcolor{keywordtype}{string} value)}
+\DoxyCodeLine{02203         \{}
+\DoxyCodeLine{02204             \textcolor{keywordtype}{string} ampersand = \textcolor{keywordtype}{string}.IsNullOrEmpty(this.AuthGetParameters) ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{}\&"{}};}
+\DoxyCodeLine{02205             this.AuthGetParameters = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\{1\}\{2\}=\{3\}"{}}, this.AuthGetParameters, ampersand, System.Uri.EscapeDataString(key), System.Uri.EscapeDataString(value));}
+\DoxyCodeLine{02206         \}}
+\DoxyCodeLine{02207 }
+\DoxyCodeLine{02212         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{02213         \{}
+\DoxyCodeLine{02214             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}AuthenticationValues = AuthType: \{0\} UserId: \{1\}\{2\}\{3\}\{4\}"{}},}
+\DoxyCodeLine{02215                                  this.AuthType,}
+\DoxyCodeLine{02216                                  this.UserId,}
+\DoxyCodeLine{02217                                  \textcolor{keywordtype}{string}.IsNullOrEmpty(this.AuthGetParameters) ? \textcolor{stringliteral}{"{} GetParameters: yes"{}} : \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{02218                                  this.AuthPostData == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{} PostData: yes"{}},}
+\DoxyCodeLine{02219                                  this.Token == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{} Token: yes"{}});}
+\DoxyCodeLine{02220         \}}
+\DoxyCodeLine{02221 }
+\DoxyCodeLine{02227         \textcolor{keyword}{public} AuthenticationValues CopyTo(AuthenticationValues copy)}
+\DoxyCodeLine{02228         \{}
+\DoxyCodeLine{02229             copy.AuthType = this.AuthType;}
+\DoxyCodeLine{02230             copy.AuthGetParameters = this.AuthGetParameters;}
+\DoxyCodeLine{02231             copy.AuthPostData = this.AuthPostData;}
+\DoxyCodeLine{02232             copy.UserId = this.UserId;}
+\DoxyCodeLine{02233             \textcolor{keywordflow}{return} copy;}
+\DoxyCodeLine{02234         \}}
+\DoxyCodeLine{02235     \}}
+\DoxyCodeLine{02236 \}}
+
+\end{DoxyCode}

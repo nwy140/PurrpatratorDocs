@@ -1,0 +1,472 @@
+\doxysection{Photon\+Ping.\+cs}
+\label{_photon_ping_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/PhotonPing.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/PhotonPing.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonPing.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// This file includes various PhotonPing implementations for different APIs,}}
+\DoxyCodeLine{00007 \textcolor{comment}{// platforms and protocols.}}
+\DoxyCodeLine{00008 \textcolor{comment}{// The RegionPinger class is the instance which selects the Ping implementation}}
+\DoxyCodeLine{00009 \textcolor{comment}{// to use.}}
+\DoxyCodeLine{00010 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00011 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00012 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System.Threading;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{preprocessor}{    \#if NETFX\_CORE}}
+\DoxyCodeLine{00022     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} Windows.Foundation;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} Windows.Networking;}
+\DoxyCodeLine{00025     \textcolor{keyword}{using} Windows.Networking.Sockets;}
+\DoxyCodeLine{00026     \textcolor{keyword}{using} Windows.Storage.Streams;}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029 \textcolor{preprocessor}{    \#if !NO\_SOCKET \&\& !NETFX\_CORE}}
+\DoxyCodeLine{00030     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00031     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00032     \textcolor{keyword}{using} System.Net.Sockets;}
+\DoxyCodeLine{00033 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{    \#if UNITY\_WEBGL}}
+\DoxyCodeLine{00036     \textcolor{comment}{// import WWW class}}
+\DoxyCodeLine{00037     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00043     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }PhotonPing : IDisposable}
+\DoxyCodeLine{00044     \{}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keywordtype}{string} DebugString = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00046         }
+\DoxyCodeLine{00047         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Successful;}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} GotResult;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{int} PingLength = 13;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{byte}[] PingBytes = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[] \{ 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x7d, 0x00 \};}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00055         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{byte} PingId;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly System.Random RandomIdProvider = \textcolor{keyword}{new} System.Random();}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} ip)}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{throw} \textcolor{keyword}{new} NotImplementedException();}
+\DoxyCodeLine{00062         \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00065         \{}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{throw} \textcolor{keyword}{new} NotImplementedException();}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{throw} \textcolor{keyword}{new} NotImplementedException();}
+\DoxyCodeLine{00072         \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} Init()}
+\DoxyCodeLine{00075         \{}
+\DoxyCodeLine{00076             this.GotResult = \textcolor{keyword}{false};}
+\DoxyCodeLine{00077             this.Successful = \textcolor{keyword}{false};}
+\DoxyCodeLine{00078             this.PingId = (byte)(RandomIdProvider.Next(255));}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080     \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083 \textcolor{preprocessor}{    \#if !NETFX\_CORE \&\& !NO\_SOCKET}}
+\DoxyCodeLine{00086     \textcolor{keyword}{public} \textcolor{keyword}{class }PingMono : PhotonPing}
+\DoxyCodeLine{00087     \{}
+\DoxyCodeLine{00088         \textcolor{keyword}{private} Socket sock;}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00095         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} ip)}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             this.Init();}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00100             \{}
+\DoxyCodeLine{00101                 \textcolor{keywordflow}{if} (this.sock == \textcolor{keyword}{null})}
+\DoxyCodeLine{00102                 \{}
+\DoxyCodeLine{00103                     \textcolor{keywordflow}{if} (ip.Contains(\textcolor{stringliteral}{"{}."{}}))}
+\DoxyCodeLine{00104                     \{}
+\DoxyCodeLine{00105                         this.sock = \textcolor{keyword}{new} Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);}
+\DoxyCodeLine{00106                     \}}
+\DoxyCodeLine{00107                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00108                     \{}
+\DoxyCodeLine{00109                         this.sock = \textcolor{keyword}{new} Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);}
+\DoxyCodeLine{00110                     \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                     this.sock.ReceiveTimeout = 5000;}
+\DoxyCodeLine{00113                     \textcolor{keywordtype}{int} port = (RegionHandler.PortToPingOverride != 0) ? RegionHandler.PortToPingOverride : 5055;}
+\DoxyCodeLine{00114                     \textcolor{keyword}{this}.sock.Connect(ip, port);}
+\DoxyCodeLine{00115                 \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118                 this.PingBytes[this.PingBytes.Length -\/ 1] = this.PingId;}
+\DoxyCodeLine{00119                 this.sock.Send(this.PingBytes);}
+\DoxyCodeLine{00120                 this.PingBytes[this.PingBytes.Length -\/ 1] = (byte)(this.PingId+1);  \textcolor{comment}{// this buffer is re-\/used for the result/receive. invalidate the result now.}}
+\DoxyCodeLine{00121             \}}
+\DoxyCodeLine{00122             \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00123             \{}
+\DoxyCodeLine{00124                 this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00125                 Console.WriteLine(e);}
+\DoxyCodeLine{00126             \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (this.GotResult || this.sock == \textcolor{keyword}{null})}
+\DoxyCodeLine{00134             \{}
+\DoxyCodeLine{00135                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};    \textcolor{comment}{// this just indicates the ping is no longer waiting. this.Successful value defines if the roundtrip completed}}
+\DoxyCodeLine{00136             \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138             \textcolor{keywordtype}{int} read = 0;}
+\DoxyCodeLine{00139             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00140             \{}
+\DoxyCodeLine{00141                 \textcolor{keywordflow}{if} (!this.sock.Poll(0, SelectMode.SelectRead))}
+\DoxyCodeLine{00142                 \{}
+\DoxyCodeLine{00143                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00144                 \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146                 read = this.sock.Receive(this.PingBytes, SocketFlags.None);}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148             \textcolor{keywordflow}{catch} (Exception ex)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00151                 \{}
+\DoxyCodeLine{00152                     this.sock.Close();}
+\DoxyCodeLine{00153                     this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00154                 \}}
+\DoxyCodeLine{00155                 this.DebugString += \textcolor{stringliteral}{"{} Exception of socket! "{}} + ex.GetType() + \textcolor{stringliteral}{"{} "{}};}
+\DoxyCodeLine{00156                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};    \textcolor{comment}{// this just indicates the ping is no longer waiting. this.Successful value defines if the roundtrip completed}}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordtype}{bool} replyMatch = this.PingBytes[this.PingBytes.Length -\/ 1] == this.PingId \&\& read == this.PingLength;}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{if} (!replyMatch)}
+\DoxyCodeLine{00161             \{}
+\DoxyCodeLine{00162                 this.DebugString += \textcolor{stringliteral}{"{} ReplyMatch is false! "{}};}
+\DoxyCodeLine{00163             \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             this.Successful = replyMatch;}
+\DoxyCodeLine{00167             this.GotResult = \textcolor{keyword}{true};}
+\DoxyCodeLine{00168             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 this.sock.Close();}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177             \textcolor{keywordflow}{catch}}
+\DoxyCodeLine{00178             \{}
+\DoxyCodeLine{00179             \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181             this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184     \}}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188 \textcolor{preprocessor}{    \#if NETFX\_CORE}}
+\DoxyCodeLine{00190     \textcolor{keyword}{public} \textcolor{keyword}{class }PingWindowsStore : PhotonPing}
+\DoxyCodeLine{00191     \{}
+\DoxyCodeLine{00192         \textcolor{keyword}{private} DatagramSocket sock;}
+\DoxyCodeLine{00193         \textcolor{keyword}{private} readonly \textcolor{keywordtype}{object} syncer = \textcolor{keyword}{new} object();}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} host)}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             lock (this.syncer)}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 this.Init();}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201                 \textcolor{keywordtype}{int} port = (RegionHandler.PortToPingOverride != 0) ? RegionHandler.PortToPingOverride : 5055;}
+\DoxyCodeLine{00202                 EndpointPair endPoint = \textcolor{keyword}{new} EndpointPair(\textcolor{keyword}{null}, \textcolor{keywordtype}{string}.Empty, \textcolor{keyword}{new} HostName(host), port.ToString());}
+\DoxyCodeLine{00203                 this.sock = \textcolor{keyword}{new} DatagramSocket();}
+\DoxyCodeLine{00204                 this.sock.MessageReceived += this.OnMessageReceived;}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206                 IAsyncAction result = this.sock.ConnectAsync(endPoint);}
+\DoxyCodeLine{00207                 result.Completed = this.OnConnected;}
+\DoxyCodeLine{00208                 this.DebugString += \textcolor{stringliteral}{"{} End StartPing"{}};}
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00210             \}}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00214         \{}
+\DoxyCodeLine{00215             lock (this.syncer)}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 \textcolor{keywordflow}{return} this.GotResult || this.sock == \textcolor{keyword}{null}; \textcolor{comment}{// this just indicates the ping is no longer waiting. this.Successful value defines if the roundtrip completed}}
+\DoxyCodeLine{00218             \}}
+\DoxyCodeLine{00219         \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00222         \{}
+\DoxyCodeLine{00223             lock (this.syncer)}
+\DoxyCodeLine{00224             \{}
+\DoxyCodeLine{00225                 this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00226             \}}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnConnected(IAsyncAction asyncinfo, AsyncStatus asyncstatus)}
+\DoxyCodeLine{00230         \{}
+\DoxyCodeLine{00231             lock (this.syncer)}
+\DoxyCodeLine{00232             \{}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{if} (asyncinfo.AsTask().IsCompleted \&\& !asyncinfo.AsTask().IsFaulted \&\& \textcolor{keyword}{this}.sock != \textcolor{keyword}{null} \&\& \textcolor{keyword}{this}.sock.Information.RemoteAddress != \textcolor{keyword}{null})}
+\DoxyCodeLine{00234                 \{}
+\DoxyCodeLine{00235                     this.PingBytes[this.PingBytes.Length -\/ 1] = this.PingId;}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237                     DataWriter writer;}
+\DoxyCodeLine{00238                     writer = \textcolor{keyword}{new} DataWriter(this.sock.OutputStream);}
+\DoxyCodeLine{00239                     writer.WriteBytes(this.PingBytes);}
+\DoxyCodeLine{00240                     DataWriterStoreOperation res = writer.StoreAsync();}
+\DoxyCodeLine{00241                     res.AsTask().Wait(100);}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243                     this.PingBytes[this.PingBytes.Length -\/ 1] = (byte)(this.PingId + 1); \textcolor{comment}{// this buffer is re-\/used for the result/receive. invalidate the result now.}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245                     writer.DetachStream();}
+\DoxyCodeLine{00246                     writer.Dispose();}
+\DoxyCodeLine{00247                 \}}
+\DoxyCodeLine{00248                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00249                 \{}
+\DoxyCodeLine{00250                     this.sock = \textcolor{keyword}{null}; \textcolor{comment}{// will cause Done() to return true but this.Successful defines if the roundtrip completed}}
+\DoxyCodeLine{00251                 \}}
+\DoxyCodeLine{00252             \}}
+\DoxyCodeLine{00253         \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnMessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)}
+\DoxyCodeLine{00256         \{}
+\DoxyCodeLine{00257             lock (this.syncer)}
+\DoxyCodeLine{00258             \{}
+\DoxyCodeLine{00259                 DataReader reader = \textcolor{keyword}{null};}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00261                 \{}
+\DoxyCodeLine{00262                     reader = args.GetDataReader();}
+\DoxyCodeLine{00263                     uint receivedByteCount = reader.UnconsumedBufferLength;}
+\DoxyCodeLine{00264                     \textcolor{keywordflow}{if} (receivedByteCount > 0)}
+\DoxyCodeLine{00265                     \{}
+\DoxyCodeLine{00266                         \textcolor{keywordtype}{byte}[] resultBytes = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[receivedByteCount];}
+\DoxyCodeLine{00267                         reader.ReadBytes(resultBytes);}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                         \textcolor{comment}{//TODO: check result bytes!}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272                         this.Successful = receivedByteCount == this.PingLength \&\& resultBytes[resultBytes.Length -\/ 1] == this.PingId;}
+\DoxyCodeLine{00273                         this.GotResult = \textcolor{keyword}{true};}
+\DoxyCodeLine{00274                     \}}
+\DoxyCodeLine{00275                 \}}
+\DoxyCodeLine{00276                 \textcolor{keywordflow}{catch}}
+\DoxyCodeLine{00277                 \{}
+\DoxyCodeLine{00278                     \textcolor{comment}{// TODO: handle error}}
+\DoxyCodeLine{00279                 \}}
+\DoxyCodeLine{00280             \}}
+\DoxyCodeLine{00281         \}}
+\DoxyCodeLine{00282     \}}
+\DoxyCodeLine{00283 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286 \textcolor{preprocessor}{    \#if NATIVE\_SOCKETS}}
+\DoxyCodeLine{00288     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }PingNative : PhotonPing}
+\DoxyCodeLine{00289     \{}
+\DoxyCodeLine{00290         \textcolor{comment}{// Native socket states -\/ according to EnetConnect.h state definitions}}
+\DoxyCodeLine{00291         \textcolor{keyword}{protected} \textcolor{keyword}{enum} NativeSocketState : \textcolor{keywordtype}{byte}}
+\DoxyCodeLine{00292         \{}
+\DoxyCodeLine{00293             Disconnected = 0,}
+\DoxyCodeLine{00294             Connecting = 1,}
+\DoxyCodeLine{00295             Connected = 2,}
+\DoxyCodeLine{00296             ConnectionError = 3,}
+\DoxyCodeLine{00297             SendError = 4,}
+\DoxyCodeLine{00298             ReceiveError = 5,}
+\DoxyCodeLine{00299             Disconnecting = 6}
+\DoxyCodeLine{00300         \}}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302         \textcolor{keyword}{protected} IntPtr pConnectionHandler = IntPtr.Zero;}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304         \string~PingNative()}
+\DoxyCodeLine{00305         \{}
+\DoxyCodeLine{00306             Dispose();}
+\DoxyCodeLine{00307         \}}
+\DoxyCodeLine{00308     \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00311     \textcolor{keyword}{public} \textcolor{keyword}{class }PingNativeDynamic : PingNative}
+\DoxyCodeLine{00312     \{}
+\DoxyCodeLine{00313         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} ip)}
+\DoxyCodeLine{00314         \{}
+\DoxyCodeLine{00315             lock (SocketUdpNativeDynamic.syncer)}
+\DoxyCodeLine{00316             \{}
+\DoxyCodeLine{00317                 base.Init();}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319                 \textcolor{keywordflow}{if}(pConnectionHandler == IntPtr.Zero)}
+\DoxyCodeLine{00320                 \{}
+\DoxyCodeLine{00321                     pConnectionHandler = SocketUdpNativeDynamic.egconnect(ip);}
+\DoxyCodeLine{00322                     SocketUdpNativeDynamic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00323                     \textcolor{keywordtype}{byte} state = SocketUdpNativeDynamic.eggetState(pConnectionHandler);}
+\DoxyCodeLine{00324                     \textcolor{keywordflow}{while} (state == (\textcolor{keywordtype}{byte}) NativeSocketState.Connecting)}
+\DoxyCodeLine{00325                     \{}
+\DoxyCodeLine{00326                         SocketUdpNativeDynamic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00327                         state = SocketUdpNativeDynamic.eggetState(pConnectionHandler);}
+\DoxyCodeLine{00328                     \}}
+\DoxyCodeLine{00329                 \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331                 PingBytes[PingBytes.Length -\/ 1] = PingId;}
+\DoxyCodeLine{00332                 SocketUdpNativeDynamic.egsend(pConnectionHandler, PingBytes, PingBytes.Length);}
+\DoxyCodeLine{00333                 SocketUdpNativeDynamic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335                 PingBytes[PingBytes.Length -\/ 1] = (byte) (PingId -\/ 1);}
+\DoxyCodeLine{00336                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00337             \}}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00341         \{}
+\DoxyCodeLine{00342             lock (SocketUdpNativeDynamic.syncer)}
+\DoxyCodeLine{00343             \{}
+\DoxyCodeLine{00344                 \textcolor{keywordflow}{if} (this.GotResult || pConnectionHandler == IntPtr.Zero)}
+\DoxyCodeLine{00345                 \{}
+\DoxyCodeLine{00346                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00347                 \}}
+\DoxyCodeLine{00348 }
+\DoxyCodeLine{00349                 \textcolor{keywordtype}{int} available = SocketUdpNativeDynamic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00350                 \textcolor{keywordflow}{if} (available < PingLength)}
+\DoxyCodeLine{00351                 \{}
+\DoxyCodeLine{00352                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00353                 \}}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355                 \textcolor{keywordtype}{int} pingBytesLength = PingBytes.Length;}
+\DoxyCodeLine{00356                 \textcolor{keywordtype}{int} bytesInRemainginDatagrams = SocketUdpNativeDynamic.egread(pConnectionHandler, PingBytes, ref pingBytesLength);}
+\DoxyCodeLine{00357                 this.Successful = (PingBytes != \textcolor{keyword}{null} \&\& PingBytes[PingBytes.Length -\/ 1] == PingId);}
+\DoxyCodeLine{00358                 \textcolor{comment}{//Debug.Log("{}Successful: "{} + this.Successful + "{} bytesInRemainginDatagrams: "{} + bytesInRemainginDatagrams + "{} PingId: "{} + PingId);}}
+\DoxyCodeLine{00359 }
+\DoxyCodeLine{00360                 this.GotResult = \textcolor{keyword}{true};}
+\DoxyCodeLine{00361                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00362             \}}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00366         \{}
+\DoxyCodeLine{00367             lock (SocketUdpNativeDynamic.syncer)}
+\DoxyCodeLine{00368             \{}
+\DoxyCodeLine{00369                 \textcolor{keywordflow}{if} (this.pConnectionHandler != IntPtr.Zero)}
+\DoxyCodeLine{00370                     SocketUdpNativeDynamic.egdisconnect(this.pConnectionHandler);}
+\DoxyCodeLine{00371                 this.pConnectionHandler = IntPtr.Zero;}
+\DoxyCodeLine{00372             \}}
+\DoxyCodeLine{00373             GC.SuppressFinalize(\textcolor{keyword}{this});}
+\DoxyCodeLine{00374         \}}
+\DoxyCodeLine{00375     \}}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377 \textcolor{preprocessor}{    \#if NATIVE\_SOCKETS \&\& NATIVE\_SOCKETS\_STATIC}}
+\DoxyCodeLine{00379     \textcolor{keyword}{public} \textcolor{keyword}{class }PingNativeStatic : PingNative}
+\DoxyCodeLine{00380     \{}
+\DoxyCodeLine{00381         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} ip)}
+\DoxyCodeLine{00382         \{}
+\DoxyCodeLine{00383             base.Init();}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385             lock (SocketUdpNativeStatic.syncer)}
+\DoxyCodeLine{00386             \{}
+\DoxyCodeLine{00387                 \textcolor{keywordflow}{if}(pConnectionHandler == IntPtr.Zero)}
+\DoxyCodeLine{00388                 \{}
+\DoxyCodeLine{00389                     pConnectionHandler = SocketUdpNativeStatic.egconnect(ip);}
+\DoxyCodeLine{00390                     SocketUdpNativeStatic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00391                     \textcolor{keywordtype}{byte} state = SocketUdpNativeStatic.eggetState(pConnectionHandler);}
+\DoxyCodeLine{00392                     \textcolor{keywordflow}{while} (state == (\textcolor{keywordtype}{byte}) NativeSocketState.Connecting)}
+\DoxyCodeLine{00393                     \{}
+\DoxyCodeLine{00394                         SocketUdpNativeStatic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00395                         state = SocketUdpNativeStatic.eggetState(pConnectionHandler);}
+\DoxyCodeLine{00396                         Thread.Sleep(0); \textcolor{comment}{// suspending execution for a moment is critical on Switch for the OS to update the socket}}
+\DoxyCodeLine{00397                     \}}
+\DoxyCodeLine{00398                 \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400                 PingBytes[PingBytes.Length -\/ 1] = PingId;}
+\DoxyCodeLine{00401                 SocketUdpNativeStatic.egsend(pConnectionHandler, PingBytes, PingBytes.Length);}
+\DoxyCodeLine{00402                 SocketUdpNativeStatic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404                 PingBytes[PingBytes.Length -\/ 1] = (byte) (PingId -\/ 1);}
+\DoxyCodeLine{00405                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00406             \}}
+\DoxyCodeLine{00407         \}}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00410         \{}
+\DoxyCodeLine{00411             lock (SocketUdpNativeStatic.syncer)}
+\DoxyCodeLine{00412             \{}
+\DoxyCodeLine{00413                 \textcolor{keywordflow}{if} (this.GotResult || pConnectionHandler == IntPtr.Zero)}
+\DoxyCodeLine{00414                 \{}
+\DoxyCodeLine{00415                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00416                 \}}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00418                 \textcolor{keywordtype}{int} available = SocketUdpNativeStatic.egservice(pConnectionHandler);}
+\DoxyCodeLine{00419                 \textcolor{keywordflow}{if} (available < PingLength)}
+\DoxyCodeLine{00420                 \{}
+\DoxyCodeLine{00421                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00422                 \}}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424                 \textcolor{keywordtype}{int} pingBytesLength = PingBytes.Length;}
+\DoxyCodeLine{00425                 \textcolor{keywordtype}{int} bytesInRemainginDatagrams = SocketUdpNativeStatic.egread(pConnectionHandler, PingBytes, ref pingBytesLength);}
+\DoxyCodeLine{00426                 this.Successful = (PingBytes != \textcolor{keyword}{null} \&\& PingBytes[PingBytes.Length -\/ 1] == PingId);}
+\DoxyCodeLine{00427                 \textcolor{comment}{//Debug.Log("{}Successful: "{} + this.Successful + "{} bytesInRemainginDatagrams: "{} + bytesInRemainginDatagrams + "{} PingId: "{} + PingId);}}
+\DoxyCodeLine{00428 }
+\DoxyCodeLine{00429                 this.GotResult = \textcolor{keyword}{true};}
+\DoxyCodeLine{00430                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00431             \}}
+\DoxyCodeLine{00432         \}}
+\DoxyCodeLine{00433 }
+\DoxyCodeLine{00434         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00435         \{}
+\DoxyCodeLine{00436             lock (SocketUdpNativeStatic.syncer)}
+\DoxyCodeLine{00437             \{}
+\DoxyCodeLine{00438                 \textcolor{keywordflow}{if} (pConnectionHandler != IntPtr.Zero)}
+\DoxyCodeLine{00439                     SocketUdpNativeStatic.egdisconnect(pConnectionHandler);}
+\DoxyCodeLine{00440                 pConnectionHandler = IntPtr.Zero;}
+\DoxyCodeLine{00441             \}}
+\DoxyCodeLine{00442             GC.SuppressFinalize(\textcolor{keyword}{this});}
+\DoxyCodeLine{00443         \}}
+\DoxyCodeLine{00444     \}}
+\DoxyCodeLine{00445 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00446 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00447 }
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449 \textcolor{preprocessor}{    \#if UNITY\_WEBGL}}
+\DoxyCodeLine{00450     \textcolor{keyword}{public} \textcolor{keyword}{class }PingHttp : PhotonPing}
+\DoxyCodeLine{00451     \{}
+\DoxyCodeLine{00452         \textcolor{keyword}{private} WWW webRequest;}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} StartPing(\textcolor{keywordtype}{string} address)}
+\DoxyCodeLine{00455         \{}
+\DoxyCodeLine{00456             base.Init();}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458             address = \textcolor{stringliteral}{"{}https://"{}} + address + \textcolor{stringliteral}{"{}/photon/m/?ping\&r="{}} + UnityEngine.Random.Range(0, 10000);}
+\DoxyCodeLine{00459             this.webRequest = \textcolor{keyword}{new} WWW(address);}
+\DoxyCodeLine{00460             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00461         \}}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Done()}
+\DoxyCodeLine{00464         \{}
+\DoxyCodeLine{00465             \textcolor{keywordflow}{if} (this.webRequest.isDone)}
+\DoxyCodeLine{00466             \{}
+\DoxyCodeLine{00467                 Successful = \textcolor{keyword}{true};}
+\DoxyCodeLine{00468                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00469             \}}
+\DoxyCodeLine{00470 }
+\DoxyCodeLine{00471             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00472         \}}
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00475         \{}
+\DoxyCodeLine{00476             this.webRequest.Dispose();}
+\DoxyCodeLine{00477         \}}
+\DoxyCodeLine{00478     \}}
+\DoxyCodeLine{00479 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00480 \textcolor{preprocessor}{\}}}
+
+\end{DoxyCode}

@@ -1,0 +1,327 @@
+\doxysection{Server\+Settings\+Inspector.\+cs}
+\label{_server_settings_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/ServerSettingsInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/Editor/ServerSettingsInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}ServerSettingsInspector.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   This is a custom editor for the ServerSettings scriptable object.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00019 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00020 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00023 \{}
+\DoxyCodeLine{00024     [CustomEditor(typeof(ServerSettings))]}
+\DoxyCodeLine{00025     \textcolor{keyword}{public} \textcolor{keyword}{class }ServerSettingsInspector : Editor}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keywordtype}{string} versionPhoton;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{private} \textcolor{keywordtype}{string}[] regionsPrefsList;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keywordtype}{string} prefLabel;}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} notAvailableLabel = \textcolor{stringliteral}{"{}n/a"{}};}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keywordtype}{string} rpcCrc;}
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} showRpcs;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} GUIStyle vertboxStyle;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00040         \{}
+\DoxyCodeLine{00041             this.versionPhoton = System.Reflection.Assembly.GetAssembly(typeof(PhotonPeer)).GetName().Version.ToString();}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00046         \{}
+\DoxyCodeLine{00047             \textcolor{keywordflow}{if} (vertboxStyle == \textcolor{keyword}{null})}
+\DoxyCodeLine{00048                 vertboxStyle = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(6, 6, 6, 6) \};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             SerializedObject sObj = \textcolor{keyword}{new} SerializedObject(this.target);}
+\DoxyCodeLine{00051             ServerSettings settings = this.target as ServerSettings;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{            \#region Version Vertical Box}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058             EditorGUILayout.BeginVertical(\textcolor{comment}{/*vertboxStyle*/});}
+\DoxyCodeLine{00059             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00060             EditorGUILayout.PrefixLabel(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Version:"{}}, \textcolor{stringliteral}{"{}Version of PUN and Photon3Unity3d.dll."{}}));}
+\DoxyCodeLine{00061             GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00062             var helpicorect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(16));}
+\DoxyCodeLine{00063             EditorGUIUtility.AddCursorRect(helpicorect, MouseCursor.Link);}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (GUI.Button(helpicorect, PhotonGUI.HelpIcon, GUIStyle.none))}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 Application.OpenURL(PhotonEditor.UrlPunSettings);}
+\DoxyCodeLine{00067             \}}
+\DoxyCodeLine{00068             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00069             EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Pun: "{}} + PhotonNetwork.PunVersion + \textcolor{stringliteral}{"{} Photon lib: "{}} + \textcolor{keyword}{this}.versionPhoton);}
+\DoxyCodeLine{00070             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072 \textcolor{preprocessor}{            \#endregion Version Vertical Box}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00075             SerializedProperty showSettingsProp = this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}ShowSettings"{}});}
+\DoxyCodeLine{00076             \textcolor{keywordtype}{bool} showSettings = showSettingsProp.Foldout(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Server/Cloud Settings"{}}, \textcolor{stringliteral}{"{}Core Photon Server/Cloud settings."{}}));}
+\DoxyCodeLine{00077             EditorGUI.indentLevel++;}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             \textcolor{keywordflow}{if} (showSettings != settings.ShowSettings)}
+\DoxyCodeLine{00081             \{}
+\DoxyCodeLine{00082                 showSettingsProp.boolValue = showSettings;}
+\DoxyCodeLine{00083             \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{keywordflow}{if} (showSettingsProp.boolValue)}
+\DoxyCodeLine{00086             \{}
+\DoxyCodeLine{00087                 SerializedProperty settingsSp = this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}AppSettings"{}});}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089                 EditorGUI.indentLevel++;}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091                 \textcolor{comment}{//Realtime APP ID}}
+\DoxyCodeLine{00092                 this.BuildAppIdField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}AppIdRealtime"{}}), \textcolor{stringliteral}{"{}App Id PUN"{}});}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{if} (PhotonEditorUtils.HasChat)}
+\DoxyCodeLine{00095                 \{}
+\DoxyCodeLine{00096                     this.BuildAppIdField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}AppIdChat"{}}));}
+\DoxyCodeLine{00097                 \}}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{if} (PhotonEditorUtils.HasVoice)}
+\DoxyCodeLine{00099                 \{}
+\DoxyCodeLine{00100                     this.BuildAppIdField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}AppIdVoice"{}}));}
+\DoxyCodeLine{00101                 \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}AppVersion"{}}));}
+\DoxyCodeLine{00104                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}UseNameServer"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Use Name Server"{}}, \textcolor{stringliteral}{"{}Photon Cloud requires this checked.\(\backslash\)nUncheck for Photon Server SDK (OnPremise)."{}}));}
+\DoxyCodeLine{00105                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}FixedRegion"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Fixed Region"{}}, \textcolor{stringliteral}{"{}Photon Cloud setting, needs a Name Server.\(\backslash\)nDefine one region to always connect to.\(\backslash\)nLeave empty to use the best region from a server-\/side region list."{}}));}
+\DoxyCodeLine{00106                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Server"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Server"{}}, \textcolor{stringliteral}{"{}Typically empty for Photon Cloud.\(\backslash\)nFor Photon OnPremise, enter your host name or IP. Also uncheck \(\backslash\)"{}Use Name Server\(\backslash\)"{} for older Photon OnPremise servers."{}}));}
+\DoxyCodeLine{00107                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Port"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Port"{}}, \textcolor{stringliteral}{"{}Leave 0 to use default Photon Cloud ports for the Name Server.\(\backslash\)nOnPremise defaults to 5055 for UDP and 4530 for TCP."{}}));}
+\DoxyCodeLine{00108                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}ProxyServer"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Proxy Server"{}}, \textcolor{stringliteral}{"{}HTTP Proxy Server for WebSocket connection. See LoadBalancingClient.ProxyServerAddress for options."{}}));}
+\DoxyCodeLine{00109                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}Protocol"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Protocol"{}}, \textcolor{stringliteral}{"{}Use UDP where possible.\(\backslash\)nWSS works on WebGL and Xbox exports.\(\backslash\)nDefine WEBSOCKET for use on other platforms."{}}));}
+\DoxyCodeLine{00110                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}EnableProtocolFallback"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Protocol Fallback"{}}, \textcolor{stringliteral}{"{}Automatically try another network protocol, if initial connect fails.\(\backslash\)nWill use default Name Server ports."{}}));}
+\DoxyCodeLine{00111                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}EnableLobbyStatistics"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Lobby Statistics"{}}, \textcolor{stringliteral}{"{}When using multiple room lists (lobbies), the server can send info about their usage."{}}));}
+\DoxyCodeLine{00112                 EditorGUILayout.PropertyField(settingsSp.FindPropertyRelative(\textcolor{stringliteral}{"{}NetworkLogging"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Network Logging"{}}, \textcolor{stringliteral}{"{}Log level for the Photon libraries."{}}));}
+\DoxyCodeLine{00113                 EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}PunLogging"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}PUN Logging"{}}, \textcolor{stringliteral}{"{}Log level for the PUN layer."{}}));}
+\DoxyCodeLine{00117             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}EnableSupportLogger"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Support Logger"{}}, \textcolor{stringliteral}{"{}Logs additional info for debugging.\(\backslash\)nUse this when you submit bugs to the Photon Team."{}}));}
+\DoxyCodeLine{00118             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}RunInBackground"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Run In Background"{}}, \textcolor{stringliteral}{"{}Enables apps to keep the connection without focus. Android and iOS ignore this."{}}));}
+\DoxyCodeLine{00119             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}StartInOfflineMode"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Start In Offline Mode"{}}, \textcolor{stringliteral}{"{}Simulates an online connection.\(\backslash\)nPUN can be used as usual."{}}));}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             EditorGUILayout.PropertyField(this.serializedObject.FindProperty(\textcolor{stringliteral}{"{}DevRegion"{}}), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Dev Region"{}}, \textcolor{stringliteral}{"{}Photon Cloud setting, needs a Name Server.\(\backslash\)nDefine region the Editor and Development builds will always connect to -\/ ensuring all users can find common rooms.\(\backslash\)nLeave empty to use the Fixed Region or best region from a server-\/side region list. This value will be ignored for non-\/Development builds."{}}));}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123 \textcolor{preprocessor}{            \#region Best Region Box}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             EditorGUILayout.BeginVertical(vertboxStyle);}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(PhotonNetwork.BestRegionSummaryInPreferences))}
+\DoxyCodeLine{00128             \{}
+\DoxyCodeLine{00129                 this.regionsPrefsList = PhotonNetwork.BestRegionSummaryInPreferences.Split(\textcolor{keyword}{new}[] \{\textcolor{charliteral}{';'}\}, StringSplitOptions.RemoveEmptyEntries);}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{if} (this.regionsPrefsList.Length < 2)}
+\DoxyCodeLine{00131                 \{}
+\DoxyCodeLine{00132                     this.prefLabel = notAvailableLabel;}
+\DoxyCodeLine{00133                 \}}
+\DoxyCodeLine{00134                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00135                 \{}
+\DoxyCodeLine{00136                     this.prefLabel = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}'\{0\}' ping:\{1\}ms "{}}, this.regionsPrefsList[0], this.regionsPrefsList[1]);}
+\DoxyCodeLine{00137                 \}}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140             \{}
+\DoxyCodeLine{00141                 this.prefLabel = notAvailableLabel;}
+\DoxyCodeLine{00142             \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             EditorGUILayout.LabelField(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Best Region Preference: "{}} + prefLabel, \textcolor{stringliteral}{"{}Best region is used if Fixed Region is empty."{}}));}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             var resetrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(64));}
+\DoxyCodeLine{00149             var editrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(64));}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{if} (GUI.Button(resetrect, \textcolor{stringliteral}{"{}Reset"{}}, EditorStyles.miniButton))}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 ServerSettings.ResetBestRegionCodeInPreferences();}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} (GUI.Button(editrect, \textcolor{stringliteral}{"{}Edit WhiteList"{}}, EditorStyles.miniButton))}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 Application.OpenURL(\textcolor{stringliteral}{"{}https://dashboard.photonengine.com/en-\/US/App/RegionsWhitelistEdit/"{}} + PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime);}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00162             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164 \textcolor{preprocessor}{            \#endregion Best Region Box}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             \textcolor{comment}{//this.showRpcs = EditorGUILayout.Foldout(this.showRpcs, new GUIContent("{}RPCs"{}, "{}RPC shortcut list."{}));}}
+\DoxyCodeLine{00168             EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00169             this.showRpcs = this.showRpcs.Foldout(\textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}RPCs"{}}, \textcolor{stringliteral}{"{}RPC shortcut list."{}}));}
+\DoxyCodeLine{00170             EditorGUI.indentLevel++;}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             \textcolor{keywordflow}{if} (this.showRpcs)}
+\DoxyCodeLine{00173             \{}
+\DoxyCodeLine{00174                 \textcolor{comment}{// first time check to get the rpc has proper}}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(this.rpcCrc))}
+\DoxyCodeLine{00176                 \{}
+\DoxyCodeLine{00177                     this.rpcCrc = this.RpcListHashCode().ToString(\textcolor{stringliteral}{"{}X"{}});}
+\DoxyCodeLine{00178                 \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 \textcolor{preprocessor}{                \#region Begin Vertical Box CRC}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182                 EditorGUILayout.BeginVertical(vertboxStyle);}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00185                 EditorGUILayout.PrefixLabel(\textcolor{stringliteral}{"{}List CRC"{}});}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00188                 var copyrect = EditorGUILayout.GetControlRect(GUILayout.MaxWidth(16));}
+\DoxyCodeLine{00189                 EditorGUILayout.GetControlRect(GUILayout.MaxWidth(12));}
+\DoxyCodeLine{00190                 var hashrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(16)); \textcolor{comment}{// new Rect(copyrect) \{ xMin = copyrect.xMin + 32 \};}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192                 EditorGUIUtility.AddCursorRect(copyrect, MouseCursor.Link);}
+\DoxyCodeLine{00193                 EditorGUI.LabelField(copyrect, \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}"{}}, \textcolor{stringliteral}{"{}Copy Hashcode to Clipboard"{}}));}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{if} (GUI.Button(copyrect, PhotonGUI.CopyIcon, GUIStyle.none))}
+\DoxyCodeLine{00195                 \{}
+\DoxyCodeLine{00196                     Debug.Log(\textcolor{stringliteral}{"{}RPC-\/List HashCode copied into your ClipBoard: "{}} + this.rpcCrc + \textcolor{stringliteral}{"{}. Make sure clients that send each other RPCs have the same RPC-\/List."{}});}
+\DoxyCodeLine{00197                     EditorGUIUtility.systemCopyBuffer = this.rpcCrc;}
+\DoxyCodeLine{00198                 \}}
+\DoxyCodeLine{00199                 EditorGUI.SelectableLabel(hashrect, this.rpcCrc);}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203                 EditorGUI.indentLevel++;}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205                 EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 var refreshrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(64));}
+\DoxyCodeLine{00208                 var clearrect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(64));}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210                 \textcolor{keywordflow}{if} (GUI.Button(refreshrect, \textcolor{stringliteral}{"{}Refresh RPCs"{}}, EditorStyles.miniButton))}
+\DoxyCodeLine{00211                 \{}
+\DoxyCodeLine{00212                     PhotonEditor.UpdateRpcList();}
+\DoxyCodeLine{00213                     this.Repaint();}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216                 \textcolor{keywordflow}{if} (GUI.Button(clearrect, \textcolor{stringliteral}{"{}Clear RPCs"{}}, EditorStyles.miniButton))}
+\DoxyCodeLine{00217                 \{}
+\DoxyCodeLine{00218                     PhotonEditor.ClearRpcList();}
+\DoxyCodeLine{00219                 \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221                 EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223                 EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225 \textcolor{preprocessor}{                \#endregion End Vertical Box CRC}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227                 EditorGUI.indentLevel++;}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229                 SerializedProperty sRpcs = sObj.FindProperty(\textcolor{stringliteral}{"{}RpcList"{}});}
+\DoxyCodeLine{00230                 EditorGUILayout.PropertyField(sRpcs, \textcolor{keyword}{true});}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232                 EditorGUI.indentLevel-\/-\/;}
+\DoxyCodeLine{00233             \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00236             \{}
+\DoxyCodeLine{00237                 sObj.ApplyModifiedProperties();}
+\DoxyCodeLine{00238                 this.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240                 \textcolor{comment}{// cache the rpc hash}}
+\DoxyCodeLine{00241                 this.rpcCrc = this.RpcListHashCode().ToString(\textcolor{stringliteral}{"{}X"{}});}
+\DoxyCodeLine{00242             \}}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244 \textcolor{preprocessor}{            \#region Simple Settings}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00247             var SettingsScriptableObjectBaseType = GetType(\textcolor{stringliteral}{"{}Photon.Utilities.SettingsScriptableObjectBase"{}});}
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (SettingsScriptableObjectBaseType != \textcolor{keyword}{null})}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 3);}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Simple Extension Settings"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254                 var drawAllMethod = SettingsScriptableObjectBaseType.GetMethod(\textcolor{stringliteral}{"{}DrawAllSettings"{}});}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{if} (drawAllMethod != \textcolor{keyword}{null} \&\& \textcolor{keyword}{this} != \textcolor{keyword}{null})}
+\DoxyCodeLine{00257                 \{}
+\DoxyCodeLine{00258                     \textcolor{keywordtype}{bool} initializeAsOpen = \textcolor{keyword}{false};}
+\DoxyCodeLine{00259                     drawAllMethod.Invoke(\textcolor{keyword}{null}, \textcolor{keyword}{new} \textcolor{keywordtype}{object}[2] \{ \textcolor{keyword}{this}, initializeAsOpen \});}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261                 \}}
+\DoxyCodeLine{00262             \}}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265 \textcolor{preprocessor}{            \#endregion}}
+\DoxyCodeLine{00266         \}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268         \textcolor{keyword}{private} \textcolor{keyword}{static} Type GetType(\textcolor{keywordtype}{string} typeName)}
+\DoxyCodeLine{00269         \{}
+\DoxyCodeLine{00270             var type = Type.GetType(typeName);}
+\DoxyCodeLine{00271             \textcolor{keywordflow}{if} (type != \textcolor{keyword}{null}) \textcolor{keywordflow}{return} type;}
+\DoxyCodeLine{00272             \textcolor{keywordflow}{foreach} (var a \textcolor{keywordflow}{in} AppDomain.CurrentDomain.GetAssemblies())}
+\DoxyCodeLine{00273             \{}
+\DoxyCodeLine{00274                 type = a.GetType(typeName);}
+\DoxyCodeLine{00275                 \textcolor{keywordflow}{if} (type != \textcolor{keyword}{null})}
+\DoxyCodeLine{00276                     \textcolor{keywordflow}{return} type;}
+\DoxyCodeLine{00277             \}}
+\DoxyCodeLine{00278             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00279         \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281         \textcolor{keyword}{private} \textcolor{keywordtype}{int} RpcListHashCode()}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             \textcolor{comment}{// this is a hashcode generated to (more) easily compare this Editor's RPC List with some other}}
+\DoxyCodeLine{00284             \textcolor{keywordtype}{int} hashCode = PhotonNetwork.PhotonServerSettings.RpcList.Count + 1;}
+\DoxyCodeLine{00285             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} s \textcolor{keywordflow}{in} PhotonNetwork.PhotonServerSettings.RpcList)}
+\DoxyCodeLine{00286             \{}
+\DoxyCodeLine{00287                 \textcolor{keywordtype}{int} h1 = s.GetHashCode();}
+\DoxyCodeLine{00288                 hashCode = ((h1 << 5) + h1) \string^ hashCode;}
+\DoxyCodeLine{00289             \}}
+\DoxyCodeLine{00290             \textcolor{keywordflow}{return} hashCode;}
+\DoxyCodeLine{00291         \}}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293         \textcolor{keyword}{private} \textcolor{keywordtype}{void} BuildAppIdField(SerializedProperty property, \textcolor{keywordtype}{string} label = \textcolor{keyword}{null})}
+\DoxyCodeLine{00294         \{}
+\DoxyCodeLine{00295             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00297             \textcolor{keywordflow}{if} (label != \textcolor{keyword}{null})}
+\DoxyCodeLine{00298             \{}
+\DoxyCodeLine{00299                 EditorGUILayout.PropertyField(property, \textcolor{keyword}{new} GUIContent(label), GUILayout.MinWidth(32));}
+\DoxyCodeLine{00300             \}}
+\DoxyCodeLine{00301             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00302             \{}
+\DoxyCodeLine{00303                 EditorGUILayout.PropertyField(property, GUILayout.MinWidth(32));}
+\DoxyCodeLine{00304             \}}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306             \textcolor{keyword}{property}.stringValue = \textcolor{keyword}{property}.stringValue.Trim();}
+\DoxyCodeLine{00307             \textcolor{keywordtype}{string} appId = \textcolor{keyword}{property}.stringValue;}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{keywordtype}{string} url = \textcolor{stringliteral}{"{}https://dashboard.photonengine.com/en-\/US/PublicCloud"{}};}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(appId))}
+\DoxyCodeLine{00312             \{}
+\DoxyCodeLine{00313                 url = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}https://dashboard.photonengine.com/en-\/US/App/Manage/\{0\}"{}}, appId);}
+\DoxyCodeLine{00314             \}}
+\DoxyCodeLine{00315             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Dashboard"{}}, EditorStyles.miniButton, GUILayout.MinWidth(78), GUILayout.MaxWidth(78)))}
+\DoxyCodeLine{00316             \{}
+\DoxyCodeLine{00317                 Application.OpenURL(url);}
+\DoxyCodeLine{00318             \}}
+\DoxyCodeLine{00319             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00320         \}}
+\DoxyCodeLine{00321     \}}
+\DoxyCodeLine{00322 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,648 @@
+\doxysection{Float\+Crush\+Drawer.\+cs}
+\label{_float_crush_drawer_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/FloatCrushDrawer.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/FloatCrushDrawer.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }CrusherDrawer : PropertyDrawer}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} FC\_ISPRO = FloatCrusher.ISPRO;}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} QC\_ISPRO = QuatCompress.ISPRO;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} PADDING = 4;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} LINEHEIGHT = 16;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} HEADR\_HGHT = 16f;}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} COMPMTHD\_HGHT = LINEHEIGHT + 3;}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} SETTINGS\_HGHT = LINEHEIGHT;}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} ACCCNTR\_HGHT = LINEHEIGHT \textcolor{comment}{/*+ SPACING*/};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} ACTUAL\_HGHT = LINEHEIGHT;}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} BCL\_HEIGHT = SPACING + LINEHEIGHT + LINEHEIGHT + LINEHEIGHT + SPACING; \textcolor{comment}{/*+ PADDING + SPACING*/}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} DISBL\_HGHT = 20f;}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} BTTM\_MARGIN = 4;}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SPACING = 2;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} line, paddedleft, paddedright, paddedwidth, fieldleft, fieldwidth, labelwidth, stdfieldwidth, rightinputsleft;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle miniLabelRight = \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) \{ alignment = TextAnchor.MiddleRight \};}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle miniFadedLabelRight = (EditorGUIUtility.isProSkin) ?}
+\DoxyCodeLine{00043             \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) \{ alignment = TextAnchor.MiddleRight \} :}
+\DoxyCodeLine{00044             \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) \{ alignment = TextAnchor.MiddleRight, normal = ((GUIStyle)\textcolor{stringliteral}{"{}PR DisabledLabel"{}}).normal \};}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle miniFadedLabel = (EditorGUIUtility.isProSkin) ?}
+\DoxyCodeLine{00047             \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) :}
+\DoxyCodeLine{00048             \textcolor{keyword}{new} GUIStyle((GUIStyle)\textcolor{stringliteral}{"{}MiniLabel"{}}) \{ normal = ((GUIStyle)\textcolor{stringliteral}{"{}PR DisabledLabel"{}}).normal \};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle MINI\_TXT\_FLD\_STYLE = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}MiniTextField"{}}) \{ fontSize = 10 \};}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle MINI\_TGL\_STYLE = \textcolor{stringliteral}{"{}OL Toggle"{}};}
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle MINI\_LBL\_STYLE = \textcolor{stringliteral}{"{}MiniLabel"{}};}
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle FOLDOUT\_STYLE = \textcolor{stringliteral}{"{}Foldout"{}};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{protected} Rect ir;}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             ir = EditorGUI.IndentedRect(r);}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             paddedleft = r.xMin + PADDING;}
+\DoxyCodeLine{00062             paddedright = r.xMax -\/ PADDING;}
+\DoxyCodeLine{00063             paddedwidth = r.width -\/ PADDING * 2;}
+\DoxyCodeLine{00064             labelwidth = 86;\textcolor{comment}{// EditorGUIUtility.labelWidth -\/ 32;}}
+\DoxyCodeLine{00065             fieldleft = paddedleft + labelwidth;}
+\DoxyCodeLine{00066             fieldwidth = paddedwidth -\/ labelwidth;}
+\DoxyCodeLine{00067             stdfieldwidth = 50f;}
+\DoxyCodeLine{00068             rightinputsleft = r.xMin + (r.width -\/ stdfieldwidth) -\/ PADDING;}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ProFeatureDialog(\textcolor{keywordtype}{string} extratext)}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073             \textcolor{keywordflow}{if} (!EditorUtility.DisplayDialog(\textcolor{stringliteral}{"{}Pro Version Feature"{}}, \textcolor{stringliteral}{"{}Adjustable bits are only available in \(\backslash\)nTransform Crusher Pro."{}}, \textcolor{stringliteral}{"{}OK"{}}, \textcolor{stringliteral}{"{}Open in Asset Store"{}}))}
+\DoxyCodeLine{00074                 Application.OpenURL(\textcolor{stringliteral}{"{}https://assetstore.unity.com/packages/tools/network/transform-\/crusher-\/116587"{}});}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076     \}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078     [CustomPropertyDrawer(typeof(FloatCrusher))]}
+\DoxyCodeLine{00079     [CanEditMultipleObjects]}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081     \textcolor{keyword}{public} \textcolor{keyword}{class }FloatCrusherDrawer : CrusherDrawer}
+\DoxyCodeLine{00082     \{}
+\DoxyCodeLine{00083         FloatCrusher fc;}
+\DoxyCodeLine{00084         SerializedProperty p;}
+\DoxyCodeLine{00085         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} HALFX = \textcolor{stringliteral}{"{}180°"{}};}
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} FULLX = \textcolor{stringliteral}{"{}360°"{}};}
+\DoxyCodeLine{00087         \textcolor{keyword}{private} \textcolor{keyword}{static} GUIContent gc\_fc = \textcolor{keyword}{new} GUIContent();}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{private} Texture2D colortex;}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} holdindent;}
+\DoxyCodeLine{00092         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} colwidths;}
+\DoxyCodeLine{00093         \textcolor{keyword}{protected} \textcolor{keywordtype}{float} height;}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         Rect r;}
+\DoxyCodeLine{00096         \textcolor{keywordtype}{bool} haschanged;}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             EditorGUI.BeginProperty(r, label, property);}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00104             p = property;}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             base.OnGUI(r, property, label);}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{keywordtype}{bool} isWrappedInElementCrusher = DrawerUtils.GetParent(property) is ElementCrusher;}
+\DoxyCodeLine{00109             \textcolor{keywordtype}{bool} disableRange = (label.tooltip != \textcolor{keyword}{null} \&\& label.tooltip.Contains(\textcolor{stringliteral}{"{}DISABLE\_RANGE"{}}));}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             gc\_fc.text = label.text;}
+\DoxyCodeLine{00112             gc\_fc.tooltip = (disableRange) ? \textcolor{keyword}{null} : label.tooltip;}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             holdindent = EditorGUI.indentLevel;}
+\DoxyCodeLine{00115             EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             \textcolor{keywordtype}{int} hash = fc.GetHashCode();}
+\DoxyCodeLine{00118             height = CalculateHeight(fc, hash);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             this.r = r;}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             line = r.yMin;}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             colortex =}
+\DoxyCodeLine{00126                 (fc.axis == Axis.X) ? SolidTextures.red2D :}
+\DoxyCodeLine{00127                 (fc.axis == Axis.Y) ? SolidTextures.green2D :}
+\DoxyCodeLine{00128                 (fc.axis == Axis.Z) ? SolidTextures.blue2D :}
+\DoxyCodeLine{00129                 SolidTextures.gray2D;}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             if (!isWrappedInElementCrusher)}
+\DoxyCodeLine{00132             \{}
+\DoxyCodeLine{00133                 Rect outline = ir;}
+\DoxyCodeLine{00134                 outline.xMin-\/-\/;}
+\DoxyCodeLine{00135                 outline.yMin-\/-\/;}
+\DoxyCodeLine{00136                 outline.xMax++;}
+\DoxyCodeLine{00137                 outline.yMax++;}
+\DoxyCodeLine{00138                 SolidTextures.DrawTexture(outline, SolidTextures.lowcontrast2D);}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \}}
+\DoxyCodeLine{00141             SolidTextures.DrawTexture(ir, colortex);}
+\DoxyCodeLine{00142             \textcolor{comment}{//SolidTextures.DrawTexture(new Rect(ir.xMin, line, ir.width, height), colortex);}}
+\DoxyCodeLine{00143             \textcolor{comment}{//SolidTextures.DrawTexture(new Rect(ir.xMin + 1, ir.yMin + 1, ir.width -\/ 2, ir.height -\/ 2), colortex);}}
+\DoxyCodeLine{00144             line++;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146             line += SPACING;}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             fc.expanded = DrawHeader(r, gc\_fc, fc.expanded);}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             line += PADDING + HEADR\_HGHT;}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordflow}{if} (fc.Enabled \&\& fc.expanded)}
+\DoxyCodeLine{00153             \{}
+\DoxyCodeLine{00154                 \textcolor{keywordtype}{bool} noSettings = (fc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat || fc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || fc.BitsDeterminedBy == BitsDeterminedBy.Disabled);}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156                 DrawCompressionMethod();}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158                 EditorGUI.BeginDisabledGroup(disableRange);}
+\DoxyCodeLine{00159                 \textcolor{keywordflow}{if} (!noSettings \&\& !(fc.TRSType == TRSType.Normal))}
+\DoxyCodeLine{00160                     DrawCodecSettings(property);}
+\DoxyCodeLine{00161                 EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{if} (!noSettings)}
+\DoxyCodeLine{00164                     DrawAccurateCenter();}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166                 \textcolor{keywordflow}{if} (!noSettings \&\& fc.showBCL)}
+\DoxyCodeLine{00167                     DrawBCL();}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{if} (!noSettings)}
+\DoxyCodeLine{00170                     DrawActualValues();}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 EditorUtility.SetDirty(property.serializedObject.targetObject);}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179             EditorGUI.indentLevel = holdindent;}
+\DoxyCodeLine{00180             EditorGUI.EndProperty();}
+\DoxyCodeLine{00181         \}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} DrawHeader(Rect r, GUIContent label, \textcolor{keywordtype}{bool} expanded)}
+\DoxyCodeLine{00184         \{}
+\DoxyCodeLine{00185             \textcolor{keyword}{const} \textcolor{keywordtype}{int} FOLDOUT = 12;}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             GUIContent headertext =}
+\DoxyCodeLine{00188                 \textcolor{keyword}{new} GUIContent((fc.axis == Axis.X) ? (fc.TRSType == TRSType.Euler) ? \textcolor{stringliteral}{"{}X (Pitch)"{}} : \textcolor{stringliteral}{"{}X"{}} :}
+\DoxyCodeLine{00189                 (fc.axis == Axis.Y) ? (fc.TRSType == TRSType.Euler) ? \textcolor{stringliteral}{"{}Y (Yaw)"{}} : \textcolor{stringliteral}{"{}Y"{}} :}
+\DoxyCodeLine{00190                 (fc.axis == Axis.Z) ? (fc.TRSType == TRSType.Euler) ? \textcolor{stringliteral}{"{}Z (Roll)"{}} : \textcolor{stringliteral}{"{}Z"{}} :}
+\DoxyCodeLine{00191                 (fc.axis == Axis.Uniform) ? \textcolor{stringliteral}{"{}Uniform"{}} :}
+\DoxyCodeLine{00192                 label.text,}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194                 label.tooltip}
+\DoxyCodeLine{00195                 );}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198             \textcolor{keywordflow}{if} (fc.showEnableToggle)}
+\DoxyCodeLine{00199             \{}
+\DoxyCodeLine{00200                 \textcolor{keywordtype}{bool} \_enabled = GUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING + FOLDOUT, line, 32, LINEHEIGHT), fc.Enabled, GUIContent.none);}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202                 \textcolor{keywordflow}{if} (\_enabled)}
+\DoxyCodeLine{00203                     expanded = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, 12, LINEHEIGHT), expanded, FOLDOUT\_STYLE);}
+\DoxyCodeLine{00204                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00205                     EditorGUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, 12, LINEHEIGHT), \textcolor{keyword}{false}, FOLDOUT\_STYLE);}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(ir.xMin + PADDING + 16 + FOLDOUT, line, 200, LINEHEIGHT), headertext);}
+\DoxyCodeLine{00208                 \textcolor{keywordflow}{if} (fc.Enabled != \_enabled)}
+\DoxyCodeLine{00209                 \{}
+\DoxyCodeLine{00210                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00211                     Undo.RecordObject(p.serializedObject.targetObject, (\textcolor{stringliteral}{"{}Toggle Axis Enable"{}}));}
+\DoxyCodeLine{00212                     fc.Enabled = \_enabled;}
+\DoxyCodeLine{00213                 \}}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 expanded = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, 12, LINEHEIGHT), expanded, FOLDOUT\_STYLE);}
+\DoxyCodeLine{00218                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(ir.xMin + PADDING + FOLDOUT, line, 200, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(headertext));}
+\DoxyCodeLine{00219             \}}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221             \textcolor{comment}{//EditorGUI.indentLevel = 0;}}
+\DoxyCodeLine{00222 }
+\DoxyCodeLine{00223             \textcolor{keywordflow}{if} (!fc.Enabled)}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{return} expanded;}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226             \textcolor{keywordflow}{if} (fc.TRSType == TRSType.Euler \&\& fc.axis == Axis.X)}
+\DoxyCodeLine{00227                 \textcolor{keywordflow}{if} (GUI.Button(\textcolor{keyword}{new} Rect(paddedwidth -\/ 70, line, 42, LINEHEIGHT), fc.UseHalfRangeX ? HALFX : FULLX, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00228                 \{}
+\DoxyCodeLine{00229                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00230                     Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Toggle X 180/360"{}});}
+\DoxyCodeLine{00231                     fc.UseHalfRangeX = !fc.UseHalfRangeX;}
+\DoxyCodeLine{00232                 \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{comment}{//Debug.Log("{}BITS?? "{}+ fc.Bits + "{} \_bits:"{} + p.FindPropertyRelative("{}\_bits"{}).GetArrayElementAtIndex(0).intValue);}}
+\DoxyCodeLine{00235             String bitstr = fc.Bits + \textcolor{stringliteral}{"{} Bits"{}};}
+\DoxyCodeLine{00236             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(paddedleft, line, paddedwidth, LINEHEIGHT), bitstr, miniLabelRight);}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{keywordflow}{return} expanded;}
+\DoxyCodeLine{00239         \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawCodecSettings(SerializedProperty p)}
+\DoxyCodeLine{00242         \{}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \textcolor{keywordflow}{if} (fc.TRSType == TRSType.Euler)}
+\DoxyCodeLine{00247             \{}
+\DoxyCodeLine{00248                 \textcolor{keywordtype}{bool} useRange = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, 40, LINEHEIGHT), GUIContent.none, fc.LimitRange, MINI\_TGL\_STYLE);}
+\DoxyCodeLine{00249                 \textcolor{comment}{// if range just got turned off, reset the min/max to full rotation ranges}}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{if} (fc.LimitRange != useRange)}
+\DoxyCodeLine{00251                 \{}
+\DoxyCodeLine{00252                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00253                     Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Toggle Limit Range"{}});}
+\DoxyCodeLine{00254                     fc.LimitRange = useRange;}
+\DoxyCodeLine{00255                 \}}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257                 \textcolor{keywordflow}{if} (useRange)}
+\DoxyCodeLine{00258                     DrawRotationRanges();}
+\DoxyCodeLine{00259                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00260                     GUI.Label(\textcolor{keyword}{new} Rect(ir.xMin + PADDING + 16, line, 120, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Limit Ranges"{}}), MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262             \}}
+\DoxyCodeLine{00263             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00264                 DrawBasicRanges();}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             line += SETTINGS\_HGHT;}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawAccurateCenter()}
+\DoxyCodeLine{00270         \{}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273             \textcolor{keywordtype}{string} centervalue = fc.CenterValue.ToString();}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275             GUIContent zeroCenterContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Use Accurate Center ("{}} + centervalue + \textcolor{stringliteral}{"{})"{}}, \textcolor{stringliteral}{"{}Scales the range to not use the highest compressed value, "{}} +}
+\DoxyCodeLine{00276                 \textcolor{stringliteral}{"{}resulting in an odd number of increments -\/ which allows for an absolute center value. "{}} +}
+\DoxyCodeLine{00277                 \textcolor{stringliteral}{"{}Use this setting if you need to have an absolute and exact center value (such as zero). "{}} +}
+\DoxyCodeLine{00278                 \textcolor{stringliteral}{"{}Accurate Center with current range settings is "{}} + centervalue);}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280             GUI.Label(\textcolor{keyword}{new} Rect(ir.xMin + PADDING + 16, line, paddedwidth, LINEHEIGHT), zeroCenterContent, MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00281             \textcolor{keywordtype}{bool} zeroToggle = GUI.Toggle(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, 32, LINEHEIGHT), fc.AccurateCenter, GUIContent.none, MINI\_TGL\_STYLE);}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{if} (fc.AccurateCenter != zeroToggle)}
+\DoxyCodeLine{00283             \{}
+\DoxyCodeLine{00284                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00285                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Toggle AccurateCenter"{}});}
+\DoxyCodeLine{00286                 fc.AccurateCenter = zeroToggle;}
+\DoxyCodeLine{00287             \}}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289             line += ACCCNTR\_HGHT;}
+\DoxyCodeLine{00290         \}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawCompressionMethod()}
+\DoxyCodeLine{00293         \{}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295             BitsDeterminedBy btb = (BitsDeterminedBy)}
+\DoxyCodeLine{00296                 EditorGUI.EnumPopup(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, labelwidth -\/ 8, LINEHEIGHT), GUIContent.none, fc.BitsDeterminedBy);}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             \textcolor{comment}{// IF we switched to pro -\/ the btb value is actually the bits value, force a change to SetBits}}
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (FC\_ISPRO \&\& btb >= 0)}
+\DoxyCodeLine{00300             \{}
+\DoxyCodeLine{00301                 fc.Bits = (int)btb;}
+\DoxyCodeLine{00302             \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00304             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (!FC\_ISPRO \&\& btb == BitsDeterminedBy.SetBits)\textcolor{comment}{//.CustomBits)}}
+\DoxyCodeLine{00305             \{}
+\DoxyCodeLine{00306                 \textcolor{comment}{// In case we went from pro to free... quietly set this back to non-\/custom.}}
+\DoxyCodeLine{00307                 \textcolor{keywordflow}{if} (fc.BitsDeterminedBy != BitsDeterminedBy.SetBits)}
+\DoxyCodeLine{00308                     ProFeatureDialog(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00309                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00310                     fc.Bits = fc.Bits;}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312             \}}
+\DoxyCodeLine{00313             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (fc.BitsDeterminedBy != btb)}
+\DoxyCodeLine{00314             \{}
+\DoxyCodeLine{00315                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00316                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Changed Crusher Bits Determined By"{}});}
+\DoxyCodeLine{00317                 fc.BitsDeterminedBy = btb;}
+\DoxyCodeLine{00318                 p.serializedObject.Update();}
+\DoxyCodeLine{00319             \}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321             \textcolor{keywordtype}{float} fieldleft = paddedleft + labelwidth;}
+\DoxyCodeLine{00322             \textcolor{keywordtype}{float} fieldwidth = paddedwidth -\/ labelwidth;}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324             \textcolor{comment}{//const float labelW = 48f;}}
+\DoxyCodeLine{00325             \textcolor{keyword}{const} \textcolor{keywordtype}{float} inputW = 50f;}
+\DoxyCodeLine{00326             \textcolor{keywordtype}{float} input2Left = paddedright -\/ inputW;}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328             \textcolor{keywordflow}{switch} (fc.BitsDeterminedBy)}
+\DoxyCodeLine{00329             \{}
+\DoxyCodeLine{00330                 \textcolor{keywordflow}{case} BitsDeterminedBy.HalfFloat:}
+\DoxyCodeLine{00331                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{case} BitsDeterminedBy.Uncompressed:}
+\DoxyCodeLine{00334                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336                 \textcolor{keywordflow}{case} BitsDeterminedBy.Disabled:}
+\DoxyCodeLine{00337                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339                 \textcolor{keywordflow}{case} BitsDeterminedBy.Resolution:}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341                     EditorGUI.LabelField(\textcolor{keyword}{new} Rect(rightinputsleft -\/ 128, line, 128, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(holdindent < 2 ? \textcolor{stringliteral}{"{}Min resolution: 1/"{}} : \textcolor{stringliteral}{"{}Min res 1/"{}}), miniLabelRight);}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343                     uint res = (uint)EditorGUI.DelayedIntField(\textcolor{keyword}{new} Rect(input2Left, line -\/ 1, inputW, LINEHEIGHT), GUIContent.none, (int)fc.Resolution);}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345                     \textcolor{keywordflow}{if} (fc.Resolution != res)}
+\DoxyCodeLine{00346                     \{}
+\DoxyCodeLine{00347                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00348                         Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Changed Resolution value"{}});}
+\DoxyCodeLine{00349                         fc.Resolution = res;}
+\DoxyCodeLine{00350                     \}}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354                 \textcolor{keywordflow}{case} BitsDeterminedBy.Precision:}
+\DoxyCodeLine{00355 }
+\DoxyCodeLine{00356                     EditorGUI.LabelField(\textcolor{keyword}{new} Rect(rightinputsleft -\/ 128, line, 128, LINEHEIGHT), \textcolor{keyword}{new} GUIContent((holdindent < 2) ? \textcolor{stringliteral}{"{}Min precision: "{}} : \textcolor{stringliteral}{"{}Min prec: "{}}), miniLabelRight);}
+\DoxyCodeLine{00357                     \textcolor{keywordtype}{float} precision = EditorGUI.DelayedFloatField(\textcolor{keyword}{new} Rect(input2Left, line -\/ 1, inputW, LINEHEIGHT), GUIContent.none, fc.Precision);}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359                     \textcolor{keywordflow}{if} (fc.Precision != precision)}
+\DoxyCodeLine{00360                     \{}
+\DoxyCodeLine{00361                         haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00362                         Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Changed Precision value"{}});}
+\DoxyCodeLine{00363                         fc.Precision = (float)Math.Round(precision * 100000) / 100000;}
+\DoxyCodeLine{00364                     \}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370                     \textcolor{keywordflow}{if} (FC\_ISPRO \&\& fc.BitsDeterminedBy == (BitsDeterminedBy.SetBits))}
+\DoxyCodeLine{00371                     \{}
+\DoxyCodeLine{00372                         EditorGUI.indentLevel = holdindent;}
+\DoxyCodeLine{00373 \textcolor{preprocessor}{\#if UNITY\_2019\_3\_OR\_NEWER}}
+\DoxyCodeLine{00374                         \textcolor{keywordtype}{int} bits = EditorGUI.IntSlider(\textcolor{keyword}{new} Rect(fieldleft, line, fieldwidth, LINEHEIGHT + 2), GUIContent.none, fc.Bits, 0, 32);}
+\DoxyCodeLine{00375 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00376                         \textcolor{keywordtype}{int} bits = EditorGUI.IntSlider(\textcolor{keyword}{new} Rect(fieldleft, line, fieldwidth, LINEHEIGHT), GUIContent.none, fc.Bits, 0, 32);}
+\DoxyCodeLine{00377 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00378                         EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00380                         \textcolor{keywordflow}{if} (fc.Bits != bits)}
+\DoxyCodeLine{00381                         \{}
+\DoxyCodeLine{00382                             haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00383                             Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Changed Bits value"{}});}
+\DoxyCodeLine{00384                             fc.Bits = bits;}
+\DoxyCodeLine{00385                         \}}
+\DoxyCodeLine{00386                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00387                     \}}
+\DoxyCodeLine{00388 }
+\DoxyCodeLine{00389                     \textcolor{keywordtype}{float} sliderleft = ir.xMin + PADDING + labelwidth; \textcolor{comment}{// ir.xMin + PADDING + labelwidth;}}
+\DoxyCodeLine{00390                     \textcolor{keywordtype}{float} sliderwidth = ir.width -\/ PADDING -\/ labelwidth -\/ PADDING; \textcolor{comment}{// -\/ sliderleft -\/ PADDING;}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392                     GUI.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00393 \textcolor{preprocessor}{\#if UNITY\_2019\_3\_OR\_NEWER}}
+\DoxyCodeLine{00394                     EditorGUI.IntSlider(\textcolor{keyword}{new} Rect(sliderleft, line, sliderwidth, LINEHEIGHT + 2), GUIContent.none, (int)fc.BitsDeterminedBy, 0, 32);}
+\DoxyCodeLine{00395 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00396                     EditorGUI.IntSlider(\textcolor{keyword}{new} Rect(sliderleft, line, sliderwidth, LINEHEIGHT), GUIContent.none, (int)fc.BitsDeterminedBy, 0, 32);}
+\DoxyCodeLine{00397 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00398                     \textcolor{comment}{//EditorGUI.IntSlider(new Rect(fieldleft, line, fieldwidth, LINEHEIGHT), GUIContent.none, (int)fc.BitsDeterminedBy, 0, 32);}}
+\DoxyCodeLine{00399                     GUI.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00401                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00402             \}}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404             line += COMPMTHD\_HGHT;}
+\DoxyCodeLine{00405         \}}
+\DoxyCodeLine{00406 }
+\DoxyCodeLine{00407         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawBasicRanges()}
+\DoxyCodeLine{00408         \{}
+\DoxyCodeLine{00409             GUI.Label(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line \textcolor{comment}{/*-\/ 2*/}, labelwidth, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(holdindent < 2 ? \textcolor{stringliteral}{"{}Range:"{}} : \textcolor{stringliteral}{"{}Rng:"{}}), MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00410             \textcolor{comment}{//EditorGUI.LabelField(new Rect(ir.xMin + PADDING, line /*-\/ 2*/, labelwidth, LINEHEIGHT), new GUIContent(holdindent < 2 ? "{}Range:"{} : "{}Rng:"{}), MINI\_LBL\_STYLE);}}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00412             \textcolor{keyword}{const} \textcolor{keywordtype}{float} labelW = 48f;}
+\DoxyCodeLine{00413             \textcolor{keyword}{const} \textcolor{keywordtype}{float} inputW = 50f;}
+\DoxyCodeLine{00414 }
+\DoxyCodeLine{00415             \textcolor{keywordtype}{float} input1Left = fieldleft;}
+\DoxyCodeLine{00416             \textcolor{keywordtype}{float} input2Left = paddedright -\/ inputW;}
+\DoxyCodeLine{00417             \textcolor{keywordtype}{float} label1Left = input1Left -\/ labelW;}
+\DoxyCodeLine{00418             \textcolor{keywordtype}{float} label2Left = input2Left -\/ labelW;}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420             GUI.Label(\textcolor{keyword}{new} Rect(label1Left, line \textcolor{comment}{/*-\/ 2*/}, labelW, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}min: "{}}), miniLabelRight);}
+\DoxyCodeLine{00421 }
+\DoxyCodeLine{00422             \textcolor{keywordtype}{float} min = EditorGUI.DelayedFloatField(\textcolor{keyword}{new} Rect(input1Left, line, inputW, LINEHEIGHT), GUIContent.none, fc.Min, MINI\_TXT\_FLD\_STYLE);}
+\DoxyCodeLine{00423 }
+\DoxyCodeLine{00424             \textcolor{keywordflow}{if} (fc.Min != min)}
+\DoxyCodeLine{00425             \{}
+\DoxyCodeLine{00426                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00427                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Min value Change"{}});}
+\DoxyCodeLine{00428                 fc.Min = min;}
+\DoxyCodeLine{00429             \}}
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00431             GUI.Label(\textcolor{keyword}{new} Rect(label2Left, line \textcolor{comment}{/*-\/ 2*/}, labelW, LINEHEIGHT), \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}max: "{}}), miniLabelRight);}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433             \textcolor{keywordtype}{float} max = EditorGUI.DelayedFloatField(\textcolor{keyword}{new} Rect(input2Left, line, inputW, LINEHEIGHT), GUIContent.none, fc.Max, MINI\_TXT\_FLD\_STYLE);}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{if} (fc.Max != max)}
+\DoxyCodeLine{00436             \{}
+\DoxyCodeLine{00437                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00438                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Max value change"{}});}
+\DoxyCodeLine{00439                 fc.Max = max;}
+\DoxyCodeLine{00440             \}}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442             \textcolor{comment}{//EditorGUI.indentLevel = holdindent;}}
+\DoxyCodeLine{00443         \}}
+\DoxyCodeLine{00444 }
+\DoxyCodeLine{00445         \textcolor{keyword}{public} \textcolor{keyword}{struct }MinMax \{ \textcolor{keyword}{public} \textcolor{keywordtype}{float} min; \textcolor{keyword}{public} \textcolor{keywordtype}{float} max; \}}
+\DoxyCodeLine{00446         \textcolor{keyword}{private} MinMax DrawMinMaxSlider(\textcolor{keywordtype}{float} minIn, \textcolor{keywordtype}{float} maxIn, \textcolor{keywordtype}{float} minLimit, \textcolor{keywordtype}{float} maxLimit, \textcolor{keywordtype}{bool} showDegrees = \textcolor{keyword}{true})}
+\DoxyCodeLine{00447         \{}
+\DoxyCodeLine{00448             \textcolor{keyword}{const} \textcolor{keywordtype}{float} input1offset = 10;}
+\DoxyCodeLine{00449             \textcolor{keywordtype}{float} inputWidth = (holdindent < 2) ? (showDegrees ? 40f : 50f) : showDegrees ? 30f : 40f;}
+\DoxyCodeLine{00450             \textcolor{keywordtype}{float} degreeSpace = showDegrees ? 10f : 0;}
+\DoxyCodeLine{00451             GUIContent lbl = showDegrees ? \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}°"{}}) : GUIContent.none;}
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453             \textcolor{keywordtype}{float} left = r.xMin;}
+\DoxyCodeLine{00454 }
+\DoxyCodeLine{00455             \textcolor{keywordtype}{float} input1left = fieldleft -\/ inputWidth -\/ input1offset;}
+\DoxyCodeLine{00456             \textcolor{keywordtype}{float} input2left = rightinputsleft;}
+\DoxyCodeLine{00457             \textcolor{keywordtype}{float} sliderleft = fieldleft;}
+\DoxyCodeLine{00458             \textcolor{keywordtype}{float} sliderwidth = (input2left -\/ fieldleft) -\/ PADDING;}
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460             \textcolor{keywordtype}{float} minOut = EditorGUI.DelayedFloatField(\textcolor{keyword}{new} Rect(input1left, line, inputWidth, LINEHEIGHT), GUIContent.none, minIn, MINI\_TXT\_FLD\_STYLE);}
+\DoxyCodeLine{00461             \textcolor{keywordtype}{float} maxOut = EditorGUI.DelayedFloatField(\textcolor{keyword}{new} Rect(input2left, line, inputWidth, LINEHEIGHT), GUIContent.none, maxIn, MINI\_TXT\_FLD\_STYLE);}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(input1left, line, inputWidth + degreeSpace, LINEHEIGHT), lbl, (GUIStyle)\textcolor{stringliteral}{"{}RightLabel"{}});}
+\DoxyCodeLine{00464             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(input2left, line, inputWidth + degreeSpace, LINEHEIGHT), lbl, (GUIStyle)\textcolor{stringliteral}{"{}RightLabel"{}});}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00466             EditorGUI.MinMaxSlider(\textcolor{keyword}{new} Rect(sliderleft, line -\/ 1, sliderwidth, LINEHEIGHT), ref minOut, ref maxOut, minLimit, maxLimit);}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468             \textcolor{keywordflow}{return} \textcolor{keyword}{new} MinMax() \{ min = minOut, max = maxOut \};}
+\DoxyCodeLine{00469         \}}
+\DoxyCodeLine{00470 }
+\DoxyCodeLine{00471         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawRotationRanges()}
+\DoxyCodeLine{00472         \{}
+\DoxyCodeLine{00473             \textcolor{keywordtype}{float} sliderMax = (fc.axis == Axis.X \&\& fc.UseHalfRangeX) ? 90 : 360;}
+\DoxyCodeLine{00474             \textcolor{keywordtype}{float} sliderMin = (fc.axis == Axis.X \&\& fc.UseHalfRangeX) ? -\/90 : -\/360;}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00476             var minmax = DrawMinMaxSlider(fc.Min, fc.Max, sliderMin, sliderMax);}
+\DoxyCodeLine{00477 }
+\DoxyCodeLine{00478             \textcolor{keywordtype}{float} usedRange = Math.Min(minmax.max, sliderMax) -\/ Math.Max(minmax.min, sliderMin);}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00480             \textcolor{keywordflow}{if} (usedRange > 360)}
+\DoxyCodeLine{00481                 minmax.max = Mathf.Min(minmax.min + 360, 360);}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{00483             \textcolor{keywordflow}{if} (fc.Min != minmax.min || fc.Min < sliderMin)}
+\DoxyCodeLine{00484             \{}
+\DoxyCodeLine{00485                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00486                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Min value change"{}});}
+\DoxyCodeLine{00487                 fc.Min = Mathf.Max((\textcolor{keywordtype}{int})minmax.min, sliderMin);}
+\DoxyCodeLine{00488             \}}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490             \textcolor{keywordflow}{if} (fc.Max != minmax.max || fc.Max > sliderMax)}
+\DoxyCodeLine{00491             \{}
+\DoxyCodeLine{00492                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00493                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Max value change"{}});}
+\DoxyCodeLine{00494                 fc.Max = Mathf.Min((\textcolor{keywordtype}{int})minmax.max, sliderMax);}
+\DoxyCodeLine{00495             \}}
+\DoxyCodeLine{00496         \}}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498         \textcolor{keyword}{static} GUIContent GC\_ACTUAL\_LONG = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}Actual:"{}});}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawActualValues()}
+\DoxyCodeLine{00501         \{}
+\DoxyCodeLine{00502             GUI.Label(\textcolor{keyword}{new} Rect(ir.xMin + PADDING, line, paddedwidth, ACTUAL\_HGHT), ((holdindent < 2) ? GC\_ACTUAL\_LONG : GUIContent.none), miniFadedLabel);}
+\DoxyCodeLine{00503 }
+\DoxyCodeLine{00504             \textcolor{keywordtype}{float} prec = fc.GetPrecAtBits();}
+\DoxyCodeLine{00505             \textcolor{keywordtype}{float} res = fc.GetResAtBits();}
+\DoxyCodeLine{00506             \textcolor{comment}{// restrict prec to 5 characters}}
+\DoxyCodeLine{00507             \textcolor{keywordtype}{string} resstr = res.ToString((res < 0) ? \textcolor{stringliteral}{"{}0.0000"{}} : (res > 9999) ? \textcolor{stringliteral}{"{}E2"{}} : \textcolor{stringliteral}{"{}F4"{}});}
+\DoxyCodeLine{00508             \textcolor{keywordtype}{string} precstr = prec.ToString(\textcolor{stringliteral}{"{}F"{}} + Math.Min(4, Math.Max(0, (4 -\/ (\textcolor{keywordtype}{int})Math.Log10(prec)))).ToString());}
+\DoxyCodeLine{00509             \textcolor{keywordtype}{string} str = \textcolor{stringliteral}{"{}res: 1/"{}} + resstr + (fc.TRSType == TRSType.Euler ? \textcolor{stringliteral}{"{}°"{}} : \textcolor{stringliteral}{"{}"{}}) + \textcolor{stringliteral}{"{}   prec: "{}} + precstr + (fc.TRSType == TRSType.Euler ? \textcolor{stringliteral}{"{}°"{}} : \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00510             GUI.Label(\textcolor{keyword}{new} Rect(paddedleft, line, paddedwidth, ACTUAL\_HGHT), str, miniFadedLabelRight);}
+\DoxyCodeLine{00511 }
+\DoxyCodeLine{00512             line += ACTUAL\_HGHT;}
+\DoxyCodeLine{00513         \}}
+\DoxyCodeLine{00514 }
+\DoxyCodeLine{00515         \textcolor{keyword}{static} GUIContent rstLabel = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}R"{}}, \textcolor{stringliteral}{"{}Reset to default Bit Culling Level bit values."{}});}
+\DoxyCodeLine{00516         \textcolor{keyword}{static} GUIContent showBclContent = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}BCL"{}}, \textcolor{stringliteral}{"{}Show Bit Culling Level details for this crusher. Bit Culling is an experimental advanced compresion method that should be ignored until you read up on it in the docs."{}});}
+\DoxyCodeLine{00517 }
+\DoxyCodeLine{00518         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawBCL()}
+\DoxyCodeLine{00519         \{}
+\DoxyCodeLine{00520 }
+\DoxyCodeLine{00521             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(paddedleft + 12, line, 60, LINEHEIGHT), showBclContent, MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00522 }
+\DoxyCodeLine{00523             \textcolor{keywordtype}{bool} bclToggle = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(paddedleft, line, 32, LINEHEIGHT), GUIContent.none, fc.expandBCL, FOLDOUT\_STYLE);}
+\DoxyCodeLine{00524 }
+\DoxyCodeLine{00525             \textcolor{keywordflow}{if} (fc.expandBCL != bclToggle)}
+\DoxyCodeLine{00526             \{}
+\DoxyCodeLine{00527                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00528                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Toggle Show BCL Details"{}});}
+\DoxyCodeLine{00529                 fc.expandBCL = bclToggle;}
+\DoxyCodeLine{00530             \}}
+\DoxyCodeLine{00531 }
+\DoxyCodeLine{00532             \textcolor{keywordtype}{float} labelw = 48;}
+\DoxyCodeLine{00533             \textcolor{keywordtype}{float} fieldL = ir.xMin + labelw;}
+\DoxyCodeLine{00534             \textcolor{keywordtype}{float} fieldw = ir.width -\/ labelw;}
+\DoxyCodeLine{00535             \textcolor{keywordtype}{float} fldWdth4th = fieldw / 4;}
+\DoxyCodeLine{00536             \textcolor{keywordtype}{float} fldWdth8th = fieldw / 8;}
+\DoxyCodeLine{00537             \textcolor{keywordtype}{float} fldWdth16th = fieldw / 16;}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539             \textcolor{keywordflow}{if} (fc.expandBCL)}
+\DoxyCodeLine{00540                 SolidTextures.DrawTexture(\textcolor{keyword}{new} Rect(fieldL, line, fieldw, BCL\_HEIGHT -\/ SPACING), SolidTextures.darken052D);}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542             DrawBCLField(BitCullingLevel.DropAll, fieldL, fldWdth4th, fldWdth8th, fldWdth16th);}
+\DoxyCodeLine{00543             DrawBCLField(BitCullingLevel.DropHalf, fieldL, fldWdth4th, fldWdth8th, fldWdth16th);}
+\DoxyCodeLine{00544             DrawBCLField(BitCullingLevel.DropThird, fieldL, fldWdth4th, fldWdth8th, fldWdth16th);}
+\DoxyCodeLine{00545             DrawBCLField(BitCullingLevel.NoCulling, fieldL, fldWdth4th, fldWdth8th, fldWdth16th);}
+\DoxyCodeLine{00546 }
+\DoxyCodeLine{00547             line += LINEHEIGHT;}
+\DoxyCodeLine{00548             \textcolor{keywordflow}{if} (!fc.expandBCL)}
+\DoxyCodeLine{00549                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(paddedleft, line, labelw, LINEHEIGHT), \textcolor{stringliteral}{"{}bits"{}}, MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00553             \textcolor{comment}{// Reset Button}}
+\DoxyCodeLine{00554             \textcolor{keywordflow}{if} (GUI.Button(\textcolor{keyword}{new} Rect(fieldL -\/ 18 -\/ 2, line, 18, LINEHEIGHT), rstLabel, (GUIStyle)\textcolor{stringliteral}{"{}minibuttonleft"{}}))}
+\DoxyCodeLine{00555             \{}
+\DoxyCodeLine{00556                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00557                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}Reset BCL To Default"{}});}
+\DoxyCodeLine{00558                 fc.SetBits(fc.Bits);}
+\DoxyCodeLine{00559             \}}
+\DoxyCodeLine{00560 }
+\DoxyCodeLine{00561             line += LINEHEIGHT;}
+\DoxyCodeLine{00562             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(paddedleft, line, labelw, LINEHEIGHT), \textcolor{stringliteral}{"{}zones"{}}, MINI\_LBL\_STYLE);}
+\DoxyCodeLine{00563             line += LINEHEIGHT;}
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565             line += SPACING;}
+\DoxyCodeLine{00566         \}}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawBCLField(BitCullingLevel bcl, \textcolor{keywordtype}{float} fieldL, \textcolor{keywordtype}{float} fldWdth4th, \textcolor{keywordtype}{float} fldWdth8th, \textcolor{keywordtype}{float} fldWdth16th)}
+\DoxyCodeLine{00569         \{}
+\DoxyCodeLine{00570             \textcolor{keywordtype}{int} holdindent = EditorGUI.indentLevel;}
+\DoxyCodeLine{00571             EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00572 }
+\DoxyCodeLine{00573             \textcolor{keywordtype}{float} lines = line;}
+\DoxyCodeLine{00574 }
+\DoxyCodeLine{00575             \textcolor{keywordtype}{float} left = fieldL + fldWdth4th * (3 -\/ (int)bcl);}
+\DoxyCodeLine{00576 }
+\DoxyCodeLine{00577             \textcolor{keywordflow}{if} (fc.expandBCL)}
+\DoxyCodeLine{00578             \{}
+\DoxyCodeLine{00579                 \textcolor{keywordflow}{if} (bcl == BitCullingLevel.DropAll || bcl == BitCullingLevel.DropThird)}
+\DoxyCodeLine{00580                     SolidTextures.DrawTexture(\textcolor{keyword}{new} Rect(left, line, fldWdth4th, BCL\_HEIGHT), SolidTextures.darken052D);}
+\DoxyCodeLine{00581 }
+\DoxyCodeLine{00582                 \textcolor{keywordtype}{string} clvl =}
+\DoxyCodeLine{00583                 r.width > 300 ?}
+\DoxyCodeLine{00584                 (((int)bcl == 0) ? \textcolor{stringliteral}{"{}Cull None"{}} : ((int)bcl == 1) ? \textcolor{stringliteral}{"{}Lvl 1"{}} : ((int)bcl == 2) ? \textcolor{stringliteral}{"{}Lvl 2"{}} : \textcolor{stringliteral}{"{}Cull All"{}}) :}
+\DoxyCodeLine{00585                 (((\textcolor{keywordtype}{int})bcl == 0) ? \textcolor{stringliteral}{"{}None"{}} : ((\textcolor{keywordtype}{int})bcl == 1) ? \textcolor{stringliteral}{"{}Lvl 1"{}} : ((\textcolor{keywordtype}{int})bcl == 2) ? \textcolor{stringliteral}{"{}Lvl 2"{}} : \textcolor{stringliteral}{"{}All"{}});}
+\DoxyCodeLine{00586 }
+\DoxyCodeLine{00587                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(left, lines, fldWdth4th, LINEHEIGHT), clvl, (GUIStyle)\textcolor{stringliteral}{"{}ProjectBrowserGridLabel"{}});}
+\DoxyCodeLine{00588                 lines += LINEHEIGHT;}
+\DoxyCodeLine{00589             \}}
+\DoxyCodeLine{00590 }
+\DoxyCodeLine{00591             EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00592             \textcolor{keywordtype}{int} bits = EditorGUI.DelayedIntField(\textcolor{keyword}{new} Rect(left + fldWdth16th, lines + 1, fldWdth8th, LINEHEIGHT), fc.GetBits(bcl), MINI\_TXT\_FLD\_STYLE);}
+\DoxyCodeLine{00593             EditorGUI.indentLevel = 0;}
+\DoxyCodeLine{00594 }
+\DoxyCodeLine{00595             \textcolor{keywordflow}{if} (bits != fc.GetBits(bcl))}
+\DoxyCodeLine{00596             \{}
+\DoxyCodeLine{00597                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00598                 Undo.RecordObject(p.serializedObject.targetObject, \textcolor{stringliteral}{"{}BCL "{}} + bcl + \textcolor{stringliteral}{"{} changed"{}});}
+\DoxyCodeLine{00599                 fc.SetBits(bits, bcl);}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601                 Debug.Log(\textcolor{stringliteral}{"{}bcl "{}} + bcl + \textcolor{stringliteral}{"{} "{}} + bits + \textcolor{stringliteral}{"{} "{}} + fc.GetBits(bcl));}
+\DoxyCodeLine{00602             \}}
+\DoxyCodeLine{00603 }
+\DoxyCodeLine{00604             \textcolor{keywordflow}{if} (fc.expandBCL)}
+\DoxyCodeLine{00605             \{}
+\DoxyCodeLine{00606                 lines += LINEHEIGHT;}
+\DoxyCodeLine{00607                 var rng = (double)Math.Abs(fc.Max -\/ fc.Min);}
+\DoxyCodeLine{00608                 \textcolor{keywordtype}{string} str = ((fc.GetBits(bcl) == 0) ? 0 : (rng / Math.Pow(2, fc.Bits -\/ fc.GetBits(bcl)))).ToString(\textcolor{stringliteral}{"{}\#\#\#\#0.\#\#\#\#\#"{}});}
+\DoxyCodeLine{00609                 EditorGUI.LabelField(\textcolor{keyword}{new} Rect(left, lines, fldWdth4th, LINEHEIGHT), str, (GUIStyle)\textcolor{stringliteral}{"{}ProjectBrowserGridLabel"{}});}
+\DoxyCodeLine{00610             \}}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612             EditorGUI.indentLevel = holdindent;}
+\DoxyCodeLine{00613         \}}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00615         \textcolor{keyword}{private} \textcolor{keywordtype}{float} CalculateHeight(FloatCrusher fc, \textcolor{keywordtype}{int} hash)}
+\DoxyCodeLine{00616         \{}
+\DoxyCodeLine{00617             }
+\DoxyCodeLine{00618 }
+\DoxyCodeLine{00619             \textcolor{keywordtype}{bool} noSettings = (fc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat || fc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || fc.BitsDeterminedBy == BitsDeterminedBy.Disabled);}
+\DoxyCodeLine{00620             \textcolor{keywordtype}{bool} noRange = fc.TRSType == TRSType.Normal;}
+\DoxyCodeLine{00621 }
+\DoxyCodeLine{00622             \textcolor{keywordtype}{float} bclLine = (fc.expandBCL) ? BCL\_HEIGHT : (fc.showBCL) ? LINEHEIGHT : 0;}
+\DoxyCodeLine{00623 }
+\DoxyCodeLine{00624             \textcolor{keywordtype}{float} settingsLen = (noSettings) ? 0 : (noRange ? 0 : SETTINGS\_HGHT) + ACCCNTR\_HGHT + ACTUAL\_HGHT + bclLine;}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626             \textcolor{keywordflow}{return} PADDING + HEADR\_HGHT + PADDING +}
+\DoxyCodeLine{00627                 (fc.Enabled \&\& fc.expanded ?}
+\DoxyCodeLine{00628                 (COMPMTHD\_HGHT + ((noSettings) ? 0 : settingsLen)) :}
+\DoxyCodeLine{00629                 0);}
+\DoxyCodeLine{00630         \}}
+\DoxyCodeLine{00631 }
+\DoxyCodeLine{00632 }
+\DoxyCodeLine{00633         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00634         \{}
+\DoxyCodeLine{00635             \textcolor{comment}{// Hackjob way to get the target -\/ needs to reference a serialized field in order to work.}}
+\DoxyCodeLine{00636             fc = (FloatCrusher)DrawerUtils.GetParent(property.FindPropertyRelative(\textcolor{stringliteral}{"{}\_min"{}}));}
+\DoxyCodeLine{00637             \textcolor{keywordtype}{int} hash = fc.GetHashCode();}
+\DoxyCodeLine{00638             \textcolor{keywordflow}{return} CalculateHeight(fc, hash);}
+\DoxyCodeLine{00639         \}}
+\DoxyCodeLine{00640     \}}
+\DoxyCodeLine{00641 }
+\DoxyCodeLine{00642 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00643 }
+\DoxyCodeLine{00644 \}}
+
+\end{DoxyCode}

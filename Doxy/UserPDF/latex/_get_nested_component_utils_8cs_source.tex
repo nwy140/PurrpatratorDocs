@@ -1,0 +1,369 @@
+\doxysection{Get\+Nested\+Component\+Utils.\+cs}
+\label{_get_nested_component_utils_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/Utilities/GetNestedComponentUtils.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/Utilities/GetNestedComponentUtils.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{//using System.Collections;}}
+\DoxyCodeLine{00002 \textcolor{comment}{//using System.Collections.Generic;}}
+\DoxyCodeLine{00003 \textcolor{comment}{//using UnityEngine;}}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{comment}{//namespace Photon.Pun.Simple}}
+\DoxyCodeLine{00006 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00007 \textcolor{comment}{//  /// <summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{//  /// Variations on GetComponent that are aware of NetObject nesting. If a NetObject is nexted, searches should not leave that nesting}}
+\DoxyCodeLine{00009 \textcolor{comment}{//  /// or else they will start finding components that aren't actually part of the NetObject, which is not desireable in most cases.}}
+\DoxyCodeLine{00010 \textcolor{comment}{//  /// </summary>}}
+\DoxyCodeLine{00011 \textcolor{comment}{//  public static class GetNestedComponentUtils}}
+\DoxyCodeLine{00012 \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{comment}{//      public static Dictionary<System.Type, ICollection> reusables = new Dictionary<System.Type, ICollection>();}}
+\DoxyCodeLine{00015 \textcolor{comment}{//      public static Dictionary<System.Type, ICollection> tempLists = new Dictionary<System.Type, ICollection>();}}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{comment}{//      private static List<Transform> reusableTransformList = new List<Transform>();}}
+\DoxyCodeLine{00018 \textcolor{comment}{//      private static List<Transform> reusableTransformList2 = new List<Transform>();}}
+\DoxyCodeLine{00019 \textcolor{comment}{//      private static List<NetObject> reusableNetObjects = new List<NetObject>();}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{comment}{//      /// <summary>}}
+\DoxyCodeLine{00022 \textcolor{comment}{//      /// Returns all NetObjects found between the child transform and its root. Order in List from child to parent, with the root most being last.}}
+\DoxyCodeLine{00023 \textcolor{comment}{//      /// </summary>}}
+\DoxyCodeLine{00024 \textcolor{comment}{//      /// <param name="{}t"{}></param>}}
+\DoxyCodeLine{00025 \textcolor{comment}{//      /// <returns></returns>}}
+\DoxyCodeLine{00026 \textcolor{comment}{//      public static List<NetObject> GetNestedNetObjectsInParents(this Transform t)}}
+\DoxyCodeLine{00027 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00028 \textcolor{comment}{//          reusableNetObjects.Clear();}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030 \textcolor{comment}{//          while (t != null)}}
+\DoxyCodeLine{00031 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00032 \textcolor{comment}{//              NetObject no = t.GetComponent<NetObject>();}}
+\DoxyCodeLine{00033 \textcolor{comment}{//              if (no)}}
+\DoxyCodeLine{00034 \textcolor{comment}{//                  reusableNetObjects.Add(no);}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036 \textcolor{comment}{//              t = t.parent;}}
+\DoxyCodeLine{00037 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00038 \textcolor{comment}{//          return reusableNetObjects;}}
+\DoxyCodeLine{00039 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042 \textcolor{comment}{//      public static NetObject GetParentNetObject(this Transform t)}}
+\DoxyCodeLine{00043 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00044 \textcolor{comment}{//          NetObject found = t.GetComponent<NetObject>();}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 \textcolor{comment}{//          if (found)}}
+\DoxyCodeLine{00047 \textcolor{comment}{//              return found;}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{comment}{//          var par = t.parent;}}
+\DoxyCodeLine{00050 \textcolor{comment}{//          while (par)}}
+\DoxyCodeLine{00051 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00052 \textcolor{comment}{//              found = par.GetComponent<NetObject>();}}
+\DoxyCodeLine{00053 \textcolor{comment}{//              if (found)}}
+\DoxyCodeLine{00054 \textcolor{comment}{//                  return found;}}
+\DoxyCodeLine{00055 \textcolor{comment}{//              par = par.parent;}}
+\DoxyCodeLine{00056 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00057 \textcolor{comment}{//          return null;}}
+\DoxyCodeLine{00058 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060 \textcolor{comment}{//      public static T GetNestedComponentInParents<T>(this Transform t) where T : class}}
+\DoxyCodeLine{00061 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00062 \textcolor{comment}{//            // First try root}}
+\DoxyCodeLine{00063 \textcolor{comment}{//            var found = t.GetComponent<T>();}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 \textcolor{comment}{//          if (!ReferenceEquals(found, null))}}
+\DoxyCodeLine{00066 \textcolor{comment}{//              return found;}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 \textcolor{comment}{//          /// Get the reverse list of transforms climing for start up to netobject}}
+\DoxyCodeLine{00069 \textcolor{comment}{//          var par = t.parent;}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071 \textcolor{comment}{//          while (!ReferenceEquals(par, null))}}
+\DoxyCodeLine{00072 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00073                 }
+\DoxyCodeLine{00074 \textcolor{comment}{//              found = par.GetComponent<T>();}}
+\DoxyCodeLine{00075 \textcolor{comment}{//              if (!ReferenceEquals(found, null))}}
+\DoxyCodeLine{00076 \textcolor{comment}{//                  return found;}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078 \textcolor{comment}{//              /// Stop climbing at the NetObj (this is how we detect nesting}}
+\DoxyCodeLine{00079 \textcolor{comment}{//              if (!ReferenceEquals(par.GetComponent<NetObject>() , null))}}
+\DoxyCodeLine{00080 \textcolor{comment}{//                    return null;}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082 \textcolor{comment}{//                par = par.parent;}}
+\DoxyCodeLine{00083 \textcolor{comment}{//          \};}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085 \textcolor{comment}{//          return null;}}
+\DoxyCodeLine{00086 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 \textcolor{comment}{//      //public static List<T> GetNestedComponentsInParents<T>(this Transform t, List<T> list)}}
+\DoxyCodeLine{00090 \textcolor{comment}{//      //\{}}
+\DoxyCodeLine{00091 \textcolor{comment}{//      //  list.Clear();}}
+\DoxyCodeLine{00092 \textcolor{comment}{//      //  reusableTransformList.Clear();}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094 \textcolor{comment}{//      //  reusableTransformList.Add(t);}}
+\DoxyCodeLine{00095 \textcolor{comment}{//      //  /// Get the reverse list of transforms climing for start up to netobject}}
+\DoxyCodeLine{00096 \textcolor{comment}{//      //  var par = t.parent;}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 \textcolor{comment}{//      //  while (true)}}
+\DoxyCodeLine{00099 \textcolor{comment}{//      //  \{}}
+\DoxyCodeLine{00100 \textcolor{comment}{//      //      if (ReferenceEquals(par, null))}}
+\DoxyCodeLine{00101 \textcolor{comment}{//      //          break;}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103 \textcolor{comment}{//      //      reusableTransformList.Add(par);}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105 \textcolor{comment}{//      //      /// Stop climbing at the NetObj (this is how we detect nesting}}
+\DoxyCodeLine{00106 \textcolor{comment}{//      //      if (par.GetComponent<NetObject>() != null)}}
+\DoxyCodeLine{00107 \textcolor{comment}{//      //          break;}}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109 \textcolor{comment}{//      //      par = par.parent;}}
+\DoxyCodeLine{00110 \textcolor{comment}{//      //  \};}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112 \textcolor{comment}{//      //  System.Type type = typeof(T);}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114 \textcolor{comment}{//      //  if (!tempLists.ContainsKey(type))}}
+\DoxyCodeLine{00115 \textcolor{comment}{//      //      tempLists.Add(type, new List<T>());}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117 \textcolor{comment}{//      //  List<T> temp = tempLists[type] as List<T>;}}
+\DoxyCodeLine{00118 \textcolor{comment}{//      //  temp.Clear();}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120 \textcolor{comment}{//      //  /// Reverse iterate the transform list and add components found. This produces a GetComponentInParent that stops at the NetObj}}
+\DoxyCodeLine{00121 \textcolor{comment}{//      //  for (int i = reusableTransformList.Count -\/ 1; i >= 0; -\/-\/i)}}
+\DoxyCodeLine{00122 \textcolor{comment}{//      //  \{}}
+\DoxyCodeLine{00123 \textcolor{comment}{//      //      reusableTransformList[i].AddComponentsFromObject(list, temp);}}
+\DoxyCodeLine{00124 \textcolor{comment}{//      //  \}}}
+\DoxyCodeLine{00125 \textcolor{comment}{//      //  return list;}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{comment}{//      //\}}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 \textcolor{comment}{//      public static T GetNestedComponentInChildren<T>(this Transform t) where T : Component}}
+\DoxyCodeLine{00130 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00131 \textcolor{comment}{//          /// Look for the most obvious check first on the root.}}
+\DoxyCodeLine{00132 \textcolor{comment}{//          var found = t.GetComponent<T>();}}
+\DoxyCodeLine{00133 \textcolor{comment}{//          if (found)}}
+\DoxyCodeLine{00134 \textcolor{comment}{//              return found;}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136 \textcolor{comment}{//          /// No root found, start testing layer by layer}}
+\DoxyCodeLine{00137 \textcolor{comment}{//          reusableTransformList.Clear();}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139 \textcolor{comment}{//          int ccnt = t.childCount;}}
+\DoxyCodeLine{00140 \textcolor{comment}{//          for (int c = 0; c < ccnt; ++c)}}
+\DoxyCodeLine{00141 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00142 \textcolor{comment}{//              var child = t.GetChild(c);}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144 \textcolor{comment}{//              /// Hit a nested NetObject -\/ don't search this node}}
+\DoxyCodeLine{00145 \textcolor{comment}{//              if (child.GetComponent<NetObject>())}}
+\DoxyCodeLine{00146 \textcolor{comment}{//                  continue;}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148 \textcolor{comment}{//              found = child.GetComponent<T>();}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 \textcolor{comment}{//              if (found)}}
+\DoxyCodeLine{00151 \textcolor{comment}{//                  return found;}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153 \textcolor{comment}{//              reusableTransformList.Add(child);}}
+\DoxyCodeLine{00154 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156 \textcolor{comment}{//          found = RecurseLayer<T>(reusableTransformList, reusableTransformList2);}}
+\DoxyCodeLine{00157 \textcolor{comment}{//          return found;}}
+\DoxyCodeLine{00158 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161 \textcolor{comment}{//      private static T RecurseLayer<T>(List<Transform> currList, List<Transform> nextList) where T : Component}}
+\DoxyCodeLine{00162 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164 \textcolor{comment}{//          nextList.Clear();}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166 \textcolor{comment}{//          /// Iterate each transform in our current depth list}}
+\DoxyCodeLine{00167 \textcolor{comment}{//          int count = currList.Count;}}
+\DoxyCodeLine{00168 \textcolor{comment}{//          for (int i = 0; i < count; ++i)}}
+\DoxyCodeLine{00169 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00170 \textcolor{comment}{//              var t = currList[i];}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172 \textcolor{comment}{//              /// Check each child for end of nesting, seeked component, and if not found add to next layer list}}
+\DoxyCodeLine{00173 \textcolor{comment}{//              int ccnt = t.childCount;}}
+\DoxyCodeLine{00174 \textcolor{comment}{//              for (int c = 0; c < ccnt; ++c)}}
+\DoxyCodeLine{00175 \textcolor{comment}{//              \{}}
+\DoxyCodeLine{00176 \textcolor{comment}{//                  var child = t.GetChild(c);}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 \textcolor{comment}{//                  if (child.GetComponent<NetObject>())}}
+\DoxyCodeLine{00179 \textcolor{comment}{//                      continue;}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181 \textcolor{comment}{//                  var foundchild = child.GetComponent<T>();}}
+\DoxyCodeLine{00182 }
+\DoxyCodeLine{00183 \textcolor{comment}{//                  /// If we found the component, we are done}}
+\DoxyCodeLine{00184 \textcolor{comment}{//                  if (foundchild)}}
+\DoxyCodeLine{00185 \textcolor{comment}{//                      return foundchild;}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187 \textcolor{comment}{//                  nextList.Add(child);}}
+\DoxyCodeLine{00188 \textcolor{comment}{//              \}}}
+\DoxyCodeLine{00189 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191 \textcolor{comment}{//          /// If nothing was found and there are no more layers left, return null}}
+\DoxyCodeLine{00192 \textcolor{comment}{//          if (nextList.Count == 0)}}
+\DoxyCodeLine{00193 \textcolor{comment}{//              return null;}}
+\DoxyCodeLine{00194 \textcolor{comment}{//          /// Else more layers were found, go the next layer deep.}}
+\DoxyCodeLine{00195 \textcolor{comment}{//          else}}
+\DoxyCodeLine{00196 \textcolor{comment}{//              /// Swap next and curr lists for the next layer}}
+\DoxyCodeLine{00197 \textcolor{comment}{//              return RecurseLayer<T>(nextList, currList);}}
+\DoxyCodeLine{00198 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201 \textcolor{comment}{//      ///// <summary>}}
+\DoxyCodeLine{00202 \textcolor{comment}{//      ///// Same as GetComponentsInChildren, but will not recurse into children with their own NetObject. This allows nesting of NetObjects to be respected.}}
+\DoxyCodeLine{00203 \textcolor{comment}{//      ///// </summary>}}
+\DoxyCodeLine{00204 \textcolor{comment}{//      ///// <typeparam name="{}T"{}></typeparam>}}
+\DoxyCodeLine{00205 \textcolor{comment}{//      ///// <param name="{}t"{}></param>}}
+\DoxyCodeLine{00206 \textcolor{comment}{//      ///// <param name="{}list"{}>Pass null and a reused list will be used. Consume immediately.</param>}}
+\DoxyCodeLine{00207 \textcolor{comment}{//      //public static List<T> GetNestedComponentsInChildren<T>(this Transform t, List<T> list = null)}}
+\DoxyCodeLine{00208 \textcolor{comment}{//      //\{}}
+\DoxyCodeLine{00209 \textcolor{comment}{//      //  System.Type type = typeof(T);}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 \textcolor{comment}{//      //  if (ReferenceEquals(list, null))}}
+\DoxyCodeLine{00212 \textcolor{comment}{//      //  \{}}
+\DoxyCodeLine{00213 \textcolor{comment}{//      //      if (!reusables.ContainsKey(type))}}
+\DoxyCodeLine{00214 \textcolor{comment}{//      //      \{}}
+\DoxyCodeLine{00215 \textcolor{comment}{//      //          list = new List<T>();}}
+\DoxyCodeLine{00216 \textcolor{comment}{//      //          reusables.Add(type, list);}}
+\DoxyCodeLine{00217 \textcolor{comment}{//      //      \}}}
+\DoxyCodeLine{00218 \textcolor{comment}{//      //      else}}
+\DoxyCodeLine{00219 \textcolor{comment}{//      //          list = reusables[type] as List<T>;}}
+\DoxyCodeLine{00220 \textcolor{comment}{//      //  \}}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222 \textcolor{comment}{//      //  List<T> temp;}}
+\DoxyCodeLine{00223 \textcolor{comment}{//      //  if (!tempLists.ContainsKey(type))}}
+\DoxyCodeLine{00224 \textcolor{comment}{//      //  \{}}
+\DoxyCodeLine{00225 \textcolor{comment}{//      //      temp = new List<T>();}}
+\DoxyCodeLine{00226 \textcolor{comment}{//      //      tempLists.Add(type, temp);}}
+\DoxyCodeLine{00227 \textcolor{comment}{//      //  \}}}
+\DoxyCodeLine{00228 \textcolor{comment}{//      //  else}}
+\DoxyCodeLine{00229 \textcolor{comment}{//      //      temp = tempLists[type] as List<T>;}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231 \textcolor{comment}{//      //  temp.Clear();}}
+\DoxyCodeLine{00232 \textcolor{comment}{//      //  list.Clear();}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234 \textcolor{comment}{//      //  t.AddComponentsFromObject(list, temp);}}
+\DoxyCodeLine{00235 \textcolor{comment}{//      //  t.RecurseAddChildren(list, temp);}}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237 \textcolor{comment}{//      //  return list;}}
+\DoxyCodeLine{00238 \textcolor{comment}{//      //\}}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240 \textcolor{comment}{//      /// <summary>}}
+\DoxyCodeLine{00241 \textcolor{comment}{//      /// Same as GetComponentsInChildren, but will not recurse into children with their own NetObject. This allows nesting of NetObjects to be respected.}}
+\DoxyCodeLine{00242 \textcolor{comment}{//      /// </summary>}}
+\DoxyCodeLine{00243 \textcolor{comment}{//      /// <typeparam name="{}T"{}></typeparam>}}
+\DoxyCodeLine{00244 \textcolor{comment}{//      /// <param name="{}t"{}></param>}}
+\DoxyCodeLine{00245 \textcolor{comment}{//      /// <param name="{}list"{}>Pass null and a reused list will be used. Consume immediately.</param>}}
+\DoxyCodeLine{00246 \textcolor{comment}{//      public static List<Component> GetNestedComponentsInChildren(this Transform t, System.Type type, List<Component> list)}}
+\DoxyCodeLine{00247 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00248 \textcolor{comment}{//          System.Type compType = typeof(Component);}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250 \textcolor{comment}{//          if (ReferenceEquals(list, null))}}
+\DoxyCodeLine{00251 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00252 \textcolor{comment}{//              if (!reusables.ContainsKey(compType))}}
+\DoxyCodeLine{00253 \textcolor{comment}{//              \{}}
+\DoxyCodeLine{00254 \textcolor{comment}{//                  list = new List<Component>();}}
+\DoxyCodeLine{00255 \textcolor{comment}{//                  reusables.Add(compType, list);}}
+\DoxyCodeLine{00256 \textcolor{comment}{//              \}}}
+\DoxyCodeLine{00257 \textcolor{comment}{//              else}}
+\DoxyCodeLine{00258 \textcolor{comment}{//                  list = reusables[compType] as List<Component>;}}
+\DoxyCodeLine{00259 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261 \textcolor{comment}{//          List<Component> temp;}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263 \textcolor{comment}{//          if (!tempLists.ContainsKey(type))}}
+\DoxyCodeLine{00264 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00265 \textcolor{comment}{//              temp = new List<Component>();}}
+\DoxyCodeLine{00266 \textcolor{comment}{//              tempLists.Add(type, temp);}}
+\DoxyCodeLine{00267 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00268 \textcolor{comment}{//          else}}
+\DoxyCodeLine{00269 \textcolor{comment}{//              temp = tempLists[type] as List<Component>;}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271 \textcolor{comment}{//          temp.Clear();}}
+\DoxyCodeLine{00272 \textcolor{comment}{//          list.Clear();}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274 \textcolor{comment}{//          t.AddComponentsFromObject(list, temp, type);}}
+\DoxyCodeLine{00275 \textcolor{comment}{//          t.RecurseAddChildren(list, temp, type);}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277 \textcolor{comment}{//          return list;}}
+\DoxyCodeLine{00278 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280 \textcolor{comment}{//      private static void RecurseAddChildren<T>(this Transform t, List<T> list, List<T> temp)}}
+\DoxyCodeLine{00281 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00282 \textcolor{comment}{//          int count = t.childCount;}}
+\DoxyCodeLine{00283 \textcolor{comment}{//          for (int i = 0; i < count; ++i)}}
+\DoxyCodeLine{00284 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00285 \textcolor{comment}{//              var child = t.GetChild(i);}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287 \textcolor{comment}{//              /// Don't dig into branches that have nested NetObject}}
+\DoxyCodeLine{00288 \textcolor{comment}{//              if (child.GetComponent<NetObject>())}}
+\DoxyCodeLine{00289 \textcolor{comment}{//                  continue;}}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291 \textcolor{comment}{//              child.AddComponentsFromObject(list, temp);}}
+\DoxyCodeLine{00292 \textcolor{comment}{//              child.RecurseAddChildren(list, temp);}}
+\DoxyCodeLine{00293 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00294 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296 \textcolor{comment}{//      private static void RecurseAddChildren(this Transform t, List<Component> list, List<Component> temp, System.Type type)}}
+\DoxyCodeLine{00297 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00298 \textcolor{comment}{//          int count = t.childCount;}}
+\DoxyCodeLine{00299 \textcolor{comment}{//          for (int i = 0; i < count; ++i)}}
+\DoxyCodeLine{00300 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00301 \textcolor{comment}{//              var child = t.GetChild(i);}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303 \textcolor{comment}{//              /// Don't dig into branches that have nested NetObject}}
+\DoxyCodeLine{00304 \textcolor{comment}{//              if (child.GetComponent<NetObject>())}}
+\DoxyCodeLine{00305 \textcolor{comment}{//                  continue;}}
+\DoxyCodeLine{00306 }
+\DoxyCodeLine{00307 \textcolor{comment}{//              child.AddComponentsFromObject(list, temp, type);}}
+\DoxyCodeLine{00308 \textcolor{comment}{//              child.RecurseAddChildren(list, temp, type);}}
+\DoxyCodeLine{00309 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00310 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00311 }
+\DoxyCodeLine{00312 \textcolor{comment}{//      private static void AddComponentsFromObject<T>(this Transform t, List<T> list, List<T> temp)}}
+\DoxyCodeLine{00313 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00314 \textcolor{comment}{//          temp.Clear();}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316 \textcolor{comment}{//          t.GetComponents(temp);}}
+\DoxyCodeLine{00317 \textcolor{comment}{//          list.AddRange(temp);}}
+\DoxyCodeLine{00318 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320 \textcolor{comment}{//      private static void AddComponentsFromObject(this Transform t, List<Component> list, List<Component> temp, System.Type type)}}
+\DoxyCodeLine{00321 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00322 \textcolor{comment}{//          temp.Clear();}}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324 \textcolor{comment}{//          t.GetComponents(temp);}}
+\DoxyCodeLine{00325 \textcolor{comment}{//          foreach (var comp in temp)}}
+\DoxyCodeLine{00326 \textcolor{comment}{//              if (comp.GetType().IsAssignableFrom(type))}}
+\DoxyCodeLine{00327 \textcolor{comment}{//                  list.Add(comp);}}
+\DoxyCodeLine{00328 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330 \textcolor{comment}{//      /// <summary>}}
+\DoxyCodeLine{00331 \textcolor{comment}{//      /// Finds first occurance of a component climbing toward the transforms root, including disabled objects.}}
+\DoxyCodeLine{00332 \textcolor{comment}{//      public static T GetComponentInParentEvenIfDisabled<T>(this Transform t) where T : Component}}
+\DoxyCodeLine{00333 \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00334 \textcolor{comment}{//          T co = t.GetComponent<T>();}}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336 \textcolor{comment}{//          if (!ReferenceEquals(co, null))}}
+\DoxyCodeLine{00337 \textcolor{comment}{//              return co;}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339 \textcolor{comment}{//          co = t.GetComponentInParent<T>();}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341 \textcolor{comment}{//          if (!ReferenceEquals(co, null))}}
+\DoxyCodeLine{00342 \textcolor{comment}{//              return co;}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344 \textcolor{comment}{//          var exclude = t.GetComponentsInChildren<T>(true);}}
+\DoxyCodeLine{00345 \textcolor{comment}{//          var excludedCount = exclude.Length;}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347 \textcolor{comment}{//          Transform par = t.parent;}}
+\DoxyCodeLine{00348 \textcolor{comment}{//          while (par)}}
+\DoxyCodeLine{00349 \textcolor{comment}{//          \{}}
+\DoxyCodeLine{00350 \textcolor{comment}{//              /// Recurse upward until a parent finds something new in a children search}}
+\DoxyCodeLine{00351 \textcolor{comment}{//              var found = par.GetComponentsInChildren<T>(true);}}
+\DoxyCodeLine{00352 \textcolor{comment}{//              if (found.Length > exclude.Length)}}
+\DoxyCodeLine{00353 \textcolor{comment}{//                  return found[0];}}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355 \textcolor{comment}{//              par = par.parent;}}
+\DoxyCodeLine{00356 \textcolor{comment}{//          \}}}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358 \textcolor{comment}{//          return null;}}
+\DoxyCodeLine{00359 \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361 \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00362 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00363 }
+
+\end{DoxyCode}

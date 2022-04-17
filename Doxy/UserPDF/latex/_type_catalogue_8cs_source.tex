@@ -1,0 +1,485 @@
+\doxysection{Type\+Catalogue.\+cs}
+\label{_type_catalogue_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/TypeCatalogue.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/TypeCatalogue.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEditor.Compilation;}
+\DoxyCodeLine{00015 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     [CreateAssetMenu()]}
+\DoxyCodeLine{00020     [System.Serializable]}
+\DoxyCodeLine{00021     \textcolor{keyword}{public} \textcolor{keyword}{class }TypeCatalogue : ScriptableObject}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{char} \_ = Path.DirectorySeparatorChar;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} MENU\_PATH = \textcolor{stringliteral}{"{}Window/Photon Unity Networking/"{}};}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} CODEGEN\_FALLBACK\_PATH = \textcolor{stringliteral}{"{}1e336284e5d53884a957a795a62474a4"{}};}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PHOTON\_UTILITIES\_FOLDER\_GUID = \textcolor{stringliteral}{"{}1e336284e5d53884a957a795a62474a4"{}};}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} GENERATED\_SUBFOLDER = \textcolor{stringliteral}{"{}\_GeneratedPackExtensions"{}};}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} photonUtilitiesFolderPath;}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} packObjectFolderPath; \textcolor{comment}{// = "{}Assets"{} + \_ + "{}Photon"{} + \_ + "{}PhotonUtilities"{} + \_ + "{}PackObject"{} + \_;}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} codeGenFolderPath; \textcolor{comment}{// = packObjectFolderPath + GENERATED\_SUBFOLDER + \_;}}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} codegenEditorResourcePath; \textcolor{comment}{// = packObjectFolderPath + "{}CodeGen"{} + \_ + "{}Editor"{} + \_ + "{}Resources"{} + \_;}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} FindPaths() \{}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039             photonUtilitiesFolderPath = AssetDatabase.GUIDToAssetPath(PHOTON\_UTILITIES\_FOLDER\_GUID);}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             \textcolor{keywordflow}{if} (photonUtilitiesFolderPath == \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00042             \{}
+\DoxyCodeLine{00043                 Debug.LogWarning(\textcolor{stringliteral}{"{}Photon/PhotonUtilities folder has had its .meta file deleted. This can lead to unpredictable errors. Please restore."{}});}
+\DoxyCodeLine{00044                 photonUtilitiesFolderPath = \textcolor{stringliteral}{"{}Assets"{}} + \_ + \textcolor{stringliteral}{"{}Photon"{}} + \_ + \textcolor{stringliteral}{"{}PhotonUtilities"{}};}
+\DoxyCodeLine{00045             \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047             packObjectFolderPath = photonUtilitiesFolderPath + \_ + \textcolor{stringliteral}{"{}PackObject"{}} + \_;}
+\DoxyCodeLine{00048             codeGenFolderPath = packObjectFolderPath + GENERATED\_SUBFOLDER + \_;}
+\DoxyCodeLine{00049             codegenEditorResourcePath = packObjectFolderPath + \textcolor{stringliteral}{"{}CodeGen"{}} + \_ + \textcolor{stringliteral}{"{}Editor"{}} + \_ + \textcolor{stringliteral}{"{}Resources"{}} + \_;}
+\DoxyCodeLine{00050         \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keyword}{static} TypeCatalogue single;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         [UnityEditor.InitializeOnLoadMethod]}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Initialize()}
+\DoxyCodeLine{00056         \{}
+\DoxyCodeLine{00057             FindPaths();}
+\DoxyCodeLine{00058             EnsureExists();}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060             CompilationPipeline.assemblyCompilationFinished -\/= CompileFinished;}
+\DoxyCodeLine{00061             CompilationPipeline.assemblyCompilationFinished += CompileFinished;}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063             EditorApplication.update -\/= EditorUpdate;}
+\DoxyCodeLine{00064             EditorApplication.update += EditorUpdate;}
+\DoxyCodeLine{00065         \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{comment}{//private static void HandleOnPlayModeChanged(PlayModeStateChange obj)}}
+\DoxyCodeLine{00068         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00069         \textcolor{comment}{//  switch (obj)}}
+\DoxyCodeLine{00070         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00071         \textcolor{comment}{//      case PlayModeStateChange.EnteredEditMode:}}
+\DoxyCodeLine{00072         \textcolor{comment}{//          break;}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{comment}{//      case PlayModeStateChange.ExitingEditMode:}}
+\DoxyCodeLine{00075         \textcolor{comment}{//          break;}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{comment}{//      case PlayModeStateChange.EnteredPlayMode:}}
+\DoxyCodeLine{00078         \textcolor{comment}{//          break;}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{comment}{//      case PlayModeStateChange.ExitingPlayMode:}}
+\DoxyCodeLine{00081         \textcolor{comment}{//          break;}}
+\DoxyCodeLine{00082         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00083         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} rebuilding;}
+\DoxyCodeLine{00088         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} CompileFinished(\textcolor{keywordtype}{string} arg1, CompilerMessage[] arg2)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (!PackObjectSettings.Single.deleteBadCode)}
+\DoxyCodeLine{00092                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             \textcolor{comment}{// bool that indicates if we looked for codegen orphaned by user moving the folder}}
+\DoxyCodeLine{00095             \textcolor{keywordtype}{bool} cleanOrphanCodegen = \textcolor{keyword}{false};}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00098             \textcolor{keywordflow}{foreach} (var arg \textcolor{keywordflow}{in} arg2)}
+\DoxyCodeLine{00099             \{}
+\DoxyCodeLine{00100                 \textcolor{comment}{// Check if this is a codegen file by its path and having Pack\_ in the name.}}
+\DoxyCodeLine{00101                 \textcolor{keywordflow}{if} (arg.type == CompilerMessageType.Error \&\& arg.file.Contains(GENERATED\_SUBFOLDER) \&\& arg.file.Contains(\textcolor{stringliteral}{"{}Pack\_"{}}))}
+\DoxyCodeLine{00102                 \{}
+\DoxyCodeLine{00103                     \textcolor{comment}{// TEST -\/ added to delete permanent loop due to users moving folders around.}}
+\DoxyCodeLine{00104                     File.Delete(arg.file);}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106                     \textcolor{comment}{// Search entire project for codegen that doesn't belong if we detected a name collision (user moved old folder most likely)}}
+\DoxyCodeLine{00107                     \textcolor{keywordflow}{if} (!cleanOrphanCodegen \&\& arg.message.Contains(\textcolor{stringliteral}{"{}already contains"{}}))}
+\DoxyCodeLine{00108                     \{}
+\DoxyCodeLine{00109                         cleanOrphanCodegen = \textcolor{keyword}{true};}
+\DoxyCodeLine{00110                     \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                     deleteAllPending = \textcolor{keyword}{true};}
+\DoxyCodeLine{00113                 \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115                 \textcolor{comment}{// If we detected orphaned code, seek and destroy.}}
+\DoxyCodeLine{00116                 \textcolor{keywordflow}{if} (cleanOrphanCodegen)}
+\DoxyCodeLine{00117                 \{}
+\DoxyCodeLine{00118                     var possibleCodegen = Directory.GetFiles(\textcolor{stringliteral}{"{}Assets"{}} + \_, \textcolor{stringliteral}{"{}Pack\_*"{}}, SearchOption.AllDirectories);}
+\DoxyCodeLine{00119                     Debug.Log(\textcolor{stringliteral}{"{}<b>Found</b> "{}} + possibleCodegen.Length + \textcolor{stringliteral}{"{} possible orphans"{}});}
+\DoxyCodeLine{00120                     \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} possibleCodegen)}
+\DoxyCodeLine{00121                     \{}
+\DoxyCodeLine{00122                         Debug.Log(\textcolor{stringliteral}{"{}possible: "{}} + f);}
+\DoxyCodeLine{00123                         \textcolor{keywordflow}{if} (f.Contains(GENERATED\_SUBFOLDER) \&\& !f.Contains(codeGenFolderPath))}
+\DoxyCodeLine{00124                         \{}
+\DoxyCodeLine{00125                             Debug.LogWarning(\textcolor{stringliteral}{"{}Codegen appears to have been moved. Deleting. "{}} + f);}
+\DoxyCodeLine{00126                             File.Delete(f);}
+\DoxyCodeLine{00127                             \textcolor{comment}{//deleteAllPending = true;}}
+\DoxyCodeLine{00128                             rebuilding = \textcolor{keyword}{true};}
+\DoxyCodeLine{00129                             \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00130                         \}}
+\DoxyCodeLine{00131                     \}}
+\DoxyCodeLine{00132                 \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                 \textcolor{keywordflow}{if} (deleteAllPending)}
+\DoxyCodeLine{00135                 \{}
+\DoxyCodeLine{00136                     \textcolor{comment}{// Suppressing errors in the log that we are going to clear up.}}
+\DoxyCodeLine{00137                     Debug.ClearDeveloperConsole();}
+\DoxyCodeLine{00138                     Debug.LogWarning(\textcolor{stringliteral}{"{}Script errors found in PackObject codegen. Deleting outdated codegen. "{}} +}
+\DoxyCodeLine{00139                         \textcolor{stringliteral}{"{}To see these file errors and manually delete, disable 'Delete Bad Code' in PackObjectSettings."{}});}
+\DoxyCodeLine{00140                 \}}
+\DoxyCodeLine{00141             \}}
+\DoxyCodeLine{00142         \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} rescanPending;}
+\DoxyCodeLine{00145         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} deleteAllPending;}
+\DoxyCodeLine{00146         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EditorUpdate()}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             \textcolor{keywordflow}{if} (deleteAllPending)}
+\DoxyCodeLine{00150             \{}
+\DoxyCodeLine{00151                 deleteAllPending = \textcolor{keyword}{false};}
+\DoxyCodeLine{00152                 DeleteAllPackCodeGen();}
+\DoxyCodeLine{00153                 rebuilding = \textcolor{keyword}{true};}
+\DoxyCodeLine{00154                 EditorUtility.SetDirty(single);}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156             \textcolor{keywordflow}{if} (rescanPending)}
+\DoxyCodeLine{00157             \{}
+\DoxyCodeLine{00158                 rescanPending = \textcolor{keyword}{false};}
+\DoxyCodeLine{00159                 RescanAssembly();}
+\DoxyCodeLine{00160             \}}
+\DoxyCodeLine{00161         \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00167         [UnityEditor.Callbacks.DidReloadScripts]}
+\DoxyCodeLine{00168         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} PostCompile()}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             \textcolor{keywordflow}{if} (!PackObjectSettings.Single.autoGenerate)}
+\DoxyCodeLine{00172             \{}
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{if} (TypeCatalogue.single.catalogue.Count > 0)}
+\DoxyCodeLine{00174                     Debug.LogWarning(\textcolor{stringliteral}{"{}Codegen disabled in "{}} + typeof(PackObjectSettings).Name + \textcolor{stringliteral}{"{}. Not checking for new or changed PackObjects (SyncVars). Enable Codegen if you are using PackObjects."{}});}
+\DoxyCodeLine{00175                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178             \textcolor{keywordflow}{if} (rebuilding)}
+\DoxyCodeLine{00179             \{}
+\DoxyCodeLine{00180                 Debug.Log(\textcolor{stringliteral}{"{}Skipping a post compile rebuild."{}});}
+\DoxyCodeLine{00181                 rebuilding = \textcolor{keyword}{false};}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185             Debug.Log(\textcolor{stringliteral}{"{}Rescanning assembly for [PackObject] and [SyncVar] changes. "{}} +}
+\DoxyCodeLine{00186                 \textcolor{stringliteral}{"{}If you are not using Simple SyncVars, this scan can be disabled by un-\/checking 'Auto Generate' in PackObjectSettings."{}});}
+\DoxyCodeLine{00187             rescanPending = \textcolor{keyword}{true};}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00195         \textcolor{keyword}{public} \textcolor{keyword}{static} TypeCatalogue EnsureExists()}
+\DoxyCodeLine{00196         \{}
+\DoxyCodeLine{00197             \textcolor{keywordflow}{if} (single == \textcolor{keyword}{null})}
+\DoxyCodeLine{00198             \{}
+\DoxyCodeLine{00199                 single = Resources.Load<TypeCatalogue>(\textcolor{stringliteral}{"{}TypeCatalogue"{}});}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (single == \textcolor{keyword}{null})}
+\DoxyCodeLine{00203             \{}
+\DoxyCodeLine{00204                 single = ScriptableObject.CreateInstance<TypeCatalogue>();}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206                 \textcolor{keywordflow}{if} (!Directory.Exists(codegenEditorResourcePath))}
+\DoxyCodeLine{00207                 \{}
+\DoxyCodeLine{00208                     Directory.CreateDirectory(codegenEditorResourcePath);}
+\DoxyCodeLine{00209                     Debug.Log(\textcolor{stringliteral}{"{}Expected directory for TypeCatalogue ScriptableObject asset does not exist. Creating :"{}} + codegenEditorResourcePath);}
+\DoxyCodeLine{00210                 \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212                 AssetDatabase.CreateAsset(single, codegenEditorResourcePath + \textcolor{stringliteral}{"{}TypeCatalogue.asset"{}});}
+\DoxyCodeLine{00213                 AssetDatabase.Refresh();}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             \textcolor{keywordflow}{return} single;}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{keyword}{public} TypeInfoDict catalogue = \textcolor{keyword}{new} TypeInfoDict();}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221         \textcolor{comment}{//[MenuItem(MENU\_PATH + "{}Delete All PackObj Codegen"{})]}}
+\DoxyCodeLine{00222         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DeleteAllPackCodeGen()}
+\DoxyCodeLine{00223         \{}
+\DoxyCodeLine{00225             \textcolor{keywordflow}{if} (!Directory.Exists(codeGenFolderPath))}
+\DoxyCodeLine{00226             \{}
+\DoxyCodeLine{00227                 Debug.LogWarning(\textcolor{stringliteral}{"{}Unable to find target directory for generated code. Creating: "{}} + codeGenFolderPath);}
+\DoxyCodeLine{00228                 Directory.CreateDirectory(codeGenFolderPath);}
+\DoxyCodeLine{00229             \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             DirectoryInfo d = \textcolor{keyword}{new} DirectoryInfo(codeGenFolderPath);\textcolor{comment}{//Assuming Test is your Folder}}
+\DoxyCodeLine{00232             FileInfo[] files = d.GetFiles(\textcolor{stringliteral}{"{}*.cs"{}}); \textcolor{comment}{//Getting Text files}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{keywordflow}{if} (files.Length == 0)}
+\DoxyCodeLine{00235                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} files)}
+\DoxyCodeLine{00238             \{}
+\DoxyCodeLine{00239                 File.Delete(f.FullName);}
+\DoxyCodeLine{00240                 File.Delete(f.FullName + \textcolor{stringliteral}{"{}.meta"{}});}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             single.catalogue.Clear();}
+\DoxyCodeLine{00244             EditorUtility.SetDirty(single);}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             AssetDatabase.Refresh();}
+\DoxyCodeLine{00247         \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249         \textcolor{comment}{//[MenuItem(MENU\_PATH + "{}Rebuild PackObj Codegen"{})]}}
+\DoxyCodeLine{00250         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RebuildSNSCodegen()}
+\DoxyCodeLine{00251         \{}
+\DoxyCodeLine{00252             Compression.Internal.TypeCatalogue.DeleteAllPackCodeGen();}
+\DoxyCodeLine{00253             Compression.Internal.TypeCatalogue.rescanPending = \textcolor{keyword}{true};}
+\DoxyCodeLine{00254         \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257         \textcolor{keyword}{private} \textcolor{keyword}{static} List<string> reusableFilePaths = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00258         \textcolor{keyword}{private} \textcolor{keyword}{static} HashSet<Type> tempProcessedTypes = \textcolor{keyword}{new} HashSet<Type>();}
+\DoxyCodeLine{00259         \textcolor{keyword}{private} \textcolor{keyword}{static} List<string> unusedTypes = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261         \textcolor{comment}{//[MenuItem("{}Window/Rescan ASM"{})]}}
+\DoxyCodeLine{00262         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RescanAssembly()}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             EnsureExists();}
+\DoxyCodeLine{00265             var watch0 = System.Diagnostics.Stopwatch.StartNew();}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             unusedTypes.Clear();}
+\DoxyCodeLine{00268             unusedTypes.AddRange(single.catalogue.keys);}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270             AssetDatabase.Refresh();}
+\DoxyCodeLine{00271             \textcolor{keywordtype}{bool} haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00274             DirectoryInfo d = \textcolor{keyword}{new} DirectoryInfo(codeGenFolderPath);\textcolor{comment}{//Assuming Test is your Folder}}
+\DoxyCodeLine{00275 }
+\DoxyCodeLine{00277             \textcolor{keywordflow}{if} (!d.Exists)}
+\DoxyCodeLine{00278                 d.Create();}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280             FileInfo[] files = d.GetFiles(\textcolor{stringliteral}{"{}*.cs"{}}); \textcolor{comment}{//Getting Text files}}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282             tempProcessedTypes.Clear();}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00285             reusableFilePaths.Clear();}
+\DoxyCodeLine{00286             \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} files)}
+\DoxyCodeLine{00287                 reusableFilePaths.Add(codeGenFolderPath + f.Name);}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00290             \textcolor{keywordflow}{foreach} (var a \textcolor{keywordflow}{in} AppDomain.CurrentDomain.GetAssemblies())}
+\DoxyCodeLine{00291                 \textcolor{keywordflow}{foreach} (var t \textcolor{keywordflow}{in} a.GetTypes())}
+\DoxyCodeLine{00292                 \{}
+\DoxyCodeLine{00293                     var typeinfo = single.MakeRecordCurrent(t, ref haschanged);}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295                     \textcolor{keywordflow}{if} (unusedTypes.Contains(t.FullName))}
+\DoxyCodeLine{00296                         unusedTypes.Remove(t.FullName);}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00299                     \textcolor{keywordflow}{if} (typeinfo != \textcolor{keyword}{null})}
+\DoxyCodeLine{00300                     \{}
+\DoxyCodeLine{00301                         reusableFilePaths.Remove(typeinfo.filepath);}
+\DoxyCodeLine{00302                     \}}
+\DoxyCodeLine{00303                 \}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00306             \textcolor{keywordflow}{foreach} (var f \textcolor{keywordflow}{in} reusableFilePaths)}
+\DoxyCodeLine{00307             \{}
+\DoxyCodeLine{00308                 Debug.Log(\textcolor{stringliteral}{"{}<b>Deleting outdated file: </b>"{}} + f);}
+\DoxyCodeLine{00309                 File.Delete(f);}
+\DoxyCodeLine{00310                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00311             \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             \textcolor{keywordflow}{foreach}(var unused \textcolor{keywordflow}{in} unusedTypes)}
+\DoxyCodeLine{00314             \{}
+\DoxyCodeLine{00315                 Debug.Log(\textcolor{stringliteral}{"{}Type "{}} + unused + \textcolor{stringliteral}{"{} is no longer a PackObject, or no longer exists. Removing from the PackObject catalog system."{}});}
+\DoxyCodeLine{00316                 single.catalogue.Remove(unused);}
+\DoxyCodeLine{00317             \}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319             \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00320             \{}
+\DoxyCodeLine{00321                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00322                 \{}
+\DoxyCodeLine{00323                     AssetDatabase.SaveAssets();}
+\DoxyCodeLine{00324                     AssetDatabase.Refresh();}
+\DoxyCodeLine{00325                 \}}
+\DoxyCodeLine{00326                 \textcolor{keywordflow}{catch}}
+\DoxyCodeLine{00327                 \{}
+\DoxyCodeLine{00328 }
+\DoxyCodeLine{00329                 \}}
+\DoxyCodeLine{00330             \}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332             watch0.Stop();}
+\DoxyCodeLine{00333             Debug.Log(\textcolor{stringliteral}{"{}Rebuilding PackObject Codegen -\/ took <i>"{}} + watch0.ElapsedMilliseconds + \textcolor{stringliteral}{"{}ms</i>. "{}}}
+\DoxyCodeLine{00334                 + (haschanged ? \textcolor{stringliteral}{"{}Changes where found."{}} : \textcolor{stringliteral}{"{}No changes found."{}})}
+\DoxyCodeLine{00335                 + \textcolor{stringliteral}{"{}\(\backslash\)nNOTE: Automatic PackObject codegen can be disabled in PackObjectSettings."{}});}
+\DoxyCodeLine{00336         \}}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         \textcolor{keyword}{public} TypeInfo MakeRecordCurrent(Type type, ref \textcolor{keywordtype}{bool} haschanged)}
+\DoxyCodeLine{00340         \{}
+\DoxyCodeLine{00341             tempProcessedTypes.Add(type);}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343             TypeInfo currTypeInfo;}
+\DoxyCodeLine{00344             \textcolor{keywordtype}{int} index = catalogue.TryGetValue(type.FullName, out currTypeInfo);}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346             var attrs = type.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00349             \textcolor{keywordflow}{if} (attrs.Length == 0)}
+\DoxyCodeLine{00350             \{}
+\DoxyCodeLine{00351                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00352             \}}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00354 \textcolor{preprocessor}{\#if UNITY\_2018\_1\_OR\_NEWER}}
+\DoxyCodeLine{00355             \textcolor{keywordflow}{if} (!PlayerSettings.allowUnsafeCode \&\& type.IsValueType)}
+\DoxyCodeLine{00356             \{}
+\DoxyCodeLine{00357                 Debug.LogWarning(typeof(PackObjectAttribute).Name + \textcolor{stringliteral}{"{} on structs will be ignored unless PlayerSettings.allowUnsafeCode == true."{}});}
+\DoxyCodeLine{00358                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00359             \}}
+\DoxyCodeLine{00360 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00363             var packObjAttr = (attrs[0] as PackObjectAttribute);}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00366             \textcolor{keywordflow}{if} (packObjAttr == \textcolor{keyword}{null})}
+\DoxyCodeLine{00367             \{}
+\DoxyCodeLine{00369                 \textcolor{keywordflow}{if} (currTypeInfo != \textcolor{keyword}{null})}
+\DoxyCodeLine{00370                 \{}
+\DoxyCodeLine{00371                     catalogue.Remove(type.FullName);}
+\DoxyCodeLine{00372                     Debug.Log(\textcolor{stringliteral}{"{}Deleting record-\/less codegen "{}} + type.Name);}
+\DoxyCodeLine{00373                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00374                 \}}
+\DoxyCodeLine{00375                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00376             \}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00379             \textcolor{keywordflow}{if} (type.IsValueType \&\& !type.IsUnManaged())}
+\DoxyCodeLine{00380             \{}
+\DoxyCodeLine{00381                 Debug.LogWarning(type.Name + \textcolor{stringliteral}{"{} is a PackObject, but cannot be packed because it is a managed type. Structs cannot contain references or any managed types to be packable. "{}});}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00384                 \textcolor{keywordflow}{if} (currTypeInfo != \textcolor{keyword}{null})}
+\DoxyCodeLine{00385                 \{}
+\DoxyCodeLine{00386                     catalogue.Remove(type.FullName);}
+\DoxyCodeLine{00387                     haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00388                 \}}
+\DoxyCodeLine{00389                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00390             \}}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00393             \textcolor{keywordflow}{if} (index == -\/1)}
+\DoxyCodeLine{00394             \{}
+\DoxyCodeLine{00395                 currTypeInfo = \textcolor{keyword}{new} TypeInfo(type);}
+\DoxyCodeLine{00396                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00397             \}}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399             GetPackableFields(type, currTypeInfo, packObjAttr);}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00403             \textcolor{keywordflow}{if} (currTypeInfo == \textcolor{keyword}{null})}
+\DoxyCodeLine{00404             \{}
+\DoxyCodeLine{00405                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00406                 Debug.Log(\textcolor{stringliteral}{"{}No record yet for "{}} + type.Name);}
+\DoxyCodeLine{00407                 \textcolor{keywordflow}{return} GenerateAndRecord(type, currTypeInfo, packObjAttr);}
+\DoxyCodeLine{00408             \}}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410             currTypeInfo.filepath = GetExtFilepath(type);}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00413             \textcolor{keywordflow}{if} (currTypeInfo.codegenFileWriteTime != File.GetLastWriteTime(currTypeInfo.filepath).Ticks)}
+\DoxyCodeLine{00414             \{}
+\DoxyCodeLine{00415                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00416                 Debug.Log(\textcolor{stringliteral}{"{}Codegen file time out of date, regenerating. "{}} + currTypeInfo.filepath);}
+\DoxyCodeLine{00417                 \textcolor{keywordflow}{return} GenerateAndRecord(type, currTypeInfo, packObjAttr);}
+\DoxyCodeLine{00418             \}}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420             \textcolor{keywordtype}{long} hash = type.TypeToHash64();}
+\DoxyCodeLine{00422             \textcolor{keywordflow}{if} (currTypeInfo.hashcode != hash)}
+\DoxyCodeLine{00423             \{}
+\DoxyCodeLine{00424                 haschanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00425                 \textcolor{comment}{//Debug.Log(currTypeInfo.hashcode + "{} Type Compare mismatch "{} + hash);}}
+\DoxyCodeLine{00426                 currTypeInfo.hashcode = hash;}
+\DoxyCodeLine{00427                 \textcolor{keywordflow}{return} GenerateAndRecord(type, currTypeInfo, packObjAttr);}
+\DoxyCodeLine{00428             \}}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430             \textcolor{comment}{//Debug.Log(type.Name + "{} has not changed "{} + currTypeInfo.hashcode);}}
+\DoxyCodeLine{00431             haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00432             \textcolor{keywordflow}{return} currTypeInfo;}
+\DoxyCodeLine{00433         \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435         \textcolor{keyword}{public} TypeInfo GenerateAndRecord(Type type, TypeInfo typeInfo, PackObjectAttribute packObjAttr)}
+\DoxyCodeLine{00436         \{}
+\DoxyCodeLine{00437             \textcolor{keywordtype}{string} filepath = typeInfo.filepath;}
+\DoxyCodeLine{00438 }
+\DoxyCodeLine{00439             Debug.Log(\textcolor{stringliteral}{"{}Generating codegen for PackObj <b>"{}} + type.FullName + \textcolor{stringliteral}{"{}</b> to file: "{}} + filepath);}
+\DoxyCodeLine{00440             StringBuilder sb = type.GeneratePackCode(typeInfo, packObjAttr);}
+\DoxyCodeLine{00441             File.WriteAllText(filepath, sb.ToString());}
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00443             typeInfo.codegenFileWriteTime = File.GetLastWriteTime(filepath).Ticks;}
+\DoxyCodeLine{00444             catalogue.Add(type, typeInfo);}
+\DoxyCodeLine{00445 }
+\DoxyCodeLine{00446             EditorUtility.SetDirty(\textcolor{keyword}{this});}
+\DoxyCodeLine{00447             \textcolor{comment}{//AssetDatabase.SaveAssets();}}
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449             \textcolor{keywordflow}{return} typeInfo;}
+\DoxyCodeLine{00450         \}}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452 }
+\DoxyCodeLine{00453         \textcolor{keyword}{public} \textcolor{keywordtype}{void} GetPackableFields(Type type, TypeInfo currTypeInfo, PackObjectAttribute packObjAttr)}
+\DoxyCodeLine{00454         \{}
+\DoxyCodeLine{00455             \textcolor{keywordtype}{int} nestedFieldCount = 0;}
+\DoxyCodeLine{00456             \textcolor{keywordtype}{int} localFieldCount = 0;}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458             var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);}
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460             var defaultInclusion = packObjAttr.defaultInclusion;}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = fields.Length; i < cnt; ++i)}
+\DoxyCodeLine{00463             \{}
+\DoxyCodeLine{00464                 var fieldInfo = fields[i];}
+\DoxyCodeLine{00465 }
+\DoxyCodeLine{00467                 \textcolor{comment}{//if (type.CheckForNestedLoop())}}
+\DoxyCodeLine{00468                 \textcolor{comment}{//\{}}
+\DoxyCodeLine{00469                 \textcolor{comment}{//  Debug.LogWarning("{}<b>"{} + type.Name + "{}</b> contains a nested loop with field <b>"{} + fieldInfo.FieldType + "{} "{} + fieldInfo.Name + "{}</b>. Will not be included in serialization."{});}}
+\DoxyCodeLine{00470                 \textcolor{comment}{//  continue;}}
+\DoxyCodeLine{00471                 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00472 }
+\DoxyCodeLine{00473 }
+\DoxyCodeLine{00474                 var attrs = fieldInfo.GetCustomAttributes(typeof(SyncVarBaseAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00475 }
+\DoxyCodeLine{00477                 \textcolor{keywordflow}{if} (defaultInclusion == DefaultPackInclusion.Explicit \&\& attrs.Length == 0)}
+\DoxyCodeLine{00478                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00479 }
+\DoxyCodeLine{00481                 var nestedAttrs = fieldInfo.FieldType.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00482                 \textcolor{keywordflow}{if} (nestedAttrs.Length != 0)}
+\DoxyCodeLine{00483                 \{}
+\DoxyCodeLine{00484                     \textcolor{keywordtype}{bool} haschanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00485                     \textcolor{keywordtype}{bool} alreadyCurrent = (tempProcessedTypes.Contains(fieldInfo.FieldType));}
+\DoxyCodeLine{00486                     var nestedTypeInfo = (alreadyCurrent) ? catalogue.GetTypeInfo(fieldInfo.FieldType) : MakeRecordCurrent(fieldInfo.FieldType, ref haschanged);}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488                     \textcolor{keywordflow}{if} (nestedTypeInfo != \textcolor{keyword}{null})}
+\DoxyCodeLine{00489                         nestedFieldCount += nestedTypeInfo.totalFieldCount;}
+\DoxyCodeLine{00490                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00491                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00492                 \}}
+\DoxyCodeLine{00493                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00494                     localFieldCount++;}
+\DoxyCodeLine{00495             \}}
+\DoxyCodeLine{00496 }
+\DoxyCodeLine{00497             currTypeInfo.localFieldCount = localFieldCount;}
+\DoxyCodeLine{00498             currTypeInfo.totalFieldCount = localFieldCount + nestedFieldCount;}
+\DoxyCodeLine{00499         \}}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GetExtFilepath(Type type)}
+\DoxyCodeLine{00502         \{}
+\DoxyCodeLine{00503             \textcolor{keywordtype}{string} filename = \textcolor{stringliteral}{"{}Pack\_"{}} + type.Name + \textcolor{stringliteral}{"{}.cs"{}};}
+\DoxyCodeLine{00504             \textcolor{keywordflow}{return} codeGenFolderPath + filename;}
+\DoxyCodeLine{00505         \}}
+\DoxyCodeLine{00506     \}}
+\DoxyCodeLine{00507 \}}
+\DoxyCodeLine{00508 }
+\DoxyCodeLine{00509 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

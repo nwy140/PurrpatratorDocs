@@ -1,0 +1,338 @@
+\doxysection{Bezier\+Spline.\+cs}
+\label{_bezier_spline_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/BezierSpline.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/BezierSpline.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Bezier.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Original: http://catlikecoding.com/unity/tutorials/curves-\/and-\/splines/}}
+\DoxyCodeLine{00007 \textcolor{comment}{//  Used in SlotRacer Demo}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Pun.Demo.SlotRacer.Utils}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }BezierSpline : MonoBehaviour}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         [SerializeField]}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} Vector3[] points;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         [SerializeField]}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keywordtype}{float}[] lengths;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [SerializeField]}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keywordtype}{float}[] lengthsTime;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keywordtype}{float} TotalLength;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         [SerializeField]}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} BezierControlPointMode[] modes;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         [SerializeField]}
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} loop;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Loop}
+\DoxyCodeLine{00038         \{}
+\DoxyCodeLine{00039             \textcolor{keyword}{get} \{}
+\DoxyCodeLine{00040                 \textcolor{keywordflow}{return} loop;}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042             \textcolor{keyword}{set} \{}
+\DoxyCodeLine{00043                 loop = value;}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{if} (value == \textcolor{keyword}{true}) \{}
+\DoxyCodeLine{00045                     modes[modes.Length -\/ 1] = modes[0];}
+\DoxyCodeLine{00046                     SetControlPoint(0, points[0]);}
+\DoxyCodeLine{00047                 \}}
+\DoxyCodeLine{00048             \}}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ControlPointCount}
+\DoxyCodeLine{00052         \{}
+\DoxyCodeLine{00053             \textcolor{keyword}{get} \{}
+\DoxyCodeLine{00054                 \textcolor{keywordflow}{return} points.Length;}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             this.ComputeLengths();}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064         \textcolor{keyword}{public} Vector3 GetControlPoint(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00065         \{}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{return} points[index];}
+\DoxyCodeLine{00067         \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetControlPoint(\textcolor{keywordtype}{int} index, Vector3 point)}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{keywordflow}{if} (index \% 3 == 0)}
+\DoxyCodeLine{00072             \{}
+\DoxyCodeLine{00073                 Vector3 delta = point -\/ points[index];}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{if} (loop)}
+\DoxyCodeLine{00075                 \{}
+\DoxyCodeLine{00076                     \textcolor{keywordflow}{if} (index == 0)}
+\DoxyCodeLine{00077                     \{}
+\DoxyCodeLine{00078                         points[1] += delta;}
+\DoxyCodeLine{00079                         points[points.Length -\/ 2] += delta;}
+\DoxyCodeLine{00080                         points[points.Length -\/ 1] = point;}
+\DoxyCodeLine{00081                     \}}
+\DoxyCodeLine{00082                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (index == points.Length -\/ 1)}
+\DoxyCodeLine{00083                     \{}
+\DoxyCodeLine{00084                         points[0] = point;}
+\DoxyCodeLine{00085                         points[1] += delta;}
+\DoxyCodeLine{00086                         points[index -\/ 1] += delta;}
+\DoxyCodeLine{00087                     \}}
+\DoxyCodeLine{00088                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089                     \{}
+\DoxyCodeLine{00090                         points[index -\/ 1] += delta;}
+\DoxyCodeLine{00091                         points[index + 1] += delta;}
+\DoxyCodeLine{00092                     \}}
+\DoxyCodeLine{00093                 \}}
+\DoxyCodeLine{00094                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00095                 \{}
+\DoxyCodeLine{00096                     \textcolor{keywordflow}{if} (index > 0)}
+\DoxyCodeLine{00097                     \{}
+\DoxyCodeLine{00098                         points[index -\/ 1] += delta;}
+\DoxyCodeLine{00099                     \}}
+\DoxyCodeLine{00100                     \textcolor{keywordflow}{if} (index + 1 < points.Length)}
+\DoxyCodeLine{00101                     \{}
+\DoxyCodeLine{00102                         points[index + 1] += delta;}
+\DoxyCodeLine{00103                     \}}
+\DoxyCodeLine{00104                 \}}
+\DoxyCodeLine{00105             \}}
+\DoxyCodeLine{00106             points[index] = point;}
+\DoxyCodeLine{00107             EnforceMode(index);}
+\DoxyCodeLine{00108         \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} BezierControlPointMode GetControlPointMode(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00111         \{}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{return} modes[(index + 1) / 3];}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetControlPointMode(\textcolor{keywordtype}{int} index, BezierControlPointMode mode)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             \textcolor{keywordtype}{int} modeIndex = (index + 1) / 3;}
+\DoxyCodeLine{00118             modes[modeIndex] = mode;}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{if} (loop)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 \textcolor{keywordflow}{if} (modeIndex == 0) \{}
+\DoxyCodeLine{00122                     modes[modes.Length -\/ 1] = mode;}
+\DoxyCodeLine{00123                 \}}
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (modeIndex == modes.Length -\/ 1) \{}
+\DoxyCodeLine{00125                     modes[0] = mode;}
+\DoxyCodeLine{00126                 \}}
+\DoxyCodeLine{00127             \}}
+\DoxyCodeLine{00128             EnforceMode(index);}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \textcolor{keyword}{private} \textcolor{keywordtype}{void} EnforceMode(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \textcolor{keywordtype}{int} modeIndex = (index + 1) / 3;}
+\DoxyCodeLine{00134             BezierControlPointMode mode = modes[modeIndex];}
+\DoxyCodeLine{00135             \textcolor{keywordflow}{if} (mode == BezierControlPointMode.Free || !loop \&\& (modeIndex == 0 || modeIndex == modes.Length -\/ 1))}
+\DoxyCodeLine{00136             \{}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordtype}{int} middleIndex = modeIndex * 3;}
+\DoxyCodeLine{00141             \textcolor{keywordtype}{int} fixedIndex, enforcedIndex;}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (index <= middleIndex)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144                 fixedIndex = middleIndex -\/ 1;}
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{if} (fixedIndex < 0)}
+\DoxyCodeLine{00146                 \{}
+\DoxyCodeLine{00147                     fixedIndex = points.Length -\/ 2;}
+\DoxyCodeLine{00148                 \}}
+\DoxyCodeLine{00149                 enforcedIndex = middleIndex + 1;}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{if} (enforcedIndex >= points.Length)}
+\DoxyCodeLine{00151                 \{}
+\DoxyCodeLine{00152                     enforcedIndex = 1;}
+\DoxyCodeLine{00153                 \}}
+\DoxyCodeLine{00154             \}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00155             \{}
+\DoxyCodeLine{00156                 fixedIndex = middleIndex + 1;}
+\DoxyCodeLine{00157                 \textcolor{keywordflow}{if} (fixedIndex >= points.Length)}
+\DoxyCodeLine{00158                 \{}
+\DoxyCodeLine{00159                     fixedIndex = 1;}
+\DoxyCodeLine{00160                 \}}
+\DoxyCodeLine{00161                 enforcedIndex = middleIndex -\/ 1;}
+\DoxyCodeLine{00162                 \textcolor{keywordflow}{if} (enforcedIndex < 0)}
+\DoxyCodeLine{00163                 \{}
+\DoxyCodeLine{00164                     enforcedIndex = points.Length -\/ 2;}
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166             \}}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168             Vector3 middle = points[middleIndex];}
+\DoxyCodeLine{00169             Vector3 enforcedTangent = middle -\/ points[fixedIndex];}
+\DoxyCodeLine{00170             \textcolor{keywordflow}{if} (mode == BezierControlPointMode.Aligned)}
+\DoxyCodeLine{00171             \{}
+\DoxyCodeLine{00172                 enforcedTangent = enforcedTangent.normalized * Vector3.Distance(middle, points[enforcedIndex]);}
+\DoxyCodeLine{00173             \}}
+\DoxyCodeLine{00174             points[enforcedIndex] = middle + enforcedTangent;}
+\DoxyCodeLine{00175         \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CurveCount}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keyword}{get} \{}
+\DoxyCodeLine{00180                 \textcolor{keywordflow}{return} (points.Length -\/ 1) / 3;}
+\DoxyCodeLine{00181             \}}
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184         \textcolor{keyword}{public} Vector3 GetPoint(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00185         \{}
+\DoxyCodeLine{00186             \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{00187             \textcolor{keywordflow}{if} (t >= 1f)}
+\DoxyCodeLine{00188             \{}
+\DoxyCodeLine{00189                 t = 1f;}
+\DoxyCodeLine{00190                 i = points.Length -\/ 4;}
+\DoxyCodeLine{00191             \}}
+\DoxyCodeLine{00192             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00193             \{}
+\DoxyCodeLine{00194                 t = Mathf.Clamp01(t) * CurveCount;}
+\DoxyCodeLine{00195                 i = (int)t;}
+\DoxyCodeLine{00196                 t -\/= i;}
+\DoxyCodeLine{00197                 i *= 3;}
+\DoxyCodeLine{00198             \}}
+\DoxyCodeLine{00199             \textcolor{keywordflow}{return} transform.TransformPoint(Bezier.GetPoint(points[i], points[i + 1], points[i + 2], points[i + 3], t));}
+\DoxyCodeLine{00200         \}}
+\DoxyCodeLine{00201         }
+\DoxyCodeLine{00202         \textcolor{keyword}{public} Vector3 GetVelocity(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00203         \{}
+\DoxyCodeLine{00204             \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (t >= 1f)}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 t = 1f;}
+\DoxyCodeLine{00208                 i = points.Length -\/ 4;}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00211             \{}
+\DoxyCodeLine{00212                 t = Mathf.Clamp01(t) * CurveCount;}
+\DoxyCodeLine{00213                 i = (int)t;}
+\DoxyCodeLine{00214                 t -\/= i;}
+\DoxyCodeLine{00215                 i *= 3;}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217             \textcolor{keywordflow}{return} transform.TransformPoint(Bezier.GetFirstDerivative(points[i], points[i + 1], points[i + 2], points[i + 3], t)) -\/ transform.position;}
+\DoxyCodeLine{00218         \}}
+\DoxyCodeLine{00219         }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} Vector3 GetDirection(\textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{return} GetVelocity(t).normalized;}
+\DoxyCodeLine{00223         \}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddCurve ()}
+\DoxyCodeLine{00226         \{}
+\DoxyCodeLine{00227             Vector3 point = points[points.Length -\/ 1];}
+\DoxyCodeLine{00228             Array.Resize(ref points, points.Length + 3);}
+\DoxyCodeLine{00229             point.x += 1f;}
+\DoxyCodeLine{00230             points[points.Length -\/ 3] = point;}
+\DoxyCodeLine{00231             point.x += 1f;}
+\DoxyCodeLine{00232             points[points.Length -\/ 2] = point;}
+\DoxyCodeLine{00233             point.x += 1f;}
+\DoxyCodeLine{00234             points[points.Length -\/ 1] = point;}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             Array.Resize(ref modes, modes.Length + 1);}
+\DoxyCodeLine{00237             modes[modes.Length -\/ 1] = modes[modes.Length -\/ 2];}
+\DoxyCodeLine{00238             EnforceMode(points.Length -\/ 4);}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             \textcolor{keywordflow}{if} (loop)}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242                 points[points.Length -\/ 1] = points[0];}
+\DoxyCodeLine{00243                 modes[modes.Length -\/ 1] = modes[0];}
+\DoxyCodeLine{00244                 EnforceMode(0);}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247             }
+\DoxyCodeLine{00248         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00249         \{}
+\DoxyCodeLine{00250             points = \textcolor{keyword}{new} Vector3[] \{}
+\DoxyCodeLine{00251                 \textcolor{keyword}{new} Vector3(1f, 0f, 0f),}
+\DoxyCodeLine{00252                 \textcolor{keyword}{new} Vector3(2f, 0f, 0f),}
+\DoxyCodeLine{00253                 \textcolor{keyword}{new} Vector3(3f, 0f, 0f),}
+\DoxyCodeLine{00254                 \textcolor{keyword}{new} Vector3(4f, 0f, 0f)}
+\DoxyCodeLine{00255             \};}
+\DoxyCodeLine{00256             modes = \textcolor{keyword}{new} BezierControlPointMode[] \{}
+\DoxyCodeLine{00257                 BezierControlPointMode.Free,}
+\DoxyCodeLine{00258                 BezierControlPointMode.Free}
+\DoxyCodeLine{00259             \};}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ComputeLengths()}
+\DoxyCodeLine{00263         \{}
+\DoxyCodeLine{00264             \textcolor{keywordtype}{int} subDivisions = 100;}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266             \textcolor{keywordtype}{int} totalSamples = points.Length * subDivisions;}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268             \textcolor{comment}{// lets create lengths for each control point.}}
+\DoxyCodeLine{00269             this.lengths = \textcolor{keyword}{new} \textcolor{keywordtype}{float}[totalSamples];}
+\DoxyCodeLine{00270             this.lengthsTime = \textcolor{keyword}{new} \textcolor{keywordtype}{float}[totalSamples];}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00272             \textcolor{keywordtype}{float} totalDistance = 0;}
+\DoxyCodeLine{00273             \textcolor{keywordtype}{float} CurrentTime = 0f;}
+\DoxyCodeLine{00274         }
+\DoxyCodeLine{00275             Vector3 pos;}
+\DoxyCodeLine{00276             Vector3 lastPos = this.GetPoint (0f);}
+\DoxyCodeLine{00277             \textcolor{comment}{// go from the first, to the second to last}}
+\DoxyCodeLine{00278             \textcolor{keywordflow}{for} (var i = 0; i < totalSamples -\/ 1; i++)}
+\DoxyCodeLine{00279             \{}
+\DoxyCodeLine{00280                 CurrentTime = (1f * i) / totalSamples;}
+\DoxyCodeLine{00281                 pos = this.GetPoint (CurrentTime);}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                 \textcolor{keywordtype}{float} \_delta = (pos -\/ lastPos).magnitude;}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285                 totalDistance += \_delta ;}
+\DoxyCodeLine{00286                 this.lengths [i] = totalDistance;}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288                 this.lengthsTime [i] = CurrentTime;}
+\DoxyCodeLine{00289                 lastPos = pos;}
+\DoxyCodeLine{00290             \}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292             this.TotalLength = totalDistance;}
+\DoxyCodeLine{00293 }
+\DoxyCodeLine{00294         \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296         \textcolor{keyword}{public} Vector3 GetPositionAtDistance(\textcolor{keywordtype}{float} distance,\textcolor{keywordtype}{bool} reverse = \textcolor{keyword}{false})}
+\DoxyCodeLine{00297         \{}
+\DoxyCodeLine{00298             \textcolor{keywordflow}{if} (reverse)}
+\DoxyCodeLine{00299             \{}
+\DoxyCodeLine{00300                 distance = this.TotalLength -\/ distance;}
+\DoxyCodeLine{00301             \}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303             distance = Mathf.Repeat (distance, this.TotalLength);}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305             \textcolor{comment}{// make sure that we are within the total distance of the points}}
+\DoxyCodeLine{00306             \textcolor{keywordflow}{if}(distance <= 0) \textcolor{keywordflow}{return} points[0];}
+\DoxyCodeLine{00307             \textcolor{keywordflow}{if}(distance >= this.TotalLength) \textcolor{keywordflow}{return} points[points.Length -\/ 1];}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             \textcolor{comment}{// lets find the first point that is below the distance}}
+\DoxyCodeLine{00310             \textcolor{comment}{// but, who's next point is above the distance}}
+\DoxyCodeLine{00311             var index = 0;}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{while} (index < lengths.Length -\/1 \&\& lengths[index] < distance)}
+\DoxyCodeLine{00313                 index++;}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315         \textcolor{comment}{//  Debug.Log("{}Index ="{}+index);}}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             \textcolor{comment}{// get the percentage of travel from the current length to the next}}
+\DoxyCodeLine{00318             \textcolor{comment}{// where the distance is.}}
+\DoxyCodeLine{00319             \textcolor{comment}{//var deltaAmount = Mathf.InverseLerp(lengths[index-\/1], lengths[index], distance);}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321             \textcolor{keywordtype}{float} deltaDistanceRatio =  (distance-\/lengths[index-\/1])/(lengths [index] -\/ lengths [index -\/ 1]) ;}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             \textcolor{keywordtype}{float} deltaTime = (lengthsTime [index] -\/ lengthsTime [index -\/ 1]) * deltaDistanceRatio;}
+\DoxyCodeLine{00324             \textcolor{comment}{//float splineDistance = (lengths [index -\/ 1] + (lengths [index] -\/ lengths [index -\/ 1]) * amount) / this.TotalLength;}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327             \textcolor{keywordflow}{return} GetPoint(this.lengthsTime[index]+deltaTime);}
+\DoxyCodeLine{00328             \textcolor{comment}{// we use that, to get the actual point}}
+\DoxyCodeLine{00329         \textcolor{comment}{//  return Vector3.Lerp(points[index-\/1], points[index], amount);}}
+\DoxyCodeLine{00330         \}}
+\DoxyCodeLine{00331     \}}
+\DoxyCodeLine{00332 \}}
+
+\end{DoxyCode}

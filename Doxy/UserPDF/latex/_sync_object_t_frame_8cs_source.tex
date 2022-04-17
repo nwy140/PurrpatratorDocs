@@ -1,0 +1,342 @@
+\doxysection{Sync\+Object\+TFrame.\+cs}
+\label{_sync_object_t_frame_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/SyncObjectTFrame.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/SyncObjectTFrame.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Pun.Simple.Internal;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{comment}{//using UnityEditor;}}
+\DoxyCodeLine{00011 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00020     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }SyncObject<TFrame> : SyncObject}
+\DoxyCodeLine{00021         where TFrame : FrameBase\textcolor{comment}{/*, new()*/}}
+\DoxyCodeLine{00022     \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         [System.NonSerialized] \textcolor{keyword}{public} TFrame[] frames;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00027         \textcolor{keyword}{protected} TFrame \textcolor{comment}{/*pre2Frame,*/} prevFrame, snapFrame, targFrame, \textcolor{comment}{/*nextFrame,*/} offtickFrame;}
+\DoxyCodeLine{00028         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} hadInitialSnapshot;}
+\DoxyCodeLine{00029         \textcolor{comment}{//protected bool hadInitialCompleteSnapshot;}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{if} (keyframeRate > TickEngineSettings.MaxKeyframes)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 keyframeRate = TickEngineSettings.MaxKeyframes;}
+\DoxyCodeLine{00040                 Debug.LogWarning(name + \textcolor{stringliteral}{"{}/"{}} + GetType().Name + \textcolor{stringliteral}{"{} keyframe setting exceeds max allowed for the current "{}} + TickEngineSettings.single.name + \textcolor{stringliteral}{"{}.frameCount setting. Reducing to "{}} + keyframeRate);}
+\DoxyCodeLine{00041             \}}
+\DoxyCodeLine{00042             base.OnAwake();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044             PopulateFrames();}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046             offtickFrame = frames[TickEngineSettings.frameCount];}
+\DoxyCodeLine{00047         \}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPostDisable()}
+\DoxyCodeLine{00050         \{}
+\DoxyCodeLine{00051             base.OnPostDisable();}
+\DoxyCodeLine{00053             hadInitialSnapshot = \textcolor{keyword}{false};}
+\DoxyCodeLine{00054             \textcolor{comment}{//hadInitialCompleteSnapshot = false;}}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00058         \{}
+\DoxyCodeLine{00059             base.OnAuthorityChanged(isMine, controllerChanged);}
+\DoxyCodeLine{00060             }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (controllerChanged)}
+\DoxyCodeLine{00063             \{}
+\DoxyCodeLine{00064                 var controllerId = photonView.ControllerActorNr;}
+\DoxyCodeLine{00065                 var originHistory = netObj.originHistory;}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = TickEngineSettings.frameCount; i < cnt; ++i)}
+\DoxyCodeLine{00067                 \{}
+\DoxyCodeLine{00068                     \textcolor{keywordflow}{if} (controllerId != originHistory[i])}
+\DoxyCodeLine{00069                         frames[i].Clear();}
+\DoxyCodeLine{00070                 \}}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00076             hadInitialSnapshot = \textcolor{keyword}{false};}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078         \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00083         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} PopulateFrames()}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00086             FrameBase.PopulateFrames(ref frames);}
+\DoxyCodeLine{00087         \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} InitialCompleteSnapshot(TFrame frame)}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             }
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OnSnapshot(\textcolor{keywordtype}{int} prevFrameId, \textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{bool} prevIsValid, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102             }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (!enabled)}
+\DoxyCodeLine{00105                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             \textcolor{keywordtype}{int} frameCount = TickEngineSettings.frameCount;}
+\DoxyCodeLine{00108             \textcolor{keywordtype}{int} halfFrameCount = TickEngineSettings.halfFrameCount;}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             prevFrame = frames[prevFrameId];}
+\DoxyCodeLine{00111             snapFrame = frames[snapFrameId];}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (targFrameId < 0 || targFrameId >= frameCount)}
+\DoxyCodeLine{00114                 Debug.Log(\textcolor{stringliteral}{"{}BAD FRAME ID "{}} + targFrameId);}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116             targFrame = frames[targFrameId];}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00119             \textcolor{keywordtype}{int} invalidateframeId = snapFrameId + halfFrameCount;}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{if} (invalidateframeId >= frameCount)}
+\DoxyCodeLine{00121                 invalidateframeId -\/= frameCount;}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             frames[invalidateframeId].Clear();}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00126             \textcolor{keywordflow}{if} (targIsValid)}
+\DoxyCodeLine{00127             \{}
+\DoxyCodeLine{00128                 \textcolor{keywordflow}{switch} (targFrame.content)}
+\DoxyCodeLine{00129                 \{}
+\DoxyCodeLine{00130                     \textcolor{keywordflow}{case} FrameContents.Empty:}
+\DoxyCodeLine{00131                         \textcolor{keywordflow}{if} (AllowReconstructionOfEmpty)}
+\DoxyCodeLine{00132                             ReconstructEmptyFrame();}
+\DoxyCodeLine{00133                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135                     \textcolor{keywordflow}{case} FrameContents.Partial:}
+\DoxyCodeLine{00136                         \textcolor{keywordflow}{if} (AllowReconstructionOfPartial)}
+\DoxyCodeLine{00137                             ReconstructIncompleteFrame();}
+\DoxyCodeLine{00138                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{case} FrameContents.NoChange:}
+\DoxyCodeLine{00141                         targFrame.CopyFrom(snapFrame);}
+\DoxyCodeLine{00142                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144                     \textcolor{keywordflow}{case} FrameContents.Complete:}
+\DoxyCodeLine{00145                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147                 \}}
+\DoxyCodeLine{00148             \}}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 \textcolor{keywordflow}{if} (AllowReconstructionOfEmpty)}
+\DoxyCodeLine{00153                 \{}
+\DoxyCodeLine{00155                     \textcolor{keywordflow}{if} (snapIsValid || snapFrame.content >= FrameContents.Extrapolated)}
+\DoxyCodeLine{00156                     \{}
+\DoxyCodeLine{00157                         \textcolor{comment}{//if (snapFrame.content == FrameContents.Empty)}}
+\DoxyCodeLine{00158                         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00159                         \textcolor{comment}{//    targFrame.content = FrameContents.Empty;}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161                         \textcolor{comment}{//    if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00162                         \textcolor{comment}{//        Debug.Log(snapFrameId + "{}:"{} + targFrame +  "{} snap VALID but EMPTY"{});}}
+\DoxyCodeLine{00163                         \textcolor{comment}{//    return false;}}
+\DoxyCodeLine{00164                         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166                         ConstructMissingFrame(prevFrame, snapFrame, targFrame);}
+\DoxyCodeLine{00167                     \}}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         \textcolor{comment}{//if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00172                         \textcolor{comment}{//    Debug.Log(snapFrameId + "{}:"{} + targFrame.frameId + "{} snap INVALID"{});}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174                         targFrame.content = FrameContents.Empty;}
+\DoxyCodeLine{00175                         \textcolor{comment}{//return false;}}
+\DoxyCodeLine{00176                     \}}
+\DoxyCodeLine{00177                 \}}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00180                 \{}
+\DoxyCodeLine{00181                     \textcolor{comment}{//if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00182                     \textcolor{comment}{//    Debug.Log(snapFrameId + "{}>"{} + targFrameId + "{} targ EMPTY -\/ targIsValid? "{} + netObj.frameValidMask[targFrameId]);}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184                     targFrame.content = FrameContents.Empty;}
+\DoxyCodeLine{00185                     \textcolor{comment}{//return false;}}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187             \}}
+\DoxyCodeLine{00188             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             \textcolor{keywordflow}{if} (\_readyState != ReadyStateEnum.Ready)}
+\DoxyCodeLine{00191             \{}
+\DoxyCodeLine{00192                 var initialFrame = snapFrame;}
+\DoxyCodeLine{00193                 var initialContent = initialFrame.content;}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                 \textcolor{keywordflow}{if} (initialContent == FrameContents.Complete \textcolor{comment}{/*|| (IsKeyframe(initialFrame.frameId)*/} \textcolor{comment}{/*\&\& initialContent != 0*/})}
+\DoxyCodeLine{00196                 \{}
+\DoxyCodeLine{00197                     \textcolor{comment}{//Debug.Log(name + "{} "{} + GetType().Name + "{} <color=green>Initial -\/ ReadyState = ready</color> "{} + (initialContent == FrameContents.Complete) + "{} "{} + (IsKeyframe(initialFrame.frameId)));}}
+\DoxyCodeLine{00198                     InitialCompleteSnapshot(initialFrame);}
+\DoxyCodeLine{00199                     \textcolor{comment}{//hadInitialCompleteSnapshot = true;}}
+\DoxyCodeLine{00200                     ReadyState = ReadyStateEnum.Ready;}
+\DoxyCodeLine{00201                     \textcolor{comment}{//ApplySnapshot();}}
+\DoxyCodeLine{00202                 \}}
+\DoxyCodeLine{00203                 \textcolor{comment}{//else}}
+\DoxyCodeLine{00204                 \textcolor{comment}{//  Debug.Log(GetType().Name + "{} "{} + initialFrame.frameId + "{} still no first complete -\/ initcontent: "{} + initialContent);}}
+\DoxyCodeLine{00205             \}}
+\DoxyCodeLine{00206             }
+\DoxyCodeLine{00207             ApplySnapshot(snapFrame, targFrame, snapIsValid, targIsValid);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00213         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ApplySnapshot(TFrame snapframe, TFrame targframe, \textcolor{keywordtype}{bool} snapIsValid, \textcolor{keywordtype}{bool} targIsValid)}
+\DoxyCodeLine{00214         \{}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216         \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AllowInterpolation \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00219         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AllowReconstructionOfEmpty \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00220         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AllowReconstructionOfPartial \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00225         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ReconstructEmptyFrame()}
+\DoxyCodeLine{00226         \{}
+\DoxyCodeLine{00227             \textcolor{keywordflow}{if} (snapFrame.content == FrameContents.Extrapolated || snapFrame.content == FrameContents.Complete)}
+\DoxyCodeLine{00228             \{}
+\DoxyCodeLine{00229                 targFrame.content = FrameContents.Extrapolated;}
+\DoxyCodeLine{00230                 targFrame.CopyFrom(snapFrame);}
+\DoxyCodeLine{00231             \}}
+\DoxyCodeLine{00232             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00233             \{}
+\DoxyCodeLine{00234                 targFrame.content = FrameContents.Empty;}
+\DoxyCodeLine{00235             \}}
+\DoxyCodeLine{00236         \}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00241         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ReconstructIncompleteFrame()}
+\DoxyCodeLine{00242         \{}
+\DoxyCodeLine{00243             }
+\DoxyCodeLine{00244             targFrame.CopyFrom(snapFrame);}
+\DoxyCodeLine{00245             targFrame.content = FrameContents.Partial;}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ConstructMissingFrame(TFrame prevFrame, TFrame snapframe, TFrame targframe)}
+\DoxyCodeLine{00249         \{}
+\DoxyCodeLine{00250             \textcolor{comment}{//targFrame.content = FrameContents.Empty;}}
+\DoxyCodeLine{00251             \textcolor{comment}{//return;}}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             \textcolor{comment}{//if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00254             \textcolor{comment}{//    //Debug.Log(GetType().Name + "{} "{} + targFrame.frameId + "{} Reconstruct Missing Frame:  targContent= "{} + targFrame.content);}}
+\DoxyCodeLine{00255             \textcolor{comment}{//    Debug.Log(GetType().Name + "{} "{} + snapFrame.frameId + "{}:"{} + targFrame.frameId + "{} Reconstruct Missing Frame:  "{} + snapFrame.content + "{} "{} + targFrame.content}}
+\DoxyCodeLine{00256             \textcolor{comment}{//        //+ "{} "{} + netObj.frameValidMask[snapFrame.frameId] + "{}:"{} + netObj.frameValidMask[targFrame.frameId]}}
+\DoxyCodeLine{00257             \textcolor{comment}{//        );}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00261             \textcolor{keywordtype}{bool} snapFrameIsEmpty = snapframe.content == FrameContents.Empty; \textcolor{comment}{// offsets.validFrames[snapFrame.frameId];}}
+\DoxyCodeLine{00262             \textcolor{keywordflow}{if} (snapFrameIsEmpty)}
+\DoxyCodeLine{00263             \{}
+\DoxyCodeLine{00264                 \textcolor{comment}{//if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00265                 \textcolor{comment}{//    Debug.Log("{}SET "{} + targFrame + "{} targ EMPTY"{});}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267                 targframe.content = FrameContents.Empty;}
+\DoxyCodeLine{00268                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00269             \}}
+\DoxyCodeLine{00270             }
+\DoxyCodeLine{00271             ConnectionTickOffsets offsets;}
+\DoxyCodeLine{00272             \textcolor{keywordtype}{bool} found = TickManager.perConnOffsets.TryGetValue(ControllerActorNr, out offsets);}
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (!found)}
+\DoxyCodeLine{00274             \{}
+\DoxyCodeLine{00275                 Debug.LogError(\textcolor{stringliteral}{"{}CONN "{}} + ControllerActorNr + \textcolor{stringliteral}{"{} NOT ESTABLISHED IN TICK MANAGER YET."{}});}
+\DoxyCodeLine{00276             \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278             }
+\DoxyCodeLine{00279             \textcolor{comment}{//if (snapFrameNotEmpty)}}
+\DoxyCodeLine{00280             \textcolor{comment}{// First see if we have a future valid frame we can interpolate to, as that will produce better results than a pure extrapolation.}}
+\DoxyCodeLine{00281             \{}
+\DoxyCodeLine{00282                 \textcolor{keywordtype}{int} targFrameId = targframe.frameId;}
+\DoxyCodeLine{00283                 \textcolor{keyword}{const} \textcolor{keywordtype}{int} MAX\_LOOKAHEAD = 3;}
+\DoxyCodeLine{00284                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 2; i <= MAX\_LOOKAHEAD; ++i)}
+\DoxyCodeLine{00285                 \{}
+\DoxyCodeLine{00286                     \textcolor{keywordtype}{int} futureFid = targFrameId + i;}
+\DoxyCodeLine{00287                     \textcolor{keywordflow}{if} (futureFid >= TickEngineSettings.frameCount)}
+\DoxyCodeLine{00288                         futureFid -\/= TickEngineSettings.frameCount;}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290                     var futureFrame = frames[futureFid];}
+\DoxyCodeLine{00291                     \textcolor{comment}{// Find a future frame that is complete to use as the end of our lerp.}}
+\DoxyCodeLine{00292                     \textcolor{keywordflow}{if} (netObj.frameValidMask[futureFid] \textcolor{comment}{/*(offsets.validFrames[futureFid] */} \&\& futureFrame.content == FrameContents.Complete) \textcolor{comment}{//  ((validMask \& (ulong)1 << futureFid) != 0)}}
+\DoxyCodeLine{00293                     \{}
+\DoxyCodeLine{00294                         \textcolor{keywordtype}{float} t = 1f / i;}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296                         InterpolateFrame(targframe, snapframe, futureFrame, t);}
+\DoxyCodeLine{00297                        }
+\DoxyCodeLine{00298                         var content = targframe.content;}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300                         \textcolor{keywordflow}{if} (content != FrameContents.Empty)}
+\DoxyCodeLine{00301                         \{}
+\DoxyCodeLine{00302                             \textcolor{comment}{//if (GetComponent<SyncPickup>() \&\& this is SyncState)}}
+\DoxyCodeLine{00303                             \textcolor{comment}{//    Debug.Log(targFrame.frameId + "{}:"{} + snapFrame.content + "{}-\/>"{} + content + "{} "{} + GetType().Name + "{} <color=red><b>Extrap by Interpolation</b></color> "{} + snapFrame.frameId + "{}-\/-\/>"{} + futureFrame.frameId);}}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305                             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00306                         \}}
+\DoxyCodeLine{00307                     \}}
+\DoxyCodeLine{00308                 \}}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310                 \textcolor{comment}{// For loop failed to reconstruct using a future frame for whatever reason -\/ return empty.}}
+\DoxyCodeLine{00311                 targframe.content = FrameContents.Empty;}
+\DoxyCodeLine{00312             \}}
+\DoxyCodeLine{00313             }
+\DoxyCodeLine{00315             ExtrapolateFrame(prevFrame, snapframe, targframe);}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317             \textcolor{comment}{//if (targFrame.content != 0 \&\& this is SyncState)}}
+\DoxyCodeLine{00318             \textcolor{comment}{//    Debug.LogError(targFrame.frameId + "{}:"{} + targFrame.content + "{} "{} +}}
+\DoxyCodeLine{00319             \textcolor{comment}{//        GetType().Name + "{} <color=red><b> Extrapolated </b></color>"{} + prevFrame.frameId + "{}:"{} + prevFrame.content + "{} "{} +}}
+\DoxyCodeLine{00320             \textcolor{comment}{//        snapFrame.frameId + "{}:"{} + snapFrame.content);}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322         \}}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00329         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} OnInterpolate(\textcolor{keywordtype}{int} snapFrameId, \textcolor{keywordtype}{int} targFrameId, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00330         \{}
+\DoxyCodeLine{00331             \textcolor{comment}{//Debug.Log("{}AllowInterpolation "{} + AllowInterpolation + "{}  isActiveAndEnabled "{} + isActiveAndEnabled + "{} hadInitialSnapshot "{} + hadInitialSnapshot + "{} IsMine "{} + IsMine);}}
+\DoxyCodeLine{00332             \textcolor{keywordflow}{if} (!AllowInterpolation)}
+\DoxyCodeLine{00333                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335             \textcolor{keywordflow}{if} (!isActiveAndEnabled)}
+\DoxyCodeLine{00336                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00337 }
+\DoxyCodeLine{00338             \textcolor{comment}{//if (!hadInitialSnapshot)}}
+\DoxyCodeLine{00339             \textcolor{comment}{//  return false;}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341             \textcolor{keywordflow}{if} (IsMine)}
+\DoxyCodeLine{00342                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00343             }
+\DoxyCodeLine{00344             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00345         \}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00350         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} InterpolateFrame(TFrame targframe, TFrame startframe, TFrame endframe, \textcolor{keywordtype}{float} t)}
+\DoxyCodeLine{00351         \{}
+\DoxyCodeLine{00352             targframe.Clear();}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00357         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} ExtrapolateFrame(TFrame prevframe, TFrame snapframe, TFrame targframe)}
+\DoxyCodeLine{00358         \{}
+\DoxyCodeLine{00359             targframe.Clear();}
+\DoxyCodeLine{00360         \}}
+\DoxyCodeLine{00361         }
+\DoxyCodeLine{00362     \}}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366     \textcolor{comment}{//[CustomEditor(typeof(SyncObject<>), isFallback = false)]}}
+\DoxyCodeLine{00367     \textcolor{comment}{//[CanEditMultipleObjects]}}
+\DoxyCodeLine{00368     \textcolor{comment}{//public class SyncObjectTFrameEditor : SyncObjectEditor}}
+\DoxyCodeLine{00369     \textcolor{comment}{//\{}}
+\DoxyCodeLine{00370     \textcolor{comment}{//  protected override string HelpURL}}
+\DoxyCodeLine{00371     \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00372     \textcolor{comment}{//      get}}
+\DoxyCodeLine{00373     \textcolor{comment}{//      \{}}
+\DoxyCodeLine{00374     \textcolor{comment}{//          return "{}"{};}}
+\DoxyCodeLine{00375     \textcolor{comment}{//      \}}}
+\DoxyCodeLine{00376     \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00377     \textcolor{comment}{//  public override void OnInspectorGUI()}}
+\DoxyCodeLine{00378     \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00379     \textcolor{comment}{//      base.OnInspectorGUI();}}
+\DoxyCodeLine{00380 }
+\DoxyCodeLine{00381     \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00382     \textcolor{comment}{//\}}}
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00384 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00385 \}}
+\DoxyCodeLine{00386 }
+
+\end{DoxyCode}

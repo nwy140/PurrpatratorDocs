@@ -1,0 +1,160 @@
+\doxysection{Bezier\+Spline\+Inspector.\+cs}
+\label{_bezier_spline_inspector_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/Editor/BezierSplineInspector.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoSlotRacer/Scripts/BezierCurve/Editor/BezierSplineInspector.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}BezierSplineInspector.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Original: http://catlikecoding.com/unity/tutorials/curves-\/and-\/splines/}}
+\DoxyCodeLine{00007 \textcolor{comment}{//  Used in SlotRacer Demo}}
+\DoxyCodeLine{00008 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Demo.SlotRacer.Utils}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017     [CustomEditor(typeof(BezierSpline))]}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{class }BezierSplineInspector : Editor}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} stepsPerCurve = 10;}
+\DoxyCodeLine{00021         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} directionScale = 0.5f;}
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} handleSize = 0.04f;}
+\DoxyCodeLine{00023         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{float} pickSize = 0.06f;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{private} \textcolor{keyword}{static} Color[] modeColors = \{}
+\DoxyCodeLine{00026             Color.white,}
+\DoxyCodeLine{00027             Color.yellow,}
+\DoxyCodeLine{00028             Color.cyan}
+\DoxyCodeLine{00029         \};}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{private} BezierSpline spline;}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} Transform handleTransform;}
+\DoxyCodeLine{00033         \textcolor{keyword}{private} Quaternion handleRotation;}
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keywordtype}{int} selectedIndex = -\/1;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             spline = target as BezierSpline;}
+\DoxyCodeLine{00039             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00040             \textcolor{keywordtype}{bool} loop = EditorGUILayout.Toggle(\textcolor{stringliteral}{"{}Loop"{}}, spline.Loop);}
+\DoxyCodeLine{00041             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00042             \{}
+\DoxyCodeLine{00043                 Undo.RecordObject(spline, \textcolor{stringliteral}{"{}Toggle Loop"{}});}
+\DoxyCodeLine{00044                 EditorUtility.SetDirty(spline);}
+\DoxyCodeLine{00045                 spline.Loop = loop;}
+\DoxyCodeLine{00046             \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (selectedIndex >= 0 \&\& selectedIndex < spline.ControlPointCount)}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 DrawSelectedPointInspector();}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053             \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Add Curve"{}}))}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 Undo.RecordObject(spline, \textcolor{stringliteral}{"{}Add Curve"{}});}
+\DoxyCodeLine{00056                 spline.AddCurve();}
+\DoxyCodeLine{00057                 EditorUtility.SetDirty(spline);}
+\DoxyCodeLine{00058             \}}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawSelectedPointInspector()}
+\DoxyCodeLine{00062         \{}
+\DoxyCodeLine{00063             GUILayout.Label(\textcolor{stringliteral}{"{}Selected Point"{}});}
+\DoxyCodeLine{00064             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00065             Vector3 point = EditorGUILayout.Vector3Field(\textcolor{stringliteral}{"{}Position"{}}, spline.GetControlPoint(selectedIndex));}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00067             \{}
+\DoxyCodeLine{00068                 Undo.RecordObject(spline, \textcolor{stringliteral}{"{}Move Point"{}});}
+\DoxyCodeLine{00069                 EditorUtility.SetDirty(spline);}
+\DoxyCodeLine{00070                 spline.SetControlPoint(selectedIndex, point);}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00073             BezierControlPointMode mode = (BezierControlPointMode)EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Mode"{}}, spline.GetControlPointMode(selectedIndex));}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 Undo.RecordObject(spline, \textcolor{stringliteral}{"{}Change Point Mode"{}});}
+\DoxyCodeLine{00077                 spline.SetControlPointMode(selectedIndex, mode);}
+\DoxyCodeLine{00078                 EditorUtility.SetDirty(spline);}
+\DoxyCodeLine{00079             \}}
+\DoxyCodeLine{00080         \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnSceneGUI()}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             spline = target as BezierSpline;}
+\DoxyCodeLine{00085             handleTransform = spline.transform;}
+\DoxyCodeLine{00086             handleRotation = Tools.pivotRotation == PivotRotation.Local ?}
+\DoxyCodeLine{00087                 handleTransform.rotation : Quaternion.identity;}
+\DoxyCodeLine{00088             }
+\DoxyCodeLine{00089             Vector3 p0 = ShowPoint(0);}
+\DoxyCodeLine{00090             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i < spline.ControlPointCount; i += 3)}
+\DoxyCodeLine{00091             \{}
+\DoxyCodeLine{00092                 Vector3 p1 = ShowPoint(i);}
+\DoxyCodeLine{00093                 Vector3 p2 = ShowPoint(i + 1);}
+\DoxyCodeLine{00094                 Vector3 p3 = ShowPoint(i + 2);}
+\DoxyCodeLine{00095                 }
+\DoxyCodeLine{00096                 Handles.color = Color.gray;}
+\DoxyCodeLine{00097                 Handles.DrawLine(p0, p1);}
+\DoxyCodeLine{00098                 Handles.DrawLine(p2, p3);}
+\DoxyCodeLine{00099                 }
+\DoxyCodeLine{00100                 Handles.DrawBezier(p0, p3, p1, p2, Color.white, \textcolor{keyword}{null}, 2f);}
+\DoxyCodeLine{00101                 p0 = p3;}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103             ShowDirections();}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ShowDirections()}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             Handles.color = Color.green;}
+\DoxyCodeLine{00109             Vector3 point = spline.GetPoint(0f);}
+\DoxyCodeLine{00110             Handles.DrawLine(point, point + spline.GetDirection(0f) * directionScale);}
+\DoxyCodeLine{00111             \textcolor{keywordtype}{int} steps = stepsPerCurve * spline.CurveCount;}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i <= steps; i++)}
+\DoxyCodeLine{00113             \{}
+\DoxyCodeLine{00114                 point = spline.GetPoint(i / (\textcolor{keywordtype}{float})steps);}
+\DoxyCodeLine{00115                 Handles.DrawLine(point, point + spline.GetDirection(i / (\textcolor{keywordtype}{float})steps) * directionScale);}
+\DoxyCodeLine{00116             \}}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         \textcolor{keyword}{private} Vector3 ShowPoint(\textcolor{keywordtype}{int} index)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             Vector3 point = handleTransform.TransformPoint(spline.GetControlPoint(index));}
+\DoxyCodeLine{00122             \textcolor{keywordtype}{float} size = HandleUtility.GetHandleSize(point);}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{if} (index == 0)}
+\DoxyCodeLine{00124             \{}
+\DoxyCodeLine{00125                 size *= 2f;}
+\DoxyCodeLine{00126             \}}
+\DoxyCodeLine{00127             Handles.color = modeColors[(int)spline.GetControlPointMode(index)];}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130 \textcolor{preprocessor}{            \#if UNITY\_5\_6\_OR\_NEWER}}
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (Handles.Button(point, handleRotation, size * handleSize, size * pickSize, Handles.DotHandleCap)) }
+\DoxyCodeLine{00132             \#\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (Handles.Button(point, handleRotation, size * handleSize, size * pickSize, Handles.DotCap))}
+\DoxyCodeLine{00134             \#endif}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 selectedIndex = index;}
+\DoxyCodeLine{00137                 Repaint();}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordflow}{if} (selectedIndex == index)}
+\DoxyCodeLine{00141             \{}
+\DoxyCodeLine{00142                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00143                 point = Handles.DoPositionHandle(point, handleRotation);}
+\DoxyCodeLine{00144                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00145                 \{}
+\DoxyCodeLine{00146                     Undo.RecordObject(spline, \textcolor{stringliteral}{"{}Move Point"{}});}
+\DoxyCodeLine{00147                     EditorUtility.SetDirty(spline);}
+\DoxyCodeLine{00148                     spline.SetControlPoint(index, handleTransform.InverseTransformPoint(point));}
+\DoxyCodeLine{00149                 \}}
+\DoxyCodeLine{00150             \}}
+\DoxyCodeLine{00151             \textcolor{keywordflow}{return} point;}
+\DoxyCodeLine{00152         \}}
+\DoxyCodeLine{00153     \}}
+\DoxyCodeLine{00154 \}}
+
+\end{DoxyCode}

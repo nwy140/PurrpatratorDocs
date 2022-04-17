@@ -1,0 +1,1338 @@
+\doxysection{Generate\+Type\+Extension.\+cs}
+\label{_generate_type_extension_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/GenerateTypeExtension.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/PackObject/CodeGen/GenerateTypeExtension.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00014 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Compression.Internal}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }GenerateTypeExt}
+\DoxyCodeLine{00019     \{}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PACK\_PREFIX = \textcolor{stringliteral}{"{}Pack\_"{}};}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PACKFRM\_PREFIX = \textcolor{stringliteral}{"{}PackFrame\_"{}};}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PREV\_FRM\_NAME = \textcolor{stringliteral}{"{}prevFrame"{}};}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PREV\_NAME = \textcolor{stringliteral}{"{}prev"{}};}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} SUPRESS\_UNUSED = \textcolor{stringliteral}{"{}\#pragma warning disable 1635"{}};}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} RESTORE\_UNUSED = \textcolor{stringliteral}{"{}\#pragma warning restore 1635"{}};}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} SUPRESS\_UNUSED2 = \textcolor{stringliteral}{"{}\#pragma warning disable 0219"{}};}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} RESTORE\_UNUSED2 = \textcolor{stringliteral}{"{}\#pragma warning disable 0219"{}};}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbFrame = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00033         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbFactory = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00034         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbSnapshot = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00035         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbCopyToFrame = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00036         }
+\DoxyCodeLine{00037         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbCapture = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbApplyToObj = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00039         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbCopyFrameToFrame = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00040         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbInterpToObj = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00041         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbInterpToFrame = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00042         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbDelegates = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbInit = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00045         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbPack = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00046         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder sbUnpack = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} hasSnapCallbacks;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} serializationFlags = typeof(SerializationFlags).Name;}
+\DoxyCodeLine{00051         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} serializationFlagsLine1 = serializationFlags + \textcolor{stringliteral}{"{} flags = "{}} + serializationFlags + \textcolor{stringliteral}{"{}."{}} + System.Enum.GetName(typeof(SerializationFlags), SerializationFlags.None) + \textcolor{stringliteral}{"{};\(\backslash\)n"{}};}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder GeneratePackCode(\textcolor{keyword}{this} Type objType, TypeInfo objTypeInfo, PackObjectAttribute pObjAttr)}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             \textcolor{keywordtype}{bool} isStruct = objType.IsValueType;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             \textcolor{keywordtype}{string} objTypeName = objType.Name;}
+\DoxyCodeLine{00058             \textcolor{keywordtype}{string} objTypeNamespace = objType.Namespace;}
+\DoxyCodeLine{00059             \textcolor{keywordtype}{string} ffulltype = (objType.Namespace == \textcolor{keyword}{null} || objType.Namespace == \textcolor{stringliteral}{"{}"{}}) ? objType.Name : (objType.Namespace + \textcolor{stringliteral}{"{}."{}} + objType.Name);}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061             \textcolor{keywordtype}{string} structCast = isStruct ? \textcolor{stringliteral}{"{}*("{}} + ffulltype + \textcolor{stringliteral}{"{}*)"{}} : \textcolor{keyword}{null};}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063             \textcolor{keywordtype}{string} packFrameName = \textcolor{stringliteral}{"{}PackFrame\_"{}} + objTypeName;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{keywordtype}{string} fullClass = ReplacePlusWithPeriod(objType.FullName);}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             \textcolor{keywordtype}{string} derefObj = objType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + ffulltype + \textcolor{stringliteral}{"{}*)trg)"{}} : \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             GenerateFields(objType);}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071             \textcolor{keywordtype}{string} fullObjName = objType.FullName; \textcolor{comment}{// (objTypeNamespace == null || objTypeNamespace == "{}"{}) ? objTypeName : (objTypeNamespace + "{}."{} + objTypeName);}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             sb.Length = 0;}
+\DoxyCodeLine{00074             sb.\_(\textcolor{stringliteral}{"{}using System;"{}}).EOL();}
+\DoxyCodeLine{00075             sb.\_(\textcolor{stringliteral}{"{}using System.Reflection;"{}}).EOL();}
+\DoxyCodeLine{00076             sb.\_(\textcolor{stringliteral}{"{}using System.Collections;"{}}).EOL();}
+\DoxyCodeLine{00077             sb.\_(\textcolor{stringliteral}{"{}using Photon.Utilities;"{}}).EOL();}
+\DoxyCodeLine{00078             sb.\_(\textcolor{stringliteral}{"{}using UnityEngine;"{}}).EOL();}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080             sb.\_(SUPRESS\_UNUSED).EOL();}
+\DoxyCodeLine{00081             sb.\_(SUPRESS\_UNUSED2).EOL();}
+\DoxyCodeLine{00083             \{}
+\DoxyCodeLine{00084                 sb.\_(\textcolor{stringliteral}{"{}namespace Photon.Compression.Internal"{}}).EOL();}
+\DoxyCodeLine{00085                 sb.\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00088                 \{}
+\DoxyCodeLine{00089                     sb.\_\_(\textcolor{stringliteral}{"{}public class "{}}, packFrameName, \textcolor{stringliteral}{"{} : PackFrame"{}}).EOL();}
+\DoxyCodeLine{00090                     sb.\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00093                     sb.\_(sbFrame.ToString());}
+\DoxyCodeLine{00094                     sb.EOL();}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00097                     sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Interpolate(PackFrame start, PackFrame end, PackFrame trg, float time, ref FastBitMask128 readyMask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099                     sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{if} (sbInterpToFrame.Length != 0)}
+\DoxyCodeLine{00102                     \{}
+\DoxyCodeLine{00103                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var s = start as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00104                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var e = end as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00105                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00106                         \textcolor{comment}{//sb.\_\_\_\_("{}int maskOffset = 0;"{}).EOL();}}
+\DoxyCodeLine{00107                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var mask = end.mask;"{}}).EOL();}
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00109                         sb.Append(sbInterpToFrame);}
+\DoxyCodeLine{00110                     \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112                     sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00115                     \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00116                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Interpolate(PackFrame start, PackFrame end, IntPtr trg, float time, ref FastBitMask128 readyMask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00117                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00118                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Interpolate(PackFrame start, PackFrame end, System.Object trg, float time, ref FastBitMask128 readyMask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120                     sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122                     \textcolor{keywordflow}{if} (sbInterpToObj.Length != 0)}
+\DoxyCodeLine{00123                     \{}
+\DoxyCodeLine{00124                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var s = start as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00125                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var e = end as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00126                         \textcolor{keywordflow}{if} (!isStruct)}
+\DoxyCodeLine{00127                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, fullObjName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00128                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var mask = end.mask;"{}}).EOL();}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130                         sb.Append(sbInterpToObj);}
+\DoxyCodeLine{00131                     \}}
+\DoxyCodeLine{00132                     }
+\DoxyCodeLine{00133                     sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00136                     \{}
+\DoxyCodeLine{00137                         \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00138                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void SnapshotCallback(PackFrame snapframe, PackFrame targframe, IntPtr trg, ref FastBitMask128 readyMask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00139                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void SnapshotCallback(PackFrame snapframe, PackFrame targframe, System.Object trg, ref FastBitMask128 readyMask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144                         \textcolor{keywordflow}{if} (hasSnapCallbacks\textcolor{comment}{/* sbSnapshot.Length != 0*/})}
+\DoxyCodeLine{00145                         \{}
+\DoxyCodeLine{00146                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var snap = snapframe as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00147                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var targ = targframe as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00148                             \textcolor{keywordflow}{if} (!isStruct)}
+\DoxyCodeLine{00149                                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, fullObjName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00150                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var snapmask = snapframe.mask;"{}}).EOL();}
+\DoxyCodeLine{00151                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var targmask = targframe.mask;"{}}).EOL();}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                             sb.Append(sbSnapshot);}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155                             \textcolor{keywordflow}{if} (pObjAttr.postSnapCallback != \textcolor{keyword}{null})}
+\DoxyCodeLine{00156                             \{}
+\DoxyCodeLine{00157                                 sb.\_\_\_\_((isStruct ? \textcolor{stringliteral}{"{}unsafe "{}} : \textcolor{stringliteral}{"{}"{}}), \textcolor{stringliteral}{"{}\{ "{}} ,derefObj, \textcolor{stringliteral}{"{}."{}}, pObjAttr.postSnapCallback, \textcolor{stringliteral}{"{}(); \}"{}}).EOL();}
+\DoxyCodeLine{00158                             \}}
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160                         \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00163                     \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00166                     \{}
+\DoxyCodeLine{00167                         \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00168                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Capture(IntPtr src, PackFrame trg)"{}}).EOL();}
+\DoxyCodeLine{00169                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00170                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Capture(System.Object src, PackFrame trg)"{}}).EOL();}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174                         \textcolor{keywordflow}{if} (sbCapture.Length != 0)}
+\DoxyCodeLine{00175                         \{}
+\DoxyCodeLine{00176                             \textcolor{keywordflow}{if} (!isStruct)}
+\DoxyCodeLine{00177                                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}var s = src as "{}}, fullObjName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00180                             sb.Append(sbCapture);}
+\DoxyCodeLine{00181                         \}}
+\DoxyCodeLine{00182                         }
+\DoxyCodeLine{00183                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00184                     \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00187                     \{}
+\DoxyCodeLine{00188                         \textcolor{keywordtype}{string} postApplyCallback = pObjAttr.postApplyCallback;}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190                         \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00191                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Apply(PackFrame src, IntPtr trg, ref FastBitMask128 mask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00192                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00193                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Apply(PackFrame src, System.Object trg, ref FastBitMask128 mask, ref int maskOffset)"{}}).EOL();}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197                         \textcolor{keywordflow}{if} (sbApplyToObj.Length != 0)}
+\DoxyCodeLine{00198                         \{}
+\DoxyCodeLine{00199                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var s = src as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201                             \textcolor{keywordflow}{if} (!isStruct)}
+\DoxyCodeLine{00202                                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, fullObjName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204                             \textcolor{keywordflow}{if} (postApplyCallback != \textcolor{keyword}{null})}
+\DoxyCodeLine{00205                                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}bool haschanged = false;"{}}).EOL();}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                             sb.Append(sbApplyToObj);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209                             \textcolor{keywordflow}{if} (postApplyCallback != \textcolor{keyword}{null})}
+\DoxyCodeLine{00210                             \{}
+\DoxyCodeLine{00211                                 sb.\_\_\_\_((isStruct ? \textcolor{stringliteral}{"{}unsafe "{}} : \textcolor{stringliteral}{"{}"{}}), \textcolor{stringliteral}{"{}\{ if (haschanged) "{}}, derefObj, \textcolor{stringliteral}{"{}."{}}, postApplyCallback, \textcolor{stringliteral}{"{}(); \}"{}}).EOL();}
+\DoxyCodeLine{00212                             \}}
+\DoxyCodeLine{00213                         \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00216                     \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00219                     \{}
+\DoxyCodeLine{00220                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Copy(PackFrame src, PackFrame trg)"{}}).EOL();}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224                         \textcolor{keywordflow}{if} (sbCopyFrameToFrame.Length != 0)}
+\DoxyCodeLine{00225                         \{}
+\DoxyCodeLine{00226                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var s = src as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00227                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var t = trg as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229                             sb.Append(sbCopyFrameToFrame);}
+\DoxyCodeLine{00230                         \}}
+\DoxyCodeLine{00231                         }
+\DoxyCodeLine{00232                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00233                     \}}
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235                     sb.EOL();}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00238                     sb.\_\_\_(\textcolor{stringliteral}{"{}public static PackFrame Factory() \{ return new "{}}, packFrameName, \textcolor{stringliteral}{"{}()\{ mask = new FastBitMask128("{}}, PACK\_PREFIX, objTypeName, \textcolor{stringliteral}{"{}.TOTAL\_FIELDS), "{}})}
+\DoxyCodeLine{00239                         .\_(\textcolor{stringliteral}{"{}isCompleteMask = new FastBitMask128("{}}, PACK\_PREFIX, objTypeName, \textcolor{stringliteral}{"{}.TOTAL\_FIELDS) \}; \}"{}}).EOL();}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241                     \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00242                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static PackFrame[] Factory(IntPtr trg, int count)\{"{}});}
+\DoxyCodeLine{00243                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00244                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static PackFrame[] Factory(System.Object trg, int count)\{ var t = trg as "{}}, fullObjName, \textcolor{stringliteral}{"{};"{}});}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246                     sb.\_(\textcolor{stringliteral}{"{}var frames = new "{}}, packFrameName, \textcolor{stringliteral}{"{}[count]; "{}});}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248                     sb.\_(\textcolor{stringliteral}{"{}for (int i = 0; i < count; ++i) \{ "{}})}
+\DoxyCodeLine{00249                         .\_(\textcolor{stringliteral}{"{}var frame = new "{}}, packFrameName, \textcolor{stringliteral}{"{}()\{ mask = new FastBitMask128("{}}, PACK\_PREFIX, objTypeName, \textcolor{stringliteral}{"{}.TOTAL\_FIELDS), "{}})}
+\DoxyCodeLine{00250                         .\_(\textcolor{stringliteral}{"{}isCompleteMask = new FastBitMask128("{}}, PACK\_PREFIX, objTypeName, \textcolor{stringliteral}{"{}.TOTAL\_FIELDS) \}; "{}});}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                     sb.Append(sbFactory);}
+\DoxyCodeLine{00253                     sb.\_(\textcolor{stringliteral}{"{} frames[i] = frame; \} "{}});}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255                     sb.\_(\textcolor{stringliteral}{"{}return frames; \}"{}}).EOL();}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00260                     sb.\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00261                     sb.EOL();}
+\DoxyCodeLine{00262                 \}}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00265                 \{}
+\DoxyCodeLine{00266                     sb.\_\_(\textcolor{stringliteral}{"{}public static class "{}}, PACK\_PREFIX, objTypeName).EOL();}
+\DoxyCodeLine{00267                     sb.\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                     sb.\_\_\_(\textcolor{stringliteral}{"{}public const int LOCAL\_FIELDS = "{}}).\_(objTypeInfo.localFieldCount).\_(\textcolor{stringliteral}{"{};"{}}).EOL().EOL();}
+\DoxyCodeLine{00270                     sb.\_\_\_(\textcolor{stringliteral}{"{}public const int TOTAL\_FIELDS = "{}}).\_(objTypeInfo.totalFieldCount).\_(\textcolor{stringliteral}{"{};"{}}).EOL().EOL();}
+\DoxyCodeLine{00271                     sb.\_\_\_(\textcolor{stringliteral}{"{}public static PackObjectDatabase.PackObjectInfo packObjInfo;"{}}).EOL();}
+\DoxyCodeLine{00272                     sb.\_(sbDelegates.ToString());}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                     sb.\_\_\_(\textcolor{stringliteral}{"{}public static bool initialized;"{}}).EOL();}
+\DoxyCodeLine{00275                     sb.\_\_\_(\textcolor{stringliteral}{"{}public static bool isInitializing;"{}}).EOL();}
+\DoxyCodeLine{00276                     sb.EOL();}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00279                     \{}
+\DoxyCodeLine{00280                         sb.\_\_\_(\textcolor{stringliteral}{"{}[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]"{}}).EOL();}
+\DoxyCodeLine{00281                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static void Initialize()"{}}).EOL();}
+\DoxyCodeLine{00282                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00283                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (initialized) return;"{}}).EOL();}
+\DoxyCodeLine{00284                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}isInitializing = true;"{}}).EOL();}
+\DoxyCodeLine{00285                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}int maxBits = 0;"{}}).EOL();}
+\DoxyCodeLine{00286                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var pObjAttr = (typeof("{}}, ffulltype, \textcolor{stringliteral}{"{}).GetCustomAttributes(typeof(PackObjectAttribute), false)[0] as PackObjectAttribute);"{}}).EOL();}
+\DoxyCodeLine{00287                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var defaultKeyRate = pObjAttr.defaultKeyRate;"{}}).EOL();}
+\DoxyCodeLine{00288                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}FastBitMask128 defReadyMask = new FastBitMask128(TOTAL\_FIELDS);"{}}).EOL();}
+\DoxyCodeLine{00289                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}int fieldindex = 0;"{}}).EOL();}
+\DoxyCodeLine{00290                         sb.EOL();}
+\DoxyCodeLine{00291                         sb.\_(sbInit.ToString());}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}packObjInfo = new PackObjectDatabase.PackObjectInfo("{}} +}
+\DoxyCodeLine{00294                             \textcolor{comment}{//"{}, typeof("{}, packFrameName, "{})"{} +}}
+\DoxyCodeLine{00295                             \textcolor{stringliteral}{"{}defReadyMask, Pack, Pack, Unpack"{}} +}
+\DoxyCodeLine{00296                             \textcolor{stringliteral}{"{}, maxBits"{}})}
+\DoxyCodeLine{00297                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Factory"{}})}
+\DoxyCodeLine{00298                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Factory"{}})}
+\DoxyCodeLine{00299                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Apply"{}})}
+\DoxyCodeLine{00300                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Capture"{}})}
+\DoxyCodeLine{00301                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Copy"{}})}
+\DoxyCodeLine{00302                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.SnapshotCallback"{}})}
+\DoxyCodeLine{00303                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Interpolate"{}})}
+\DoxyCodeLine{00304                             .\_(\textcolor{stringliteral}{"{}, "{}}, packFrameName, \textcolor{stringliteral}{"{}.Interpolate"{}})}
+\DoxyCodeLine{00305                             .\_(\textcolor{stringliteral}{"{}, TOTAL\_FIELDS"{}})}
+\DoxyCodeLine{00306                             .\_(\textcolor{stringliteral}{"{});"{}}).EOL();}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackObjectDatabase.packObjInfoLookup.Add(typeof("{}}, fullClass, \textcolor{stringliteral}{"{}), packObjInfo);"{}}).EOL();}
+\DoxyCodeLine{00309 }
+\DoxyCodeLine{00310                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}isInitializing = false;"{}}).EOL();}
+\DoxyCodeLine{00311                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}initialized = true;"{}}).EOL();}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00314                     \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00317                     \{}
+\DoxyCodeLine{00318                         \textcolor{keywordtype}{string} stdArgsPack = \textcolor{stringliteral}{"{}ref FastBitMask128 mask, ref int maskOffset, byte[] buffer, ref int bitposition, int frameId, SerializationFlags writeFlags"{}};}
+\DoxyCodeLine{00319                         \textcolor{keywordtype}{string} stdArgsUPck = \textcolor{stringliteral}{"{}ref FastBitMask128 mask, ref FastBitMask128 isCompleteMask, ref int maskOffset, byte[] buffer, ref int bitposition, int frameId, SerializationFlags writeFlags"{}};}
+\DoxyCodeLine{00320                         \textcolor{keywordtype}{string} prevFrameCast = \textcolor{stringliteral}{"{}var prev = "{}} + PREV\_FRM\_NAME + \textcolor{stringliteral}{"{} as "{}} + PACKFRM\_PREFIX + objTypeName + \textcolor{stringliteral}{"{};\(\backslash\)n"{}};}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322                         \textcolor{keywordflow}{if} (isStruct)}
+\DoxyCodeLine{00323                         \{}
+\DoxyCodeLine{00325                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Pack(IntPtr obj, PackFrame prevFrame, "{}} + stdArgsPack + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00326                             sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00327                             sb.\_\_\_\_(ffulltype, \textcolor{stringliteral}{"{} packable; unsafe \{ packable = "{}}, structCast, \textcolor{stringliteral}{"{}obj; \}"{}}).EOL();}
+\DoxyCodeLine{00328                             sb.\_\_\_\_(prevFrameCast);}
+\DoxyCodeLine{00329                             sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00330                             sb.\_(sbPack.ToString());}
+\DoxyCodeLine{00331                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00332                             sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00335                             \textcolor{comment}{//sb.\_\_\_("{}public static SerializationFlags Unpack(IntPtr obj, PackFrame prevFrame, "{} + standardArgs + "{})"{}).EOL();}}
+\DoxyCodeLine{00336                             \textcolor{comment}{//sb.\_\_\_("{}\{"{}).EOL();}}
+\DoxyCodeLine{00337                             \textcolor{comment}{//sb.\_\_\_("{}Debug.LogError(\(\backslash\)"{}What is using this??\(\backslash\)"{}); return 0;"{}).EOL();}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00344                             \textcolor{comment}{//sb.\_\_\_("{}\}"{}).EOL();}}
+\DoxyCodeLine{00345                         \}}
+\DoxyCodeLine{00346                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00347                         \{}
+\DoxyCodeLine{00349                             sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Pack(ref System.Object obj, PackFrame prevFrame, "{}} + stdArgsPack + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00350                             sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00351                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}var packable = obj as "{}}, fullClass, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00352                             sb.\_\_\_\_(prevFrameCast);}
+\DoxyCodeLine{00353                             sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00354                             sb.\_(sbPack.ToString());}
+\DoxyCodeLine{00355                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00356                             sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00359                             \textcolor{comment}{//sb.\_\_\_("{}public static SerializationFlags Unpack(ref System.Object obj, PackFrame prevFrame, "{} + standardArgs + "{})"{}).EOL();}}
+\DoxyCodeLine{00360                             \textcolor{comment}{//sb.\_\_\_("{}\{"{}).EOL();}}
+\DoxyCodeLine{00361                             \textcolor{comment}{//sb.\_\_\_("{}Debug.LogError(\(\backslash\)"{}What is using this??\(\backslash\)"{}); return 0;"{}).EOL();}}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00368                             \textcolor{comment}{//sb.\_\_\_("{}\}"{}).EOL();}}
+\DoxyCodeLine{00369                         \}}
+\DoxyCodeLine{00370 }
+\DoxyCodeLine{00372                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Pack(ref "{}}, fullClass, \textcolor{stringliteral}{"{} packable, PackFrame prevFrame, "{}} + stdArgsPack + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00373                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00374                         sb.\_\_\_\_(prevFrameCast);}
+\DoxyCodeLine{00375                         sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00376                         sb.\_(sbPack.ToString());}
+\DoxyCodeLine{00377                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00378                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00379 }
+\DoxyCodeLine{00381                         \textcolor{comment}{//sb.\_\_\_("{}public static SerializationFlags Unpack(ref "{}, fullClass, "{} packable, PackFrame prevFrame, "{} + standardArgs + "{})"{}).EOL();}}
+\DoxyCodeLine{00382                         \textcolor{comment}{//sb.\_\_\_("{}\{"{}).EOL();}}
+\DoxyCodeLine{00383                         \textcolor{comment}{//sb.\_\_\_("{}Debug.LogError(\(\backslash\)"{}What is using this??\(\backslash\)"{}); return 0;"{}).EOL();}}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00389                         \textcolor{comment}{//sb.\_\_\_("{}\}"{}).EOL();}}
+\DoxyCodeLine{00390 }
+\DoxyCodeLine{00392                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Pack(PackFrame obj, PackFrame prevFrame, "{}} + stdArgsPack + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00393                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00394                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var packable = obj as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00395                         sb.\_\_\_\_(prevFrameCast);}
+\DoxyCodeLine{00396                         sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00397                         sb.\_(sbPack.ToString());}
+\DoxyCodeLine{00398                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00399                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00401                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Unpack(PackFrame obj, "{}} + stdArgsUPck + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00402                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00403                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}var packable = obj as "{}}, packFrameName, \textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{00404                         \textcolor{comment}{//sb.\_\_\_\_(prevFrameCast);}}
+\DoxyCodeLine{00405                         sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00406                         sb.\_(sbUnpack.ToString());}
+\DoxyCodeLine{00407                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00408                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00411                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Pack(ref "{}}, packFrameName, \textcolor{stringliteral}{"{} packable, PackFrame prevFrame, "{}} + stdArgsPack + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00412                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00413                         sb.\_\_\_\_(prevFrameCast);}
+\DoxyCodeLine{00414                         sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00415                         sb.\_(sbPack.ToString());}
+\DoxyCodeLine{00416                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00417                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00419                         sb.\_\_\_(\textcolor{stringliteral}{"{}public static SerializationFlags Unpack(ref "{}}, packFrameName, \textcolor{stringliteral}{"{} packable, "{}} + stdArgsUPck + \textcolor{stringliteral}{"{})"{}}).EOL();}
+\DoxyCodeLine{00420                         sb.\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00421                         \textcolor{comment}{//sb.\_\_\_\_(prevFrameCast);}}
+\DoxyCodeLine{00422                         sb.\_\_\_\_(serializationFlagsLine1);}
+\DoxyCodeLine{00423                         sb.\_(sbUnpack.ToString());}
+\DoxyCodeLine{00424                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}return flags;"{}}).EOL();}
+\DoxyCodeLine{00425                         sb.\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00426                     \}}
+\DoxyCodeLine{00427 }
+\DoxyCodeLine{00428                     sb.\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00429                 \}}
+\DoxyCodeLine{00430                 sb.\_(\textcolor{stringliteral}{"{}\}"{}});}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00432                 sb.EOL();}
+\DoxyCodeLine{00433                 sb.\_(RESTORE\_UNUSED2).EOL();}
+\DoxyCodeLine{00434                 sb.\_(RESTORE\_UNUSED).EOL();}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436             \}}
+\DoxyCodeLine{00437             \textcolor{keywordflow}{return} sb;}
+\DoxyCodeLine{00438         \}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GenerateFields(Type pObjType)}
+\DoxyCodeLine{00441         \{}
+\DoxyCodeLine{00442             sbFrame.Length = 0;}
+\DoxyCodeLine{00443             sbFactory.Length = 0;}
+\DoxyCodeLine{00444             sbSnapshot.Length = 0;}
+\DoxyCodeLine{00445             sbCopyToFrame.Length = 0;}
+\DoxyCodeLine{00446             sbCapture.Length = 0;}
+\DoxyCodeLine{00447             sbApplyToObj.Length = 0;}
+\DoxyCodeLine{00448             sbCopyFrameToFrame.Length = 0;}
+\DoxyCodeLine{00449             sbInterpToObj.Length = 0;}
+\DoxyCodeLine{00450             sbInterpToFrame.Length = 0;}
+\DoxyCodeLine{00451             sbDelegates.Length = 0;}
+\DoxyCodeLine{00452             sbInit.Length = 0;}
+\DoxyCodeLine{00453             sbPack.Length = 0;}
+\DoxyCodeLine{00454             sbUnpack.Length = 0;}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456             hasSnapCallbacks = \textcolor{keyword}{false};}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458             var pObjAttr = (pObjType.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false})[0] as PackObjectAttribute);}
+\DoxyCodeLine{00459 }
+\DoxyCodeLine{00460             var defaultInclusion = pObjAttr.defaultInclusion;}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462             var fields = pObjType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);}
+\DoxyCodeLine{00463 }
+\DoxyCodeLine{00464             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = fields.Length; i < cnt; ++i)}
+\DoxyCodeLine{00465             \{}
+\DoxyCodeLine{00466                 var fieldinfo = fields[i];}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468                 \textcolor{keywordtype}{string} fname = fieldinfo.Name;}
+\DoxyCodeLine{00469                 \textcolor{keywordtype}{string} objNamespace = pObjType.Namespace;}
+\DoxyCodeLine{00470                 \textcolor{keywordtype}{string} objTypeName = (objNamespace != \textcolor{keyword}{null} \&\& objNamespace != \textcolor{stringliteral}{"{}"{}}) ? (pObjType.Namespace + \textcolor{stringliteral}{"{}."{}} + pObjType.Name) : pObjType.Name;}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472                 Type ftype = fieldinfo.FieldType;}
+\DoxyCodeLine{00473                 \textcolor{keywordtype}{string} ftypename = fieldinfo.FieldType.Name;}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00475                 \textcolor{keywordtype}{string} ffulltype;}
+\DoxyCodeLine{00476                 \textcolor{keywordtype}{string} genericarg;}
+\DoxyCodeLine{00477                 \textcolor{keywordtype}{string} primitive;}
+\DoxyCodeLine{00478 }
+\DoxyCodeLine{00479                 \textcolor{keywordflow}{if} (ftype.IsGenericType)}
+\DoxyCodeLine{00480                 \{}
+\DoxyCodeLine{00481                     primitive = ftype.GetGenericArguments()[0].ToString();}
+\DoxyCodeLine{00482                     ffulltype = ftype.FullName.ToString().Replace(\textcolor{stringliteral}{"{}`1["{}}, \textcolor{stringliteral}{"{}<"{}}).Replace(\textcolor{stringliteral}{"{}]"{}}, \textcolor{stringliteral}{"{}>"{}}).Replace(\textcolor{stringliteral}{"{}+"{}}, \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00483                     genericarg = \textcolor{stringliteral}{"{}<"{}} + primitive + \textcolor{stringliteral}{"{}>"{}};}
+\DoxyCodeLine{00484                     ftypename = fieldinfo.FieldType.Name.Replace(\textcolor{stringliteral}{"{}`1"{}}, \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00485                 \}}
+\DoxyCodeLine{00486                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00487                 \{}
+\DoxyCodeLine{00488                     ffulltype = ftype.FullName.Replace(\textcolor{stringliteral}{"{}+"{}},\textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{00489                     ftypename = fieldinfo.FieldType.Name;}
+\DoxyCodeLine{00490                     primitive = ffulltype;}
+\DoxyCodeLine{00491                     genericarg = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00492                 \}}
+\DoxyCodeLine{00493 }
+\DoxyCodeLine{00494 }
+\DoxyCodeLine{00496                 var packAttrs = fieldinfo.GetCustomAttributes(typeof(SyncVarBaseAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00497 }
+\DoxyCodeLine{00498                 \textcolor{keywordtype}{bool} isExplicitInclusion = defaultInclusion == DefaultPackInclusion.Explicit;}
+\DoxyCodeLine{00499 }
+\DoxyCodeLine{00500                 \textcolor{keywordflow}{if} (isExplicitInclusion \&\& packAttrs.Length == 0)}
+\DoxyCodeLine{00501                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00502 }
+\DoxyCodeLine{00503                 SyncVarBaseAttribute packAttr; \textcolor{comment}{// = (objType.GetCustomAttributes(typeof(SyncVarBaseAttribute), false)[0] as SyncVarBaseAttribute);}}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505                 \textcolor{keywordflow}{if} (ftype.IsValueType \&\& !ftype.IsUnManaged())}
+\DoxyCodeLine{00506                 \{}
+\DoxyCodeLine{00507                     Debug.LogWarning(ftypename + \textcolor{stringliteral}{"{} is a PackObject, but cannot be packed because it is a managed type. Structs cannot contain references or any managed types to be packable."{}});}
+\DoxyCodeLine{00508                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00509                 \}}
+\DoxyCodeLine{00510 }
+\DoxyCodeLine{00511                 \textcolor{keywordtype}{bool} isPublic = fieldinfo.IsPublic;}
+\DoxyCodeLine{00512 }
+\DoxyCodeLine{00513                 \textcolor{keywordtype}{bool} generatePackAttribute;}
+\DoxyCodeLine{00515                 \textcolor{keywordflow}{if} (packAttrs.Length == 0)}
+\DoxyCodeLine{00516                 \{}
+\DoxyCodeLine{00517                     \textcolor{comment}{// Only add attributes automatically if field is public. Otherwise including all public fields}}
+\DoxyCodeLine{00518                     \textcolor{comment}{// Will find all kinds of MonoB internals.}}
+\DoxyCodeLine{00519                     \textcolor{keywordflow}{if} (!isPublic)}
+\DoxyCodeLine{00520                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00521 }
+\DoxyCodeLine{00522                     packAttr = \textcolor{keyword}{new} SyncVarAttribute();}
+\DoxyCodeLine{00523                     generatePackAttribute = \textcolor{keyword}{true};}
+\DoxyCodeLine{00524                 \}}
+\DoxyCodeLine{00525                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00526                 \{}
+\DoxyCodeLine{00527                     \textcolor{comment}{// TODO: make this a loop in case other attributes are also on this field.}}
+\DoxyCodeLine{00528                     packAttr = packAttrs[0] as SyncVarBaseAttribute;}
+\DoxyCodeLine{00529                     generatePackAttribute = \textcolor{keyword}{false};}
+\DoxyCodeLine{00530                 \}}
+\DoxyCodeLine{00531 }
+\DoxyCodeLine{00532                 \textcolor{keywordtype}{bool} typeIsSupported = TypeIsHandled(ftype, packAttr);}
+\DoxyCodeLine{00533 }
+\DoxyCodeLine{00534                 \textcolor{keywordtype}{string} attrname = packAttr.GetType().Name;}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536                 \textcolor{keywordflow}{if} (typeIsSupported \&\& !isPublic)}
+\DoxyCodeLine{00537                 \{}
+\DoxyCodeLine{00538                     Debug.LogWarning(\textcolor{stringliteral}{"{}<b>["{}} + attrname.Replace(\textcolor{stringliteral}{"{}Attribute"{}}, \textcolor{stringliteral}{"{}"{}}) + \textcolor{stringliteral}{"{}]</b> on field <b>"{}} + ftypename + \textcolor{stringliteral}{"{} "{}} + fname + \textcolor{stringliteral}{"{}</b> of <b>"{}} + objTypeName + \textcolor{stringliteral}{"{}</b> supports type, but field is not public. Change field to public to include in packing."{}});}
+\DoxyCodeLine{00539                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00540                 \}}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542                 var nestedPackObjAttrs = ftype.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{00543                 PackObjectAttribute nestedPackObjAttr = nestedPackObjAttrs.Length == 0 ? null : (nestedPackObjAttrs[0] as PackObjectAttribute);}
+\DoxyCodeLine{00544                 \textcolor{keywordtype}{bool} isNestedPackObj = nestedPackObjAttr != \textcolor{keyword}{null};}
+\DoxyCodeLine{00545 }
+\DoxyCodeLine{00546 \textcolor{preprocessor}{\#if UNITY\_2018\_1\_OR\_NEWER}}
+\DoxyCodeLine{00547 }
+\DoxyCodeLine{00548                 \textcolor{keywordflow}{if} (isNestedPackObj \&\& !UnityEditor.PlayerSettings.allowUnsafeCode \&\& ftype.IsValueType)}
+\DoxyCodeLine{00549                 \{}
+\DoxyCodeLine{00550                     Debug.LogWarning(\textcolor{stringliteral}{"{}Cannot use "{}} + typeof(PackObjectAttribute).Name + \textcolor{stringliteral}{"{} on struct/value types unless PlayerSettings.allowUnsafeCode == true."{}});}
+\DoxyCodeLine{00551                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00552 }
+\DoxyCodeLine{00553                 \}}
+\DoxyCodeLine{00554 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00557                 \textcolor{keywordflow}{if} (!typeIsSupported)}
+\DoxyCodeLine{00558                 \{}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00561                     \textcolor{keywordflow}{if} (!isNestedPackObj)}
+\DoxyCodeLine{00562                     \{}
+\DoxyCodeLine{00564                         \textcolor{keywordflow}{if} (!generatePackAttribute)}
+\DoxyCodeLine{00565                         \{}
+\DoxyCodeLine{00566                             Debug.LogWarning(\textcolor{stringliteral}{"{}<b>["{}} + attrname.Replace(\textcolor{stringliteral}{"{}Attribute"{}}, \textcolor{stringliteral}{"{}"{}}) + \textcolor{stringliteral}{"{}]</b> on field <b>"{}} + ftypename + \textcolor{stringliteral}{"{} "{}} + fname + \textcolor{stringliteral}{"{}</b> of <b>"{}} + objTypeName + fname + \textcolor{stringliteral}{"{}</b> does not support type <b>"{}}}
+\DoxyCodeLine{00567                                 + ftypename + \textcolor{stringliteral}{"{}</b>. Will be ignored."{}});}
+\DoxyCodeLine{00568                         \}}
+\DoxyCodeLine{00569 }
+\DoxyCodeLine{00570                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00571                     \}}
+\DoxyCodeLine{00572 }
+\DoxyCodeLine{00573 }
+\DoxyCodeLine{00575                     \textcolor{keywordflow}{if} (CheckForNestedLoop(pObjType, ftype))}
+\DoxyCodeLine{00576                     \{}
+\DoxyCodeLine{00577                         Debug.LogWarning(\textcolor{stringliteral}{"{}Field <b>"{}} + ftypename + \textcolor{stringliteral}{"{} "{}} + fname + \textcolor{stringliteral}{"{}</b> of <b>"{}} + objTypeName + \textcolor{stringliteral}{"{}</b> contains an infinite nested loop with field <b>"{}} +  \textcolor{stringliteral}{"{}</b>. Will not be included in serialization."{}});}
+\DoxyCodeLine{00578                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00579                     \}}
+\DoxyCodeLine{00580 }
+\DoxyCodeLine{00581                     isNestedPackObj = \textcolor{keyword}{true};}
+\DoxyCodeLine{00582                 \}}
+\DoxyCodeLine{00583 }
+\DoxyCodeLine{00584                 \textcolor{keywordtype}{bool} isEnum = fieldinfo.FieldType.IsEnum;}
+\DoxyCodeLine{00585                 \textcolor{keywordtype}{string} enumUnderType = \textcolor{keyword}{null};}
+\DoxyCodeLine{00586                 \textcolor{keywordtype}{string} enumType = \textcolor{keyword}{null}; ;}
+\DoxyCodeLine{00587                 \textcolor{keywordflow}{if} (isEnum)}
+\DoxyCodeLine{00588                 \{}
+\DoxyCodeLine{00589                     enumUnderType = \textcolor{stringliteral}{"{}("{}} + System.Enum.GetUnderlyingType(fieldinfo.FieldType).Name + \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00590                     enumType = \textcolor{stringliteral}{"{}("{}} + ffulltype + \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00591                 \}}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{00593                 Generate\_FieldFrame(fieldinfo, sbFrame, fname, ftypename, ffulltype, isNestedPackObj, packAttr);}
+\DoxyCodeLine{00594                 Generate\_Factory(fieldinfo, sbFactory, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00595                 Generate\_Snapshot(fieldinfo, sbSnapshot, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00596                 Generate\_Capture(fieldinfo, sbCapture, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, pObjAttr, packAttr);}
+\DoxyCodeLine{00597                 Generate\_CopyTo(fieldinfo, sbCopyToFrame, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00598                 Generate\_ApplyToObj(fieldinfo, sbApplyToObj, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, pObjAttr, packAttr);}
+\DoxyCodeLine{00599                 Generate\_CopyFrameToFrame(fieldinfo, sbCopyFrameToFrame, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00600                 Generate\_InterpToObj(fieldinfo, sbInterpToObj, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00601                 Generate\_InterpToFrame(fieldinfo, sbInterpToFrame, objTypeName, fname, ftypename, ffulltype, isNestedPackObj, pObjType, packAttr);}
+\DoxyCodeLine{00602                 Generate\_FieldDelegates(fieldinfo, sbDelegates, fname, ftypename, genericarg, isNestedPackObj);}
+\DoxyCodeLine{00603                 Generate\_FieldInit(fieldinfo, sbInit, fname, ftypename, ffulltype, genericarg, primitive, isNestedPackObj, generatePackAttribute, packAttr);}
+\DoxyCodeLine{00604                 Generate\_FieldPack(fieldinfo, sbPack, fname, ftypename, ffulltype, isNestedPackObj, enumUnderType, enumType);}
+\DoxyCodeLine{00605                 Generate\_FieldUnpack(fieldinfo, sbUnpack, fname, ftypename, ffulltype, isNestedPackObj, enumUnderType, enumType, packAttr);}
+\DoxyCodeLine{00606             \}}
+\DoxyCodeLine{00607 }
+\DoxyCodeLine{00608             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00609         \}}
+\DoxyCodeLine{00610 }
+\DoxyCodeLine{00611         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_Factory(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00612         \{}
+\DoxyCodeLine{00613             \textcolor{keywordtype}{string} t = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)trg)"{}} : \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00616             \textcolor{keywordflow}{if} (fInfo.FieldType.IsGenericType \&\& fInfo.FieldType.GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>)))}
+\DoxyCodeLine{00617                 sb.\_(\textcolor{stringliteral}{"{}frame."{}}, fname, \textcolor{stringliteral}{"{}.AddRange("{}}, t,\textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}); "{}}).\_(\textcolor{stringliteral}{"{}frame."{}}, fname, \textcolor{stringliteral}{"{}\_mask = new BitArray(frame."{}}, fname, \textcolor{stringliteral}{"{}.Count); "{}});}
+\DoxyCodeLine{00618         \}}
+\DoxyCodeLine{00619 }
+\DoxyCodeLine{00620         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_FieldFrame(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00621         \{}
+\DoxyCodeLine{00622             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00623                 sb.\_\_\_(\textcolor{stringliteral}{"{}public PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{} = new PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}();"{}}).EOL();}
+\DoxyCodeLine{00624             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00625             \{}
+\DoxyCodeLine{00626                 var fielddeclare = fAttr.GetFieldDeclareCodeGen(fInfo.FieldType, ffulltype, fname);}
+\DoxyCodeLine{00627 }
+\DoxyCodeLine{00628                 sb.\_\_\_(fielddeclare).EOL();}
+\DoxyCodeLine{00629                 \textcolor{comment}{//sb.\_\_\_("{}public "{}, ffulltype, "{} "{}, fname, "{};"{}).EOL();}}
+\DoxyCodeLine{00630 }
+\DoxyCodeLine{00631             \}}
+\DoxyCodeLine{00632         \}}
+\DoxyCodeLine{00633 }
+\DoxyCodeLine{00634         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsSyncAsTrigger(PackObjectAttribute pObjAttr, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00635         \{}
+\DoxyCodeLine{00636             var syncAs = fAttr.syncAs;}
+\DoxyCodeLine{00637             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00638                 syncAs == SyncAs.Auto ? (pObjAttr.syncAs == SyncAs.Auto ? false : pObjAttr.syncAs == SyncAs.Trigger) :}
+\DoxyCodeLine{00639                 syncAs == SyncAs.Trigger ? \textcolor{keyword}{true} : \textcolor{keyword}{false};}
+\DoxyCodeLine{00640         \}}
+\DoxyCodeLine{00641         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_Capture(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, Type pObjType, PackObjectAttribute pObjAttr, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00642         \{}
+\DoxyCodeLine{00643             \textcolor{keywordtype}{string} s = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)src)"{}} : \textcolor{stringliteral}{"{}s"{}};}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00645             \textcolor{keywordtype}{bool} isTrigger = IsSyncAsTrigger(pObjAttr, fAttr);}
+\DoxyCodeLine{00646 }
+\DoxyCodeLine{00647             \textcolor{keywordtype}{string} triggerReset = (isTrigger) ? s + \textcolor{stringliteral}{"{}."{}} + fname + \textcolor{stringliteral}{"{} = new "{}} + ffulltype + \textcolor{stringliteral}{"{}(); "{}} : \textcolor{stringliteral}{"{}"{}} ;}
+\DoxyCodeLine{00648 }
+\DoxyCodeLine{00649 }
+\DoxyCodeLine{00650             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00651             \{}
+\DoxyCodeLine{00652                 \textcolor{keywordflow}{if} (fInfo.FieldType.IsValueType)}
+\DoxyCodeLine{00653                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ fixed ("{}}, ffulltype, \textcolor{stringliteral}{"{}* p = \&s."{}}, fname, \textcolor{stringliteral}{"{}) PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Capture((IntPtr)p, t."{}}, fname, \textcolor{stringliteral}{"{}); \}"{}}).EOL();}
+\DoxyCodeLine{00654                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00655                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Capture("{}}, s, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, t."{}}, fname, \textcolor{stringliteral}{"{});"{}}).EOL();}
+\DoxyCodeLine{00656             \}}
+\DoxyCodeLine{00657             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00658             \{}
+\DoxyCodeLine{00659                 var captureField = fAttr.GetCaptureCodeGen(fInfo.FieldType, fname, s, \textcolor{stringliteral}{"{}t"{}});}
+\DoxyCodeLine{00660                 \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00661                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ "{}}, captureField, triggerReset,\textcolor{stringliteral}{"{} \} "{}}).EOL();}
+\DoxyCodeLine{00662                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00663                     sb.\_\_\_\_(captureField, \textcolor{stringliteral}{"{} "{}}, triggerReset).EOL();}
+\DoxyCodeLine{00664                 \textcolor{comment}{//sb.\_\_\_\_("{}t."{}, fname, "{} = "{}, s, "{}."{}, fname, "{};"{}).EOL();}}
+\DoxyCodeLine{00665             \}}
+\DoxyCodeLine{00666         \}}
+\DoxyCodeLine{00667 }
+\DoxyCodeLine{00668         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_CopyTo(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00669         \{}
+\DoxyCodeLine{00670             \textcolor{keywordtype}{string} s = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)src)"{}} : \textcolor{stringliteral}{"{}s"{}};}
+\DoxyCodeLine{00671 }
+\DoxyCodeLine{00672             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00673             \{}
+\DoxyCodeLine{00674                 \textcolor{keywordflow}{if} (fInfo.FieldType.IsValueType)}
+\DoxyCodeLine{00675                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ fixed ("{}}, ffulltype, \textcolor{stringliteral}{"{}* p = \&s."{}}, fname, \textcolor{stringliteral}{"{}) PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Copy((IntPtr)p, t."{}}, fname, \textcolor{stringliteral}{"{}); \}"{}}).EOL();}
+\DoxyCodeLine{00676                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00677                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Copy("{}}, s, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, t."{}}, fname, \textcolor{stringliteral}{"{});"{}}).EOL();}
+\DoxyCodeLine{00678             \}}
+\DoxyCodeLine{00679             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00680             \{}
+\DoxyCodeLine{00681                 var copyfield = fAttr.GetCopyCodeGen(fInfo.FieldType, fname, s, \textcolor{stringliteral}{"{}t"{}});}
+\DoxyCodeLine{00682                 \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00683                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ "{}},copyfield, \textcolor{stringliteral}{"{} \} "{}}).EOL();}
+\DoxyCodeLine{00684                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00685                     sb.\_\_\_\_(copyfield).EOL();}
+\DoxyCodeLine{00686                 \textcolor{comment}{//sb.\_\_\_\_("{}t."{}, fname, "{} = "{}, s, "{}."{}, fname, "{};"{}).EOL();}}
+\DoxyCodeLine{00687             \}}
+\DoxyCodeLine{00688 }
+\DoxyCodeLine{00689         \}}
+\DoxyCodeLine{00690 }
+\DoxyCodeLine{00692         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_Snapshot(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} inNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00693         \{}
+\DoxyCodeLine{00694             \textcolor{keywordtype}{string} t = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)trg)"{}} : \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00695 }
+\DoxyCodeLine{00696             \textcolor{keywordflow}{if} (inNest)}
+\DoxyCodeLine{00697             \{}
+\DoxyCodeLine{00698                 \textcolor{keywordflow}{if} (fInfo.FieldType.IsValueType)}
+\DoxyCodeLine{00699                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ fixed ("{}}, ffulltype, \textcolor{stringliteral}{"{}* p = \&t."{}}, fname, \textcolor{stringliteral}{"{}) PackFrame\_"{}}, ftypename).\_(\textcolor{stringliteral}{"{}.SnapshotCallback(snap."{}}, fname, \textcolor{stringliteral}{"{}, targ."{}}, fname, \textcolor{stringliteral}{"{}, (IntPtr)p, ref readyMask, ref maskOffset); \}"{}}).EOL();}
+\DoxyCodeLine{00700                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00701                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename).\_(\textcolor{stringliteral}{"{}.SnapshotCallback(snap."{}}, fname, \textcolor{stringliteral}{"{}, targ."{}}, fname).\_(\textcolor{stringliteral}{"{}, "{}}, t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, ref readyMask, ref maskOffset);"{}}).EOL();}
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703                 hasSnapCallbacks = \textcolor{keyword}{true};}
+\DoxyCodeLine{00704             \}}
+\DoxyCodeLine{00705             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00706             \{}
+\DoxyCodeLine{00707                 \textcolor{keywordtype}{string} callback = fAttr.snapshotCallback;}
+\DoxyCodeLine{00708 }
+\DoxyCodeLine{00710                 MethodInfo callbackInfo = fInfo.HashCallback(fAttr.snapshotCallback, \textcolor{keyword}{null});}
+\DoxyCodeLine{00711                 \textcolor{keywordflow}{if} (callbackInfo != \textcolor{keyword}{null})  \textcolor{comment}{// TryGetCallbackInfo(fInfo, callback, objType, out callbackInfo))}}
+\DoxyCodeLine{00712                 \{}
+\DoxyCodeLine{00713                     hasSnapCallbacks = \textcolor{keyword}{true};}
+\DoxyCodeLine{00714 }
+\DoxyCodeLine{00715                     \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00716                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}if(readyMask[maskOffset]) unsafe \{ "{}});}
+\DoxyCodeLine{00717                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00718                         sb.\_\_\_\_(\textcolor{stringliteral}{"{}if(readyMask[maskOffset]) \{ "{}});}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720                     var gens = callbackInfo.ContainsGenericParameters;}
+\DoxyCodeLine{00721                     sb.\_(\textcolor{stringliteral}{"{}var snapval = snapmask[maskOffset] ? snap."{}}, fname, \textcolor{stringliteral}{"{} : "{}}, t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}; "{}});}
+\DoxyCodeLine{00722                     sb.\_(\textcolor{stringliteral}{"{}var targval = targmask[maskOffset] ? targ."{}}, fname, \textcolor{stringliteral}{"{} : snapval; "{}});}
+\DoxyCodeLine{00723                     sb.\_(t, \textcolor{stringliteral}{"{}."{}}, callback, \textcolor{stringliteral}{"{}(snapval,  targval); "{}});}
+\DoxyCodeLine{00724                     sb.\_(\textcolor{stringliteral}{"{}\} maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00725                 \}}
+\DoxyCodeLine{00726                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00727                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00728 }
+\DoxyCodeLine{00729             \}}
+\DoxyCodeLine{00730         \}}
+\DoxyCodeLine{00732         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_ApplyToObj(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} inNest, Type pObjType, PackObjectAttribute pObjAttr, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00733         \{}
+\DoxyCodeLine{00734             \textcolor{keywordtype}{string} t = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)trg)"{}} : \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00735 }
+\DoxyCodeLine{00736             \textcolor{keywordflow}{if} (inNest)}
+\DoxyCodeLine{00737             \{}
+\DoxyCodeLine{00738                 \textcolor{keywordflow}{if} (fInfo.FieldType.IsValueType)}
+\DoxyCodeLine{00739                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ fixed ("{}}, ffulltype, \textcolor{stringliteral}{"{}* p = \&t."{}}, fname, \textcolor{stringliteral}{"{}) PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Apply(s."{}}, fname, \textcolor{stringliteral}{"{}, (IntPtr)p, ref mask, ref maskOffset); \}"{}}).EOL();}
+\DoxyCodeLine{00740                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00741                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Apply(s."{}}, fname, \textcolor{stringliteral}{"{}, "{}}, t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, ref mask, ref maskOffset);"{}}).EOL();}
+\DoxyCodeLine{00742             \}}
+\DoxyCodeLine{00743             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00744             \{}
+\DoxyCodeLine{00745                 \textcolor{keywordtype}{string} copyfield = fAttr.GetCopyCodeGen(fInfo.FieldType, fname, \textcolor{stringliteral}{"{}s"{}}, t);}
+\DoxyCodeLine{00746                 \textcolor{keywordtype}{string} callback = fAttr.applyCallback;}
+\DoxyCodeLine{00747                 SetValueTiming callbackSetValue = fAttr.setValueTiming;}
+\DoxyCodeLine{00748 }
+\DoxyCodeLine{00749                 \textcolor{keywordtype}{string} hasChangedSegment = pObjAttr.postApplyCallback == \textcolor{keyword}{null} ? \textcolor{stringliteral}{"{}"{}} : \textcolor{stringliteral}{"{} haschanged = true; "{}};}
+\DoxyCodeLine{00750 }
+\DoxyCodeLine{00751                 \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00752                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ if (mask[maskOffset]) \{ "{}}, hasChangedSegment);}
+\DoxyCodeLine{00753                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00754                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}\{ if (mask[maskOffset])\{ "{}}, hasChangedSegment);}
+\DoxyCodeLine{00755 }
+\DoxyCodeLine{00757                 MethodInfo callbackInfo = fInfo.HashCallback(fAttr.applyCallback, \textcolor{keyword}{null});}
+\DoxyCodeLine{00758                 \textcolor{keywordflow}{if} (callbackInfo != \textcolor{keyword}{null})  \textcolor{comment}{// TryGetCallbackInfo(fInfo, callback, objType, out callbackInfo))}}
+\DoxyCodeLine{00759                 \{}
+\DoxyCodeLine{00760                     \textcolor{keywordflow}{if} (callbackSetValue == SetValueTiming.AfterCallback)}
+\DoxyCodeLine{00761                     \{}
+\DoxyCodeLine{00762                         sb.\_(t, \textcolor{stringliteral}{"{}."{}}, callback, \textcolor{stringliteral}{"{}(s."{}}, fname, \textcolor{stringliteral}{"{}, "{}}).\_(t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}); "{}});}
+\DoxyCodeLine{00763                         sb.\_(copyfield, \textcolor{stringliteral}{"{} \} "{}});}
+\DoxyCodeLine{00764                     \}}
+\DoxyCodeLine{00765                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (callbackSetValue == SetValueTiming.BeforeCallback)}
+\DoxyCodeLine{00766                     \{}
+\DoxyCodeLine{00767                         sb.\_(\textcolor{stringliteral}{"{}var hold = "{}}, t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}; "{}});}
+\DoxyCodeLine{00768                         sb.\_(copyfield);}
+\DoxyCodeLine{00769                         sb.\_(t, \textcolor{stringliteral}{"{}."{}}, callback, \textcolor{stringliteral}{"{}(s."{}}, fname, \textcolor{stringliteral}{"{}, hold); \} "{}});}
+\DoxyCodeLine{00770                     \}}
+\DoxyCodeLine{00771                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00772                     \{}
+\DoxyCodeLine{00773                         sb.\_(t, \textcolor{stringliteral}{"{}."{}}, callback, \textcolor{stringliteral}{"{}(s."{}}, fname, \textcolor{stringliteral}{"{}, "{}}).\_(t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}); \} "{}});}
+\DoxyCodeLine{00774                     \}}
+\DoxyCodeLine{00775 }
+\DoxyCodeLine{00776                 \}}
+\DoxyCodeLine{00778                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00779                     sb.\_(copyfield, \textcolor{stringliteral}{"{} \} "{}});}
+\DoxyCodeLine{00780 }
+\DoxyCodeLine{00781                 \textcolor{keywordtype}{bool} isTrigger = IsSyncAsTrigger(pObjAttr, fAttr);}
+\DoxyCodeLine{00782 }
+\DoxyCodeLine{00783                 \textcolor{keywordflow}{if} (isTrigger)}
+\DoxyCodeLine{00784                     sb.\_(\textcolor{stringliteral}{"{}else \{ "{}}, t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{} = new "{}}, ffulltype, \textcolor{stringliteral}{"{}(); \} "{}});}
+\DoxyCodeLine{00785 }
+\DoxyCodeLine{00786                 sb.\_(\textcolor{stringliteral}{"{}\} maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00787 }
+\DoxyCodeLine{00788             \}}
+\DoxyCodeLine{00789         \}}
+\DoxyCodeLine{00790 }
+\DoxyCodeLine{00792         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_InterpToObj(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} inNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00793         \{}
+\DoxyCodeLine{00794             \textcolor{comment}{//if (!fAttr.interpolate)}}
+\DoxyCodeLine{00795             \textcolor{comment}{//  return;}}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797             \textcolor{keywordtype}{string} t = pObjType.IsValueType ? \textcolor{stringliteral}{"{}(*("{}} + objName + \textcolor{stringliteral}{"{}*)trg)"{}} : \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00798 }
+\DoxyCodeLine{00799             \textcolor{keywordflow}{if} (inNest)}
+\DoxyCodeLine{00800             \{}
+\DoxyCodeLine{00801                 \textcolor{keywordflow}{if} (fInfo.FieldType.IsValueType)}
+\DoxyCodeLine{00802                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}unsafe \{ fixed ("{}}, ffulltype, \textcolor{stringliteral}{"{}* p = \&t."{}}, fname, \textcolor{stringliteral}{"{}) PackFrame\_"{}}, ftypename).\_(\textcolor{stringliteral}{"{}.Interpolate(s."{}}, fname, \textcolor{stringliteral}{"{}, e."{}}, fname, \textcolor{stringliteral}{"{}, (IntPtr)p, time, ref mask, ref maskOffset); \}"{}}).EOL();}
+\DoxyCodeLine{00803                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00804                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Interpolate(s."{}}, fname, \textcolor{stringliteral}{"{}, e."{}}, fname, \textcolor{stringliteral}{"{}, "{}}).\_(t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, time, ref mask, ref maskOffset);"{}}).EOL();}
+\DoxyCodeLine{00805             \}}
+\DoxyCodeLine{00806             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00807             \{}
+\DoxyCodeLine{00808                 \textcolor{keywordflow}{if} (fAttr.interpolate)}
+\DoxyCodeLine{00809                 \{}
+\DoxyCodeLine{00810                     \textcolor{keywordtype}{string} interpfield = fAttr.GetInterpolateCode(fInfo.FieldType, fname, \textcolor{stringliteral}{"{}s"{}}, \textcolor{stringliteral}{"{}e"{}}, t);}
+\DoxyCodeLine{00811                     \textcolor{keywordflow}{if} (interpfield != \textcolor{keyword}{null})}
+\DoxyCodeLine{00812                     \{}
+\DoxyCodeLine{00813                         \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00814                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (mask[maskOffset]) unsafe \{ "{}});}
+\DoxyCodeLine{00815                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00816                             sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (readyMask[maskOffset] \&\& mask[maskOffset])\{ "{}});}
+\DoxyCodeLine{00817 }
+\DoxyCodeLine{00818 }
+\DoxyCodeLine{00819                         sb.\_(interpfield, \textcolor{stringliteral}{"{} \} maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00820                     \}}
+\DoxyCodeLine{00821                 \}}
+\DoxyCodeLine{00822                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00823                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00824             \}}
+\DoxyCodeLine{00825         \}}
+\DoxyCodeLine{00826 }
+\DoxyCodeLine{00827 }
+\DoxyCodeLine{00829         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_InterpToFrame(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} inNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00830         \{}
+\DoxyCodeLine{00831             \textcolor{comment}{//if (!fAttr.interpolate)}}
+\DoxyCodeLine{00832             \textcolor{comment}{//  return;}}
+\DoxyCodeLine{00833 }
+\DoxyCodeLine{00834             \textcolor{keywordtype}{string} t = \textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00835 }
+\DoxyCodeLine{00836             \textcolor{keywordflow}{if} (inNest)}
+\DoxyCodeLine{00837             \{}
+\DoxyCodeLine{00838                 \textcolor{comment}{//if (fInfo.FieldType.IsValueType)}}
+\DoxyCodeLine{00839                 \textcolor{comment}{//  sb.\_\_\_\_("{}unsafe \{ fixed ("{}, ffulltype, "{}* p = \&t."{}, fname, "{}) PackFrame\_"{}, ftypename).\_("{}.Interpolate(s."{}, fname, "{}, e."{}, fname, "{}, t."{}, fname, "{}, time, ref mask, ref maskOffset); \}"{}).EOL();}}
+\DoxyCodeLine{00840                 \textcolor{comment}{//else}}
+\DoxyCodeLine{00841                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackFrame\_"{}}, ftypename, \textcolor{stringliteral}{"{}.Interpolate(s."{}}, fname, \textcolor{stringliteral}{"{}, e."{}}, fname, \textcolor{stringliteral}{"{}, "{}}).\_(t, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, time, ref mask, ref maskOffset);"{}}).EOL();}
+\DoxyCodeLine{00842             \}}
+\DoxyCodeLine{00843             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00844             \{}
+\DoxyCodeLine{00845                 \textcolor{keywordtype}{string} interpfield = fAttr.GetInterpolateCode(fInfo.FieldType, fname, \textcolor{stringliteral}{"{}s"{}}, \textcolor{stringliteral}{"{}e"{}}, t);}
+\DoxyCodeLine{00846                 \textcolor{keywordflow}{if} (interpfield == \textcolor{keyword}{null})}
+\DoxyCodeLine{00847                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00848 }
+\DoxyCodeLine{00849                 \textcolor{keywordflow}{if} (pObjType.IsValueType)}
+\DoxyCodeLine{00850                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (mask[maskOffset]) unsafe \{ "{}});}
+\DoxyCodeLine{00851                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00852                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (mask[maskOffset])\{ "{}});}
+\DoxyCodeLine{00853 }
+\DoxyCodeLine{00854                 sb.\_(interpfield);}
+\DoxyCodeLine{00855 }
+\DoxyCodeLine{00856                 sb.\_(\textcolor{stringliteral}{"{}\} maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{00857 }
+\DoxyCodeLine{00858             \}}
+\DoxyCodeLine{00859         \}}
+\DoxyCodeLine{00860         \textcolor{comment}{//private static bool TryGetCallbackInfo(FieldInfo finfo, string callback, Type objType, out MethodInfo callbackInfo)}}
+\DoxyCodeLine{00861         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00862         \textcolor{comment}{//  /// No callback declared. Normal case.}}
+\DoxyCodeLine{00863         \textcolor{comment}{//  if (callback == null)}}
+\DoxyCodeLine{00864         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00865         \textcolor{comment}{//      callbackInfo = null;}}
+\DoxyCodeLine{00866         \textcolor{comment}{//      return false;}}
+\DoxyCodeLine{00867         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00868 }
+\DoxyCodeLine{00869         \textcolor{comment}{//  Type ftype = finfo.FieldType;}}
+\DoxyCodeLine{00870 }
+\DoxyCodeLine{00871         \textcolor{comment}{//  callbackInfo = objType.GetMethod(callback, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);}}
+\DoxyCodeLine{00872 }
+\DoxyCodeLine{00873         \textcolor{comment}{//  /// Callback is invalid}}
+\DoxyCodeLine{00874         \textcolor{comment}{//  if (callbackInfo == null)}}
+\DoxyCodeLine{00875         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00876         \textcolor{comment}{//      //Debug.LogWarning("{}Method named <b>'"{} + callback  +"{}'</b> referenced by PackObj <b>'"{} + (objType.IsValueType ? "{}struct "{} : "{}class "{}) + objType.Name +"{} ."{}+ finfo.Name + "{}'</b> does not exist. Check spelling and use nameof() rather than a string."{});}}
+\DoxyCodeLine{00877         \textcolor{comment}{//      return false;}}
+\DoxyCodeLine{00878         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00879 }
+\DoxyCodeLine{00880         \textcolor{comment}{//  var parms = callbackInfo.GetParameters();}}
+\DoxyCodeLine{00881         \textcolor{comment}{//  bool isStatic = callbackInfo.IsStatic;}}
+\DoxyCodeLine{00882         \textcolor{comment}{//  bool isPublic = callbackInfo.IsPublic;}}
+\DoxyCodeLine{00883 }
+\DoxyCodeLine{00884         \textcolor{comment}{//  if (callbackInfo == null)}}
+\DoxyCodeLine{00885         \textcolor{comment}{//      goto BadCallback;}}
+\DoxyCodeLine{00886 }
+\DoxyCodeLine{00887         \textcolor{comment}{//  if (!callbackInfo.IsPublic)}}
+\DoxyCodeLine{00888         \textcolor{comment}{//      goto BadCallback;}}
+\DoxyCodeLine{00889 }
+\DoxyCodeLine{00890         \textcolor{comment}{//  if (parms.Length != 2)}}
+\DoxyCodeLine{00891         \textcolor{comment}{//      goto BadCallback;}}
+\DoxyCodeLine{00892 }
+\DoxyCodeLine{00893         \textcolor{comment}{//  if (parms[0].ParameterType == ftype \&\& parms[1].ParameterType == ftype)}}
+\DoxyCodeLine{00894         \textcolor{comment}{//      return true;}}
+\DoxyCodeLine{00895 }
+\DoxyCodeLine{00896         \textcolor{comment}{//  BadCallback:}}
+\DoxyCodeLine{00897 }
+\DoxyCodeLine{00898         \textcolor{comment}{//  //string staticString = isStatic ? "{}static "{} : "{}"{};}}
+\DoxyCodeLine{00899         \textcolor{comment}{//  //string accessString = isPublic ? "{}public "{} : "{}private "{};}}
+\DoxyCodeLine{00900         \textcolor{comment}{//  //string typename = ftype.Name;}}
+\DoxyCodeLine{00901         \textcolor{comment}{//  //string parmstring = "{}"{};}}
+\DoxyCodeLine{00902         \textcolor{comment}{//  //for (int i = 0; i < parms.Length; ++i)}}
+\DoxyCodeLine{00903         \textcolor{comment}{//  //  parmstring += (i == 0 ? "{}"{} : "{}, "{}) + parms[i].ParameterType.Name;}}
+\DoxyCodeLine{00904 }
+\DoxyCodeLine{00905         \textcolor{comment}{//  //Debug.LogWarning("{}<b>Invalid Callback</b> <i>'"{} + accessString + staticString + callback + "{}("{} + parmstring + "{})'</i> on <b>"{} + objType.Name + "{}</b>"{} +}}
+\DoxyCodeLine{00906         \textcolor{comment}{//  //  "{}. Needs to have format: <i>'public "{} + callback + "{}("{} + typename + "{}, "{} + typename + "{})'</i>"{});}}
+\DoxyCodeLine{00907         \textcolor{comment}{//  return false;}}
+\DoxyCodeLine{00908         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00909 }
+\DoxyCodeLine{00910         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_CopyFrameToFrame(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} objName, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, Type pObjType, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00911         \{}
+\DoxyCodeLine{00912             \textcolor{keywordtype}{string} copyfield = fAttr.GetCopyCodeGen(fInfo.FieldType, fname, \textcolor{stringliteral}{"{}s"{}}, \textcolor{stringliteral}{"{}t"{}});}
+\DoxyCodeLine{00913             }
+\DoxyCodeLine{00914             sb.\_\_\_\_(copyfield).EOL();}
+\DoxyCodeLine{00915 }
+\DoxyCodeLine{00916             \textcolor{comment}{//sb.\_\_\_\_("{}t."{}, fname, "{} = s."{}, fname, "{};"{}).EOL();}}
+\DoxyCodeLine{00917         \}}
+\DoxyCodeLine{00918 }
+\DoxyCodeLine{00919         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_FieldDelegates(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftype, \textcolor{keywordtype}{string} genericarg, \textcolor{keywordtype}{bool} isNest)}
+\DoxyCodeLine{00920         \{}
+\DoxyCodeLine{00921             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00922                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00923 }
+\DoxyCodeLine{00924             \textcolor{keywordflow}{if} (fInfo.FieldType.IsEnum)}
+\DoxyCodeLine{00925                 ftype = System.Enum.GetUnderlyingType(fInfo.FieldType).Name;}
+\DoxyCodeLine{00926 }
+\DoxyCodeLine{00927             \textcolor{keywordflow}{if} (fInfo.FieldType.IsGenericType)}
+\DoxyCodeLine{00928             \{}
+\DoxyCodeLine{00929                 sb.\_\_\_(\textcolor{stringliteral}{"{}static Pack"{}}, ftype, \textcolor{stringliteral}{"{}Delegate"{}}, genericarg, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{}Packer;"{}}).EOL();}
+\DoxyCodeLine{00930                 sb.\_\_\_(\textcolor{stringliteral}{"{}static Unpack"{}}, ftype, \textcolor{stringliteral}{"{}Delegate"{}}, genericarg, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{}Unpacker;"{}}).EOL();}
+\DoxyCodeLine{00931             \}}
+\DoxyCodeLine{00932             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00933             \{}
+\DoxyCodeLine{00934                 sb.\_\_\_(\textcolor{stringliteral}{"{}static PackDelegate<"{}}, ftype, \textcolor{stringliteral}{"{}>"{}}, genericarg, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{}Packer;"{}}).EOL();}
+\DoxyCodeLine{00935                 sb.\_\_\_(\textcolor{stringliteral}{"{}static UnpackDelegate<"{}}, ftype, \textcolor{stringliteral}{"{}>"{}}, genericarg, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{}Unpacker;"{}}).EOL();}
+\DoxyCodeLine{00936             \}}
+\DoxyCodeLine{00937             }
+\DoxyCodeLine{00938             sb.EOL();}
+\DoxyCodeLine{00939         \}}
+\DoxyCodeLine{00940 }
+\DoxyCodeLine{00941 }
+\DoxyCodeLine{00942         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_FieldInit(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{string} genericarg, \textcolor{keywordtype}{string} primitive, \textcolor{keywordtype}{bool} isNest, \textcolor{keywordtype}{bool} generateAttr, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{00943         \{}
+\DoxyCodeLine{00944             Type ftype = fInfo.FieldType;}
+\DoxyCodeLine{00945             Type declrType = fInfo.DeclaringType;}
+\DoxyCodeLine{00946 }
+\DoxyCodeLine{00947             \textcolor{keywordtype}{bool} isEnum = fInfo.FieldType.IsEnum;}
+\DoxyCodeLine{00948             \textcolor{keywordflow}{if} (isEnum)}
+\DoxyCodeLine{00949                 ftypename = System.Enum.GetUnderlyingType(fInfo.FieldType).Name;}
+\DoxyCodeLine{00950 }
+\DoxyCodeLine{00951             \textcolor{keywordtype}{string} fullDeclaring = (declrType.Namespace == \textcolor{keyword}{null} || declrType.Namespace == \textcolor{stringliteral}{"{}"{}}) ? declrType.Name : (declrType.Namespace + \textcolor{stringliteral}{"{}."{}} + declrType.Name);}
+\DoxyCodeLine{00952 }
+\DoxyCodeLine{00954             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00955             \{}
+\DoxyCodeLine{00956                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}if (!"{}}, PACK\_PREFIX, ftypename, \textcolor{stringliteral}{"{}.isInitializing)"{}}).EOL();}
+\DoxyCodeLine{00957                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00958 }
+\DoxyCodeLine{00959                 sb.\_\_\_\_\_(PACK\_PREFIX, ftypename, \textcolor{stringliteral}{"{}.Initialize();"{}}).EOL();}
+\DoxyCodeLine{00960                 sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}var packObjInfo = "{}}, typeof(PackObjectDatabase).Name, \textcolor{stringliteral}{"{}.GetPackObjectInfo(typeof("{}}, ffulltype, \textcolor{stringliteral}{"{}));"{}}).EOL();}
+\DoxyCodeLine{00961                 sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}defReadyMask.OR(packObjInfo.defaultReadyMask, fieldindex);"{}}).EOL();}
+\DoxyCodeLine{00962                 sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}maxBits += packObjInfo.maxBits; fieldindex++;"{}}).EOL();}
+\DoxyCodeLine{00963 }
+\DoxyCodeLine{00964                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{00965             \}}
+\DoxyCodeLine{00966 }
+\DoxyCodeLine{00968             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00969             \{}
+\DoxyCodeLine{00970                 \textcolor{keywordflow}{if} (generateAttr)}
+\DoxyCodeLine{00971                     sb.\_\_\_\_(\textcolor{stringliteral}{"{}PackAttribute "{}}, fname, \textcolor{stringliteral}{"{}PackAttr = new PackAttribute();"{}}).EOL();}
+\DoxyCodeLine{00972                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00973                     sb.\_\_\_\_(fAttr.GetType().Name, \textcolor{stringliteral}{"{} "{}}, fname, \textcolor{stringliteral}{"{}PackAttr = ("{}}, fAttr.GetType().Name, \textcolor{stringliteral}{"{})(typeof("{}}, fullDeclaring).\_(\textcolor{stringliteral}{"{}).GetField(\(\backslash\)"{}"{}}, fname, \textcolor{stringliteral}{"{}\(\backslash\)"{}).GetCustomAttributes(typeof(SyncVarBaseAttribute), false)[0] as "{}}, fAttr.GetType().Name, \textcolor{stringliteral}{"{});"{}}).EOL();}
+\DoxyCodeLine{00974 }
+\DoxyCodeLine{00975                 sb.\_\_\_\_(fname, \textcolor{stringliteral}{"{}Packer = ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr as IPack"{}}, ftypename, genericarg, \textcolor{stringliteral}{"{}).Pack;"{}}).EOL();}
+\DoxyCodeLine{00976                 sb.\_\_\_\_(fname, \textcolor{stringliteral}{"{}Unpacker = ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr as IPack"{}}, ftypename, genericarg, \textcolor{stringliteral}{"{}).Unpack;"{}}).EOL();}
+\DoxyCodeLine{00977                 sb.\_\_\_\_(fname, \textcolor{stringliteral}{"{}PackAttr.Initialize(typeof("{}}, primitive, \textcolor{stringliteral}{"{}));"{}}).EOL();}
+\DoxyCodeLine{00978                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}if ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr.keyRate == KeyRate.UseDefault) "{}}, fname, \textcolor{stringliteral}{"{}PackAttr.keyRate = (KeyRate)defaultKeyRate;"{}}).EOL();}
+\DoxyCodeLine{00979                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}if ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr.syncAs == SyncAs.Auto) "{}}, fname, \textcolor{stringliteral}{"{}PackAttr.syncAs = pObjAttr.syncAs;"{}}).EOL();}
+\DoxyCodeLine{00980                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}if ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr.syncAs == SyncAs.Auto) "{}}, fname, \textcolor{stringliteral}{"{}PackAttr.syncAs = SyncAs.State;"{}}).EOL();}
+\DoxyCodeLine{00981                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}if ("{}}, fname, \textcolor{stringliteral}{"{}PackAttr.syncAs == SyncAs.Trigger) "{}}, \textcolor{stringliteral}{"{}defReadyMask[fieldindex] = true;"{}}).EOL();}
+\DoxyCodeLine{00982                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}maxBits += "{}}, fAttr.GetMaxBits(fInfo.FieldType).ToString(), \textcolor{stringliteral}{"{}; fieldindex++;"{}}).EOL();}
+\DoxyCodeLine{00983                 \textcolor{comment}{//sb.\_\_\_\_("{}maxBits += "{}, fname, "{}PackAttr.GetMaxBits(typeof("{}, ffulltype, "{}));"{}).EOL();}}
+\DoxyCodeLine{00984             \}}
+\DoxyCodeLine{00985             sb.EOL();}
+\DoxyCodeLine{00986         \}}
+\DoxyCodeLine{00987 }
+\DoxyCodeLine{00988         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_FieldPack(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNest, \textcolor{keywordtype}{string} enumUnderCast, \textcolor{keywordtype}{string} enumTypeCast)}
+\DoxyCodeLine{00989         \{}
+\DoxyCodeLine{00990 }
+\DoxyCodeLine{00991             \textcolor{keywordflow}{if} (isNest)}
+\DoxyCodeLine{00992                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}flags |= "{}})}
+\DoxyCodeLine{00993                     .\_(PACK\_PREFIX, ftypename, \textcolor{stringliteral}{"{}.Pack(ref packable."{}}, fname, \textcolor{stringliteral}{"{}, "{}} + PREV\_NAME + \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, ref mask, ref maskOffset, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{00994             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00995             \{}
+\DoxyCodeLine{00996                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{00998                 \textcolor{keywordflow}{if} (enumTypeCast != \textcolor{keyword}{null})}
+\DoxyCodeLine{00999                 \{}
+\DoxyCodeLine{01000                     sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}var temp = "{}}, enumUnderCast, \textcolor{stringliteral}{"{}packable."{}},fname,\textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{01001                     sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}var flag = "{}}, fname, \textcolor{stringliteral}{"{}Packer(ref temp, "{}}).\_(enumUnderCast, PREV\_NAME, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01002                 \}}
+\DoxyCodeLine{01004                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01005                     sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}var flag = "{}}, fname, \textcolor{stringliteral}{"{}Packer(ref packable."{}}, fname, \textcolor{stringliteral}{"{}, "{}}).\_(PREV\_NAME, \textcolor{stringliteral}{"{}."{}}, fname, \textcolor{stringliteral}{"{}, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01006 }
+\DoxyCodeLine{01007                 sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}mask[maskOffset] = flag != "{}}, typeof(SerializationFlags).Name,\textcolor{stringliteral}{"{}."{}}, Enum.GetName(typeof(SerializationFlags), SerializationFlags.None), \textcolor{stringliteral}{"{};    flags |= flag; maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{01008                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{01009             \}}
+\DoxyCodeLine{01010         \}}
+\DoxyCodeLine{01011 }
+\DoxyCodeLine{01012         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Generate\_FieldUnpack(FieldInfo fInfo, StringBuilder sb, \textcolor{keywordtype}{string} fname, \textcolor{keywordtype}{string} ftypename, \textcolor{keywordtype}{string} ffulltype, \textcolor{keywordtype}{bool} isNestedPackObj, \textcolor{keywordtype}{string} enumUnderCast, \textcolor{keywordtype}{string} enumTypeCast, SyncVarBaseAttribute fAttr)}
+\DoxyCodeLine{01013         \{}
+\DoxyCodeLine{01014             \textcolor{keywordflow}{if} (isNestedPackObj)}
+\DoxyCodeLine{01015                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}flags |= "{}})}
+\DoxyCodeLine{01016                     .\_(PACK\_PREFIX, ftypename, \textcolor{stringliteral}{"{}.Unpack(ref packable."{}}, fname, \textcolor{stringliteral}{"{}, ref mask, ref isCompleteMask, ref maskOffset, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01017             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01018             \{}
+\DoxyCodeLine{01019                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\{"{}}).EOL();}
+\DoxyCodeLine{01020                 sb.\_\_\_\_\_(\textcolor{stringliteral}{"{}if (mask[maskOffset]) \{"{}}).EOL();}
+\DoxyCodeLine{01021                 \textcolor{keywordflow}{if} (enumTypeCast != \textcolor{keyword}{null})}
+\DoxyCodeLine{01022                 \{}
+\DoxyCodeLine{01023                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}var temp = "{}}, enumUnderCast, \textcolor{stringliteral}{"{}packable."{}}, fname,\textcolor{stringliteral}{"{};"{}}).EOL();}
+\DoxyCodeLine{01024                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}var flag = "{}}, fname, \textcolor{stringliteral}{"{}Unpacker(ref temp, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01025                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}packable."{}}, fname, \textcolor{stringliteral}{"{} = "{}}, enumTypeCast, \textcolor{stringliteral}{"{}temp;"{}}).EOL();}
+\DoxyCodeLine{01026                 \}}
+\DoxyCodeLine{01027                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (fInfo.FieldType.IsGenericType)}
+\DoxyCodeLine{01028                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}var flag = "{}}, fname, \textcolor{stringliteral}{"{}Unpacker(ref packable."{}}, fname, \textcolor{stringliteral}{"{}, packable."{}},fname,\textcolor{stringliteral}{"{}\_mask, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01029                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01030                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}var flag = "{}}, fname, \textcolor{stringliteral}{"{}Unpacker(ref packable."{}}, fname, \textcolor{stringliteral}{"{}, buffer, ref bitposition, frameId, writeFlags);"{}}).EOL();}
+\DoxyCodeLine{01031 }
+\DoxyCodeLine{01032                 \textcolor{keywordflow}{if} (fAttr.syncAs == SyncAs.Trigger)}
+\DoxyCodeLine{01033                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}mask[maskOffset] = flag != 0;"{}}).EOL();}
+\DoxyCodeLine{01034                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01035                     sb.\_\_\_\_\_\_(\textcolor{stringliteral}{"{}isCompleteMask[maskOffset] = (flag \& SerializationFlags.IsComplete) != 0; mask[maskOffset] = flag != 0; flags |= flag; "{}}).EOL();}
+\DoxyCodeLine{01036 }
+\DoxyCodeLine{01038                 \textcolor{keywordflow}{if} (fAttr.syncAs == SyncAs.Trigger)}
+\DoxyCodeLine{01039                     sb.\_\_\_\_\_(\textcolor{stringliteral}{"{} \} isCompleteMask[maskOffset] = true; maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{01040                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01041                     sb.\_\_\_\_\_(\textcolor{stringliteral}{"{} \} maskOffset++;"{}}).EOL();}
+\DoxyCodeLine{01042                 sb.\_\_\_\_(\textcolor{stringliteral}{"{}\}"{}}).EOL();}
+\DoxyCodeLine{01043             \}}
+\DoxyCodeLine{01044 }
+\DoxyCodeLine{01045         \}}
+\DoxyCodeLine{01046 }
+\DoxyCodeLine{01047         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TypeIsHandled(Type fieldType, SyncVarBaseAttribute packAttr)}
+\DoxyCodeLine{01048         \{}
+\DoxyCodeLine{01049             \textcolor{keywordflow}{if} (fieldType.IsEnum)}
+\DoxyCodeLine{01050                 fieldType = Enum.GetUnderlyingType(fieldType);}
+\DoxyCodeLine{01051 }
+\DoxyCodeLine{01052             var interfaces = packAttr.GetType().GetInterfaces();}
+\DoxyCodeLine{01053             \textcolor{keywordflow}{foreach} (var i \textcolor{keywordflow}{in} interfaces)}
+\DoxyCodeLine{01054             \{}
+\DoxyCodeLine{01055                 var isupporteds = i.GetCustomAttributes(typeof(PackSupportedTypesAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{01056                 }
+\DoxyCodeLine{01057                 \textcolor{keywordflow}{if} (isupporteds.Length == 0)}
+\DoxyCodeLine{01058                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01059 }
+\DoxyCodeLine{01060                 var supportedTypeAttr = isupporteds[0] as PackSupportedTypesAttribute;}
+\DoxyCodeLine{01061 }
+\DoxyCodeLine{01062                 var supportedType = supportedTypeAttr.supportedType;}
+\DoxyCodeLine{01063 }
+\DoxyCodeLine{01064                 \textcolor{keywordflow}{if} (supportedType.IsGenericType \&\& supportedType.IsGenericTypeDefinition)}
+\DoxyCodeLine{01065                 \{}
+\DoxyCodeLine{01066                     }
+\DoxyCodeLine{01067                     supportedType = supportedType.GetGenericArguments()[0];}
+\DoxyCodeLine{01068                     Debug.Log(\textcolor{stringliteral}{"{}Found Generic type using "{}} + supportedType.Name + \textcolor{stringliteral}{"{} allowing it until I revisit this code and make it more restrictive."{}});}
+\DoxyCodeLine{01069                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01070                 \}}
+\DoxyCodeLine{01071 }
+\DoxyCodeLine{01072                 \textcolor{comment}{//Debug.Log(supportedType.IsGenericParameter + "{} "{} + supportedType.IsGenericType + "{} "{} + supportedType.IsGenericTypeDefinition + "{} "{}+ supportedType.type);}}
+\DoxyCodeLine{01073 }
+\DoxyCodeLine{01074                 \textcolor{keywordflow}{if} (supportedType == fieldType)}
+\DoxyCodeLine{01075                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01076             \}}
+\DoxyCodeLine{01077             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01078         \}}
+\DoxyCodeLine{01079 }
+\DoxyCodeLine{01080         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ReplacePlusWithPeriod(\textcolor{keywordtype}{string} str)}
+\DoxyCodeLine{01081         \{}
+\DoxyCodeLine{01082             \textcolor{keywordflow}{return} str.Replace(\textcolor{stringliteral}{"{}+"{}}, \textcolor{stringliteral}{"{}."{}});}
+\DoxyCodeLine{01083         \}}
+\DoxyCodeLine{01084 }
+\DoxyCodeLine{01085         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} safetycounter;}
+\DoxyCodeLine{01086         \textcolor{keyword}{private} \textcolor{keyword}{static} List<Type> nestCheck = \textcolor{keyword}{new} List<Type>();}
+\DoxyCodeLine{01087 }
+\DoxyCodeLine{01088         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CheckForNestedLoop(Type type, Type checkIn)}
+\DoxyCodeLine{01089         \{}
+\DoxyCodeLine{01090             nestCheck.Clear();}
+\DoxyCodeLine{01091 }
+\DoxyCodeLine{01093             var attrs = checkIn.GetCustomAttributes(typeof(PackObjectAttribute), \textcolor{keyword}{false});}
+\DoxyCodeLine{01094             \textcolor{keywordflow}{if} (attrs.Length == 0)}
+\DoxyCodeLine{01095                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01096 }
+\DoxyCodeLine{01097             safetycounter++;}
+\DoxyCodeLine{01098 }
+\DoxyCodeLine{01099             \textcolor{keywordflow}{if} (safetycounter > 200)}
+\DoxyCodeLine{01100             \{}
+\DoxyCodeLine{01101                 Debug.Log(\textcolor{stringliteral}{"{}Ouch"{}});}
+\DoxyCodeLine{01102                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01103             \}}
+\DoxyCodeLine{01104 }
+\DoxyCodeLine{01105             var fields = checkIn.GetFields();}
+\DoxyCodeLine{01106 }
+\DoxyCodeLine{01107             \textcolor{keywordflow}{foreach} (var field \textcolor{keywordflow}{in} fields)}
+\DoxyCodeLine{01108             \{}
+\DoxyCodeLine{01109                 \textcolor{keywordflow}{if} (field.FieldType == type)}
+\DoxyCodeLine{01110                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01111 }
+\DoxyCodeLine{01113                 \textcolor{keywordflow}{if} (field.FieldType.GetCustomAttributes(typeof(SyncVarBaseAttribute), \textcolor{keyword}{false}).Length != 0)}
+\DoxyCodeLine{01114                     \textcolor{keywordflow}{if} (CheckForNestedLoop(type, field.FieldType))}
+\DoxyCodeLine{01115                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01116             \}}
+\DoxyCodeLine{01117             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01118         \}}
+\DoxyCodeLine{01119 }
+\DoxyCodeLine{01120 \textcolor{preprocessor}{        \#region SB extensions}}
+\DoxyCodeLine{01121 }
+\DoxyCodeLine{01122 \textcolor{preprocessor}{        \#region No Indent}}
+\DoxyCodeLine{01123 }
+\DoxyCodeLine{01124         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01125         \{}
+\DoxyCodeLine{01126             \textcolor{keywordflow}{return} sb.Append(text);}
+\DoxyCodeLine{01127         \}}
+\DoxyCodeLine{01128 }
+\DoxyCodeLine{01129         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01130         \{}
+\DoxyCodeLine{01131             \textcolor{keywordflow}{return} sb.Append(text).Append(text2);}
+\DoxyCodeLine{01132         \}}
+\DoxyCodeLine{01133 }
+\DoxyCodeLine{01134         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01135         \{}
+\DoxyCodeLine{01136             \textcolor{keywordflow}{return} sb.Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01137         \}}
+\DoxyCodeLine{01138 }
+\DoxyCodeLine{01139         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01140         \{}
+\DoxyCodeLine{01141             \textcolor{keywordflow}{return} sb.Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01142         \}}
+\DoxyCodeLine{01143 }
+\DoxyCodeLine{01144         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01145         \{}
+\DoxyCodeLine{01146             \textcolor{keywordflow}{return} sb.Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01147         \}}
+\DoxyCodeLine{01148 }
+\DoxyCodeLine{01149         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01150         \{}
+\DoxyCodeLine{01151             \textcolor{keywordflow}{return} sb.Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01152         \}}
+\DoxyCodeLine{01153 }
+\DoxyCodeLine{01154         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01155         \{}
+\DoxyCodeLine{01156             \textcolor{keywordflow}{return} sb.Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01157         \}}
+\DoxyCodeLine{01158 }
+\DoxyCodeLine{01159 }
+\DoxyCodeLine{01160 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01161 }
+\DoxyCodeLine{01162 \textcolor{preprocessor}{        \#region Indent 1}}
+\DoxyCodeLine{01163 }
+\DoxyCodeLine{01164         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01165         \{}
+\DoxyCodeLine{01166             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text);}
+\DoxyCodeLine{01167         \}}
+\DoxyCodeLine{01168 }
+\DoxyCodeLine{01169         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01170         \{}
+\DoxyCodeLine{01171             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2);}
+\DoxyCodeLine{01172         \}}
+\DoxyCodeLine{01173 }
+\DoxyCodeLine{01174         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01175         \{}
+\DoxyCodeLine{01176             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01177         \}}
+\DoxyCodeLine{01178 }
+\DoxyCodeLine{01179         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01180         \{}
+\DoxyCodeLine{01181             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01182         \}}
+\DoxyCodeLine{01183 }
+\DoxyCodeLine{01184         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01185         \{}
+\DoxyCodeLine{01186             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01187         \}}
+\DoxyCodeLine{01188 }
+\DoxyCodeLine{01189         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01190         \{}
+\DoxyCodeLine{01191             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01192         \}}
+\DoxyCodeLine{01193 }
+\DoxyCodeLine{01194         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01195         \{}
+\DoxyCodeLine{01196             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01197         \}}
+\DoxyCodeLine{01198 }
+\DoxyCodeLine{01199 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01200 }
+\DoxyCodeLine{01201 \textcolor{preprocessor}{        \#region Indent 2}}
+\DoxyCodeLine{01202 }
+\DoxyCodeLine{01203         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01204         \{}
+\DoxyCodeLine{01205             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text);}
+\DoxyCodeLine{01206         \}}
+\DoxyCodeLine{01207 }
+\DoxyCodeLine{01208         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01209         \{}
+\DoxyCodeLine{01210             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2);}
+\DoxyCodeLine{01211         \}}
+\DoxyCodeLine{01212 }
+\DoxyCodeLine{01213         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01214         \{}
+\DoxyCodeLine{01215             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01216         \}}
+\DoxyCodeLine{01217 }
+\DoxyCodeLine{01218         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01219         \{}
+\DoxyCodeLine{01220             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01221         \}}
+\DoxyCodeLine{01222 }
+\DoxyCodeLine{01223         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01224         \{}
+\DoxyCodeLine{01225             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01226         \}}
+\DoxyCodeLine{01227 }
+\DoxyCodeLine{01228         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01229         \{}
+\DoxyCodeLine{01230             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01231         \}}
+\DoxyCodeLine{01232 }
+\DoxyCodeLine{01233         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01234         \{}
+\DoxyCodeLine{01235             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01236         \}}
+\DoxyCodeLine{01237 }
+\DoxyCodeLine{01238         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7, \textcolor{keywordtype}{string} text8)}
+\DoxyCodeLine{01239         \{}
+\DoxyCodeLine{01240             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7).Append(text8);}
+\DoxyCodeLine{01241         \}}
+\DoxyCodeLine{01242 }
+\DoxyCodeLine{01243 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01244 }
+\DoxyCodeLine{01245 \textcolor{preprocessor}{        \#region Indent 3}}
+\DoxyCodeLine{01246 }
+\DoxyCodeLine{01247         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb)}
+\DoxyCodeLine{01248         \{}
+\DoxyCodeLine{01249             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}});}
+\DoxyCodeLine{01250         \}}
+\DoxyCodeLine{01251 }
+\DoxyCodeLine{01252         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01253         \{}
+\DoxyCodeLine{01254             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text);}
+\DoxyCodeLine{01255         \}}
+\DoxyCodeLine{01256 }
+\DoxyCodeLine{01257         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01258         \{}
+\DoxyCodeLine{01259             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2);}
+\DoxyCodeLine{01260         \}}
+\DoxyCodeLine{01261 }
+\DoxyCodeLine{01262         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01263         \{}
+\DoxyCodeLine{01264             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01265         \}}
+\DoxyCodeLine{01266 }
+\DoxyCodeLine{01267         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01268         \{}
+\DoxyCodeLine{01269             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01270         \}}
+\DoxyCodeLine{01271 }
+\DoxyCodeLine{01272         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01273         \{}
+\DoxyCodeLine{01274             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01275         \}}
+\DoxyCodeLine{01276 }
+\DoxyCodeLine{01277         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01278         \{}
+\DoxyCodeLine{01279             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01280         \}}
+\DoxyCodeLine{01281 }
+\DoxyCodeLine{01282         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01283         \{}
+\DoxyCodeLine{01284             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01285         \}}
+\DoxyCodeLine{01286 }
+\DoxyCodeLine{01287         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7, \textcolor{keywordtype}{string} text8)}
+\DoxyCodeLine{01288         \{}
+\DoxyCodeLine{01289             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7).Append(text8);}
+\DoxyCodeLine{01290         \}}
+\DoxyCodeLine{01291 }
+\DoxyCodeLine{01292         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7, \textcolor{keywordtype}{string} text8, \textcolor{keywordtype}{string} text9)}
+\DoxyCodeLine{01293         \{}
+\DoxyCodeLine{01294             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7).Append(text8).Append(text9);}
+\DoxyCodeLine{01295         \}}
+\DoxyCodeLine{01296 }
+\DoxyCodeLine{01297 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01298 }
+\DoxyCodeLine{01299 \textcolor{preprocessor}{        \#region Indent 4}}
+\DoxyCodeLine{01300 }
+\DoxyCodeLine{01301         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01302         \{}
+\DoxyCodeLine{01303             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text);}
+\DoxyCodeLine{01304         \}}
+\DoxyCodeLine{01305 }
+\DoxyCodeLine{01306         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01307         \{}
+\DoxyCodeLine{01308             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2);}
+\DoxyCodeLine{01309         \}}
+\DoxyCodeLine{01310 }
+\DoxyCodeLine{01311         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01312         \{}
+\DoxyCodeLine{01313             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01314         \}}
+\DoxyCodeLine{01315 }
+\DoxyCodeLine{01316         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01317         \{}
+\DoxyCodeLine{01318             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01319         \}}
+\DoxyCodeLine{01320 }
+\DoxyCodeLine{01321         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01322         \{}
+\DoxyCodeLine{01323             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01324         \}}
+\DoxyCodeLine{01325 }
+\DoxyCodeLine{01326         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01327         \{}
+\DoxyCodeLine{01328             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01329         \}}
+\DoxyCodeLine{01330 }
+\DoxyCodeLine{01331         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01332         \{}
+\DoxyCodeLine{01333             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01334         \}}
+\DoxyCodeLine{01335 }
+\DoxyCodeLine{01336 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01337 }
+\DoxyCodeLine{01338 \textcolor{preprocessor}{        \#region Indent 5}}
+\DoxyCodeLine{01339 }
+\DoxyCodeLine{01340         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text)}
+\DoxyCodeLine{01341         \{}
+\DoxyCodeLine{01342             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text);}
+\DoxyCodeLine{01343         \}}
+\DoxyCodeLine{01344 }
+\DoxyCodeLine{01345         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2)}
+\DoxyCodeLine{01346         \{}
+\DoxyCodeLine{01347             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2);}
+\DoxyCodeLine{01348         \}}
+\DoxyCodeLine{01349 }
+\DoxyCodeLine{01350         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3)}
+\DoxyCodeLine{01351         \{}
+\DoxyCodeLine{01352             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3);}
+\DoxyCodeLine{01353         \}}
+\DoxyCodeLine{01354 }
+\DoxyCodeLine{01355         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4)}
+\DoxyCodeLine{01356         \{}
+\DoxyCodeLine{01357             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4);}
+\DoxyCodeLine{01358         \}}
+\DoxyCodeLine{01359 }
+\DoxyCodeLine{01360         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5)}
+\DoxyCodeLine{01361         \{}
+\DoxyCodeLine{01362             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5);}
+\DoxyCodeLine{01363         \}}
+\DoxyCodeLine{01364 }
+\DoxyCodeLine{01365         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6)}
+\DoxyCodeLine{01366         \{}
+\DoxyCodeLine{01367             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6);}
+\DoxyCodeLine{01368         \}}
+\DoxyCodeLine{01369 }
+\DoxyCodeLine{01370         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_\_\_\_\_\_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{string} text, \textcolor{keywordtype}{string} text2, \textcolor{keywordtype}{string} text3, \textcolor{keywordtype}{string} text4, \textcolor{keywordtype}{string} text5, \textcolor{keywordtype}{string} text6, \textcolor{keywordtype}{string} text7)}
+\DoxyCodeLine{01371         \{}
+\DoxyCodeLine{01372             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t\(\backslash\)t"{}}).Append(text).Append(text2).Append(text3).Append(text4).Append(text5).Append(text6).Append(text7);}
+\DoxyCodeLine{01373         \}}
+\DoxyCodeLine{01374 }
+\DoxyCodeLine{01375 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01376 }
+\DoxyCodeLine{01377         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder \_(\textcolor{keyword}{this} StringBuilder sb, \textcolor{keywordtype}{int} text)}
+\DoxyCodeLine{01378         \{}
+\DoxyCodeLine{01379             \textcolor{keywordflow}{return} sb.Append(text.ToString());}
+\DoxyCodeLine{01380         \}}
+\DoxyCodeLine{01381 }
+\DoxyCodeLine{01382         \textcolor{keyword}{private} \textcolor{keyword}{static} StringBuilder EOL(\textcolor{keyword}{this} StringBuilder sb)}
+\DoxyCodeLine{01383         \{}
+\DoxyCodeLine{01384             \textcolor{keywordflow}{return} sb.Append(\textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{01385         \}}
+\DoxyCodeLine{01386 }
+\DoxyCodeLine{01387 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01388     \}}
+\DoxyCodeLine{01389 \}}
+\DoxyCodeLine{01390 }
+\DoxyCodeLine{01391 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

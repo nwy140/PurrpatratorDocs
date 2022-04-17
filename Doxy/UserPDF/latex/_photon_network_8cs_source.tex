@@ -1,0 +1,2139 @@
+\doxysection{Photon\+Network.\+cs}
+\label{_photon_network_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonNetwork.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonNetwork.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonNetwork.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// PhotonNetwork is the central class of the PUN package.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} System.Linq;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} UnityEngine.SceneManagement;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026 \textcolor{preprocessor}{    \#if UNITY\_EDITOR}}
+\DoxyCodeLine{00027     \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00028     \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00029 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032     \textcolor{keyword}{public} \textcolor{keyword}{struct }InstantiateParameters}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} \textcolor{keywordtype}{int}[] viewIDs;}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} objLevelPrefix;}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} \textcolor{keywordtype}{object}[] data;}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keywordtype}{byte} @group;}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} Quaternion rotation;}
+\DoxyCodeLine{00039         \textcolor{keyword}{public} Vector3 position;}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} \textcolor{keywordtype}{string} prefabName;}
+\DoxyCodeLine{00041         \textcolor{keyword}{public} Player creator;}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{int} timestamp;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{public} InstantiateParameters(\textcolor{keywordtype}{string} prefabName, Vector3 position, Quaternion rotation, \textcolor{keywordtype}{byte} @group, \textcolor{keywordtype}{object}[] data, \textcolor{keywordtype}{byte} objLevelPrefix, \textcolor{keywordtype}{int}[] viewIDs, Player creator, \textcolor{keywordtype}{int} timestamp)}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             this.prefabName = prefabName;}
+\DoxyCodeLine{00047             this.position = position;}
+\DoxyCodeLine{00048             this.rotation = rotation;}
+\DoxyCodeLine{00049             this.@group = @group;}
+\DoxyCodeLine{00050             this.data = data;}
+\DoxyCodeLine{00051             this.objLevelPrefix = objLevelPrefix;}
+\DoxyCodeLine{00052             this.viewIDs = viewIDs;}
+\DoxyCodeLine{00053             this.creator = creator;}
+\DoxyCodeLine{00054             this.timestamp = timestamp;}
+\DoxyCodeLine{00055         \}}
+\DoxyCodeLine{00056     \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00064     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{partial class }PhotonNetwork}
+\DoxyCodeLine{00065     \{}
+\DoxyCodeLine{00067         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PunVersion = \textcolor{stringliteral}{"{}2.40"{}};}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} GameVersion}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} gameVersion; \}}
+\DoxyCodeLine{00084             \textcolor{keyword}{set}}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 gameVersion = value;}
+\DoxyCodeLine{00087                 NetworkingClient.AppVersion = \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}\_\{1\}"{}}, value, PhotonNetwork.PunVersion);}
+\DoxyCodeLine{00088             \}}
+\DoxyCodeLine{00089         \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} gameVersion;}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00095         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} AppVersion}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.AppVersion; \}}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keyword}{static} LoadBalancingClient NetworkingClient;}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{int} MAX\_VIEW\_IDS = 1000; \textcolor{comment}{// VIEW \& PLAYER LIMIT CAN BE EASILY CHANGED, SEE DOCS}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108 }
+\DoxyCodeLine{00110         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ServerSettingsFileName = \textcolor{stringliteral}{"{}PhotonServerSettings"{}};}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \textcolor{keyword}{private} \textcolor{keyword}{static} ServerSettings photonServerSettings;}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keyword}{static} ServerSettings PhotonServerSettings}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             \textcolor{keyword}{get}}
+\DoxyCodeLine{00118             \{}
+\DoxyCodeLine{00119                 \textcolor{keywordflow}{if} (photonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{00120                 \{}
+\DoxyCodeLine{00121                     LoadOrCreateSettings();}
+\DoxyCodeLine{00122                 \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 \textcolor{keywordflow}{return} photonServerSettings;}
+\DoxyCodeLine{00125             \}}
+\DoxyCodeLine{00126             \textcolor{keyword}{private} \textcolor{keyword}{set} \{ photonServerSettings = value; \}}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00130         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ServerAddress \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (NetworkingClient != \textcolor{keyword}{null}) ? NetworkingClient.CurrentServerAddress : \textcolor{stringliteral}{"{}<not connected>"{}}; \} \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00133         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} CloudRegion \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (NetworkingClient != \textcolor{keyword}{null} \&\& IsConnected \&\& Server!=ServerConnection.NameServer) ? NetworkingClient.CloudRegion : \textcolor{keyword}{null}; \} \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00143         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} CurrentCluster \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (NetworkingClient != \textcolor{keyword}{null} ) ? NetworkingClient.CurrentCluster : \textcolor{keyword}{null}; \} \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00146         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} PlayerPrefsKey = \textcolor{stringliteral}{"{}PUNCloudBestRegion"{}};}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00152         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} BestRegionSummaryInPreferences}
+\DoxyCodeLine{00153         \{}
+\DoxyCodeLine{00154             \textcolor{keyword}{get}}
+\DoxyCodeLine{00155             \{}
+\DoxyCodeLine{00156                 \textcolor{keywordflow}{return} PlayerPrefs.GetString(PlayerPrefsKey, \textcolor{keyword}{null});}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158             \textcolor{keyword}{internal} \textcolor{keyword}{set}}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{if} (String.IsNullOrEmpty(value))}
+\DoxyCodeLine{00161                 \{}
+\DoxyCodeLine{00162                     PlayerPrefs.DeleteKey(PlayerPrefsKey);}
+\DoxyCodeLine{00163                 \}}
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165                 \{}
+\DoxyCodeLine{00166                     PlayerPrefs.SetString(PlayerPrefsKey, value.ToString());}
+\DoxyCodeLine{00167                 \}}
+\DoxyCodeLine{00168             \}}
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00178         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsConnected}
+\DoxyCodeLine{00179         \{}
+\DoxyCodeLine{00180             \textcolor{keyword}{get}}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00183                 \{}
+\DoxyCodeLine{00184                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00188                 \{}
+\DoxyCodeLine{00189                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00190                 \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192                 \textcolor{keywordflow}{return} NetworkingClient.IsConnected;}
+\DoxyCodeLine{00193             \}}
+\DoxyCodeLine{00194         \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00199         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsConnectedAndReady}
+\DoxyCodeLine{00200         \{}
+\DoxyCodeLine{00201             \textcolor{keyword}{get}}
+\DoxyCodeLine{00202             \{}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00204                 \{}
+\DoxyCodeLine{00205                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00206                 \}}
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00208                 \{}
+\DoxyCodeLine{00209                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00210                 \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212                 \textcolor{keywordflow}{return} NetworkingClient.IsConnectedAndReady;}
+\DoxyCodeLine{00213             \}}
+\DoxyCodeLine{00214         \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00227         \textcolor{keyword}{public} \textcolor{keyword}{static} ClientState NetworkClientState}
+\DoxyCodeLine{00228         \{}
+\DoxyCodeLine{00229             \textcolor{keyword}{get}}
+\DoxyCodeLine{00230             \{}
+\DoxyCodeLine{00231                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00232                 \{}
+\DoxyCodeLine{00233                     \textcolor{keywordflow}{return} (offlineModeRoom != \textcolor{keyword}{null}) ? ClientState.Joined : ClientState.ConnectedToMasterServer;}
+\DoxyCodeLine{00234                 \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00237                 \{}
+\DoxyCodeLine{00238                     \textcolor{keywordflow}{return} ClientState.Disconnected;}
+\DoxyCodeLine{00239                 \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241                 \textcolor{keywordflow}{return} NetworkingClient.State;}
+\DoxyCodeLine{00242             \}}
+\DoxyCodeLine{00243         \}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00252         \textcolor{keyword}{public} \textcolor{keyword}{static} ConnectMethod ConnectMethod = ConnectMethod.NotCalled;}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00257         \textcolor{keyword}{public} \textcolor{keyword}{static} ServerConnection Server}
+\DoxyCodeLine{00258         \{}
+\DoxyCodeLine{00259             \textcolor{keyword}{get}}
+\DoxyCodeLine{00260             \{}
+\DoxyCodeLine{00261                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00262                 \{}
+\DoxyCodeLine{00263                     \textcolor{keywordflow}{return} CurrentRoom == \textcolor{keyword}{null} ? ServerConnection.MasterServer : ServerConnection.GameServer;}
+\DoxyCodeLine{00264                 \}}
+\DoxyCodeLine{00265                 \textcolor{keywordflow}{return} (PhotonNetwork.NetworkingClient != \textcolor{keyword}{null}) ? PhotonNetwork.NetworkingClient.Server : ServerConnection.NameServer;}
+\DoxyCodeLine{00266             \}}
+\DoxyCodeLine{00267         \}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00279         \textcolor{keyword}{public} \textcolor{keyword}{static} AuthenticationValues AuthValues}
+\DoxyCodeLine{00280         \{}
+\DoxyCodeLine{00281             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (NetworkingClient != \textcolor{keyword}{null}) ? NetworkingClient.AuthValues : \textcolor{keyword}{null}; \}}
+\DoxyCodeLine{00282             \textcolor{keyword}{set} \{ \textcolor{keywordflow}{if} (NetworkingClient != \textcolor{keyword}{null}) NetworkingClient.AuthValues = value; \}}
+\DoxyCodeLine{00283         \}}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00296         \textcolor{keyword}{public} \textcolor{keyword}{static} TypedLobby CurrentLobby}
+\DoxyCodeLine{00297         \{}
+\DoxyCodeLine{00298             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.CurrentLobby; \}}
+\DoxyCodeLine{00299         \}}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00307         \textcolor{keyword}{public} \textcolor{keyword}{static} Room CurrentRoom}
+\DoxyCodeLine{00308         \{}
+\DoxyCodeLine{00309             \textcolor{keyword}{get}}
+\DoxyCodeLine{00310             \{}
+\DoxyCodeLine{00311                 \textcolor{keywordflow}{if} (offlineMode)}
+\DoxyCodeLine{00312                 \{}
+\DoxyCodeLine{00313                     \textcolor{keywordflow}{return} offlineModeRoom;}
+\DoxyCodeLine{00314                 \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316                 \textcolor{keywordflow}{return} NetworkingClient == \textcolor{keyword}{null} ? null : NetworkingClient.CurrentRoom;}
+\DoxyCodeLine{00317             \}}
+\DoxyCodeLine{00318         \}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00323         \textcolor{keyword}{public} \textcolor{keyword}{static} PunLogLevel LogLevel = PunLogLevel.ErrorsOnly;}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00332         \textcolor{keyword}{public} \textcolor{keyword}{static} Player LocalPlayer}
+\DoxyCodeLine{00333         \{}
+\DoxyCodeLine{00334             \textcolor{keyword}{get}}
+\DoxyCodeLine{00335             \{}
+\DoxyCodeLine{00336                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{00337                 \{}
+\DoxyCodeLine{00338                     \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \textcolor{comment}{// suppress ExitApplication errors}}
+\DoxyCodeLine{00339                 \}}
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341                 \textcolor{keywordflow}{return} NetworkingClient.LocalPlayer;}
+\DoxyCodeLine{00342             \}}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00354         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} NickName}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00356             \textcolor{keyword}{get}}
+\DoxyCodeLine{00357             \{}
+\DoxyCodeLine{00358                 \textcolor{keywordflow}{return} NetworkingClient.NickName;}
+\DoxyCodeLine{00359             \}}
+\DoxyCodeLine{00360 }
+\DoxyCodeLine{00361             \textcolor{keyword}{set}}
+\DoxyCodeLine{00362             \{}
+\DoxyCodeLine{00363                 NetworkingClient.NickName = value;}
+\DoxyCodeLine{00364             \}}
+\DoxyCodeLine{00365         \}}
+\DoxyCodeLine{00366 }
+\DoxyCodeLine{00370         \textcolor{keyword}{public} \textcolor{keyword}{static} Player[] PlayerList}
+\DoxyCodeLine{00371         \{}
+\DoxyCodeLine{00372             \textcolor{keyword}{get}}
+\DoxyCodeLine{00373             \{}
+\DoxyCodeLine{00374                 Room room = CurrentRoom;}
+\DoxyCodeLine{00375                 \textcolor{keywordflow}{if} (room != \textcolor{keyword}{null})}
+\DoxyCodeLine{00376                 \{}
+\DoxyCodeLine{00377                     \textcolor{comment}{// TODO: implement more effectively. maybe cache?!}}
+\DoxyCodeLine{00378                     \textcolor{keywordflow}{return} room.Players.Values.OrderBy((x) => x.ActorNumber).ToArray();}
+\DoxyCodeLine{00379                 \}}
+\DoxyCodeLine{00380                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Player[0];}
+\DoxyCodeLine{00381             \}}
+\DoxyCodeLine{00382         \}}
+\DoxyCodeLine{00383 }
+\DoxyCodeLine{00387         \textcolor{keyword}{public} \textcolor{keyword}{static} Player[] PlayerListOthers}
+\DoxyCodeLine{00388         \{}
+\DoxyCodeLine{00389             \textcolor{keyword}{get}}
+\DoxyCodeLine{00390             \{}
+\DoxyCodeLine{00391                 Room room = CurrentRoom;}
+\DoxyCodeLine{00392                 \textcolor{keywordflow}{if} (room != \textcolor{keyword}{null})}
+\DoxyCodeLine{00393                 \{}
+\DoxyCodeLine{00394                     \textcolor{comment}{// TODO: implement more effectively. maybe cache?!}}
+\DoxyCodeLine{00395                     \textcolor{keywordflow}{return} room.Players.Values.OrderBy((x) => x.ActorNumber).Where(x => !x.IsLocal).ToArray();}
+\DoxyCodeLine{00396                 \}}
+\DoxyCodeLine{00397                 \textcolor{keywordflow}{return} \textcolor{keyword}{new} Player[0];}
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399         \}}
+\DoxyCodeLine{00400 }
+\DoxyCodeLine{00410         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} EnableCloseConnection = \textcolor{keyword}{false};}
+\DoxyCodeLine{00411 }
+\DoxyCodeLine{00418         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} PrecisionForVectorSynchronization = 0.000099f;}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00423         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} PrecisionForQuaternionSynchronization = 1.0f;}
+\DoxyCodeLine{00424 }
+\DoxyCodeLine{00428         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} PrecisionForFloatSynchronization = 0.01f;}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430 }
+\DoxyCodeLine{00436         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} OfflineMode}
+\DoxyCodeLine{00437         \{}
+\DoxyCodeLine{00438             \textcolor{keyword}{get}}
+\DoxyCodeLine{00439             \{}
+\DoxyCodeLine{00440                 \textcolor{keywordflow}{return} offlineMode;}
+\DoxyCodeLine{00441             \}}
+\DoxyCodeLine{00442 }
+\DoxyCodeLine{00443             \textcolor{keyword}{set}}
+\DoxyCodeLine{00444             \{}
+\DoxyCodeLine{00445                 \textcolor{keywordflow}{if} (value == offlineMode)}
+\DoxyCodeLine{00446                 \{}
+\DoxyCodeLine{00447                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00448                 \}}
+\DoxyCodeLine{00449 }
+\DoxyCodeLine{00450                 \textcolor{keywordflow}{if} (value \&\& IsConnected)}
+\DoxyCodeLine{00451                 \{}
+\DoxyCodeLine{00452                     Debug.LogError(\textcolor{stringliteral}{"{}Can't start OFFLINE mode while connected!"{}});}
+\DoxyCodeLine{00453                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00454                 \}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456                 \textcolor{keywordflow}{if} (NetworkingClient.IsConnected)}
+\DoxyCodeLine{00457                 \{}
+\DoxyCodeLine{00458                     NetworkingClient.Disconnect(); \textcolor{comment}{// Cleanup (also calls OnLeftRoom to reset stuff)}}
+\DoxyCodeLine{00459                 \}}
+\DoxyCodeLine{00460 }
+\DoxyCodeLine{00461                 offlineMode = value;}
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463                 \textcolor{keywordflow}{if} (offlineMode)}
+\DoxyCodeLine{00464                 \{}
+\DoxyCodeLine{00465                     NetworkingClient.ChangeLocalID(-\/1);}
+\DoxyCodeLine{00466                     \textcolor{comment}{//SendMonoMessage(PhotonNetworkingMessage.OnConnectedToMaster);}}
+\DoxyCodeLine{00467                     NetworkingClient.ConnectionCallbackTargets.OnConnectedToMaster();}
+\DoxyCodeLine{00468                 \}}
+\DoxyCodeLine{00469                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00470                 \{}
+\DoxyCodeLine{00471                     \textcolor{keywordtype}{bool} wasInOfflineRoom = offlineModeRoom != \textcolor{keyword}{null};}
+\DoxyCodeLine{00472 }
+\DoxyCodeLine{00473                     \textcolor{keywordflow}{if} (wasInOfflineRoom)}
+\DoxyCodeLine{00474                     \{}
+\DoxyCodeLine{00475                         LeftRoomCleanup();}
+\DoxyCodeLine{00476                     \}}
+\DoxyCodeLine{00477                     offlineModeRoom = \textcolor{keyword}{null};}
+\DoxyCodeLine{00478                     PhotonNetwork.NetworkingClient.CurrentRoom = \textcolor{keyword}{null};}
+\DoxyCodeLine{00479                     NetworkingClient.ChangeLocalID(-\/1);}
+\DoxyCodeLine{00480                     \textcolor{keywordflow}{if} (wasInOfflineRoom)}
+\DoxyCodeLine{00481                     \{}
+\DoxyCodeLine{00482                         NetworkingClient.MatchMakingCallbackTargets.OnLeftRoom();}
+\DoxyCodeLine{00483                     \}}
+\DoxyCodeLine{00484                 \}}
+\DoxyCodeLine{00485             \}}
+\DoxyCodeLine{00486         \}}
+\DoxyCodeLine{00487 }
+\DoxyCodeLine{00488         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} offlineMode = \textcolor{keyword}{false};}
+\DoxyCodeLine{00489         \textcolor{keyword}{private} \textcolor{keyword}{static} Room offlineModeRoom = \textcolor{keyword}{null};}
+\DoxyCodeLine{00490 }
+\DoxyCodeLine{00491 }
+\DoxyCodeLine{00509         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AutomaticallySyncScene}
+\DoxyCodeLine{00510         \{}
+\DoxyCodeLine{00511             \textcolor{keyword}{get}}
+\DoxyCodeLine{00512             \{}
+\DoxyCodeLine{00513                 \textcolor{keywordflow}{return} automaticallySyncScene;}
+\DoxyCodeLine{00514             \}}
+\DoxyCodeLine{00515             \textcolor{keyword}{set}}
+\DoxyCodeLine{00516             \{}
+\DoxyCodeLine{00517                 automaticallySyncScene = value;}
+\DoxyCodeLine{00518                 \textcolor{keywordflow}{if} (automaticallySyncScene \&\& CurrentRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{00519                 \{}
+\DoxyCodeLine{00520                     LoadLevelIfSynced();}
+\DoxyCodeLine{00521                 \}}
+\DoxyCodeLine{00522             \}}
+\DoxyCodeLine{00523         \}}
+\DoxyCodeLine{00524 }
+\DoxyCodeLine{00525         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} automaticallySyncScene = \textcolor{keyword}{false};}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00543         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} EnableLobbyStatistics}
+\DoxyCodeLine{00544         \{}
+\DoxyCodeLine{00545             \textcolor{keyword}{get}}
+\DoxyCodeLine{00546             \{}
+\DoxyCodeLine{00547                 \textcolor{keywordflow}{return} NetworkingClient.EnableLobbyStatistics;}
+\DoxyCodeLine{00548             \}}
+\DoxyCodeLine{00549         \}}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00551 }
+\DoxyCodeLine{00560         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} InLobby}
+\DoxyCodeLine{00561         \{}
+\DoxyCodeLine{00562             \textcolor{keyword}{get}}
+\DoxyCodeLine{00563             \{}
+\DoxyCodeLine{00564                 \textcolor{keywordflow}{return} NetworkingClient.InLobby;}
+\DoxyCodeLine{00565             \}}
+\DoxyCodeLine{00566         \}}
+\DoxyCodeLine{00567 }
+\DoxyCodeLine{00568 }
+\DoxyCodeLine{00596         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} SendRate}
+\DoxyCodeLine{00597         \{}
+\DoxyCodeLine{00598             \textcolor{keyword}{get}}
+\DoxyCodeLine{00599             \{}
+\DoxyCodeLine{00600                 \textcolor{keywordflow}{return} 1000 / sendFrequency;}
+\DoxyCodeLine{00601             \}}
+\DoxyCodeLine{00602 }
+\DoxyCodeLine{00603             \textcolor{keyword}{set}}
+\DoxyCodeLine{00604             \{}
+\DoxyCodeLine{00605                 sendFrequency = 1000 / value;}
+\DoxyCodeLine{00606                 \textcolor{keywordflow}{if} (PhotonHandler.Instance != \textcolor{keyword}{null})}
+\DoxyCodeLine{00607                 \{}
+\DoxyCodeLine{00608                     PhotonHandler.Instance.UpdateInterval = sendFrequency;}
+\DoxyCodeLine{00609                 \}}
+\DoxyCodeLine{00610             \}}
+\DoxyCodeLine{00611         \}}
+\DoxyCodeLine{00612 }
+\DoxyCodeLine{00613         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} sendFrequency = 33; \textcolor{comment}{// in milliseconds.}}
+\DoxyCodeLine{00614 }
+\DoxyCodeLine{00633         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} SerializationRate}
+\DoxyCodeLine{00634         \{}
+\DoxyCodeLine{00635             \textcolor{keyword}{get}}
+\DoxyCodeLine{00636             \{}
+\DoxyCodeLine{00637                 \textcolor{keywordflow}{return} 1000 / serializationFrequency;}
+\DoxyCodeLine{00638             \}}
+\DoxyCodeLine{00639 }
+\DoxyCodeLine{00640             \textcolor{keyword}{set}}
+\DoxyCodeLine{00641             \{}
+\DoxyCodeLine{00642                 serializationFrequency = 1000 / value;}
+\DoxyCodeLine{00643                 \textcolor{keywordflow}{if} (PhotonHandler.Instance != \textcolor{keyword}{null})}
+\DoxyCodeLine{00644                 \{}
+\DoxyCodeLine{00645                     PhotonHandler.Instance.UpdateIntervalOnSerialize = serializationFrequency;}
+\DoxyCodeLine{00646                 \}}
+\DoxyCodeLine{00647             \}}
+\DoxyCodeLine{00648         \}}
+\DoxyCodeLine{00649 }
+\DoxyCodeLine{00650         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} serializationFrequency = 100; \textcolor{comment}{// in milliseconds. I.e. 100 = 100ms which makes 10 times/second}}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652 }
+\DoxyCodeLine{00664         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsMessageQueueRunning}
+\DoxyCodeLine{00665         \{}
+\DoxyCodeLine{00666             \textcolor{keyword}{get}}
+\DoxyCodeLine{00667             \{}
+\DoxyCodeLine{00668                 \textcolor{keywordflow}{return} isMessageQueueRunning;}
+\DoxyCodeLine{00669             \}}
+\DoxyCodeLine{00670 }
+\DoxyCodeLine{00671             \textcolor{keyword}{set}}
+\DoxyCodeLine{00672             \{}
+\DoxyCodeLine{00673                 isMessageQueueRunning = value;}
+\DoxyCodeLine{00674             \}}
+\DoxyCodeLine{00675         \}}
+\DoxyCodeLine{00676 }
+\DoxyCodeLine{00678         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} isMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680 }
+\DoxyCodeLine{00694         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{double} Time}
+\DoxyCodeLine{00695         \{}
+\DoxyCodeLine{00696             \textcolor{keyword}{get}}
+\DoxyCodeLine{00697             \{}
+\DoxyCodeLine{00698                 \textcolor{keywordflow}{if} (UnityEngine.Time.frameCount == frame)}
+\DoxyCodeLine{00699                 \{}
+\DoxyCodeLine{00700                     \textcolor{keywordflow}{return} frametime;}
+\DoxyCodeLine{00701                 \}}
+\DoxyCodeLine{00702 }
+\DoxyCodeLine{00703                 uint u = (uint)ServerTimestamp;}
+\DoxyCodeLine{00704                 \textcolor{keywordtype}{double} t = u;}
+\DoxyCodeLine{00705                 frametime =  t / 1000.0d;}
+\DoxyCodeLine{00706                 frame = UnityEngine.Time.frameCount;}
+\DoxyCodeLine{00707                 \textcolor{keywordflow}{return} frametime;}
+\DoxyCodeLine{00708             \}}
+\DoxyCodeLine{00709         \}}
+\DoxyCodeLine{00710 }
+\DoxyCodeLine{00711         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{double} frametime;}
+\DoxyCodeLine{00712         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} frame;}
+\DoxyCodeLine{00713 }
+\DoxyCodeLine{00727         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ServerTimestamp}
+\DoxyCodeLine{00728         \{}
+\DoxyCodeLine{00729             \textcolor{keyword}{get}}
+\DoxyCodeLine{00730             \{}
+\DoxyCodeLine{00731                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00732                 \{}
+\DoxyCodeLine{00733                     \textcolor{keywordflow}{if} (StartupStopwatch != \textcolor{keyword}{null} \&\& StartupStopwatch.IsRunning)}
+\DoxyCodeLine{00734                     \{}
+\DoxyCodeLine{00735                         \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})StartupStopwatch.ElapsedMilliseconds;}
+\DoxyCodeLine{00736                     \}}
+\DoxyCodeLine{00737                     \textcolor{keywordflow}{return} Environment.TickCount;}
+\DoxyCodeLine{00738                 \}}
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00740                 \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.ServerTimeInMilliSeconds;   \textcolor{comment}{// TODO: implement ServerTimeInMilliSeconds in LBC}}
+\DoxyCodeLine{00741             \}}
+\DoxyCodeLine{00742         \}}
+\DoxyCodeLine{00743 }
+\DoxyCodeLine{00745         \textcolor{keyword}{private} \textcolor{keyword}{static} Stopwatch StartupStopwatch;}
+\DoxyCodeLine{00746 }
+\DoxyCodeLine{00747 }
+\DoxyCodeLine{00774         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} KeepAliveInBackground}
+\DoxyCodeLine{00775         \{}
+\DoxyCodeLine{00776             \textcolor{keyword}{set}}
+\DoxyCodeLine{00777             \{}
+\DoxyCodeLine{00778                 \textcolor{keywordflow}{if} (PhotonHandler.Instance != \textcolor{keyword}{null})}
+\DoxyCodeLine{00779                 \{}
+\DoxyCodeLine{00780                     PhotonHandler.Instance.KeepAliveInBackground = (int)Mathf.Round(value * 1000.0f);}
+\DoxyCodeLine{00781                 \}}
+\DoxyCodeLine{00782             \}}
+\DoxyCodeLine{00783 }
+\DoxyCodeLine{00784             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} PhotonHandler.Instance != \textcolor{keyword}{null} ? Mathf.Round(PhotonHandler.Instance.KeepAliveInBackground / 1000.0f) : 60.0f; \}}
+\DoxyCodeLine{00785         \}}
+\DoxyCodeLine{00786 }
+\DoxyCodeLine{00787 }
+\DoxyCodeLine{00802         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} MinimalTimeScaleToDispatchInFixedUpdate = -\/1f;}
+\DoxyCodeLine{00803 }
+\DoxyCodeLine{00804 }
+\DoxyCodeLine{00808         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} IsMasterClient}
+\DoxyCodeLine{00809         \{}
+\DoxyCodeLine{00810             \textcolor{keyword}{get}}
+\DoxyCodeLine{00811             \{}
+\DoxyCodeLine{00812                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00813                 \{}
+\DoxyCodeLine{00814                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00815                 \}}
+\DoxyCodeLine{00816 }
+\DoxyCodeLine{00817                 \textcolor{keywordflow}{return} NetworkingClient.CurrentRoom != \textcolor{keyword}{null} \&\& NetworkingClient.CurrentRoom.MasterClientId == LocalPlayer.ActorNumber;  \textcolor{comment}{// TODO: implement MasterClient shortcut in LBC?}}
+\DoxyCodeLine{00818             \}}
+\DoxyCodeLine{00819         \}}
+\DoxyCodeLine{00820 }
+\DoxyCodeLine{00837         \textcolor{keyword}{public} \textcolor{keyword}{static} Player MasterClient}
+\DoxyCodeLine{00838         \{}
+\DoxyCodeLine{00839             \textcolor{keyword}{get}}
+\DoxyCodeLine{00840             \{}
+\DoxyCodeLine{00841                 \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{00842                 \{}
+\DoxyCodeLine{00843                     \textcolor{keywordflow}{return} PhotonNetwork.LocalPlayer;}
+\DoxyCodeLine{00844                 \}}
+\DoxyCodeLine{00845 }
+\DoxyCodeLine{00846                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null} || NetworkingClient.CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{00847                 \{}
+\DoxyCodeLine{00848                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00849                 \}}
+\DoxyCodeLine{00850 }
+\DoxyCodeLine{00851                 \textcolor{keywordflow}{return} NetworkingClient.CurrentRoom.GetPlayer(NetworkingClient.CurrentRoom.MasterClientId);}
+\DoxyCodeLine{00852             \}}
+\DoxyCodeLine{00853         \}}
+\DoxyCodeLine{00854 }
+\DoxyCodeLine{00864         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} InRoom}
+\DoxyCodeLine{00865         \{}
+\DoxyCodeLine{00866             \textcolor{keyword}{get}}
+\DoxyCodeLine{00867             \{}
+\DoxyCodeLine{00868                 \textcolor{comment}{// in offline mode, you can be in a room too and NetworkClientState then returns Joined like on online mode!}}
+\DoxyCodeLine{00869                 \textcolor{keywordflow}{return} NetworkClientState == ClientState.Joined;}
+\DoxyCodeLine{00870             \}}
+\DoxyCodeLine{00871         \}}
+\DoxyCodeLine{00872 }
+\DoxyCodeLine{00873 }
+\DoxyCodeLine{00877         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountOfPlayersOnMaster}
+\DoxyCodeLine{00878         \{}
+\DoxyCodeLine{00879             \textcolor{keyword}{get}}
+\DoxyCodeLine{00880             \{}
+\DoxyCodeLine{00881                 \textcolor{keywordflow}{return} NetworkingClient.PlayersOnMasterCount;}
+\DoxyCodeLine{00882             \}}
+\DoxyCodeLine{00883         \}}
+\DoxyCodeLine{00884 }
+\DoxyCodeLine{00889         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountOfPlayersInRooms}
+\DoxyCodeLine{00890         \{}
+\DoxyCodeLine{00891             \textcolor{keyword}{get}}
+\DoxyCodeLine{00892             \{}
+\DoxyCodeLine{00893                 \textcolor{keywordflow}{return} NetworkingClient.PlayersInRoomsCount;}
+\DoxyCodeLine{00894             \}}
+\DoxyCodeLine{00895         \}}
+\DoxyCodeLine{00896 }
+\DoxyCodeLine{00900         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountOfPlayers}
+\DoxyCodeLine{00901         \{}
+\DoxyCodeLine{00902             \textcolor{keyword}{get}}
+\DoxyCodeLine{00903             \{}
+\DoxyCodeLine{00904                 \textcolor{keywordflow}{return} NetworkingClient.PlayersInRoomsCount + NetworkingClient.PlayersOnMasterCount;}
+\DoxyCodeLine{00905             \}}
+\DoxyCodeLine{00906         \}}
+\DoxyCodeLine{00907 }
+\DoxyCodeLine{00911         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} CountOfRooms}
+\DoxyCodeLine{00912         \{}
+\DoxyCodeLine{00913             \textcolor{keyword}{get}}
+\DoxyCodeLine{00914             \{}
+\DoxyCodeLine{00915                 \textcolor{keywordflow}{return} NetworkingClient.RoomsCount;}
+\DoxyCodeLine{00916             \}}
+\DoxyCodeLine{00917         \}}
+\DoxyCodeLine{00918 }
+\DoxyCodeLine{00926         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} NetworkStatisticsEnabled}
+\DoxyCodeLine{00927         \{}
+\DoxyCodeLine{00928             \textcolor{keyword}{get}}
+\DoxyCodeLine{00929             \{}
+\DoxyCodeLine{00930                 \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.TrafficStatsEnabled;}
+\DoxyCodeLine{00931             \}}
+\DoxyCodeLine{00932 }
+\DoxyCodeLine{00933             \textcolor{keyword}{set}}
+\DoxyCodeLine{00934             \{}
+\DoxyCodeLine{00935                 NetworkingClient.LoadBalancingPeer.TrafficStatsEnabled = value;}
+\DoxyCodeLine{00936             \}}
+\DoxyCodeLine{00937         \}}
+\DoxyCodeLine{00938 }
+\DoxyCodeLine{00945         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ResentReliableCommands}
+\DoxyCodeLine{00946         \{}
+\DoxyCodeLine{00947             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.ResentReliableCommands; \}}
+\DoxyCodeLine{00948         \}}
+\DoxyCodeLine{00949 }
+\DoxyCodeLine{00951         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CrcCheckEnabled}
+\DoxyCodeLine{00952         \{}
+\DoxyCodeLine{00953             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.CrcEnabled; \}}
+\DoxyCodeLine{00954             \textcolor{keyword}{set}}
+\DoxyCodeLine{00955             \{}
+\DoxyCodeLine{00956                 \textcolor{keywordflow}{if} (!IsConnected)}
+\DoxyCodeLine{00957                 \{}
+\DoxyCodeLine{00958                     NetworkingClient.LoadBalancingPeer.CrcEnabled = value;}
+\DoxyCodeLine{00959                 \}}
+\DoxyCodeLine{00960                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00961                 \{}
+\DoxyCodeLine{00962                     Debug.Log(\textcolor{stringliteral}{"{}Can't change CrcCheckEnabled while being connected. CrcCheckEnabled stays "{}} + NetworkingClient.LoadBalancingPeer.CrcEnabled);}
+\DoxyCodeLine{00963                 \}}
+\DoxyCodeLine{00964             \}}
+\DoxyCodeLine{00965         \}}
+\DoxyCodeLine{00966 }
+\DoxyCodeLine{00968         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} PacketLossByCrcCheck}
+\DoxyCodeLine{00969         \{}
+\DoxyCodeLine{00970             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.PacketLossByCrc; \}}
+\DoxyCodeLine{00971         \}}
+\DoxyCodeLine{00972 }
+\DoxyCodeLine{00975         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MaxResendsBeforeDisconnect}
+\DoxyCodeLine{00976         \{}
+\DoxyCodeLine{00977             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.SentCountAllowance; \}}
+\DoxyCodeLine{00978             \textcolor{keyword}{set}}
+\DoxyCodeLine{00979             \{}
+\DoxyCodeLine{00980                 \textcolor{keywordflow}{if} (value < 3) value = 3;}
+\DoxyCodeLine{00981                 \textcolor{keywordflow}{if} (value > 10) value = 10;}
+\DoxyCodeLine{00982                 NetworkingClient.LoadBalancingPeer.SentCountAllowance = value;}
+\DoxyCodeLine{00983             \}}
+\DoxyCodeLine{00984         \}}
+\DoxyCodeLine{00985 }
+\DoxyCodeLine{00994         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} QuickResends}
+\DoxyCodeLine{00995         \{}
+\DoxyCodeLine{00996             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.QuickResendAttempts; \}}
+\DoxyCodeLine{00997             \textcolor{keyword}{set}}
+\DoxyCodeLine{00998             \{}
+\DoxyCodeLine{00999                 \textcolor{keywordflow}{if} (value < 0) value = 0;}
+\DoxyCodeLine{01000                 \textcolor{keywordflow}{if} (value > 3) value = 3;}
+\DoxyCodeLine{01001                 NetworkingClient.LoadBalancingPeer.QuickResendAttempts = (byte)value;}
+\DoxyCodeLine{01002             \}}
+\DoxyCodeLine{01003         \}}
+\DoxyCodeLine{01004 }
+\DoxyCodeLine{01005 }
+\DoxyCodeLine{01007         [Obsolete(\textcolor{stringliteral}{"{}Set port overrides in ServerPortOverrides. Not used anymore!"{}})]}
+\DoxyCodeLine{01008         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} UseAlternativeUdpPorts \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{01009 }
+\DoxyCodeLine{01012         \textcolor{keyword}{public} \textcolor{keyword}{static} PhotonPortDefinition ServerPortOverrides}
+\DoxyCodeLine{01013         \{}
+\DoxyCodeLine{01014             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (NetworkingClient == \textcolor{keyword}{null}) ? \textcolor{keyword}{new} PhotonPortDefinition() :  NetworkingClient.ServerPortOverrides; \}}
+\DoxyCodeLine{01015             \textcolor{keyword}{set} \{ \textcolor{keywordflow}{if} (NetworkingClient != \textcolor{keyword}{null}) NetworkingClient.ServerPortOverrides = value; \}}
+\DoxyCodeLine{01016         \}}
+\DoxyCodeLine{01017 }
+\DoxyCodeLine{01018 }
+\DoxyCodeLine{01019         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} lastUsedViewSubId = 0;  \textcolor{comment}{// each player only needs to remember it's own (!) last used subId to speed up assignment}}
+\DoxyCodeLine{01020         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} lastUsedViewSubIdStatic = 0;  \textcolor{comment}{// per room, the master is able to instantiate GOs. the subId for this must be unique too}}
+\DoxyCodeLine{01021 }
+\DoxyCodeLine{01022 }
+\DoxyCodeLine{01026         \textcolor{keyword}{static} PhotonNetwork()}
+\DoxyCodeLine{01027         \{}
+\DoxyCodeLine{01028 \textcolor{preprocessor}{            \#if !UNITY\_EDITOR}}
+\DoxyCodeLine{01029             StaticReset();  \textcolor{comment}{// in builds, we just reset/init the client once}}
+\DoxyCodeLine{01030 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{01031 }
+\DoxyCodeLine{01032 \textcolor{preprocessor}{                \#if UNITY\_2019\_4\_OR\_NEWER}}
+\DoxyCodeLine{01033                 \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{01034                 \{}
+\DoxyCodeLine{01035                     NetworkingClient = \textcolor{keyword}{new} LoadBalancingClient();}
+\DoxyCodeLine{01036                 \}}
+\DoxyCodeLine{01037 \textcolor{preprocessor}{                \#else}}
+\DoxyCodeLine{01038                 StaticReset();  \textcolor{comment}{// in OLDER unity editor versions there is no RuntimeInitializeOnLoadMethod, so call reset}}
+\DoxyCodeLine{01039 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{01040 }
+\DoxyCodeLine{01041 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{01042         \}}
+\DoxyCodeLine{01043 }
+\DoxyCodeLine{01044 \textcolor{preprocessor}{        \#if UNITY\_EDITOR \&\& UNITY\_2019\_4\_OR\_NEWER}}
+\DoxyCodeLine{01045         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]}
+\DoxyCodeLine{01046 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{01047         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} StaticReset()}
+\DoxyCodeLine{01048         \{}
+\DoxyCodeLine{01049 \textcolor{preprocessor}{            \#if UNITY\_EDITOR}}
+\DoxyCodeLine{01050             \textcolor{keywordflow}{if} (!EditorApplication.isPlayingOrWillChangePlaymode)}
+\DoxyCodeLine{01051             \{}
+\DoxyCodeLine{01052                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01053             \}}
+\DoxyCodeLine{01054 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{01055 }
+\DoxyCodeLine{01056             \textcolor{comment}{// This clear is for when Domain Reloading is disabled. Typically will already be empty.}}
+\DoxyCodeLine{01057             monoRPCMethodsCache.Clear();}
+\DoxyCodeLine{01058 }
+\DoxyCodeLine{01059             \textcolor{comment}{// set up the NetworkingClient, protocol, etc}}
+\DoxyCodeLine{01060             OfflineMode = \textcolor{keyword}{false};}
+\DoxyCodeLine{01061             ConnectionProtocol protocol = PhotonNetwork.PhotonServerSettings.AppSettings.Protocol;}
+\DoxyCodeLine{01062             NetworkingClient = \textcolor{keyword}{new} LoadBalancingClient(protocol);}
+\DoxyCodeLine{01063             NetworkingClient.LoadBalancingPeer.QuickResendAttempts = 2;}
+\DoxyCodeLine{01064             NetworkingClient.LoadBalancingPeer.SentCountAllowance = 9;}
+\DoxyCodeLine{01065 }
+\DoxyCodeLine{01066             NetworkingClient.EventReceived -\/= OnEvent;}
+\DoxyCodeLine{01067             NetworkingClient.EventReceived += OnEvent;}
+\DoxyCodeLine{01068             NetworkingClient.OpResponseReceived -\/= OnOperation;}
+\DoxyCodeLine{01069             NetworkingClient.OpResponseReceived += OnOperation;}
+\DoxyCodeLine{01070             NetworkingClient.StateChanged -\/= OnClientStateChanged;}
+\DoxyCodeLine{01071             NetworkingClient.StateChanged += OnClientStateChanged;}
+\DoxyCodeLine{01072 }
+\DoxyCodeLine{01073             StartupStopwatch = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{01074             StartupStopwatch.Start();}
+\DoxyCodeLine{01075 }
+\DoxyCodeLine{01076             \textcolor{comment}{// using a singleton PhotonHandler to control the new client (which is also a singleton for PUN)}}
+\DoxyCodeLine{01077             PhotonHandler.Instance.Client = NetworkingClient;}
+\DoxyCodeLine{01078 }
+\DoxyCodeLine{01079 }
+\DoxyCodeLine{01080             Application.runInBackground = PhotonServerSettings.RunInBackground;}
+\DoxyCodeLine{01081             PrefabPool = \textcolor{keyword}{new} DefaultPool();}
+\DoxyCodeLine{01082 }
+\DoxyCodeLine{01083             \textcolor{comment}{// RPC shortcut lookup creation (from list of RPCs, which is updated by Editor scripts)}}
+\DoxyCodeLine{01084             rpcShortcuts = \textcolor{keyword}{new} Dictionary<string, int>(PhotonNetwork.PhotonServerSettings.RpcList.Count);}
+\DoxyCodeLine{01085             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < PhotonNetwork.PhotonServerSettings.RpcList.Count; index++)}
+\DoxyCodeLine{01086             \{}
+\DoxyCodeLine{01087                 var name = PhotonNetwork.PhotonServerSettings.RpcList[index];}
+\DoxyCodeLine{01088                 rpcShortcuts[name] = index;}
+\DoxyCodeLine{01089             \}}
+\DoxyCodeLine{01090 }
+\DoxyCodeLine{01091             \textcolor{comment}{// PUN custom types (typical for Unity)}}
+\DoxyCodeLine{01092             CustomTypes.Register();}
+\DoxyCodeLine{01093         \}}
+\DoxyCodeLine{01094 }
+\DoxyCodeLine{01122         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ConnectUsingSettings()}
+\DoxyCodeLine{01123         \{}
+\DoxyCodeLine{01124             \textcolor{keywordflow}{if} (PhotonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{01125             \{}
+\DoxyCodeLine{01126                 Debug.LogError(\textcolor{stringliteral}{"{}Can't connect: Loading settings failed. ServerSettings asset must be in any 'Resources' folder as: "{}} + ServerSettingsFileName);}
+\DoxyCodeLine{01127                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01128             \}}
+\DoxyCodeLine{01129 }
+\DoxyCodeLine{01130             \textcolor{keywordflow}{return} ConnectUsingSettings(PhotonServerSettings.AppSettings, PhotonServerSettings.StartInOfflineMode);}
+\DoxyCodeLine{01131         \}}
+\DoxyCodeLine{01132 }
+\DoxyCodeLine{01133         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ConnectUsingSettings(AppSettings appSettings, \textcolor{keywordtype}{bool} startInOfflineMode = \textcolor{keyword}{false}) \textcolor{comment}{// parameter name hides static class member}}
+\DoxyCodeLine{01134         \{}
+\DoxyCodeLine{01135             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{01136             \{}
+\DoxyCodeLine{01137                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectUsingSettings() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01138                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01139             \}}
+\DoxyCodeLine{01140             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{01141             \{}
+\DoxyCodeLine{01142                 Debug.LogWarning(\textcolor{stringliteral}{"{}Can't connect: Application is closing. Unity called OnApplicationQuit()."{}});}
+\DoxyCodeLine{01143                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01144             \}}
+\DoxyCodeLine{01145             \textcolor{keywordflow}{if} (PhotonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{01146             \{}
+\DoxyCodeLine{01147                 Debug.LogError(\textcolor{stringliteral}{"{}Can't connect: Loading settings failed. ServerSettings asset must be in any 'Resources' folder as: "{}} + ServerSettingsFileName);}
+\DoxyCodeLine{01148                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01149             \}}
+\DoxyCodeLine{01150 }
+\DoxyCodeLine{01151             SetupLogging();}
+\DoxyCodeLine{01152 }
+\DoxyCodeLine{01153 }
+\DoxyCodeLine{01154             NetworkingClient.LoadBalancingPeer.TransportProtocol = appSettings.Protocol;}
+\DoxyCodeLine{01155             NetworkingClient.ExpectedProtocol = \textcolor{keyword}{null};}
+\DoxyCodeLine{01156             NetworkingClient.EnableProtocolFallback = appSettings.EnableProtocolFallback;}
+\DoxyCodeLine{01157             NetworkingClient.AuthMode = appSettings.AuthMode;}
+\DoxyCodeLine{01158 }
+\DoxyCodeLine{01159 }
+\DoxyCodeLine{01160             IsMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{01161             NetworkingClient.AppId = appSettings.AppIdRealtime;}
+\DoxyCodeLine{01162             GameVersion = appSettings.AppVersion;}
+\DoxyCodeLine{01163 }
+\DoxyCodeLine{01164 }
+\DoxyCodeLine{01165 }
+\DoxyCodeLine{01166             \textcolor{keywordflow}{if} (startInOfflineMode)}
+\DoxyCodeLine{01167             \{}
+\DoxyCodeLine{01168                 OfflineMode = \textcolor{keyword}{true};}
+\DoxyCodeLine{01169                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01170             \}}
+\DoxyCodeLine{01171 }
+\DoxyCodeLine{01172             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01173             \{}
+\DoxyCodeLine{01174                 OfflineMode = \textcolor{keyword}{false}; \textcolor{comment}{// Cleanup offline mode}}
+\DoxyCodeLine{01175                 \textcolor{comment}{// someone can set OfflineMode in code and then call ConnectUsingSettings() with non-\/offline settings. Warning for that case:}}
+\DoxyCodeLine{01176                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectUsingSettings() disabled the offline mode. No longer offline."{}});}
+\DoxyCodeLine{01177             \}}
+\DoxyCodeLine{01178 }
+\DoxyCodeLine{01179 }
+\DoxyCodeLine{01180             NetworkingClient.EnableLobbyStatistics = appSettings.EnableLobbyStatistics;}
+\DoxyCodeLine{01181             NetworkingClient.ProxyServerAddress = appSettings.ProxyServer;}
+\DoxyCodeLine{01182 }
+\DoxyCodeLine{01183 }
+\DoxyCodeLine{01184             \textcolor{keywordflow}{if} (appSettings.IsMasterServerAddress)}
+\DoxyCodeLine{01185             \{}
+\DoxyCodeLine{01186                 \textcolor{keywordflow}{if} (AuthValues == \textcolor{keyword}{null})}
+\DoxyCodeLine{01187                 \{}
+\DoxyCodeLine{01188                     AuthValues = \textcolor{keyword}{new} AuthenticationValues(Guid.NewGuid().ToString());}
+\DoxyCodeLine{01189                 \}}
+\DoxyCodeLine{01190                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(AuthValues.UserId))}
+\DoxyCodeLine{01191                 \{}
+\DoxyCodeLine{01192                     AuthValues.UserId = Guid.NewGuid().ToString();}
+\DoxyCodeLine{01193                 \}}
+\DoxyCodeLine{01194                 \textcolor{keywordflow}{return} ConnectToMaster(appSettings.Server, appSettings.Port, appSettings.AppIdRealtime);}
+\DoxyCodeLine{01195             \}}
+\DoxyCodeLine{01196 }
+\DoxyCodeLine{01197 }
+\DoxyCodeLine{01198             NetworkingClient.NameServerPortInAppSettings = appSettings.Port;}
+\DoxyCodeLine{01199             \textcolor{keywordflow}{if} (!appSettings.IsDefaultNameServer)}
+\DoxyCodeLine{01200             \{}
+\DoxyCodeLine{01201                 NetworkingClient.NameServerHost = appSettings.Server;}
+\DoxyCodeLine{01202             \}}
+\DoxyCodeLine{01203 }
+\DoxyCodeLine{01204 }
+\DoxyCodeLine{01205             \textcolor{keywordflow}{if} (appSettings.IsBestRegion)}
+\DoxyCodeLine{01206             \{}
+\DoxyCodeLine{01207                 \textcolor{keywordflow}{return} ConnectToBestCloudServer();}
+\DoxyCodeLine{01208             \}}
+\DoxyCodeLine{01209 }
+\DoxyCodeLine{01210             \textcolor{keywordflow}{return} ConnectToRegion(appSettings.FixedRegion);}
+\DoxyCodeLine{01211         \}}
+\DoxyCodeLine{01212 }
+\DoxyCodeLine{01213 }
+\DoxyCodeLine{01231         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ConnectToMaster(\textcolor{keywordtype}{string} masterServerAddress, \textcolor{keywordtype}{int} port, \textcolor{keywordtype}{string} appID)}
+\DoxyCodeLine{01232         \{}
+\DoxyCodeLine{01233             \textcolor{comment}{// TODO: refactor NetworkingClient.LoadBalancingPeer.PeerState to not use the peer but LBC.connected or so}}
+\DoxyCodeLine{01234             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{01235             \{}
+\DoxyCodeLine{01236                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectToMaster() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01237                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01238             \}}
+\DoxyCodeLine{01239             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{01240             \{}
+\DoxyCodeLine{01241                 Debug.LogWarning(\textcolor{stringliteral}{"{}Can't connect: Application is closing. Unity called OnApplicationQuit()."{}});}
+\DoxyCodeLine{01242                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01243             \}}
+\DoxyCodeLine{01244 }
+\DoxyCodeLine{01245             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01246             \{}
+\DoxyCodeLine{01247                 OfflineMode = \textcolor{keyword}{false}; \textcolor{comment}{// Cleanup offline mode}}
+\DoxyCodeLine{01248                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectToMaster() disabled the offline mode. No longer offline."{}});}
+\DoxyCodeLine{01249             \}}
+\DoxyCodeLine{01250 }
+\DoxyCodeLine{01251             \textcolor{keywordflow}{if} (!IsMessageQueueRunning)}
+\DoxyCodeLine{01252             \{}
+\DoxyCodeLine{01253                 IsMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{01254                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectToMaster() enabled IsMessageQueueRunning. Needs to be able to dispatch incoming messages."{}});}
+\DoxyCodeLine{01255             \}}
+\DoxyCodeLine{01256 }
+\DoxyCodeLine{01257             SetupLogging();}
+\DoxyCodeLine{01258             ConnectMethod = ConnectMethod.ConnectToMaster;}
+\DoxyCodeLine{01259 }
+\DoxyCodeLine{01260             NetworkingClient.IsUsingNameServer = \textcolor{keyword}{false};}
+\DoxyCodeLine{01261             NetworkingClient.MasterServerAddress = (port == 0) ? masterServerAddress : masterServerAddress + \textcolor{stringliteral}{"{}:"{}} + port;}
+\DoxyCodeLine{01262             NetworkingClient.AppId = appID;}
+\DoxyCodeLine{01263 }
+\DoxyCodeLine{01264             \textcolor{keywordflow}{return} NetworkingClient.ConnectToMasterServer();}
+\DoxyCodeLine{01265         \}}
+\DoxyCodeLine{01266 }
+\DoxyCodeLine{01267 }
+\DoxyCodeLine{01290         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ConnectToBestCloudServer()}
+\DoxyCodeLine{01291         \{}
+\DoxyCodeLine{01292             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{01293             \{}
+\DoxyCodeLine{01294                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectToBestCloudServer() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01295                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01296             \}}
+\DoxyCodeLine{01297             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{01298             \{}
+\DoxyCodeLine{01299                 Debug.LogWarning(\textcolor{stringliteral}{"{}Can't connect: Application is closing. Unity called OnApplicationQuit()."{}});}
+\DoxyCodeLine{01300                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01301             \}}
+\DoxyCodeLine{01302 }
+\DoxyCodeLine{01303             SetupLogging();}
+\DoxyCodeLine{01304             ConnectMethod = ConnectMethod.ConnectToBest;}
+\DoxyCodeLine{01305 }
+\DoxyCodeLine{01306             \textcolor{comment}{// Connecting to "{}Best Region"{} begins with connecting to the Name Server.}}
+\DoxyCodeLine{01307             \textcolor{keywordtype}{bool} couldConnect = PhotonNetwork.NetworkingClient.ConnectToNameServer();}
+\DoxyCodeLine{01308             \textcolor{keywordflow}{return} couldConnect;}
+\DoxyCodeLine{01309         \}}
+\DoxyCodeLine{01310 }
+\DoxyCodeLine{01311 }
+\DoxyCodeLine{01327         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ConnectToRegion(\textcolor{keywordtype}{string} region)}
+\DoxyCodeLine{01328         \{}
+\DoxyCodeLine{01329             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected \&\& NetworkingClient.Server != ServerConnection.NameServer)}
+\DoxyCodeLine{01330             \{}
+\DoxyCodeLine{01331                 Debug.LogWarning(\textcolor{stringliteral}{"{}ConnectToRegion() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01332                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01333             \}}
+\DoxyCodeLine{01334             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{01335             \{}
+\DoxyCodeLine{01336                 Debug.LogWarning(\textcolor{stringliteral}{"{}Can't connect: Application is closing. Unity called OnApplicationQuit()."{}});}
+\DoxyCodeLine{01337                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01338             \}}
+\DoxyCodeLine{01339 }
+\DoxyCodeLine{01340             SetupLogging();}
+\DoxyCodeLine{01341             ConnectMethod = ConnectMethod.ConnectToRegion;}
+\DoxyCodeLine{01342 }
+\DoxyCodeLine{01343             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(region))}
+\DoxyCodeLine{01344             \{}
+\DoxyCodeLine{01345                 \textcolor{keywordflow}{return} NetworkingClient.ConnectToRegionMaster(region);}
+\DoxyCodeLine{01346             \}}
+\DoxyCodeLine{01347 }
+\DoxyCodeLine{01348             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01349         \}}
+\DoxyCodeLine{01350 }
+\DoxyCodeLine{01351 }
+\DoxyCodeLine{01362         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Disconnect()}
+\DoxyCodeLine{01363         \{}
+\DoxyCodeLine{01364             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01365             \{}
+\DoxyCodeLine{01366                 OfflineMode = \textcolor{keyword}{false};}
+\DoxyCodeLine{01367                 offlineModeRoom = \textcolor{keyword}{null};}
+\DoxyCodeLine{01368                 NetworkingClient.State = ClientState.Disconnecting;}
+\DoxyCodeLine{01369                 NetworkingClient.OnStatusChanged(StatusCode.Disconnect);}
+\DoxyCodeLine{01370                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01371             \}}
+\DoxyCodeLine{01372 }
+\DoxyCodeLine{01373             \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null})}
+\DoxyCodeLine{01374             \{}
+\DoxyCodeLine{01375                 \textcolor{keywordflow}{return}; \textcolor{comment}{// Surpress error when quitting playmode in the editor}}
+\DoxyCodeLine{01376             \}}
+\DoxyCodeLine{01377 }
+\DoxyCodeLine{01378             NetworkingClient.Disconnect();}
+\DoxyCodeLine{01379         \}}
+\DoxyCodeLine{01380 }
+\DoxyCodeLine{01387         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} Reconnect()}
+\DoxyCodeLine{01388         \{}
+\DoxyCodeLine{01389             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(NetworkingClient.MasterServerAddress))}
+\DoxyCodeLine{01390             \{}
+\DoxyCodeLine{01391                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reconnect() failed. It seems the client wasn't connected before?! Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01392                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01393             \}}
+\DoxyCodeLine{01394 }
+\DoxyCodeLine{01395             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{01396             \{}
+\DoxyCodeLine{01397                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reconnect() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01398                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01399             \}}
+\DoxyCodeLine{01400 }
+\DoxyCodeLine{01401             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01402             \{}
+\DoxyCodeLine{01403                 OfflineMode = \textcolor{keyword}{false}; \textcolor{comment}{// Cleanup offline mode}}
+\DoxyCodeLine{01404                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reconnect() disabled the offline mode. No longer offline."{}});}
+\DoxyCodeLine{01405             \}}
+\DoxyCodeLine{01406 }
+\DoxyCodeLine{01407             \textcolor{keywordflow}{if} (!IsMessageQueueRunning)}
+\DoxyCodeLine{01408             \{}
+\DoxyCodeLine{01409                 IsMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{01410                 Debug.LogWarning(\textcolor{stringliteral}{"{}Reconnect() enabled IsMessageQueueRunning. Needs to be able to dispatch incoming messages."{}});}
+\DoxyCodeLine{01411             \}}
+\DoxyCodeLine{01412 }
+\DoxyCodeLine{01413             NetworkingClient.IsUsingNameServer = \textcolor{keyword}{false};}
+\DoxyCodeLine{01414             \textcolor{keywordflow}{return} NetworkingClient.ReconnectToMaster();}
+\DoxyCodeLine{01415         \}}
+\DoxyCodeLine{01416 }
+\DoxyCodeLine{01417 }
+\DoxyCodeLine{01421         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} NetworkStatisticsReset()}
+\DoxyCodeLine{01422         \{}
+\DoxyCodeLine{01423             NetworkingClient.LoadBalancingPeer.TrafficStatsReset();}
+\DoxyCodeLine{01424         \}}
+\DoxyCodeLine{01425 }
+\DoxyCodeLine{01426 }
+\DoxyCodeLine{01431         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} NetworkStatisticsToString()}
+\DoxyCodeLine{01432         \{}
+\DoxyCodeLine{01433             \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null} || OfflineMode)}
+\DoxyCodeLine{01434             \{}
+\DoxyCodeLine{01435                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Offline or in OfflineMode. No VitalStats available."{}};}
+\DoxyCodeLine{01436             \}}
+\DoxyCodeLine{01437 }
+\DoxyCodeLine{01438             \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.VitalStatsToString(\textcolor{keyword}{false});}
+\DoxyCodeLine{01439         \}}
+\DoxyCodeLine{01440 }
+\DoxyCodeLine{01441 }
+\DoxyCodeLine{01446         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} VerifyCanUseNetwork()}
+\DoxyCodeLine{01447         \{}
+\DoxyCodeLine{01448             \textcolor{keywordflow}{if} (IsConnected)}
+\DoxyCodeLine{01449             \{}
+\DoxyCodeLine{01450                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01451             \}}
+\DoxyCodeLine{01452 }
+\DoxyCodeLine{01453             Debug.LogError(\textcolor{stringliteral}{"{}Cannot send messages when not connected. Either connect to Photon OR use offline mode!"{}});}
+\DoxyCodeLine{01454             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01455         \}}
+\DoxyCodeLine{01456 }
+\DoxyCodeLine{01457 }
+\DoxyCodeLine{01462         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GetPing()}
+\DoxyCodeLine{01463         \{}
+\DoxyCodeLine{01464             \textcolor{keywordflow}{return} NetworkingClient.LoadBalancingPeer.RoundTripTime;}
+\DoxyCodeLine{01465         \}}
+\DoxyCodeLine{01466 }
+\DoxyCodeLine{01469         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} FetchServerTimestamp()}
+\DoxyCodeLine{01470         \{}
+\DoxyCodeLine{01471             \textcolor{keywordflow}{if} (NetworkingClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{01472             \{}
+\DoxyCodeLine{01473                 NetworkingClient.LoadBalancingPeer.FetchServerTimestamp();}
+\DoxyCodeLine{01474             \}}
+\DoxyCodeLine{01475         \}}
+\DoxyCodeLine{01476 }
+\DoxyCodeLine{01486         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SendAllOutgoingCommands()}
+\DoxyCodeLine{01487         \{}
+\DoxyCodeLine{01488             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{01489             \{}
+\DoxyCodeLine{01490                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01491             \}}
+\DoxyCodeLine{01492 }
+\DoxyCodeLine{01493             \textcolor{keywordflow}{while} (NetworkingClient.LoadBalancingPeer.SendOutgoingCommands())}
+\DoxyCodeLine{01494             \{}
+\DoxyCodeLine{01495             \}}
+\DoxyCodeLine{01496         \}}
+\DoxyCodeLine{01497 }
+\DoxyCodeLine{01501         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CloseConnection(Player kickPlayer)}
+\DoxyCodeLine{01502         \{}
+\DoxyCodeLine{01503             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{01504             \{}
+\DoxyCodeLine{01505                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01506             \}}
+\DoxyCodeLine{01507 }
+\DoxyCodeLine{01508             \textcolor{keywordflow}{if} (!PhotonNetwork.EnableCloseConnection)}
+\DoxyCodeLine{01509             \{}
+\DoxyCodeLine{01510                 Debug.LogError(\textcolor{stringliteral}{"{}CloseConnection is disabled. No need to call it."{}});}
+\DoxyCodeLine{01511                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01512             \}}
+\DoxyCodeLine{01513 }
+\DoxyCodeLine{01514             \textcolor{keywordflow}{if} (!LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{01515             \{}
+\DoxyCodeLine{01516                 Debug.LogError(\textcolor{stringliteral}{"{}CloseConnection: Only the masterclient can kick another player."{}});}
+\DoxyCodeLine{01517                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01518             \}}
+\DoxyCodeLine{01519 }
+\DoxyCodeLine{01520             \textcolor{keywordflow}{if} (kickPlayer == \textcolor{keyword}{null})}
+\DoxyCodeLine{01521             \{}
+\DoxyCodeLine{01522                 Debug.LogError(\textcolor{stringliteral}{"{}CloseConnection: No such player connected!"{}});}
+\DoxyCodeLine{01523                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01524             \}}
+\DoxyCodeLine{01525 }
+\DoxyCodeLine{01526             RaiseEventOptions options = \textcolor{keyword}{new} RaiseEventOptions() \{ TargetActors = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[] \{ kickPlayer.ActorNumber \} \};}
+\DoxyCodeLine{01527             \textcolor{keywordflow}{return} NetworkingClient.OpRaiseEvent(PunEvent.CloseConnection, \textcolor{keyword}{null}, options, SendOptions.SendReliable);}
+\DoxyCodeLine{01528         \}}
+\DoxyCodeLine{01529 }
+\DoxyCodeLine{01530 }
+\DoxyCodeLine{01566         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SetMasterClient(Player masterClientPlayer)}
+\DoxyCodeLine{01567         \{}
+\DoxyCodeLine{01568             \textcolor{keywordflow}{if} (!InRoom || !VerifyCanUseNetwork() || OfflineMode)}
+\DoxyCodeLine{01569             \{}
+\DoxyCodeLine{01570                 \textcolor{keywordflow}{if} (LogLevel == PunLogLevel.Informational) Debug.Log(\textcolor{stringliteral}{"{}Can not SetMasterClient(). Not in room or in OfflineMode."{}});}
+\DoxyCodeLine{01571                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01572             \}}
+\DoxyCodeLine{01573 }
+\DoxyCodeLine{01574             \textcolor{keywordflow}{return} CurrentRoom.SetMasterClient(masterClientPlayer);}
+\DoxyCodeLine{01575         \}}
+\DoxyCodeLine{01576 }
+\DoxyCodeLine{01577 }
+\DoxyCodeLine{01595         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinRandomRoom()}
+\DoxyCodeLine{01596         \{}
+\DoxyCodeLine{01597             \textcolor{keywordflow}{return} JoinRandomRoom(\textcolor{keyword}{null}, 0, MatchmakingMode.FillRoom, \textcolor{keyword}{null}, \textcolor{keyword}{null});}
+\DoxyCodeLine{01598         \}}
+\DoxyCodeLine{01599 }
+\DoxyCodeLine{01620         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinRandomRoom(Hashtable expectedCustomRoomProperties, \textcolor{keywordtype}{byte} expectedMaxPlayers)}
+\DoxyCodeLine{01621         \{}
+\DoxyCodeLine{01622             \textcolor{keywordflow}{return} JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers, MatchmakingMode.FillRoom, \textcolor{keyword}{null}, \textcolor{keyword}{null});}
+\DoxyCodeLine{01623         \}}
+\DoxyCodeLine{01624 }
+\DoxyCodeLine{01649         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinRandomRoom(Hashtable expectedCustomRoomProperties, \textcolor{keywordtype}{byte} expectedMaxPlayers, MatchmakingMode matchingType, TypedLobby typedLobby, \textcolor{keywordtype}{string} sqlLobbyFilter, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{01650         \{}
+\DoxyCodeLine{01651             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01652             \{}
+\DoxyCodeLine{01653                 \textcolor{keywordflow}{if} (offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{01654                 \{}
+\DoxyCodeLine{01655                     Debug.LogError(\textcolor{stringliteral}{"{}JoinRandomRoom failed. In offline mode you still have to leave a room to enter another."{}});}
+\DoxyCodeLine{01656                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01657                 \}}
+\DoxyCodeLine{01658                 EnterOfflineRoom(\textcolor{stringliteral}{"{}offline room"{}}, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{01659                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01660             \}}
+\DoxyCodeLine{01661             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01662             \{}
+\DoxyCodeLine{01663                 Debug.LogError(\textcolor{stringliteral}{"{}JoinRandomRoom failed. Client is on "{}}+ NetworkingClient.Server+ \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{} but not ready for operations (State: "{}}+ NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01664                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01665             \}}
+\DoxyCodeLine{01666 }
+\DoxyCodeLine{01667             typedLobby = typedLobby ?? ((NetworkingClient.InLobby) ? NetworkingClient.CurrentLobby : \textcolor{keyword}{null});  \textcolor{comment}{// use given lobby, or active lobby (if any active) or none}}
+\DoxyCodeLine{01668 }
+\DoxyCodeLine{01669             OpJoinRandomRoomParams opParams = \textcolor{keyword}{new} OpJoinRandomRoomParams();}
+\DoxyCodeLine{01670             opParams.ExpectedCustomRoomProperties = expectedCustomRoomProperties;}
+\DoxyCodeLine{01671             opParams.ExpectedMaxPlayers = expectedMaxPlayers;}
+\DoxyCodeLine{01672             opParams.MatchingType = matchingType;}
+\DoxyCodeLine{01673             opParams.TypedLobby = typedLobby;}
+\DoxyCodeLine{01674             opParams.SqlLobbyFilter = sqlLobbyFilter;}
+\DoxyCodeLine{01675             opParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01676 }
+\DoxyCodeLine{01677             \textcolor{keywordflow}{return} NetworkingClient.OpJoinRandomRoom(opParams);}
+\DoxyCodeLine{01678         \}}
+\DoxyCodeLine{01679 }
+\DoxyCodeLine{01680 }
+\DoxyCodeLine{01705         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinRandomOrCreateRoom(Hashtable expectedCustomRoomProperties = \textcolor{keyword}{null}, \textcolor{keywordtype}{byte} expectedMaxPlayers = 0, MatchmakingMode matchingType = MatchmakingMode.FillRoom, TypedLobby typedLobby = \textcolor{keyword}{null}, \textcolor{keywordtype}{string} sqlLobbyFilter = \textcolor{keyword}{null}, \textcolor{keywordtype}{string} roomName = \textcolor{keyword}{null}, RoomOptions roomOptions = \textcolor{keyword}{null}, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{01706         \{}
+\DoxyCodeLine{01707             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01708             \{}
+\DoxyCodeLine{01709                 \textcolor{keywordflow}{if} (offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{01710                 \{}
+\DoxyCodeLine{01711                     Debug.LogError(\textcolor{stringliteral}{"{}JoinRandomOrCreateRoom failed. In offline mode you still have to leave a room to enter another."{}});}
+\DoxyCodeLine{01712                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01713                 \}}
+\DoxyCodeLine{01714                 EnterOfflineRoom(\textcolor{stringliteral}{"{}offline room"{}}, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{01715                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01716             \}}
+\DoxyCodeLine{01717             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01718             \{}
+\DoxyCodeLine{01719                 Debug.LogError(\textcolor{stringliteral}{"{}JoinRandomOrCreateRoom failed. Client is on "{}}+ NetworkingClient.Server+ \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{} but not ready for operations (State: "{}}+ NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01720                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01721             \}}
+\DoxyCodeLine{01722 }
+\DoxyCodeLine{01723             typedLobby = typedLobby ?? ((NetworkingClient.InLobby) ? NetworkingClient.CurrentLobby : \textcolor{keyword}{null}); \textcolor{comment}{// use given lobby, or active lobby (if any active) or none}}
+\DoxyCodeLine{01724 }
+\DoxyCodeLine{01725             OpJoinRandomRoomParams opParams = \textcolor{keyword}{new} OpJoinRandomRoomParams();}
+\DoxyCodeLine{01726             opParams.ExpectedCustomRoomProperties = expectedCustomRoomProperties;}
+\DoxyCodeLine{01727             opParams.ExpectedMaxPlayers = expectedMaxPlayers;}
+\DoxyCodeLine{01728             opParams.MatchingType = matchingType;}
+\DoxyCodeLine{01729             opParams.TypedLobby = typedLobby;}
+\DoxyCodeLine{01730             opParams.SqlLobbyFilter = sqlLobbyFilter;}
+\DoxyCodeLine{01731             opParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01732 }
+\DoxyCodeLine{01733             EnterRoomParams enterRoomParams = \textcolor{keyword}{new} EnterRoomParams();}
+\DoxyCodeLine{01734             enterRoomParams.RoomName = roomName;}
+\DoxyCodeLine{01735             enterRoomParams.RoomOptions = roomOptions;}
+\DoxyCodeLine{01736             enterRoomParams.Lobby = typedLobby;}
+\DoxyCodeLine{01737             enterRoomParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01738 }
+\DoxyCodeLine{01739             \textcolor{keywordflow}{return} NetworkingClient.OpJoinRandomOrCreateRoom(opParams, enterRoomParams);}
+\DoxyCodeLine{01740         \}}
+\DoxyCodeLine{01741 }
+\DoxyCodeLine{01742 }
+\DoxyCodeLine{01768         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} CreateRoom(\textcolor{keywordtype}{string} roomName, RoomOptions roomOptions = \textcolor{keyword}{null}, TypedLobby typedLobby = \textcolor{keyword}{null}, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{01769         \{}
+\DoxyCodeLine{01770             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01771             \{}
+\DoxyCodeLine{01772                 \textcolor{keywordflow}{if} (offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{01773                 \{}
+\DoxyCodeLine{01774                     Debug.LogError(\textcolor{stringliteral}{"{}CreateRoom failed. In offline mode you still have to leave a room to enter another."{}});}
+\DoxyCodeLine{01775                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01776                 \}}
+\DoxyCodeLine{01777                 EnterOfflineRoom(roomName, roomOptions, \textcolor{keyword}{true});}
+\DoxyCodeLine{01778                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01779             \}}
+\DoxyCodeLine{01780             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01781             \{}
+\DoxyCodeLine{01782                 Debug.LogError(\textcolor{stringliteral}{"{}CreateRoom failed. Client is on "{}} + NetworkingClient.Server + \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{}but not ready for operations (State: "{}} + NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01783                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01784             \}}
+\DoxyCodeLine{01785 }
+\DoxyCodeLine{01786             typedLobby = typedLobby ?? ((NetworkingClient.InLobby) ? NetworkingClient.CurrentLobby : \textcolor{keyword}{null});  \textcolor{comment}{// use given lobby, or active lobby (if any active) or none}}
+\DoxyCodeLine{01787 }
+\DoxyCodeLine{01788             EnterRoomParams opParams = \textcolor{keyword}{new} EnterRoomParams();}
+\DoxyCodeLine{01789             opParams.RoomName = roomName;}
+\DoxyCodeLine{01790             opParams.RoomOptions = roomOptions;}
+\DoxyCodeLine{01791             opParams.Lobby = typedLobby;}
+\DoxyCodeLine{01792             opParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01793 }
+\DoxyCodeLine{01794             \textcolor{keywordflow}{return} NetworkingClient.OpCreateRoom(opParams);}
+\DoxyCodeLine{01795         \}}
+\DoxyCodeLine{01796 }
+\DoxyCodeLine{01797 }
+\DoxyCodeLine{01836         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinOrCreateRoom(\textcolor{keywordtype}{string} roomName, RoomOptions roomOptions, TypedLobby typedLobby, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{01837         \{}
+\DoxyCodeLine{01838             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01839             \{}
+\DoxyCodeLine{01840                 \textcolor{keywordflow}{if} (offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{01841                 \{}
+\DoxyCodeLine{01842                     Debug.LogError(\textcolor{stringliteral}{"{}JoinOrCreateRoom failed. In offline mode you still have to leave a room to enter another."{}});}
+\DoxyCodeLine{01843                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01844                 \}}
+\DoxyCodeLine{01845                 EnterOfflineRoom(roomName, roomOptions, \textcolor{keyword}{true});  \textcolor{comment}{// in offline mode, JoinOrCreateRoom assumes you create the room}}
+\DoxyCodeLine{01846                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01847             \}}
+\DoxyCodeLine{01848             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01849             \{}
+\DoxyCodeLine{01850                 Debug.LogError(\textcolor{stringliteral}{"{}JoinOrCreateRoom failed. Client is on "{}} + NetworkingClient.Server + \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{}but not ready for operations (State: "{}} + NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01851                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01852             \}}
+\DoxyCodeLine{01853             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(roomName))}
+\DoxyCodeLine{01854             \{}
+\DoxyCodeLine{01855                 Debug.LogError(\textcolor{stringliteral}{"{}JoinOrCreateRoom failed. A roomname is required. If you don't know one, how will you join?"{}});}
+\DoxyCodeLine{01856                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01857             \}}
+\DoxyCodeLine{01858 }
+\DoxyCodeLine{01859             typedLobby = typedLobby ?? ((NetworkingClient.InLobby) ? NetworkingClient.CurrentLobby : \textcolor{keyword}{null});  \textcolor{comment}{// use given lobby, or active lobby (if any active) or none}}
+\DoxyCodeLine{01860 }
+\DoxyCodeLine{01861             EnterRoomParams opParams = \textcolor{keyword}{new} EnterRoomParams();}
+\DoxyCodeLine{01862             opParams.RoomName = roomName;}
+\DoxyCodeLine{01863             opParams.RoomOptions = roomOptions;}
+\DoxyCodeLine{01864             opParams.Lobby = typedLobby;}
+\DoxyCodeLine{01865             opParams.PlayerProperties = LocalPlayer.CustomProperties;}
+\DoxyCodeLine{01866             opParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01867 }
+\DoxyCodeLine{01868             \textcolor{keywordflow}{return} NetworkingClient.OpJoinOrCreateRoom(opParams);}
+\DoxyCodeLine{01869         \}}
+\DoxyCodeLine{01870 }
+\DoxyCodeLine{01871 }
+\DoxyCodeLine{01901         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinRoom(\textcolor{keywordtype}{string} roomName, \textcolor{keywordtype}{string}[] expectedUsers = \textcolor{keyword}{null})}
+\DoxyCodeLine{01902         \{}
+\DoxyCodeLine{01903             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01904             \{}
+\DoxyCodeLine{01905                 \textcolor{keywordflow}{if} (offlineModeRoom != \textcolor{keyword}{null})}
+\DoxyCodeLine{01906                 \{}
+\DoxyCodeLine{01907                     Debug.LogError(\textcolor{stringliteral}{"{}JoinRoom failed. In offline mode you still have to leave a room to enter another."{}});}
+\DoxyCodeLine{01908                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01909                 \}}
+\DoxyCodeLine{01910                 EnterOfflineRoom(roomName, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{01911                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01912             \}}
+\DoxyCodeLine{01913             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01914             \{}
+\DoxyCodeLine{01915                 Debug.LogError(\textcolor{stringliteral}{"{}JoinRoom failed. Client is on "{}} + NetworkingClient.Server + \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{}but not ready for operations (State: "{}} + NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01916                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01917             \}}
+\DoxyCodeLine{01918             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(roomName))}
+\DoxyCodeLine{01919             \{}
+\DoxyCodeLine{01920                 Debug.LogError(\textcolor{stringliteral}{"{}JoinRoom failed. A roomname is required. If you don't know one, how will you join?"{}});}
+\DoxyCodeLine{01921                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01922             \}}
+\DoxyCodeLine{01923 }
+\DoxyCodeLine{01924 }
+\DoxyCodeLine{01925             EnterRoomParams opParams = \textcolor{keyword}{new} EnterRoomParams();}
+\DoxyCodeLine{01926             opParams.RoomName = roomName;}
+\DoxyCodeLine{01927             opParams.ExpectedUsers = expectedUsers;}
+\DoxyCodeLine{01928 }
+\DoxyCodeLine{01929             \textcolor{keywordflow}{return} NetworkingClient.OpJoinRoom(opParams);}
+\DoxyCodeLine{01930         \}}
+\DoxyCodeLine{01931 }
+\DoxyCodeLine{01932 }
+\DoxyCodeLine{01953         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} RejoinRoom(\textcolor{keywordtype}{string} roomName)}
+\DoxyCodeLine{01954         \{}
+\DoxyCodeLine{01955             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01956             \{}
+\DoxyCodeLine{01957                 Debug.LogError(\textcolor{stringliteral}{"{}RejoinRoom failed due to offline mode."{}});}
+\DoxyCodeLine{01958                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01959             \}}
+\DoxyCodeLine{01960             \textcolor{keywordflow}{if} (NetworkingClient.Server != ServerConnection.MasterServer || !IsConnectedAndReady)}
+\DoxyCodeLine{01961             \{}
+\DoxyCodeLine{01962                 Debug.LogError(\textcolor{stringliteral}{"{}RejoinRoom failed. Client is on "{}} + NetworkingClient.Server + \textcolor{stringliteral}{"{} (must be Master Server for matchmaking)"{}} + (IsConnectedAndReady ? \textcolor{stringliteral}{"{} and ready"{}} : \textcolor{stringliteral}{"{}but not ready for operations (State: "{}} + NetworkingClient.State + \textcolor{stringliteral}{"{})"{}}) + \textcolor{stringliteral}{"{}. Wait for callback: OnJoinedLobby or OnConnectedToMaster."{}});}
+\DoxyCodeLine{01963                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01964             \}}
+\DoxyCodeLine{01965             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(roomName))}
+\DoxyCodeLine{01966             \{}
+\DoxyCodeLine{01967                 Debug.LogError(\textcolor{stringliteral}{"{}RejoinRoom failed. A roomname is required. If you don't know one, how will you join?"{}});}
+\DoxyCodeLine{01968                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01969             \}}
+\DoxyCodeLine{01970 }
+\DoxyCodeLine{01971             \textcolor{keywordflow}{return} NetworkingClient.OpRejoinRoom(roomName);}
+\DoxyCodeLine{01972         \}}
+\DoxyCodeLine{01973 }
+\DoxyCodeLine{01974 }
+\DoxyCodeLine{01989         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} ReconnectAndRejoin()}
+\DoxyCodeLine{01990         \{}
+\DoxyCodeLine{01991             \textcolor{keywordflow}{if} (NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{01992             \{}
+\DoxyCodeLine{01993                 Debug.LogWarning(\textcolor{stringliteral}{"{}ReconnectAndRejoin() failed. Can only connect while in state 'Disconnected'. Current state: "{}} + NetworkingClient.LoadBalancingPeer.PeerState);}
+\DoxyCodeLine{01994                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01995             \}}
+\DoxyCodeLine{01996             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{01997             \{}
+\DoxyCodeLine{01998                 OfflineMode = \textcolor{keyword}{false}; \textcolor{comment}{// Cleanup offline mode}}
+\DoxyCodeLine{01999                 Debug.LogWarning(\textcolor{stringliteral}{"{}ReconnectAndRejoin() disabled the offline mode. No longer offline."{}});}
+\DoxyCodeLine{02000             \}}
+\DoxyCodeLine{02001 }
+\DoxyCodeLine{02002             \textcolor{keywordflow}{if} (!IsMessageQueueRunning)}
+\DoxyCodeLine{02003             \{}
+\DoxyCodeLine{02004                 IsMessageQueueRunning = \textcolor{keyword}{true};}
+\DoxyCodeLine{02005                 Debug.LogWarning(\textcolor{stringliteral}{"{}ReconnectAndRejoin() enabled IsMessageQueueRunning. Needs to be able to dispatch incoming messages."{}});}
+\DoxyCodeLine{02006             \}}
+\DoxyCodeLine{02007 }
+\DoxyCodeLine{02008             \textcolor{keywordflow}{return} NetworkingClient.ReconnectAndRejoin();}
+\DoxyCodeLine{02009         \}}
+\DoxyCodeLine{02010 }
+\DoxyCodeLine{02011 }
+\DoxyCodeLine{02026         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} LeaveRoom(\textcolor{keywordtype}{bool} becomeInactive = \textcolor{keyword}{true})}
+\DoxyCodeLine{02027         \{}
+\DoxyCodeLine{02028             \textcolor{keywordflow}{if} (OfflineMode)}
+\DoxyCodeLine{02029             \{}
+\DoxyCodeLine{02030                 offlineModeRoom = \textcolor{keyword}{null};}
+\DoxyCodeLine{02031                 NetworkingClient.MatchMakingCallbackTargets.OnLeftRoom();}
+\DoxyCodeLine{02032                 NetworkingClient.ConnectionCallbackTargets.OnConnectedToMaster();}
+\DoxyCodeLine{02033             \}}
+\DoxyCodeLine{02034             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02035             \{}
+\DoxyCodeLine{02036                 \textcolor{keywordflow}{if} (CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02037                 \{}
+\DoxyCodeLine{02038                     Debug.LogWarning(\textcolor{stringliteral}{"{}PhotonNetwork.CurrentRoom is null. You don't have to call LeaveRoom() when you're not in one. State: "{}} + PhotonNetwork.NetworkClientState);}
+\DoxyCodeLine{02039                 \}}
+\DoxyCodeLine{02040                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02041                 \{}
+\DoxyCodeLine{02042                     becomeInactive = becomeInactive \&\& CurrentRoom.PlayerTtl != 0; \textcolor{comment}{// in a room with playerTTL == 0, the operation "{}leave"{} will never turn a client inactive}}
+\DoxyCodeLine{02043                 \}}
+\DoxyCodeLine{02044                 \textcolor{keywordflow}{return} NetworkingClient.OpLeaveRoom(becomeInactive);}
+\DoxyCodeLine{02045             \}}
+\DoxyCodeLine{02046 }
+\DoxyCodeLine{02047             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02048         \}}
+\DoxyCodeLine{02049 }
+\DoxyCodeLine{02050 }
+\DoxyCodeLine{02051 }
+\DoxyCodeLine{02055         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnterOfflineRoom(\textcolor{keywordtype}{string} roomName, RoomOptions roomOptions, \textcolor{keywordtype}{bool} createdRoom)}
+\DoxyCodeLine{02056         \{}
+\DoxyCodeLine{02057             offlineModeRoom = \textcolor{keyword}{new} Room(roomName, roomOptions, \textcolor{keyword}{true});}
+\DoxyCodeLine{02058             NetworkingClient.ChangeLocalID(1);}
+\DoxyCodeLine{02059             offlineModeRoom.masterClientId = 1;}
+\DoxyCodeLine{02060             offlineModeRoom.AddPlayer(PhotonNetwork.LocalPlayer);}
+\DoxyCodeLine{02061             offlineModeRoom.LoadBalancingClient = PhotonNetwork.NetworkingClient;}
+\DoxyCodeLine{02062             PhotonNetwork.NetworkingClient.CurrentRoom = offlineModeRoom;}
+\DoxyCodeLine{02063 }
+\DoxyCodeLine{02064             \textcolor{keywordflow}{if} (createdRoom)}
+\DoxyCodeLine{02065             \{}
+\DoxyCodeLine{02066                 NetworkingClient.MatchMakingCallbackTargets.OnCreatedRoom();}
+\DoxyCodeLine{02067             \}}
+\DoxyCodeLine{02068 }
+\DoxyCodeLine{02069             NetworkingClient.MatchMakingCallbackTargets.OnJoinedRoom();}
+\DoxyCodeLine{02070         \}}
+\DoxyCodeLine{02071 }
+\DoxyCodeLine{02092         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinLobby()}
+\DoxyCodeLine{02093         \{}
+\DoxyCodeLine{02094             \textcolor{keywordflow}{return} JoinLobby(\textcolor{keyword}{null});}
+\DoxyCodeLine{02095         \}}
+\DoxyCodeLine{02096 }
+\DoxyCodeLine{02129         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} JoinLobby(TypedLobby typedLobby)}
+\DoxyCodeLine{02130         \{}
+\DoxyCodeLine{02131             \textcolor{keywordflow}{if} (PhotonNetwork.IsConnected \&\& PhotonNetwork.Server == ServerConnection.MasterServer)}
+\DoxyCodeLine{02132             \{}
+\DoxyCodeLine{02133                 \textcolor{keywordflow}{return} NetworkingClient.OpJoinLobby(typedLobby);}
+\DoxyCodeLine{02134             \}}
+\DoxyCodeLine{02135 }
+\DoxyCodeLine{02136             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02137         \}}
+\DoxyCodeLine{02138 }
+\DoxyCodeLine{02149         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} LeaveLobby()}
+\DoxyCodeLine{02150         \{}
+\DoxyCodeLine{02151             \textcolor{keywordflow}{if} (PhotonNetwork.IsConnected \&\& PhotonNetwork.Server == ServerConnection.MasterServer)}
+\DoxyCodeLine{02152             \{}
+\DoxyCodeLine{02153                 \textcolor{keywordflow}{return} NetworkingClient.OpLeaveLobby();}
+\DoxyCodeLine{02154             \}}
+\DoxyCodeLine{02155 }
+\DoxyCodeLine{02156             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02157         \}}
+\DoxyCodeLine{02158 }
+\DoxyCodeLine{02182         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} FindFriends(\textcolor{keywordtype}{string}[] friendsToFind)}
+\DoxyCodeLine{02183         \{}
+\DoxyCodeLine{02184             \textcolor{keywordflow}{if} (NetworkingClient == \textcolor{keyword}{null} || offlineMode)}
+\DoxyCodeLine{02185             \{}
+\DoxyCodeLine{02186                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02187             \}}
+\DoxyCodeLine{02188 }
+\DoxyCodeLine{02189             \textcolor{keywordflow}{return} NetworkingClient.OpFindFriends(friendsToFind);}
+\DoxyCodeLine{02190         \}}
+\DoxyCodeLine{02191 }
+\DoxyCodeLine{02207         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} GetCustomRoomList(TypedLobby typedLobby, \textcolor{keywordtype}{string} sqlLobbyFilter)}
+\DoxyCodeLine{02208         \{}
+\DoxyCodeLine{02209             \textcolor{keywordflow}{return} NetworkingClient.OpGetGameList(typedLobby, sqlLobbyFilter);}
+\DoxyCodeLine{02210         \}}
+\DoxyCodeLine{02211 }
+\DoxyCodeLine{02233         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SetPlayerCustomProperties(Hashtable customProperties)}
+\DoxyCodeLine{02234         \{}
+\DoxyCodeLine{02235             \textcolor{keywordflow}{if} (customProperties == \textcolor{keyword}{null})}
+\DoxyCodeLine{02236             \{}
+\DoxyCodeLine{02237                 customProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{02238                 \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{object} k \textcolor{keywordflow}{in} LocalPlayer.CustomProperties.Keys)}
+\DoxyCodeLine{02239                 \{}
+\DoxyCodeLine{02240                     customProperties[(string)k] = \textcolor{keyword}{null};}
+\DoxyCodeLine{02241                 \}}
+\DoxyCodeLine{02242             \}}
+\DoxyCodeLine{02243 }
+\DoxyCodeLine{02244             \textcolor{keywordflow}{return} LocalPlayer.SetCustomProperties(customProperties);}
+\DoxyCodeLine{02245         \}}
+\DoxyCodeLine{02246 }
+\DoxyCodeLine{02262         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemovePlayerCustomProperties(\textcolor{keywordtype}{string}[] customPropertiesToDelete)}
+\DoxyCodeLine{02263         \{}
+\DoxyCodeLine{02264             \textcolor{comment}{// TODO: decide if this option makes sense}}
+\DoxyCodeLine{02265 }
+\DoxyCodeLine{02266             \textcolor{keywordflow}{if} (customPropertiesToDelete == \textcolor{keyword}{null} || customPropertiesToDelete.Length == 0 || LocalPlayer.CustomProperties == \textcolor{keyword}{null})}
+\DoxyCodeLine{02267             \{}
+\DoxyCodeLine{02268                 LocalPlayer.CustomProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{02269                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02270             \}}
+\DoxyCodeLine{02271 }
+\DoxyCodeLine{02272             \textcolor{comment}{// if a specific list of props should be deleted, we do that here}}
+\DoxyCodeLine{02273             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < customPropertiesToDelete.Length; i++)}
+\DoxyCodeLine{02274             \{}
+\DoxyCodeLine{02275                 \textcolor{keywordtype}{string} key = customPropertiesToDelete[i];}
+\DoxyCodeLine{02276                 \textcolor{keywordflow}{if} (LocalPlayer.CustomProperties.ContainsKey(key))}
+\DoxyCodeLine{02277                 \{}
+\DoxyCodeLine{02278                     LocalPlayer.CustomProperties.Remove(key);}
+\DoxyCodeLine{02279                 \}}
+\DoxyCodeLine{02280             \}}
+\DoxyCodeLine{02281         \}}
+\DoxyCodeLine{02282 }
+\DoxyCodeLine{02306         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} RaiseEvent(\textcolor{keywordtype}{byte} eventCode, \textcolor{keywordtype}{object} eventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)}
+\DoxyCodeLine{02307         \{}
+\DoxyCodeLine{02308             \textcolor{keywordflow}{if} (offlineMode)}
+\DoxyCodeLine{02309             \{}
+\DoxyCodeLine{02310                 \textcolor{keywordflow}{if} (raiseEventOptions.Receivers == ReceiverGroup.Others)}
+\DoxyCodeLine{02311                 \{}
+\DoxyCodeLine{02312                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02313                 \}}
+\DoxyCodeLine{02314 }
+\DoxyCodeLine{02315                 EventData evData = \textcolor{keyword}{new} EventData \{ Code = eventCode \};  \textcolor{comment}{// creates the equivalent of a received event}}
+\DoxyCodeLine{02316                 evData.Parameters[ParameterCode.Data] = eventContent;}
+\DoxyCodeLine{02317                 evData.Parameters[ParameterCode.ActorNr] = 1;}
+\DoxyCodeLine{02318 }
+\DoxyCodeLine{02319                 NetworkingClient.OnEvent(evData);}
+\DoxyCodeLine{02320                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02321             \}}
+\DoxyCodeLine{02322 }
+\DoxyCodeLine{02323             \textcolor{keywordflow}{if} (!InRoom || eventCode >= 200)}
+\DoxyCodeLine{02324             \{}
+\DoxyCodeLine{02325                 Debug.LogWarning(\textcolor{stringliteral}{"{}RaiseEvent("{}} + eventCode + \textcolor{stringliteral}{"{}) failed. Your event is not being sent! Check if your are in a Room and the eventCode must be less than 200 (0..199)."{}});}
+\DoxyCodeLine{02326                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02327             \}}
+\DoxyCodeLine{02328 }
+\DoxyCodeLine{02329             \textcolor{keywordflow}{return} NetworkingClient.OpRaiseEvent(eventCode, eventContent, raiseEventOptions, sendOptions);}
+\DoxyCodeLine{02330         \}}
+\DoxyCodeLine{02331 }
+\DoxyCodeLine{02338         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} RaiseEventInternal(\textcolor{keywordtype}{byte} eventCode, \textcolor{keywordtype}{object} eventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)}
+\DoxyCodeLine{02339         \{}
+\DoxyCodeLine{02340             \textcolor{keywordflow}{if} (offlineMode)}
+\DoxyCodeLine{02341             \{}
+\DoxyCodeLine{02342                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02343             \}}
+\DoxyCodeLine{02344 }
+\DoxyCodeLine{02345             \textcolor{keywordflow}{if} (!InRoom)}
+\DoxyCodeLine{02346             \{}
+\DoxyCodeLine{02347                 Debug.LogWarning(\textcolor{stringliteral}{"{}RaiseEvent("{}} + eventCode + \textcolor{stringliteral}{"{}) failed. Your event is not being sent! Check if your are in a Room"{}});}
+\DoxyCodeLine{02348                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02349             \}}
+\DoxyCodeLine{02350 }
+\DoxyCodeLine{02351             \textcolor{keywordflow}{return} NetworkingClient.OpRaiseEvent(eventCode, eventContent, raiseEventOptions, sendOptions);}
+\DoxyCodeLine{02352         \}}
+\DoxyCodeLine{02353 }
+\DoxyCodeLine{02354 }
+\DoxyCodeLine{02359         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AllocateViewID(PhotonView view)}
+\DoxyCodeLine{02360         \{}
+\DoxyCodeLine{02361             \textcolor{keywordflow}{if} (view.ViewID != 0)}
+\DoxyCodeLine{02362             \{}
+\DoxyCodeLine{02363                 Debug.LogError(\textcolor{stringliteral}{"{}AllocateViewID() can't be used for PhotonViews that already have a viewID. This view is: "{}} + view.ToString());}
+\DoxyCodeLine{02364                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02365             \}}
+\DoxyCodeLine{02366 }
+\DoxyCodeLine{02367             \textcolor{keywordtype}{int} manualId = AllocateViewID(LocalPlayer.ActorNumber);}
+\DoxyCodeLine{02368             view.ViewID = manualId;}
+\DoxyCodeLine{02369             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02370         \}}
+\DoxyCodeLine{02371 }
+\DoxyCodeLine{02372         [Obsolete(\textcolor{stringliteral}{"{}Renamed. Use AllocateRoomViewID instead"{}})]}
+\DoxyCodeLine{02373         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AllocateSceneViewID(PhotonView view)}
+\DoxyCodeLine{02374         \{}
+\DoxyCodeLine{02375             \textcolor{keywordflow}{return} AllocateRoomViewID(view);}
+\DoxyCodeLine{02376         \}}
+\DoxyCodeLine{02377 }
+\DoxyCodeLine{02382         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AllocateRoomViewID(PhotonView view)}
+\DoxyCodeLine{02383         \{}
+\DoxyCodeLine{02384             \textcolor{keywordflow}{if} (!PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{02385             \{}
+\DoxyCodeLine{02386                 Debug.LogError(\textcolor{stringliteral}{"{}Only the Master Client can AllocateRoomViewID(). Check PhotonNetwork.IsMasterClient!"{}});}
+\DoxyCodeLine{02387                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02388             \}}
+\DoxyCodeLine{02389 }
+\DoxyCodeLine{02390             \textcolor{keywordflow}{if} (view.ViewID != 0)}
+\DoxyCodeLine{02391             \{}
+\DoxyCodeLine{02392                 Debug.LogError(\textcolor{stringliteral}{"{}AllocateRoomViewID() can't be used for PhotonViews that already have a viewID. This view is: "{}} + view.ToString());}
+\DoxyCodeLine{02393                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{02394             \}}
+\DoxyCodeLine{02395 }
+\DoxyCodeLine{02396             \textcolor{keywordtype}{int} manualId = AllocateViewID(0);}
+\DoxyCodeLine{02397             view.ViewID = manualId;}
+\DoxyCodeLine{02398             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{02399         \}}
+\DoxyCodeLine{02400 }
+\DoxyCodeLine{02404         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} AllocateViewID(\textcolor{keywordtype}{bool} roomObject)}
+\DoxyCodeLine{02405         \{}
+\DoxyCodeLine{02406             \textcolor{keywordflow}{if} (roomObject \&\& !LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{02407             \{}
+\DoxyCodeLine{02408                 Debug.LogError(\textcolor{stringliteral}{"{}Only a Master Client can AllocateViewID() for room objects. This client/player is not a Master Client. Returning an invalid viewID: -\/1."{}});}
+\DoxyCodeLine{02409                 \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{02410             \}}
+\DoxyCodeLine{02411 }
+\DoxyCodeLine{02412             \textcolor{keywordtype}{int} ownerActorNumber = roomObject ? 0 : LocalPlayer.ActorNumber;}
+\DoxyCodeLine{02413             \textcolor{keywordflow}{return} AllocateViewID(ownerActorNumber);}
+\DoxyCodeLine{02414         \}}
+\DoxyCodeLine{02415 }
+\DoxyCodeLine{02419         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} AllocateViewID(\textcolor{keywordtype}{int} ownerId)}
+\DoxyCodeLine{02420         \{}
+\DoxyCodeLine{02421             \textcolor{keywordflow}{if} (ownerId == 0)}
+\DoxyCodeLine{02422             \{}
+\DoxyCodeLine{02423                 \textcolor{comment}{// we look up a fresh subId for the owner "{}room"{} (mind the "{}sub"{} in subId)}}
+\DoxyCodeLine{02424                 \textcolor{keywordtype}{int} newSubId = lastUsedViewSubIdStatic;}
+\DoxyCodeLine{02425                 \textcolor{keywordtype}{int} newViewId;}
+\DoxyCodeLine{02426                 \textcolor{keywordtype}{int} ownerIdOffset = ownerId * MAX\_VIEW\_IDS;}
+\DoxyCodeLine{02427                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i < MAX\_VIEW\_IDS; i++)}
+\DoxyCodeLine{02428                 \{}
+\DoxyCodeLine{02429                     newSubId = (newSubId + 1) \% MAX\_VIEW\_IDS;}
+\DoxyCodeLine{02430                     \textcolor{keywordflow}{if} (newSubId == 0)}
+\DoxyCodeLine{02431                     \{}
+\DoxyCodeLine{02432                         \textcolor{keywordflow}{continue};   \textcolor{comment}{// avoid using subID 0}}
+\DoxyCodeLine{02433                     \}}
+\DoxyCodeLine{02434 }
+\DoxyCodeLine{02435                     newViewId = newSubId + ownerIdOffset;}
+\DoxyCodeLine{02436                     \textcolor{keywordflow}{if} (!photonViewList.ContainsKey(newViewId))}
+\DoxyCodeLine{02437                     \{}
+\DoxyCodeLine{02438                         lastUsedViewSubIdStatic = newSubId;}
+\DoxyCodeLine{02439                         \textcolor{keywordflow}{return} newViewId;}
+\DoxyCodeLine{02440                     \}}
+\DoxyCodeLine{02441                 \}}
+\DoxyCodeLine{02442 }
+\DoxyCodeLine{02443                 \textcolor{comment}{// this is the error case: we didn't find any (!) free subId for this user}}
+\DoxyCodeLine{02444                 \textcolor{keywordflow}{throw} \textcolor{keyword}{new} Exception(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}AllocateViewID() failed. The room (user \{0\}) is out of 'room' viewIDs. It seems all available are in use."{}}, ownerId));}
+\DoxyCodeLine{02445             \}}
+\DoxyCodeLine{02446             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02447             \{}
+\DoxyCodeLine{02448                 \textcolor{comment}{// we look up a fresh SUBid for the owner}}
+\DoxyCodeLine{02449                 \textcolor{keywordtype}{int} newSubId = lastUsedViewSubId;}
+\DoxyCodeLine{02450                 \textcolor{keywordtype}{int} newViewId;}
+\DoxyCodeLine{02451                 \textcolor{keywordtype}{int} ownerIdOffset = ownerId * MAX\_VIEW\_IDS;}
+\DoxyCodeLine{02452                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 1; i <= MAX\_VIEW\_IDS; i++)}
+\DoxyCodeLine{02453                 \{}
+\DoxyCodeLine{02454                     newSubId = (newSubId + 1) \% MAX\_VIEW\_IDS;}
+\DoxyCodeLine{02455                     \textcolor{keywordflow}{if} (newSubId == 0)}
+\DoxyCodeLine{02456                     \{}
+\DoxyCodeLine{02457                         \textcolor{keywordflow}{continue};   \textcolor{comment}{// avoid using subID 0}}
+\DoxyCodeLine{02458                     \}}
+\DoxyCodeLine{02459 }
+\DoxyCodeLine{02460                     newViewId = newSubId + ownerIdOffset;}
+\DoxyCodeLine{02461                     \textcolor{keywordflow}{if} (!photonViewList.ContainsKey(newViewId))}
+\DoxyCodeLine{02462                     \{}
+\DoxyCodeLine{02463                         lastUsedViewSubId = newSubId;}
+\DoxyCodeLine{02464                         \textcolor{keywordflow}{return} newViewId;}
+\DoxyCodeLine{02465                     \}}
+\DoxyCodeLine{02466                 \}}
+\DoxyCodeLine{02467 }
+\DoxyCodeLine{02468                 \textcolor{keywordflow}{throw} \textcolor{keyword}{new} Exception(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}AllocateViewID() failed. User \{0\} is out of viewIDs. It seems all available are in use."{}}, ownerId));}
+\DoxyCodeLine{02469             \}}
+\DoxyCodeLine{02470         \}}
+\DoxyCodeLine{02471 }
+\DoxyCodeLine{02472 }
+\DoxyCodeLine{02473         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject Instantiate(\textcolor{keywordtype}{string} prefabName, Vector3 position, Quaternion rotation, \textcolor{keywordtype}{byte} group = 0, \textcolor{keywordtype}{object}[] data = \textcolor{keyword}{null})}
+\DoxyCodeLine{02474         \{}
+\DoxyCodeLine{02475             \textcolor{keywordflow}{if} (CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02476             \{}
+\DoxyCodeLine{02477                 Debug.LogError(\textcolor{stringliteral}{"{}Can not Instantiate before the client joined/created a room. State: "{}}+PhotonNetwork.NetworkClientState);}
+\DoxyCodeLine{02478                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{02479             \}}
+\DoxyCodeLine{02480 }
+\DoxyCodeLine{02481             Pun.InstantiateParameters netParams = \textcolor{keyword}{new} InstantiateParameters(prefabName, position, rotation, group, data, currentLevelPrefix, \textcolor{keyword}{null}, LocalPlayer, ServerTimestamp);}
+\DoxyCodeLine{02482             \textcolor{keywordflow}{return} NetworkInstantiate(netParams, \textcolor{keyword}{false});}
+\DoxyCodeLine{02483         \}}
+\DoxyCodeLine{02484 }
+\DoxyCodeLine{02485         [Obsolete(\textcolor{stringliteral}{"{}Renamed. Use InstantiateRoomObject instead"{}})]}
+\DoxyCodeLine{02486         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject InstantiateSceneObject(\textcolor{keywordtype}{string} prefabName, Vector3 position, Quaternion rotation, \textcolor{keywordtype}{byte} group = 0, \textcolor{keywordtype}{object}[] data = \textcolor{keyword}{null})}
+\DoxyCodeLine{02487         \{}
+\DoxyCodeLine{02488             \textcolor{keywordflow}{return} InstantiateRoomObject(prefabName, position, rotation, group, data);}
+\DoxyCodeLine{02489         \}}
+\DoxyCodeLine{02490 }
+\DoxyCodeLine{02491         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject InstantiateRoomObject(\textcolor{keywordtype}{string} prefabName, Vector3 position, Quaternion rotation, \textcolor{keywordtype}{byte} group = 0, \textcolor{keywordtype}{object}[] data = \textcolor{keyword}{null})}
+\DoxyCodeLine{02492         \{}
+\DoxyCodeLine{02493             \textcolor{keywordflow}{if} (CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02494             \{}
+\DoxyCodeLine{02495                 Debug.LogError(\textcolor{stringliteral}{"{}Can not Instantiate before the client joined/created a room."{}});}
+\DoxyCodeLine{02496                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{02497             \}}
+\DoxyCodeLine{02498 }
+\DoxyCodeLine{02499             \textcolor{keywordflow}{if} (LocalPlayer.IsMasterClient)}
+\DoxyCodeLine{02500             \{}
+\DoxyCodeLine{02501                 Pun.InstantiateParameters netParams = \textcolor{keyword}{new} InstantiateParameters(prefabName, position, rotation, group, data, currentLevelPrefix, \textcolor{keyword}{null}, LocalPlayer, ServerTimestamp);}
+\DoxyCodeLine{02502                 \textcolor{keywordflow}{return} NetworkInstantiate(netParams, \textcolor{keyword}{true});}
+\DoxyCodeLine{02503             \}}
+\DoxyCodeLine{02504 }
+\DoxyCodeLine{02505             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{02506         \}}
+\DoxyCodeLine{02507 }
+\DoxyCodeLine{02508         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject NetworkInstantiate(Hashtable networkEvent, Player creator)}
+\DoxyCodeLine{02509         \{}
+\DoxyCodeLine{02510 }
+\DoxyCodeLine{02511             \textcolor{comment}{// some values always present:}}
+\DoxyCodeLine{02512             \textcolor{keywordtype}{string} prefabName = (string)networkEvent[keyByteZero];}
+\DoxyCodeLine{02513             \textcolor{keywordtype}{int} serverTime = (int)networkEvent[keyByteSix];}
+\DoxyCodeLine{02514             \textcolor{keywordtype}{int} instantiationId = (int)networkEvent[keyByteSeven];}
+\DoxyCodeLine{02515 }
+\DoxyCodeLine{02516             Vector3 position;}
+\DoxyCodeLine{02517             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteOne))}
+\DoxyCodeLine{02518             \{}
+\DoxyCodeLine{02519                 position = (Vector3)networkEvent[keyByteOne];}
+\DoxyCodeLine{02520             \}}
+\DoxyCodeLine{02521             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02522             \{}
+\DoxyCodeLine{02523                 position = Vector3.zero;}
+\DoxyCodeLine{02524             \}}
+\DoxyCodeLine{02525 }
+\DoxyCodeLine{02526             Quaternion rotation = Quaternion.identity;}
+\DoxyCodeLine{02527             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteTwo))}
+\DoxyCodeLine{02528             \{}
+\DoxyCodeLine{02529                 rotation = (Quaternion)networkEvent[keyByteTwo];}
+\DoxyCodeLine{02530             \}}
+\DoxyCodeLine{02531 }
+\DoxyCodeLine{02532             \textcolor{keywordtype}{byte} group = 0;}
+\DoxyCodeLine{02533             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteThree))}
+\DoxyCodeLine{02534             \{}
+\DoxyCodeLine{02535                 group = (byte)networkEvent[keyByteThree];}
+\DoxyCodeLine{02536             \}}
+\DoxyCodeLine{02537 }
+\DoxyCodeLine{02538             \textcolor{keywordtype}{byte} objLevelPrefix = 0;}
+\DoxyCodeLine{02539             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteEight))}
+\DoxyCodeLine{02540             \{}
+\DoxyCodeLine{02541                 objLevelPrefix = (byte)networkEvent[keyByteEight];}
+\DoxyCodeLine{02542             \}}
+\DoxyCodeLine{02543 }
+\DoxyCodeLine{02544             \textcolor{keywordtype}{int}[] viewsIDs;}
+\DoxyCodeLine{02545             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteFour))}
+\DoxyCodeLine{02546             \{}
+\DoxyCodeLine{02547                 viewsIDs = (\textcolor{keywordtype}{int}[])networkEvent[keyByteFour];}
+\DoxyCodeLine{02548             \}}
+\DoxyCodeLine{02549             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02550             \{}
+\DoxyCodeLine{02551                 viewsIDs = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[1] \{ instantiationId \};}
+\DoxyCodeLine{02552             \}}
+\DoxyCodeLine{02553 }
+\DoxyCodeLine{02554             \textcolor{keywordtype}{object}[] incomingInstantiationData;}
+\DoxyCodeLine{02555             \textcolor{keywordflow}{if} (networkEvent.ContainsKey(keyByteFive))}
+\DoxyCodeLine{02556             \{}
+\DoxyCodeLine{02557                 incomingInstantiationData = (\textcolor{keywordtype}{object}[])networkEvent[keyByteFive];}
+\DoxyCodeLine{02558             \}}
+\DoxyCodeLine{02559             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02560             \{}
+\DoxyCodeLine{02561                 incomingInstantiationData = \textcolor{keyword}{null};}
+\DoxyCodeLine{02562             \}}
+\DoxyCodeLine{02563 }
+\DoxyCodeLine{02564             \textcolor{comment}{// SetReceiving filtering}}
+\DoxyCodeLine{02565             \textcolor{keywordflow}{if} (group != 0 \&\& !allowedReceivingGroups.Contains(group))}
+\DoxyCodeLine{02566             \{}
+\DoxyCodeLine{02567                 \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \textcolor{comment}{// Ignore group}}
+\DoxyCodeLine{02568             \}}
+\DoxyCodeLine{02569 }
+\DoxyCodeLine{02570 }
+\DoxyCodeLine{02571             Pun.InstantiateParameters netParams = \textcolor{keyword}{new} InstantiateParameters(prefabName, position, rotation, group, incomingInstantiationData, objLevelPrefix, viewsIDs, creator, serverTime);}
+\DoxyCodeLine{02572             \textcolor{keywordflow}{return} NetworkInstantiate(netParams, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{02573         \}}
+\DoxyCodeLine{02574 }
+\DoxyCodeLine{02575 }
+\DoxyCodeLine{02576         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly HashSet<string> PrefabsWithoutMagicCallback = \textcolor{keyword}{new} HashSet<string>();}
+\DoxyCodeLine{02577 }
+\DoxyCodeLine{02578         \textcolor{keyword}{private} \textcolor{keyword}{static} GameObject NetworkInstantiate(Pun.InstantiateParameters parameters, \textcolor{keywordtype}{bool} roomObject = \textcolor{keyword}{false}, \textcolor{keywordtype}{bool} instantiateEvent = \textcolor{keyword}{false})}
+\DoxyCodeLine{02579         \{}
+\DoxyCodeLine{02580             \textcolor{comment}{//Instantiate(name, pos, rot)}}
+\DoxyCodeLine{02581             \textcolor{comment}{//pv[] GetPhotonViewsInChildren()}}
+\DoxyCodeLine{02582             \textcolor{comment}{//if (event==null) init send-\/params}}
+\DoxyCodeLine{02583             \textcolor{comment}{//Setup of PVs and callback}}
+\DoxyCodeLine{02584             \textcolor{comment}{//if (event == null) SendInstantiate(name, pos, rot, etc...)}}
+\DoxyCodeLine{02585 }
+\DoxyCodeLine{02586             GameObject go = \textcolor{keyword}{null};}
+\DoxyCodeLine{02587             PhotonView[] photonViews;}
+\DoxyCodeLine{02588 }
+\DoxyCodeLine{02589             go = prefabPool.Instantiate(parameters.prefabName, parameters.position, parameters.rotation);}
+\DoxyCodeLine{02590 }
+\DoxyCodeLine{02591 }
+\DoxyCodeLine{02592             \textcolor{keywordflow}{if} (go == \textcolor{keyword}{null})}
+\DoxyCodeLine{02593             \{}
+\DoxyCodeLine{02594                 Debug.LogError(\textcolor{stringliteral}{"{}Failed to network-\/Instantiate: "{}} + parameters.prefabName);}
+\DoxyCodeLine{02595                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{02596             \}}
+\DoxyCodeLine{02597 }
+\DoxyCodeLine{02598             \textcolor{keywordflow}{if} (go.activeSelf)}
+\DoxyCodeLine{02599             \{}
+\DoxyCodeLine{02600                 Debug.LogWarning(\textcolor{stringliteral}{"{}PrefabPool.Instantiate() should return an inactive GameObject. "{}} + prefabPool.GetType().Name + \textcolor{stringliteral}{"{} returned an active object. PrefabId: "{}} + parameters.prefabName);}
+\DoxyCodeLine{02601             \}}
+\DoxyCodeLine{02602 }
+\DoxyCodeLine{02603 }
+\DoxyCodeLine{02604             photonViews = go.GetPhotonViewsInChildren();}
+\DoxyCodeLine{02605 }
+\DoxyCodeLine{02606 }
+\DoxyCodeLine{02607             \textcolor{keywordflow}{if} (photonViews.Length == 0)}
+\DoxyCodeLine{02608             \{}
+\DoxyCodeLine{02609                 Debug.LogError(\textcolor{stringliteral}{"{}PhotonNetwork.Instantiate() can only instantiate objects with a PhotonView component. This prefab does not have one: "{}} + parameters.prefabName);}
+\DoxyCodeLine{02610                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{02611             \}}
+\DoxyCodeLine{02612 }
+\DoxyCodeLine{02613             \textcolor{keywordtype}{bool} localInstantiate = !instantiateEvent \&\& LocalPlayer.Equals(parameters.creator);}
+\DoxyCodeLine{02614             \textcolor{keywordflow}{if} (localInstantiate)}
+\DoxyCodeLine{02615             \{}
+\DoxyCodeLine{02616                 \textcolor{comment}{// init viewIDs array, so it can be filled (below), before it gets sent}}
+\DoxyCodeLine{02617                 parameters.viewIDs = \textcolor{keyword}{new} \textcolor{keywordtype}{int}[photonViews.Length];}
+\DoxyCodeLine{02618             \}}
+\DoxyCodeLine{02619 }
+\DoxyCodeLine{02620             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < photonViews.Length; i++)}
+\DoxyCodeLine{02621             \{}
+\DoxyCodeLine{02622                 \textcolor{keywordflow}{if} (localInstantiate)}
+\DoxyCodeLine{02623                 \{}
+\DoxyCodeLine{02624                     \textcolor{comment}{// when this client instantiates a GO, it has to allocate viewIDs accordingly.}}
+\DoxyCodeLine{02625                     \textcolor{comment}{// ROOM objects are created as actorNumber 0 (no matter which number this player has).}}
+\DoxyCodeLine{02626                     parameters.viewIDs[i] = (roomObject) ? AllocateViewID(0) : AllocateViewID(parameters.creator.ActorNumber);}
+\DoxyCodeLine{02627                 \}}
+\DoxyCodeLine{02628 }
+\DoxyCodeLine{02629                 var view = photonViews[i];}
+\DoxyCodeLine{02630 }
+\DoxyCodeLine{02631                 view.ViewID = 0;}
+\DoxyCodeLine{02632                 view.sceneViewId = 0;}
+\DoxyCodeLine{02633                 view.isRuntimeInstantiated = \textcolor{keyword}{true};}
+\DoxyCodeLine{02634                 view.lastOnSerializeDataSent = \textcolor{keyword}{null};}
+\DoxyCodeLine{02635                 view.lastOnSerializeDataReceived = \textcolor{keyword}{null};}
+\DoxyCodeLine{02636                 view.Prefix = parameters.objLevelPrefix;}
+\DoxyCodeLine{02637                 view.InstantiationId = parameters.viewIDs[0];}
+\DoxyCodeLine{02638                 view.InstantiationData = parameters.data;}
+\DoxyCodeLine{02639                 view.ViewID = parameters.viewIDs[i];    \textcolor{comment}{// with didAwake true and viewID == 0, this will also register the view}}
+\DoxyCodeLine{02640 }
+\DoxyCodeLine{02641                 view.Group = parameters.group;}
+\DoxyCodeLine{02642             \}}
+\DoxyCodeLine{02643 }
+\DoxyCodeLine{02644             \textcolor{keywordflow}{if} (localInstantiate)}
+\DoxyCodeLine{02645             \{}
+\DoxyCodeLine{02646                 \textcolor{comment}{// send instantiate network event}}
+\DoxyCodeLine{02647                 SendInstantiate(parameters, roomObject);}
+\DoxyCodeLine{02648             \}}
+\DoxyCodeLine{02649 }
+\DoxyCodeLine{02650             go.SetActive(\textcolor{keyword}{true});}
+\DoxyCodeLine{02651 }
+\DoxyCodeLine{02652             \textcolor{comment}{// if IPunInstantiateMagicCallback is implemented on any script of the instantiated GO, let's call it directly:}}
+\DoxyCodeLine{02653             \textcolor{keywordflow}{if} (!PrefabsWithoutMagicCallback.Contains(parameters.prefabName))}
+\DoxyCodeLine{02654             \{}
+\DoxyCodeLine{02655                 var list = go.GetComponents<IPunInstantiateMagicCallback>();}
+\DoxyCodeLine{02656                 \textcolor{keywordflow}{if} (list.Length > 0)}
+\DoxyCodeLine{02657                 \{}
+\DoxyCodeLine{02658                     PhotonMessageInfo pmi = \textcolor{keyword}{new} PhotonMessageInfo(parameters.creator, parameters.timestamp, photonViews[0]);}
+\DoxyCodeLine{02659                     \textcolor{keywordflow}{foreach} (IPunInstantiateMagicCallback callbackComponent \textcolor{keywordflow}{in} list)}
+\DoxyCodeLine{02660                     \{}
+\DoxyCodeLine{02661                         callbackComponent.OnPhotonInstantiate(pmi);}
+\DoxyCodeLine{02662                     \}}
+\DoxyCodeLine{02663                 \}}
+\DoxyCodeLine{02664                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02665                 \{}
+\DoxyCodeLine{02666                     PrefabsWithoutMagicCallback.Add(parameters.prefabName);}
+\DoxyCodeLine{02667                 \}}
+\DoxyCodeLine{02668             \}}
+\DoxyCodeLine{02669 }
+\DoxyCodeLine{02670             \textcolor{keywordflow}{return} go;}
+\DoxyCodeLine{02671         \}}
+\DoxyCodeLine{02672 }
+\DoxyCodeLine{02673 }
+\DoxyCodeLine{02674         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly Hashtable SendInstantiateEvHashtable = \textcolor{keyword}{new} Hashtable();                             \textcolor{comment}{// SendInstantiate reuses this to reduce GC}}
+\DoxyCodeLine{02675         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly RaiseEventOptions SendInstantiateRaiseEventOptions = \textcolor{keyword}{new} RaiseEventOptions();       \textcolor{comment}{// SendInstantiate reuses this to reduce GC}}
+\DoxyCodeLine{02676 }
+\DoxyCodeLine{02677         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} SendInstantiate(Pun.InstantiateParameters parameters, \textcolor{keywordtype}{bool} roomObject = \textcolor{keyword}{false})}
+\DoxyCodeLine{02678         \{}
+\DoxyCodeLine{02679             \textcolor{comment}{// first viewID is now also the gameobject's instantiateId}}
+\DoxyCodeLine{02680             \textcolor{keywordtype}{int} instantiateId = parameters.viewIDs[0];   \textcolor{comment}{// LIMITS PHOTONVIEWS\&PLAYERS}}
+\DoxyCodeLine{02681 }
+\DoxyCodeLine{02682             SendInstantiateEvHashtable.Clear();     \textcolor{comment}{// SendInstantiate reuses this Hashtable to reduce GC}}
+\DoxyCodeLine{02683 }
+\DoxyCodeLine{02684             SendInstantiateEvHashtable[keyByteZero] = parameters.prefabName;}
+\DoxyCodeLine{02685 }
+\DoxyCodeLine{02686             \textcolor{keywordflow}{if} (parameters.position != Vector3.zero)}
+\DoxyCodeLine{02687             \{}
+\DoxyCodeLine{02688                 SendInstantiateEvHashtable[keyByteOne] = parameters.position;}
+\DoxyCodeLine{02689             \}}
+\DoxyCodeLine{02690 }
+\DoxyCodeLine{02691             \textcolor{keywordflow}{if} (parameters.rotation != Quaternion.identity)}
+\DoxyCodeLine{02692             \{}
+\DoxyCodeLine{02693                 SendInstantiateEvHashtable[keyByteTwo] = parameters.rotation;}
+\DoxyCodeLine{02694             \}}
+\DoxyCodeLine{02695 }
+\DoxyCodeLine{02696             \textcolor{keywordflow}{if} (parameters.group != 0)}
+\DoxyCodeLine{02697             \{}
+\DoxyCodeLine{02698                 SendInstantiateEvHashtable[keyByteThree] = parameters.group;}
+\DoxyCodeLine{02699             \}}
+\DoxyCodeLine{02700 }
+\DoxyCodeLine{02701             \textcolor{comment}{// send the list of viewIDs only if there are more than one. else the instantiateId is the viewID}}
+\DoxyCodeLine{02702             \textcolor{keywordflow}{if} (parameters.viewIDs.Length > 1)}
+\DoxyCodeLine{02703             \{}
+\DoxyCodeLine{02704                 SendInstantiateEvHashtable[keyByteFour] = parameters.viewIDs; \textcolor{comment}{// LIMITS PHOTONVIEWS\&PLAYERS}}
+\DoxyCodeLine{02705             \}}
+\DoxyCodeLine{02706 }
+\DoxyCodeLine{02707             \textcolor{keywordflow}{if} (parameters.data != \textcolor{keyword}{null})}
+\DoxyCodeLine{02708             \{}
+\DoxyCodeLine{02709                 SendInstantiateEvHashtable[keyByteFive] = parameters.data;}
+\DoxyCodeLine{02710             \}}
+\DoxyCodeLine{02711 }
+\DoxyCodeLine{02712             \textcolor{keywordflow}{if} (currentLevelPrefix > 0)}
+\DoxyCodeLine{02713             \{}
+\DoxyCodeLine{02714                 SendInstantiateEvHashtable[keyByteEight] = currentLevelPrefix;    \textcolor{comment}{// photonview's / object's level prefix}}
+\DoxyCodeLine{02715             \}}
+\DoxyCodeLine{02716 }
+\DoxyCodeLine{02717             SendInstantiateEvHashtable[keyByteSix] = PhotonNetwork.ServerTimestamp;}
+\DoxyCodeLine{02718             SendInstantiateEvHashtable[keyByteSeven] = instantiateId;}
+\DoxyCodeLine{02719 }
+\DoxyCodeLine{02720 }
+\DoxyCodeLine{02721             SendInstantiateRaiseEventOptions.CachingOption = (roomObject) ? EventCaching.AddToRoomCacheGlobal : EventCaching.AddToRoomCache;}
+\DoxyCodeLine{02722 }
+\DoxyCodeLine{02723             \textcolor{keywordflow}{return} PhotonNetwork.RaiseEventInternal(PunEvent.Instantiation, SendInstantiateEvHashtable, SendInstantiateRaiseEventOptions, SendOptions.SendReliable);}
+\DoxyCodeLine{02724         \}}
+\DoxyCodeLine{02725 }
+\DoxyCodeLine{02726 }
+\DoxyCodeLine{02749         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Destroy(PhotonView targetView)}
+\DoxyCodeLine{02750         \{}
+\DoxyCodeLine{02751             \textcolor{keywordflow}{if} (targetView != \textcolor{keyword}{null})}
+\DoxyCodeLine{02752             \{}
+\DoxyCodeLine{02753                 RemoveInstantiatedGO(targetView.gameObject, !InRoom);}
+\DoxyCodeLine{02754             \}}
+\DoxyCodeLine{02755             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02756             \{}
+\DoxyCodeLine{02757                 Debug.LogError(\textcolor{stringliteral}{"{}Destroy(targetPhotonView) failed, cause targetPhotonView is null."{}});}
+\DoxyCodeLine{02758             \}}
+\DoxyCodeLine{02759         \}}
+\DoxyCodeLine{02760 }
+\DoxyCodeLine{02783         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Destroy(GameObject targetGo)}
+\DoxyCodeLine{02784         \{}
+\DoxyCodeLine{02785             RemoveInstantiatedGO(targetGo, !InRoom);}
+\DoxyCodeLine{02786         \}}
+\DoxyCodeLine{02787 }
+\DoxyCodeLine{02801         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyPlayerObjects(Player targetPlayer)}
+\DoxyCodeLine{02802         \{}
+\DoxyCodeLine{02803             \textcolor{keywordflow}{if} (targetPlayer == \textcolor{keyword}{null})}
+\DoxyCodeLine{02804             \{}
+\DoxyCodeLine{02805                 Debug.LogError(\textcolor{stringliteral}{"{}DestroyPlayerObjects() failed, cause parameter 'targetPlayer' was null."{}});}
+\DoxyCodeLine{02806             \}}
+\DoxyCodeLine{02807 }
+\DoxyCodeLine{02808             DestroyPlayerObjects(targetPlayer.ActorNumber);}
+\DoxyCodeLine{02809         \}}
+\DoxyCodeLine{02810 }
+\DoxyCodeLine{02824         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyPlayerObjects(\textcolor{keywordtype}{int} targetPlayerId)}
+\DoxyCodeLine{02825         \{}
+\DoxyCodeLine{02826             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{02827             \{}
+\DoxyCodeLine{02828                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02829             \}}
+\DoxyCodeLine{02830             \textcolor{keywordflow}{if} (LocalPlayer.IsMasterClient || targetPlayerId == LocalPlayer.ActorNumber)}
+\DoxyCodeLine{02831             \{}
+\DoxyCodeLine{02832                 DestroyPlayerObjects(targetPlayerId, \textcolor{keyword}{false});}
+\DoxyCodeLine{02833             \}}
+\DoxyCodeLine{02834             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02835             \{}
+\DoxyCodeLine{02836                 Debug.LogError(\textcolor{stringliteral}{"{}DestroyPlayerObjects() failed, cause players can only destroy their own GameObjects. A Master Client can destroy anyone's. This is master: "{}} + PhotonNetwork.IsMasterClient);}
+\DoxyCodeLine{02837             \}}
+\DoxyCodeLine{02838         \}}
+\DoxyCodeLine{02839 }
+\DoxyCodeLine{02856         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} DestroyAll()}
+\DoxyCodeLine{02857         \{}
+\DoxyCodeLine{02858             \textcolor{keywordflow}{if} (IsMasterClient)}
+\DoxyCodeLine{02859             \{}
+\DoxyCodeLine{02860                 DestroyAll(\textcolor{keyword}{false});}
+\DoxyCodeLine{02861             \}}
+\DoxyCodeLine{02862             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02863             \{}
+\DoxyCodeLine{02864                 Debug.LogError(\textcolor{stringliteral}{"{}Couldn't call DestroyAll() as only the master client is allowed to call this."{}});}
+\DoxyCodeLine{02865             \}}
+\DoxyCodeLine{02866         \}}
+\DoxyCodeLine{02867 }
+\DoxyCodeLine{02880         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveRPCs(Player targetPlayer)}
+\DoxyCodeLine{02881         \{}
+\DoxyCodeLine{02882             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{02883             \{}
+\DoxyCodeLine{02884                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02885             \}}
+\DoxyCodeLine{02886 }
+\DoxyCodeLine{02887             \textcolor{keywordflow}{if} (!targetPlayer.IsLocal \&\& !IsMasterClient)}
+\DoxyCodeLine{02888             \{}
+\DoxyCodeLine{02889                 Debug.LogError(\textcolor{stringliteral}{"{}Error; Only the MasterClient can call RemoveRPCs for other players."{}});}
+\DoxyCodeLine{02890                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02891             \}}
+\DoxyCodeLine{02892 }
+\DoxyCodeLine{02893             OpCleanActorRpcBuffer(targetPlayer.ActorNumber);}
+\DoxyCodeLine{02894         \}}
+\DoxyCodeLine{02895 }
+\DoxyCodeLine{02905         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RemoveRPCs(PhotonView targetPhotonView)}
+\DoxyCodeLine{02906         \{}
+\DoxyCodeLine{02907             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{02908             \{}
+\DoxyCodeLine{02909                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02910             \}}
+\DoxyCodeLine{02911 }
+\DoxyCodeLine{02912             CleanRpcBufferIfMine(targetPhotonView);}
+\DoxyCodeLine{02913         \}}
+\DoxyCodeLine{02914 }
+\DoxyCodeLine{02915 }
+\DoxyCodeLine{02919         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RPC(PhotonView view, \textcolor{keywordtype}{string} methodName, RpcTarget target, \textcolor{keywordtype}{bool} encrypt, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{02920         \{}
+\DoxyCodeLine{02921             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(methodName))}
+\DoxyCodeLine{02922             \{}
+\DoxyCodeLine{02923                 Debug.LogError(\textcolor{stringliteral}{"{}RPC method name cannot be null or empty."{}});}
+\DoxyCodeLine{02924                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02925             \}}
+\DoxyCodeLine{02926 }
+\DoxyCodeLine{02927             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{02928             \{}
+\DoxyCodeLine{02929                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02930             \}}
+\DoxyCodeLine{02931 }
+\DoxyCodeLine{02932             \textcolor{keywordflow}{if} (CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02933             \{}
+\DoxyCodeLine{02934                 Debug.LogWarning(\textcolor{stringliteral}{"{}RPCs can only be sent in rooms. Call of \(\backslash\)"{}"{}} + methodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} gets executed locally only, if at all."{}});}
+\DoxyCodeLine{02935                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02936             \}}
+\DoxyCodeLine{02937 }
+\DoxyCodeLine{02938             \textcolor{keywordflow}{if} (NetworkingClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{02939             \{}
+\DoxyCodeLine{02940                 RPC(view, methodName, target, \textcolor{keyword}{null}, encrypt, parameters);}
+\DoxyCodeLine{02941             \}}
+\DoxyCodeLine{02942             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02943             \{}
+\DoxyCodeLine{02944                 Debug.LogWarning(\textcolor{stringliteral}{"{}Could not execute RPC "{}} + methodName + \textcolor{stringliteral}{"{}. Possible scene loading in progress?"{}});}
+\DoxyCodeLine{02945             \}}
+\DoxyCodeLine{02946         \}}
+\DoxyCodeLine{02947 }
+\DoxyCodeLine{02951         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} RPC(PhotonView view, \textcolor{keywordtype}{string} methodName, Player targetPlayer, \textcolor{keywordtype}{bool} encrypt, params \textcolor{keywordtype}{object}[] parameters)}
+\DoxyCodeLine{02952         \{}
+\DoxyCodeLine{02953             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{02954             \{}
+\DoxyCodeLine{02955                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02956             \}}
+\DoxyCodeLine{02957 }
+\DoxyCodeLine{02958             \textcolor{keywordflow}{if} (CurrentRoom == \textcolor{keyword}{null})}
+\DoxyCodeLine{02959             \{}
+\DoxyCodeLine{02960                 Debug.LogWarning(\textcolor{stringliteral}{"{}RPCs can only be sent in rooms. Call of \(\backslash\)"{}"{}} + methodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} gets executed locally only, if at all."{}});}
+\DoxyCodeLine{02961                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02962             \}}
+\DoxyCodeLine{02963 }
+\DoxyCodeLine{02964             \textcolor{keywordflow}{if} (LocalPlayer == \textcolor{keyword}{null})}
+\DoxyCodeLine{02965             \{}
+\DoxyCodeLine{02966                 Debug.LogError(\textcolor{stringliteral}{"{}RPC can't be sent to target Player being null! Did not send \(\backslash\)"{}"{}} + methodName + \textcolor{stringliteral}{"{}\(\backslash\)"{} call."{}});}
+\DoxyCodeLine{02967             \}}
+\DoxyCodeLine{02968 }
+\DoxyCodeLine{02969             \textcolor{keywordflow}{if} (NetworkingClient != \textcolor{keyword}{null})}
+\DoxyCodeLine{02970             \{}
+\DoxyCodeLine{02971                 RPC(view, methodName, RpcTarget.Others, targetPlayer, encrypt, parameters);}
+\DoxyCodeLine{02972             \}}
+\DoxyCodeLine{02973             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02974             \{}
+\DoxyCodeLine{02975                 Debug.LogWarning(\textcolor{stringliteral}{"{}Could not execute RPC "{}} + methodName + \textcolor{stringliteral}{"{}. Possible scene loading in progress?"{}});}
+\DoxyCodeLine{02976             \}}
+\DoxyCodeLine{02977         \}}
+\DoxyCodeLine{02978 }
+\DoxyCodeLine{02979 }
+\DoxyCodeLine{02983         \textcolor{keyword}{public} \textcolor{keyword}{static} HashSet<GameObject> FindGameObjectsWithComponent(Type type)}
+\DoxyCodeLine{02984         \{}
+\DoxyCodeLine{02985             HashSet<GameObject> objectsWithComponent = \textcolor{keyword}{new} HashSet<GameObject>();}
+\DoxyCodeLine{02986 }
+\DoxyCodeLine{02987             Component[] targetComponents = (Component[]) GameObject.FindObjectsOfType(type);}
+\DoxyCodeLine{02988             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} index = 0; index < targetComponents.Length; index++)}
+\DoxyCodeLine{02989             \{}
+\DoxyCodeLine{02990                 \textcolor{keywordflow}{if} (targetComponents[index] != \textcolor{keyword}{null})}
+\DoxyCodeLine{02991                 \{}
+\DoxyCodeLine{02992                     objectsWithComponent.Add(targetComponents[index].gameObject);}
+\DoxyCodeLine{02993                 \}}
+\DoxyCodeLine{02994             \}}
+\DoxyCodeLine{02995 }
+\DoxyCodeLine{02996             \textcolor{keywordflow}{return} objectsWithComponent;}
+\DoxyCodeLine{02997         \}}
+\DoxyCodeLine{02998 }
+\DoxyCodeLine{02999 }
+\DoxyCodeLine{03011         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetInterestGroups(\textcolor{keywordtype}{byte} group, \textcolor{keywordtype}{bool} enabled)}
+\DoxyCodeLine{03012         \{}
+\DoxyCodeLine{03013             \textcolor{keywordflow}{if} (!VerifyCanUseNetwork())}
+\DoxyCodeLine{03014             \{}
+\DoxyCodeLine{03015                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03016             \}}
+\DoxyCodeLine{03017 }
+\DoxyCodeLine{03018             \textcolor{keywordflow}{if} (enabled)}
+\DoxyCodeLine{03019             \{}
+\DoxyCodeLine{03020                 \textcolor{keywordtype}{byte}[] groups = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[1] \{ (byte)group \};}
+\DoxyCodeLine{03021                 SetInterestGroups(\textcolor{keyword}{null}, groups);}
+\DoxyCodeLine{03022             \}}
+\DoxyCodeLine{03023             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{03024             \{}
+\DoxyCodeLine{03025                 \textcolor{keywordtype}{byte}[] groups = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[1] \{ (byte)group \};}
+\DoxyCodeLine{03026                 SetInterestGroups(groups, \textcolor{keyword}{null});}
+\DoxyCodeLine{03027             \}}
+\DoxyCodeLine{03028         \}}
+\DoxyCodeLine{03029 }
+\DoxyCodeLine{03030 }
+\DoxyCodeLine{03056         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LoadLevel(\textcolor{keywordtype}{int} levelNumber)}
+\DoxyCodeLine{03057         \{}
+\DoxyCodeLine{03058             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{03059             \{}
+\DoxyCodeLine{03060                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03061             \}}
+\DoxyCodeLine{03062 }
+\DoxyCodeLine{03063             \textcolor{keywordflow}{if} (PhotonNetwork.AutomaticallySyncScene)}
+\DoxyCodeLine{03064             \{}
+\DoxyCodeLine{03065                 SetLevelInPropsIfSynced(levelNumber);}
+\DoxyCodeLine{03066             \}}
+\DoxyCodeLine{03067 }
+\DoxyCodeLine{03068             PhotonNetwork.IsMessageQueueRunning = \textcolor{keyword}{false};}
+\DoxyCodeLine{03069             loadingLevelAndPausedNetwork = \textcolor{keyword}{true};}
+\DoxyCodeLine{03070             \_AsyncLevelLoadingOperation = SceneManager.LoadSceneAsync(levelNumber,LoadSceneMode.Single);}
+\DoxyCodeLine{03071         \}}
+\DoxyCodeLine{03072 }
+\DoxyCodeLine{03098         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LoadLevel(\textcolor{keywordtype}{string} levelName)}
+\DoxyCodeLine{03099         \{}
+\DoxyCodeLine{03100             \textcolor{keywordflow}{if} (PhotonHandler.AppQuits)}
+\DoxyCodeLine{03101             \{}
+\DoxyCodeLine{03102                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03103             \}}
+\DoxyCodeLine{03104 }
+\DoxyCodeLine{03105             \textcolor{keywordflow}{if} (PhotonNetwork.AutomaticallySyncScene)}
+\DoxyCodeLine{03106             \{}
+\DoxyCodeLine{03107                 SetLevelInPropsIfSynced(levelName);}
+\DoxyCodeLine{03108             \}}
+\DoxyCodeLine{03109 }
+\DoxyCodeLine{03110             PhotonNetwork.IsMessageQueueRunning = \textcolor{keyword}{false};}
+\DoxyCodeLine{03111             loadingLevelAndPausedNetwork = \textcolor{keyword}{true};}
+\DoxyCodeLine{03112             \_AsyncLevelLoadingOperation = SceneManager.LoadSceneAsync(levelName, LoadSceneMode.Single);}
+\DoxyCodeLine{03113         \}}
+\DoxyCodeLine{03114 }
+\DoxyCodeLine{03147         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} WebRpc(\textcolor{keywordtype}{string} name, \textcolor{keywordtype}{object} parameters, \textcolor{keywordtype}{bool} sendAuthCookie = \textcolor{keyword}{false})}
+\DoxyCodeLine{03148         \{}
+\DoxyCodeLine{03149             \textcolor{keywordflow}{return} NetworkingClient.OpWebRpc(name, parameters, sendAuthCookie);}
+\DoxyCodeLine{03150         \}}
+\DoxyCodeLine{03151 }
+\DoxyCodeLine{03155         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SetupLogging()}
+\DoxyCodeLine{03156         \{}
+\DoxyCodeLine{03157             \textcolor{comment}{// only apply Settings if LogLevel is default ( see ServerSettings.cs), else it means it's been set programmatically}}
+\DoxyCodeLine{03158             \textcolor{keywordflow}{if} (PhotonNetwork.LogLevel == PunLogLevel.ErrorsOnly)}
+\DoxyCodeLine{03159             \{}
+\DoxyCodeLine{03160                 PhotonNetwork.LogLevel = PhotonServerSettings.PunLogging;}
+\DoxyCodeLine{03161             \}}
+\DoxyCodeLine{03162 }
+\DoxyCodeLine{03163             \textcolor{comment}{// only apply Settings if LogLevel is default ( see ServerSettings.cs), else it means it's been set programmatically}}
+\DoxyCodeLine{03164             \textcolor{keywordflow}{if} (PhotonNetwork.NetworkingClient.LoadBalancingPeer.DebugOut == DebugLevel.ERROR)}
+\DoxyCodeLine{03165             \{}
+\DoxyCodeLine{03166                 PhotonNetwork.NetworkingClient.LoadBalancingPeer.DebugOut = PhotonServerSettings.AppSettings.NetworkLogging;}
+\DoxyCodeLine{03167             \}}
+\DoxyCodeLine{03168         \}}
+\DoxyCodeLine{03169 }
+\DoxyCodeLine{03170 }
+\DoxyCodeLine{03171         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} LoadOrCreateSettings(\textcolor{keywordtype}{bool} reload = \textcolor{keyword}{false})}
+\DoxyCodeLine{03172         \{}
+\DoxyCodeLine{03173             \textcolor{keywordflow}{if} (reload)}
+\DoxyCodeLine{03174             \{}
+\DoxyCodeLine{03175                 photonServerSettings = \textcolor{keyword}{null};    \textcolor{comment}{// PhotonEditor will use this to load and save the settings delayed}}
+\DoxyCodeLine{03176             \}}
+\DoxyCodeLine{03177             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (photonServerSettings != \textcolor{keyword}{null})}
+\DoxyCodeLine{03178             \{}
+\DoxyCodeLine{03179                 Debug.LogWarning(\textcolor{stringliteral}{"{}photonServerSettings is not null. Will not LoadOrCreateSettings()."{}});}
+\DoxyCodeLine{03180                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03181             \}}
+\DoxyCodeLine{03182 }
+\DoxyCodeLine{03183 }
+\DoxyCodeLine{03184             \textcolor{comment}{// try to load the resource / asset (ServerSettings a.k.a. PhotonServerSettings)}}
+\DoxyCodeLine{03185             photonServerSettings = (ServerSettings)Resources.Load(PhotonNetwork.ServerSettingsFileName, typeof(ServerSettings));}
+\DoxyCodeLine{03186             \textcolor{keywordflow}{if} (photonServerSettings != \textcolor{keyword}{null})}
+\DoxyCodeLine{03187             \{}
+\DoxyCodeLine{03188                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03189             \}}
+\DoxyCodeLine{03190 }
+\DoxyCodeLine{03191 }
+\DoxyCodeLine{03192             \textcolor{comment}{// create the ScriptableObject if it could not be loaded}}
+\DoxyCodeLine{03193             \textcolor{keywordflow}{if} (photonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{03194             \{}
+\DoxyCodeLine{03195                 photonServerSettings = (ServerSettings)ScriptableObject.CreateInstance(\textcolor{stringliteral}{"{}ServerSettings"{}});}
+\DoxyCodeLine{03196                 \textcolor{keywordflow}{if} (photonServerSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{03197                 \{}
+\DoxyCodeLine{03198                     Debug.LogError(\textcolor{stringliteral}{"{}Failed to create ServerSettings. PUN is unable to run this way. If you deleted it from the project, reload the Editor."{}});}
+\DoxyCodeLine{03199                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03200                 \}}
+\DoxyCodeLine{03201             \}}
+\DoxyCodeLine{03202 }
+\DoxyCodeLine{03203 }
+\DoxyCodeLine{03204             \textcolor{comment}{// in the editor, store the settings file as it's not loaded}}
+\DoxyCodeLine{03205 \textcolor{preprocessor}{            \#if  UNITY\_EDITOR}}
+\DoxyCodeLine{03206             \textcolor{comment}{// don't save the settings before OnProjectUpdated got called (this hints at an ongoing import/load)}}
+\DoxyCodeLine{03207             \textcolor{keywordflow}{if} (!PhotonEditorUtils.ProjectChangedWasCalled)}
+\DoxyCodeLine{03208             \{}
+\DoxyCodeLine{03209                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{03210             \}}
+\DoxyCodeLine{03211 }
+\DoxyCodeLine{03212             \textcolor{keywordtype}{string} punResourcesDirectory = PhotonNetwork.FindPunAssetFolder() + \textcolor{stringliteral}{"{}Resources/"{}};}
+\DoxyCodeLine{03213             \textcolor{keywordtype}{string} serverSettingsAssetPath = punResourcesDirectory + PhotonNetwork.ServerSettingsFileName + \textcolor{stringliteral}{"{}.asset"{}};}
+\DoxyCodeLine{03214             \textcolor{keywordtype}{string} serverSettingsDirectory = Path.GetDirectoryName(serverSettingsAssetPath);}
+\DoxyCodeLine{03215 }
+\DoxyCodeLine{03216             \textcolor{keywordflow}{if} (!Directory.Exists(serverSettingsDirectory))}
+\DoxyCodeLine{03217             \{}
+\DoxyCodeLine{03218                 Directory.CreateDirectory(serverSettingsDirectory);}
+\DoxyCodeLine{03219                 AssetDatabase.ImportAsset(serverSettingsDirectory);}
+\DoxyCodeLine{03220             \}}
+\DoxyCodeLine{03221 }
+\DoxyCodeLine{03222             \textcolor{keywordflow}{if} (!File.Exists(serverSettingsAssetPath))}
+\DoxyCodeLine{03223             \{}
+\DoxyCodeLine{03224                 AssetDatabase.CreateAsset(photonServerSettings, serverSettingsAssetPath);}
+\DoxyCodeLine{03225             \}}
+\DoxyCodeLine{03226             AssetDatabase.SaveAssets();}
+\DoxyCodeLine{03227 }
+\DoxyCodeLine{03228             \textcolor{comment}{// if the project does not have PhotonServerSettings yet, enable "{}Development Build"{} to use the Dev Region.}}
+\DoxyCodeLine{03229             EditorUserBuildSettings.development = \textcolor{keyword}{true};}
+\DoxyCodeLine{03230 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{03231         \}}
+\DoxyCodeLine{03232 }
+\DoxyCodeLine{03233 }
+\DoxyCodeLine{03234 \textcolor{preprocessor}{        \#if UNITY\_EDITOR}}
+\DoxyCodeLine{03235 }
+\DoxyCodeLine{03241         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} FindAssetPath(\textcolor{keywordtype}{string} asset)}
+\DoxyCodeLine{03242         \{}
+\DoxyCodeLine{03243             \textcolor{keywordtype}{string}[] guids = AssetDatabase.FindAssets (asset, \textcolor{keyword}{null});}
+\DoxyCodeLine{03244             \textcolor{keywordflow}{if} (guids.Length != 1)}
+\DoxyCodeLine{03245             \{}
+\DoxyCodeLine{03246                 \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{03247             \} \textcolor{keywordflow}{else}}
+\DoxyCodeLine{03248             \{}
+\DoxyCodeLine{03249                 \textcolor{keywordflow}{return} AssetDatabase.GUIDToAssetPath (guids [0]);}
+\DoxyCodeLine{03250             \}}
+\DoxyCodeLine{03251         \}}
+\DoxyCodeLine{03252 }
+\DoxyCodeLine{03253 }
+\DoxyCodeLine{03258         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} FindPunAssetFolder()}
+\DoxyCodeLine{03259         \{}
+\DoxyCodeLine{03260             \textcolor{keywordtype}{string} \_thisPath =  FindAssetPath(\textcolor{stringliteral}{"{}PunClasses"{}});}
+\DoxyCodeLine{03261             \textcolor{keywordtype}{string} \_PunFolderPath = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{03262 }
+\DoxyCodeLine{03263             \textcolor{comment}{//Debug.Log("{}FindPunAssetFolder "{}+\_thisPath);}}
+\DoxyCodeLine{03264             \textcolor{keywordtype}{string}[] subdirectoryEntries = \_thisPath.Split (\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{03265             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} dir \textcolor{keywordflow}{in} subdirectoryEntries)}
+\DoxyCodeLine{03266             \{}
+\DoxyCodeLine{03267                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty (dir))}
+\DoxyCodeLine{03268                 \{}
+\DoxyCodeLine{03269                     \_PunFolderPath += dir +\textcolor{stringliteral}{"{}/"{}};}
+\DoxyCodeLine{03270 }
+\DoxyCodeLine{03271                     \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.Equals (dir, \textcolor{stringliteral}{"{}PhotonUnityNetworking"{}}))}
+\DoxyCodeLine{03272                     \{}
+\DoxyCodeLine{03273                         \textcolor{comment}{//  Debug.Log("{}\_PunFolderPath "{}+\_PunFolderPath);}}
+\DoxyCodeLine{03274                         \textcolor{keywordflow}{return} \_PunFolderPath;}
+\DoxyCodeLine{03275                     \}}
+\DoxyCodeLine{03276                 \}}
+\DoxyCodeLine{03277             \}}
+\DoxyCodeLine{03278 }
+\DoxyCodeLine{03279             \textcolor{comment}{//Debug.Log("{}\_PunFolderPath fallback to default Assets/Photon Unity Networking/"{});}}
+\DoxyCodeLine{03280 }
+\DoxyCodeLine{03281             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Assets/Photon/PhotonUnityNetworking/"{}};}
+\DoxyCodeLine{03282         \}}
+\DoxyCodeLine{03283 }
+\DoxyCodeLine{03284 }
+\DoxyCodeLine{03289         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} InternalCleanPhotonMonoFromSceneIfStuck()}
+\DoxyCodeLine{03290         \{}
+\DoxyCodeLine{03291             PhotonHandler[] photonHandlers = GameObject.FindObjectsOfType(typeof(PhotonHandler)) as PhotonHandler[];}
+\DoxyCodeLine{03292             \textcolor{keywordflow}{if} (photonHandlers != \textcolor{keyword}{null} \&\& photonHandlers.Length > 0)}
+\DoxyCodeLine{03293             \{}
+\DoxyCodeLine{03294                 Debug.Log(\textcolor{stringliteral}{"{}Cleaning up hidden PhotonHandler instances in scene. Please save the scene to fix the problem."{}});}
+\DoxyCodeLine{03295                 \textcolor{keywordflow}{foreach} (PhotonHandler photonHandler \textcolor{keywordflow}{in} photonHandlers)}
+\DoxyCodeLine{03296                 \{}
+\DoxyCodeLine{03297                     \textcolor{comment}{// Debug.Log("{}Removing Handler: "{} + photonHandler + "{} photonHandler.gameObject: "{} + photonHandler.gameObject);}}
+\DoxyCodeLine{03298                     \textcolor{keywordflow}{if} (photonHandler.gameObject != \textcolor{keyword}{null} \&\& photonHandler.gameObject.name == \textcolor{stringliteral}{"{}PhotonMono"{}})}
+\DoxyCodeLine{03299                     \{}
+\DoxyCodeLine{03300                         photonHandler.gameObject.hideFlags = 0;}
+\DoxyCodeLine{03301                         GameObject.DestroyImmediate(photonHandler.gameObject);}
+\DoxyCodeLine{03302                     \}}
+\DoxyCodeLine{03303 }
+\DoxyCodeLine{03304                     Component.DestroyImmediate(photonHandler);}
+\DoxyCodeLine{03305                 \}}
+\DoxyCodeLine{03306             \}}
+\DoxyCodeLine{03307         \}}
+\DoxyCodeLine{03308 }
+\DoxyCodeLine{03309 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{03310 }
+\DoxyCodeLine{03311     \}}
+\DoxyCodeLine{03312 \}}
+
+\end{DoxyCode}

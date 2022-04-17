@@ -1,0 +1,147 @@
+\doxysection{Cat\+Task\+Script.\+cs}
+\label{_cat_task_script_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/CatTaskScript.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/\_Developers/Euan/Scripts/CatTaskScript.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine.Events;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine.EventSystems;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} SInt.MissionObjectives;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{public} \textcolor{keyword}{class }CatTaskScript : MonoBehaviour}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013     \textcolor{keyword}{public} Button foodButt;}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} ButtonHoldDown buttonTiming;}
+\DoxyCodeLine{00015     \textcolor{keyword}{private} GameObject catFood;}
+\DoxyCodeLine{00016     \textcolor{keyword}{private} FoodBehaviourScript foodConsumeCheck;}
+\DoxyCodeLine{00017     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} isInDeliveryZone;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keyword}{public} GameObject deliveryArea;}
+\DoxyCodeLine{00020     \textcolor{keyword}{public} CatTaskDelivery catTask;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022     \textcolor{keyword}{public} UnityEvent TaskComplete;}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025     PhotonView PV;}
+\DoxyCodeLine{00026     \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00027     \{}
+\DoxyCodeLine{00028         PV = GetComponent<PhotonView>();}
+\DoxyCodeLine{00029         deliveryArea = GameObject.FindGameObjectWithTag(\textcolor{stringliteral}{"{}Delivery\_Zone"{}});}
+\DoxyCodeLine{00030         catTask = deliveryArea.GetComponent<CatTaskDelivery>();}
+\DoxyCodeLine{00031         Debug.Log(deliveryArea);}
+\DoxyCodeLine{00032         Debug.Log(catTask);}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034     \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnTriggerEnter(Collider other)}
+\DoxyCodeLine{00037     \{}
+\DoxyCodeLine{00038         \textcolor{comment}{//Debug.Log(catTask.hasFood);}}
+\DoxyCodeLine{00039         \textcolor{keywordflow}{if} (other.gameObject.GetComponent<FoodBehaviourScript>() != \textcolor{keyword}{null} \&\& catTask.hasFood == \textcolor{keyword}{false})}
+\DoxyCodeLine{00040         \{}
+\DoxyCodeLine{00041             \textcolor{keywordflow}{if} (PV.IsMine)}
+\DoxyCodeLine{00042             \{}
+\DoxyCodeLine{00043                 var outline = other.GetComponent<OutlinePUN>();}
+\DoxyCodeLine{00044                 \textcolor{keywordflow}{if} (outline != \textcolor{keyword}{null})}
+\DoxyCodeLine{00045                 \{}
+\DoxyCodeLine{00046                     outline.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00047                 \}}
+\DoxyCodeLine{00048                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00049                 \{}
+\DoxyCodeLine{00050                     Color color;}
+\DoxyCodeLine{00051                     ColorUtility.TryParseHtmlString(\textcolor{stringliteral}{"{}\#53FF40"{}}, out color);}
+\DoxyCodeLine{00052                     outline = other.gameObject.AddComponent<OutlinePUN>();}
+\DoxyCodeLine{00053                     outline.OutlineColor = color;}
+\DoxyCodeLine{00054                     outline.OutlineWidth = 5;}
+\DoxyCodeLine{00055                     outline.enabled = \textcolor{keyword}{true};}
+\DoxyCodeLine{00056                 \}}
+\DoxyCodeLine{00057             \}}
+\DoxyCodeLine{00058             catFood = other.gameObject;}
+\DoxyCodeLine{00059             foodButt.interactable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00060         \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (other.gameObject.name == \textcolor{stringliteral}{"{}DeliveryZone"{}} \&\& catTask.hasFood == \textcolor{keyword}{true})}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             foodButt.interactable = \textcolor{keyword}{true};}
+\DoxyCodeLine{00065             isInDeliveryZone = \textcolor{keyword}{true};}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067     \}}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069     \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnTriggerExit(Collider other)}
+\DoxyCodeLine{00070     \{}
+\DoxyCodeLine{00071         \textcolor{comment}{//Debug.Log(catTask.hasFood);}}
+\DoxyCodeLine{00072         \textcolor{keywordflow}{if} (other.gameObject.GetComponent<FoodBehaviourScript>() != \textcolor{keyword}{null} \&\& catTask.hasFood == \textcolor{keyword}{false})}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{if} (PV.IsMine)}
+\DoxyCodeLine{00075             \{}
+\DoxyCodeLine{00076                 var outline = other.GetComponent<OutlinePUN>();}
+\DoxyCodeLine{00077                 \textcolor{keywordflow}{if} (outline != \textcolor{keyword}{null})}
+\DoxyCodeLine{00078                 \{}
+\DoxyCodeLine{00079                     outline.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00080                 \}}
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00082                 \{}
+\DoxyCodeLine{00083                     Color color;}
+\DoxyCodeLine{00084                     ColorUtility.TryParseHtmlString(\textcolor{stringliteral}{"{}\#53FF40"{}}, out color);}
+\DoxyCodeLine{00085                     outline = other.gameObject.AddComponent<OutlinePUN>();}
+\DoxyCodeLine{00086                     outline.OutlineColor = color;}
+\DoxyCodeLine{00087                     outline.OutlineWidth = 5;}
+\DoxyCodeLine{00088                     outline.enabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00089                 \}}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             catFood = \textcolor{keyword}{null};}
+\DoxyCodeLine{00092             foodButt.interactable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00093         \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095         \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (other.gameObject.name == \textcolor{stringliteral}{"{}DeliveryZone"{}} \&\& catTask.hasFood == \textcolor{keyword}{true})}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             foodButt.interactable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00098             isInDeliveryZone = \textcolor{keyword}{false};}
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100     \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102     \textcolor{keyword}{public} \textcolor{keywordtype}{void} GetFood()}
+\DoxyCodeLine{00103     \{}
+\DoxyCodeLine{00104         \textcolor{keywordflow}{if} (catFood != \textcolor{keyword}{null} \&\& catTask.hasFood == \textcolor{keyword}{false})}
+\DoxyCodeLine{00105         \{}
+\DoxyCodeLine{00106             Debug.Log(\textcolor{stringliteral}{"{}Got Food!"{}});}
+\DoxyCodeLine{00107             catTask.hasFood = \textcolor{keyword}{true};}
+\DoxyCodeLine{00108             \textcolor{comment}{//PV.RPC(nameof(SetToTrue), RpcTarget.AllBuffered);}}
+\DoxyCodeLine{00109             foodConsumeCheck = catFood.GetComponent<FoodBehaviourScript>();}
+\DoxyCodeLine{00110             foodConsumeCheck.isCollected = \textcolor{keyword}{true};}
+\DoxyCodeLine{00111             foodButt.interactable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113     \}}
+\DoxyCodeLine{00114     \textcolor{keyword}{public} \textcolor{keywordtype}{void} DeliverFood()}
+\DoxyCodeLine{00115     \{}
+\DoxyCodeLine{00116         \textcolor{keywordflow}{if} (catTask.hasFood \&\& isInDeliveryZone)}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             catTask.hasFood = \textcolor{keyword}{false};}
+\DoxyCodeLine{00119             \textcolor{comment}{//PV.RPC(nameof(SetToFalse), RpcTarget.AllBuffered);}}
+\DoxyCodeLine{00120             foodButt.interactable = \textcolor{keyword}{false};}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122             \textcolor{comment}{//Put task completion and points here now please\string~ Chu Yao and Wei Yuen}}
+\DoxyCodeLine{00123             ScoreManager.instance.SetMainScore(ScoreManager.instance.mainScore);}
+\DoxyCodeLine{00124             isInDeliveryZone = \textcolor{keyword}{false};}
+\DoxyCodeLine{00125             foodConsumeCheck.isHeld = \textcolor{keyword}{false};}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128     \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130     \textcolor{comment}{/*[PunRPC]}}
+\DoxyCodeLine{00131 \textcolor{comment}{    public void SetToTrue()}}
+\DoxyCodeLine{00132 \textcolor{comment}{    \{}}
+\DoxyCodeLine{00133 \textcolor{comment}{        catTask.hasFood = true;}}
+\DoxyCodeLine{00134 \textcolor{comment}{    \}}}
+\DoxyCodeLine{00135 \textcolor{comment}{}}
+\DoxyCodeLine{00136 \textcolor{comment}{    [PunRPC]}}
+\DoxyCodeLine{00137 \textcolor{comment}{    public void SetToFalse()}}
+\DoxyCodeLine{00138 \textcolor{comment}{    \{}}
+\DoxyCodeLine{00139 \textcolor{comment}{        catTask.hasFood = false;}}
+\DoxyCodeLine{00140 \textcolor{comment}{    \}*/}}
+\DoxyCodeLine{00141 \}}
+
+\end{DoxyCode}

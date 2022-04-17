@@ -1,0 +1,368 @@
+\doxysection{Vital\+Definition.\+cs}
+\label{_vital_definition_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/DataTypes/VitalDefinition.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncVitals/VitalsSystem/DataTypes/VitalDefinition.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00016 \{}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018     [System.Serializable]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalDefinition}
+\DoxyCodeLine{00020     \textcolor{comment}{//: IVitalDefinition}}
+\DoxyCodeLine{00021     \{}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 \textcolor{preprocessor}{        \#region Outgoing OnChange Callbacks}}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \textcolor{keyword}{public} List<IOnVitalValueChange> iOnVitalChange = \textcolor{keyword}{new} List<IOnVitalValueChange>();}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AddIOnVitalChange(IOnVitalValueChange cb)}
+\DoxyCodeLine{00027         \{}
+\DoxyCodeLine{00028             iOnVitalChange.Add(cb);}
+\DoxyCodeLine{00029         \}}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keywordtype}{void} RemoveIOnVitalChange(IOnVitalValueChange cb)}
+\DoxyCodeLine{00031         \{}
+\DoxyCodeLine{00032             iOnVitalChange.Remove(cb);}
+\DoxyCodeLine{00033         \}}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [SerializeField] \textcolor{keyword}{private} VitalNameType vitalName;}
+\DoxyCodeLine{00040         \textcolor{keyword}{public} VitalNameType VitalName \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} vitalName; \} \}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042         \textcolor{comment}{//public string Name \{ get \{ return targetVital.name; \} \}}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [Tooltip(\textcolor{stringliteral}{"{}Values greater than this will degrade at the decay rate until this value is reached."{}})]}
+\DoxyCodeLine{00045         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{double} \_fullValue;}
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{double} FullValue \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_fullValue; \} \}}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         [Tooltip(\textcolor{stringliteral}{"{}The absolute greatest possible value. Values above Full Value are considered overloaded, and will decay down to Full Value."{}})]}
+\DoxyCodeLine{00049         [SerializeField] \textcolor{keyword}{private} uint \_maxValue;}
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{double} MaxValue \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_maxValue; \} \}}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keywordtype}{double} startValue;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         [Tooltip(\textcolor{stringliteral}{"{}Number of simulation ticks after damage until regeneration resumes."{}})]}
+\DoxyCodeLine{00055         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} regenDelay;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         [Tooltip(\textcolor{stringliteral}{"{}Amount per tick values less than Full Value will increase until Full Health is reached."{}})]}
+\DoxyCodeLine{00059         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{double} regenRate;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         [Tooltip(\textcolor{stringliteral}{"{}Number of simulation ticks after overload until decay resumes."{}})]}
+\DoxyCodeLine{00062         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{float} decayDelay;}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064         [Tooltip(\textcolor{stringliteral}{"{}Amount per tick overloaded values greater than Full Value will degrade until Full Health is reached."{}})]}
+\DoxyCodeLine{00065         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{double} decayRate;}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         [Range(0, 1)]}
+\DoxyCodeLine{00068         [Tooltip(\textcolor{stringliteral}{"{}How much of the damage this vital absords, the remainder is passed through to the next lower stat. 0 = None (useless), 0.5 = Half, 1 = Full. The root vital (0) likely should always be 1."{}})]}
+\DoxyCodeLine{00069         [SerializeField] \textcolor{keyword}{private} \textcolor{keywordtype}{double} absorption;}
+\DoxyCodeLine{00070         \textcolor{keyword}{public} \textcolor{keywordtype}{double} Absorbtion \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} absorption; \} \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074         \textcolor{keywordtype}{int} \_decayDelayInTicks;}
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{int} DecayDelayInTicks \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_decayDelayInTicks; \} \}}
+\DoxyCodeLine{00076         \textcolor{keywordtype}{int} \_regenDelayInTicks;}
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{int} RegenDelayInTicks \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_regenDelayInTicks; \} \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keywordtype}{double} \_decayPerTick;}
+\DoxyCodeLine{00080         \textcolor{keyword}{public} \textcolor{keywordtype}{double} DecayPerTick \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_decayPerTick; \} \}}
+\DoxyCodeLine{00081         \textcolor{keywordtype}{double} \_regenPerTick;}
+\DoxyCodeLine{00082         \textcolor{keyword}{public} \textcolor{keywordtype}{double} RegenPerTick \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \_regenPerTick; \} \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         \textcolor{comment}{// Networking cache}}
+\DoxyCodeLine{00085         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForValue;}
+\DoxyCodeLine{00086         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForDecayDelay;}
+\DoxyCodeLine{00087         \textcolor{keyword}{private} \textcolor{keywordtype}{int} bitsForRegenDelay;}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{comment}{//public VitalDefinition()}}
+\DoxyCodeLine{00090         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00091         \textcolor{comment}{//  \_fullValue = 100;}}
+\DoxyCodeLine{00092         \textcolor{comment}{//  \_maxValue = 125;}}
+\DoxyCodeLine{00093         \textcolor{comment}{//  startValue = 100;}}
+\DoxyCodeLine{00094         \textcolor{comment}{//  absorption = 1;}}
+\DoxyCodeLine{00095         \textcolor{comment}{//  regenDelay = 1;}}
+\DoxyCodeLine{00096         \textcolor{comment}{//  regenRate = 1;}}
+\DoxyCodeLine{00097         \textcolor{comment}{//  decayDelay = 1;}}
+\DoxyCodeLine{00098         \textcolor{comment}{//  decayRate = 1;}}
+\DoxyCodeLine{00099         \textcolor{comment}{//  vitalName = new VitalNameType(VitalType.None);}}
+\DoxyCodeLine{00100         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102         \textcolor{keyword}{public} VitalDefinition(\textcolor{keywordtype}{double} fullValue, uint maxValue, \textcolor{keywordtype}{double} startValue, \textcolor{keywordtype}{double} absorbtion, \textcolor{keywordtype}{float} regenDelay, \textcolor{keywordtype}{double} regenRate, \textcolor{keywordtype}{float} decayDelay, \textcolor{keywordtype}{double} decayRate, \textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00103         \{}
+\DoxyCodeLine{00104             this.\_fullValue = fullValue;}
+\DoxyCodeLine{00105             this.\_maxValue = maxValue;}
+\DoxyCodeLine{00106             this.startValue = startValue;}
+\DoxyCodeLine{00107             this.absorption = absorbtion;}
+\DoxyCodeLine{00108             this.regenDelay = regenDelay;}
+\DoxyCodeLine{00109             this.regenRate = regenRate;}
+\DoxyCodeLine{00110             this.decayDelay = decayDelay;}
+\DoxyCodeLine{00111             this.decayRate = decayRate;}
+\DoxyCodeLine{00112             vitalName = \textcolor{keyword}{new} VitalNameType(name);}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Initialize(\textcolor{keywordtype}{float} tickDuration)}
+\DoxyCodeLine{00116         \{}
+\DoxyCodeLine{00117             SetTickInterval(tickDuration);}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SetTickInterval(\textcolor{keywordtype}{float} tickInterval)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{comment}{// Convert seconds into ticks for a more deterministic and networkable count}}
+\DoxyCodeLine{00123             \_decayDelayInTicks = (int)(decayDelay / tickInterval);}
+\DoxyCodeLine{00124             \_regenDelayInTicks = (int)(regenDelay / tickInterval);}
+\DoxyCodeLine{00125             \_decayPerTick = decayRate * tickInterval;}
+\DoxyCodeLine{00126             \_regenPerTick = regenRate * tickInterval;}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00128             bitsForValue = \_maxValue.GetBitsForMaxValue();}
+\DoxyCodeLine{00129             bitsForDecayDelay = \_decayDelayInTicks.GetBitsForMaxValue();}
+\DoxyCodeLine{00130             bitsForRegenDelay = \_regenDelayInTicks.GetBitsForMaxValue();}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keyword}{public} VitalData GetDefaultData()}
+\DoxyCodeLine{00134         \{}
+\DoxyCodeLine{00135             \textcolor{keywordflow}{return} \textcolor{keyword}{new} VitalData(startValue, \_decayDelayInTicks, \_regenDelayInTicks);}
+\DoxyCodeLine{00136         \}}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138         \textcolor{keyword}{public} SerializationFlags Serialize(VitalData vitalData, VitalData prevVitalData, \textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} keyframe = \textcolor{keyword}{true})}
+\DoxyCodeLine{00139         \{}
+\DoxyCodeLine{00140             var ticksuntildecay = vitalData.ticksUntilDecay;}
+\DoxyCodeLine{00141             var ticksuntilregen = vitalData.ticksUntilRegen;}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143             \textcolor{comment}{//if (keyframe)}}
+\DoxyCodeLine{00144             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00145             \textcolor{comment}{//  buffer.Write((ulong)vitalData.Value, ref bitposition, bitsForValue);}}
+\DoxyCodeLine{00146             \textcolor{comment}{//  return SerializationFlags.HasChanged;}}
+\DoxyCodeLine{00147             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00148             \textcolor{comment}{//else}}
+\DoxyCodeLine{00149             \textcolor{keywordtype}{int} newval = (int)vitalData.Value;}
+\DoxyCodeLine{00150             \textcolor{keywordtype}{int} prevval = (\textcolor{keywordtype}{int})prevVitalData.Value;}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             \textcolor{keywordtype}{bool} haschanged = newval != prevval;}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154             \textcolor{keywordflow}{if} (keyframe)}
+\DoxyCodeLine{00155             \{}
+\DoxyCodeLine{00156                 buffer.Write((ulong)newval, ref bitposition, bitsForValue);}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 buffer.WriteBool(haschanged, ref bitposition);}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{if} (haschanged)}
+\DoxyCodeLine{00162                     buffer.Write((ulong)newval, ref bitposition, bitsForValue);}
+\DoxyCodeLine{00163             \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00166             \textcolor{keywordflow}{if} (ticksuntildecay > 0)}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00169                 buffer.Write((ulong)ticksuntildecay, ref bitposition, bitsForDecayDelay);}
+\DoxyCodeLine{00170             \}}
+\DoxyCodeLine{00171             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00172                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (ticksuntilregen > 0)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 buffer.WriteBool(\textcolor{keyword}{true}, ref bitposition);}
+\DoxyCodeLine{00177                 buffer.Write((ulong)ticksuntilregen, ref bitposition, bitsForRegenDelay);}
+\DoxyCodeLine{00178             \}}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00180                 buffer.WriteBool(\textcolor{keyword}{false}, ref bitposition);}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             \textcolor{keywordflow}{return} (haschanged || keyframe) ? SerializationFlags.HasContent : SerializationFlags.None;}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184         \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186         \textcolor{keyword}{public} VitalData Deserialize(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, \textcolor{keywordtype}{bool} keyframe = \textcolor{keyword}{true})}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             \textcolor{keywordtype}{double} val = (keyframe || buffer.ReadBool(ref bitposition)) ? (\textcolor{keywordtype}{double})buffer.Read(ref bitposition, bitsForValue) : \textcolor{keywordtype}{double}.NegativeInfinity;}
+\DoxyCodeLine{00189             VitalData data = \textcolor{keyword}{new} VitalData(}
+\DoxyCodeLine{00190                 val,}
+\DoxyCodeLine{00191                 (\textcolor{keywordtype}{int})(buffer.ReadBool(ref bitposition) ? buffer.Read(ref bitposition, bitsForDecayDelay) : 0),}
+\DoxyCodeLine{00192                 (\textcolor{keywordtype}{int})(buffer.ReadBool(ref bitposition) ? buffer.Read(ref bitposition, bitsForRegenDelay) : 0)}
+\DoxyCodeLine{00193             );}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195             \textcolor{keywordflow}{return} data;}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198         \textcolor{keyword}{public} VitalData Extrapolate(VitalData prev)}
+\DoxyCodeLine{00199         \{}
+\DoxyCodeLine{00200             \textcolor{keywordtype}{int} ticksuntilregen = prev.ticksUntilRegen > 0 ? prev.ticksUntilRegen -\/ 1 : 0;}
+\DoxyCodeLine{00201             \textcolor{keywordtype}{int} ticksuntildecay = prev.ticksUntilDecay > 0 ? prev.ticksUntilDecay -\/ 1 : 0;}
+\DoxyCodeLine{00202             \textcolor{keywordtype}{double} preval = prev.Value;}
+\DoxyCodeLine{00203             \textcolor{keywordtype}{double} val =}
+\DoxyCodeLine{00204                 (preval > FullValue \&\& ticksuntildecay == 0) ? preval -\/ \_decayPerTick :}
+\DoxyCodeLine{00205                 (preval < FullValue \&\& ticksuntilregen == 0) ? preval + \_regenPerTick :}
+\DoxyCodeLine{00206                 preval;}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             \textcolor{keywordflow}{return} \textcolor{keyword}{new} VitalData(val, ticksuntildecay, ticksuntilregen);}
+\DoxyCodeLine{00209         \}}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212     \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00220     [CustomPropertyDrawer(typeof(VitalDefinition))]}
+\DoxyCodeLine{00221     [CanEditMultipleObjects]}
+\DoxyCodeLine{00222     \textcolor{keyword}{public} \textcolor{keyword}{class }VitalDefinitionDrawer : PropertyDrawer}
+\DoxyCodeLine{00223     \{}
+\DoxyCodeLine{00224 \textcolor{preprocessor}{\#if UNITY\_2019\_3\_OR\_NEWER}}
+\DoxyCodeLine{00225         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} HEIGHT = 18f;}
+\DoxyCodeLine{00226 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00227         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} HEIGHT = 16f;}
+\DoxyCodeLine{00228 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00229         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} FIXED\_HGHT = HEIGHT * 9 + 14; \textcolor{comment}{// 164f;}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} INDENT = 4f;}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{float} PAD = 4f;}
+\DoxyCodeLine{00234         \textcolor{keyword}{const} \textcolor{keywordtype}{float} TOP\_BAR = HEIGHT * 3 + PAD + 2;}
+\DoxyCodeLine{00235         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string}[] vitalTypeEnumNames = System.Enum.GetNames(typeof(VitalType));}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237         \textcolor{keyword}{public} \textcolor{keyword}{static} GUIStyle miniLabelRight;}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(Rect r, SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00240         \{}
+\DoxyCodeLine{00241             \textcolor{keywordflow}{if} (miniLabelRight == \textcolor{keyword}{null})}
+\DoxyCodeLine{00242                 miniLabelRight = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}Label"{}}) \{ alignment = TextAnchor.UpperRight \};}
+\DoxyCodeLine{00243             \textcolor{comment}{//EditorGUI.BeginProperty(r, label, property);}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordtype}{int} index = PropertyDrawerUtility.GetIndexOfDrawerObject(property);}
+\DoxyCodeLine{00248             \textcolor{keywordtype}{bool} isAnArray = index >= 0;}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             r.xMin += 2;}
+\DoxyCodeLine{00251             r.xMax -\/= 2;}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             Rect outer = r;}
+\DoxyCodeLine{00254             outer.xMin = (outer.xMin -\/ PAD) + INDENT;}
+\DoxyCodeLine{00255             outer.xMax += PAD;}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257             \textcolor{keywordflow}{if} (property.isExpanded)}
+\DoxyCodeLine{00258                 outer.height = FIXED\_HGHT; \textcolor{comment}{// TOP\_BAR + 2;}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260             GUI.Box(outer, GUIContent.none, \textcolor{stringliteral}{"{}HelpBox"{}});}
+\DoxyCodeLine{00261             var vitalcolor = index == 0 ? SolidTextures.red2D : SolidTextures.blue2D;}
+\DoxyCodeLine{00262             outer.xMin += 1; outer.yMin += 1;}
+\DoxyCodeLine{00263             outer.width -\/= 1;}
+\DoxyCodeLine{00264             outer.height = TOP\_BAR;}
+\DoxyCodeLine{00265             SolidTextures.DrawTexture(outer, vitalcolor);}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             Rect inner = r;}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269             inner.yMin += PAD;}
+\DoxyCodeLine{00270             inner.height = HEIGHT;}
+\DoxyCodeLine{00271 }
+\DoxyCodeLine{00273             \textcolor{keyword}{property}.isExpanded = EditorGUI.Toggle(\textcolor{keyword}{new} Rect(inner) \{ xMin = 4, width = 64 \}, \textcolor{stringliteral}{"{}"{}}, \textcolor{keyword}{property}.isExpanded, (GUIStyle)\textcolor{stringliteral}{"{}Foldout"{}});}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275             inner.xMin += INDENT;}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277             var vitalNameType = \textcolor{keyword}{property}.FindPropertyRelative(\textcolor{stringliteral}{"{}vitalName"{}});}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279             Rect vitalnamerect = \textcolor{keyword}{new} Rect(inner) \{ yMin = inner.yMin -\/ 1, xMax = (isAnArray \&\& index != 0) ? (inner.xMax -\/ 22) : inner.xMax \};}
+\DoxyCodeLine{00280             EditorGUI.PropertyField(vitalnamerect, vitalNameType, \textcolor{keyword}{new} GUIContent(index.ToString()));}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282             inner.yMin += HEIGHT;}
+\DoxyCodeLine{00283             inner.height = HEIGHT;}
+\DoxyCodeLine{00284             EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}startValue"{}}));}
+\DoxyCodeLine{00285 }
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             inner.yMin += HEIGHT;}
+\DoxyCodeLine{00288             inner.height = HEIGHT;}
+\DoxyCodeLine{00289             DrawValueAndBitsNeeded(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}\_maxValue"{}}));}
+\DoxyCodeLine{00290 }
+\DoxyCodeLine{00291             inner.yMin += 6;}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293             \textcolor{keywordflow}{if} (property.isExpanded)}
+\DoxyCodeLine{00294             \{}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00297                 inner.height = HEIGHT;}
+\DoxyCodeLine{00298                 EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}\_fullValue"{}}));}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00302                 inner.height = HEIGHT;}
+\DoxyCodeLine{00303                 EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}absorption"{}}));}
+\DoxyCodeLine{00304 }
+\DoxyCodeLine{00305                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00306                 inner.height = HEIGHT;}
+\DoxyCodeLine{00307                 EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}regenDelay"{}}));}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00310                 inner.height = HEIGHT;}
+\DoxyCodeLine{00311                 EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}regenRate"{}}));}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00314                 inner.height = HEIGHT;}
+\DoxyCodeLine{00315                 \textcolor{comment}{//EditorGUI.PropertyField(inner, property.FindPropertyRelative("{}decayDelay"{}));}}
+\DoxyCodeLine{00316                 DrawValueAndBitsNeeded(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}decayDelay"{}}), TickEngineSettings.netTickInterval);}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318                 inner.yMin += HEIGHT;}
+\DoxyCodeLine{00319                 inner.height = HEIGHT;}
+\DoxyCodeLine{00320                 EditorGUI.PropertyField(inner, property.FindPropertyRelative(\textcolor{stringliteral}{"{}decayRate"{}}));}
+\DoxyCodeLine{00321             \}}
+\DoxyCodeLine{00322 }
+\DoxyCodeLine{00323             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00324             \{}
+\DoxyCodeLine{00325                 Undo.RecordObject(property.serializedObject.targetObject, \textcolor{stringliteral}{"{}Change Vitals"{}});}
+\DoxyCodeLine{00326                 \textcolor{keyword}{property}.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00327                 \textcolor{comment}{//AssetDatabase.SaveAssets();}}
+\DoxyCodeLine{00328             \}}
+\DoxyCodeLine{00329             \textcolor{comment}{//EditorGUI.EndProperty();}}
+\DoxyCodeLine{00330         \}}
+\DoxyCodeLine{00331 }
+\DoxyCodeLine{00332         \textcolor{keyword}{const} \textcolor{keywordtype}{int} BITS\_WIDTH = 64;}
+\DoxyCodeLine{00333         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawValueAndBitsNeeded(Rect inner, SerializedProperty sp)}
+\DoxyCodeLine{00334         \{}
+\DoxyCodeLine{00335             EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(inner) \{ xMax = inner.xMax -\/ BITS\_WIDTH \}, sp);}
+\DoxyCodeLine{00336             \textcolor{keywordflow}{if} (sp.intValue < 1)}
+\DoxyCodeLine{00337             \{}
+\DoxyCodeLine{00338                 sp.intValue = 1;}
+\DoxyCodeLine{00339                 sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00340             \}}
+\DoxyCodeLine{00341             \textcolor{keywordtype}{int} bits = sp.intValue.GetBitsForMaxValue();}
+\DoxyCodeLine{00342             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(inner) \{ xMin = inner.xMax -\/ BITS\_WIDTH -\/ 4 \}, bits.ToString() + \textcolor{stringliteral}{"{} Bits"{}}, miniLabelRight);}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} DrawValueAndBitsNeeded(Rect inner, SerializedProperty sp, \textcolor{keywordtype}{float} tickduration)}
+\DoxyCodeLine{00346         \{}
+\DoxyCodeLine{00347             EditorGUI.PropertyField(\textcolor{keyword}{new} Rect(inner) \{ xMax = inner.xMax -\/ BITS\_WIDTH \}, sp);}
+\DoxyCodeLine{00348             \textcolor{keywordflow}{if} (sp.floatValue < 1)}
+\DoxyCodeLine{00349             \{}
+\DoxyCodeLine{00350                 sp.floatValue = 1;}
+\DoxyCodeLine{00351                 sp.serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00352             \}}
+\DoxyCodeLine{00353             \textcolor{keywordtype}{int} bits = ((uint)(sp.floatValue / tickduration)).GetBitsForMaxValue();}
+\DoxyCodeLine{00354             EditorGUI.LabelField(\textcolor{keyword}{new} Rect(inner) \{ xMin = inner.xMax -\/ BITS\_WIDTH -\/ 4 \}, bits.ToString() + \textcolor{stringliteral}{"{} Bits"{}}, miniLabelRight);}
+\DoxyCodeLine{00355         \}}
+\DoxyCodeLine{00356 }
+\DoxyCodeLine{00357         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{float} GetPropertyHeight(SerializedProperty property, GUIContent label)}
+\DoxyCodeLine{00358         \{}
+\DoxyCodeLine{00359             \textcolor{keyword}{property}.serializedObject.Update();}
+\DoxyCodeLine{00360             \textcolor{keywordflow}{return} (property.isExpanded) ? FIXED\_HGHT : 3 * HEIGHT + 8;}
+\DoxyCodeLine{00361         \}}
+\DoxyCodeLine{00362     \}}
+\DoxyCodeLine{00363 }
+\DoxyCodeLine{00364 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00365 }
+\DoxyCodeLine{00366 \}}
+\DoxyCodeLine{00367 }
+
+\end{DoxyCode}

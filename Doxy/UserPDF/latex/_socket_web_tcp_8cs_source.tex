@@ -1,0 +1,366 @@
+\doxysection{Socket\+Web\+Tcp.\+cs}
+\label{_socket_web_tcp_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonLibs/WebSocket/SocketWebTcp.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonLibs/WebSocket/SocketWebTcp.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{preprocessor}{\#if UNITY\_WEBGL || WEBSOCKET || ((UNITY\_XBOXONE || UNITY\_GAMECORE) \&\& UNITY\_EDITOR)}}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <copyright file="{}SocketWebTcp.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00005 \textcolor{comment}{//   Copyright (c) Exit Games GmbH.  All rights reserved.}}
+\DoxyCodeLine{00006 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00007 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{//   Internal class to encapsulate the network i/o functionality for the realtime library.}}
+\DoxyCodeLine{00009 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00011 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }ExitGames.Client.Photon}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} SupportClassPun = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{    \#if !(UNITY\_WEBGL || NETFX\_CORE)}}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} System.Net;}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} System.Net.Sockets;}
+\DoxyCodeLine{00025     \textcolor{keyword}{using} System.Threading;}
+\DoxyCodeLine{00026 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00031     \textcolor{keyword}{public} sealed \textcolor{keyword}{class }WaitForRealSeconds : CustomYieldInstruction}
+\DoxyCodeLine{00032     \{}
+\DoxyCodeLine{00033         \textcolor{keyword}{private} readonly \textcolor{keywordtype}{float} \_endTime;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} keepWaiting}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.\_endTime > Time.realtimeSinceStartup; \}}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} WaitForRealSeconds(\textcolor{keywordtype}{float} seconds)}
+\DoxyCodeLine{00041         \{}
+\DoxyCodeLine{00042             this.\_endTime = Time.realtimeSinceStartup + seconds;}
+\DoxyCodeLine{00043         \}}
+\DoxyCodeLine{00044     \}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00050     \textcolor{keyword}{public} \textcolor{keyword}{class }SocketWebTcp : IPhotonSocket, IDisposable}
+\DoxyCodeLine{00051     \{}
+\DoxyCodeLine{00052         \textcolor{keyword}{private} WebSocket sock;}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         \textcolor{keyword}{private} readonly \textcolor{keywordtype}{object} syncer = \textcolor{keyword}{new} object();}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} SocketWebTcp(PeerBase npeer) : base(npeer)}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             this.ServerAddress = npeer.ServerAddress;}
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.INFO))}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}new SocketWebTcp() for Unity. Server: "{}} + \textcolor{keyword}{this}.ServerAddress);}
+\DoxyCodeLine{00062             \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064             \textcolor{comment}{//this.Protocol = ConnectionProtocol.WebSocket;}}
+\DoxyCodeLine{00065             this.PollReceive = \textcolor{keyword}{false};}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Dispose()}
+\DoxyCodeLine{00069         \{}
+\DoxyCodeLine{00070             this.State = PhotonSocketState.Disconnecting;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00073             \{}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00075                 \{}
+\DoxyCodeLine{00076                     \textcolor{keywordflow}{if} (this.sock.Connected) this.sock.Close();}
+\DoxyCodeLine{00077                 \}}
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{catch} (Exception ex)}
+\DoxyCodeLine{00079                 \{}
+\DoxyCodeLine{00080                     this.EnqueueDebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}Exception in Dispose(): "{}} + ex);}
+\DoxyCodeLine{00081                 \}}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00085             this.State = PhotonSocketState.Disconnected;}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         GameObject websocketConnectionObject;}
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Connect()}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             \textcolor{comment}{//bool baseOk = base.Connect();}}
+\DoxyCodeLine{00092             \textcolor{comment}{//if (!baseOk)}}
+\DoxyCodeLine{00093             \textcolor{comment}{//\{}}
+\DoxyCodeLine{00094             \textcolor{comment}{//    return false;}}
+\DoxyCodeLine{00095             \textcolor{comment}{//\}}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098             this.State = PhotonSocketState.Connecting;}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{keywordflow}{if} (this.websocketConnectionObject != \textcolor{keyword}{null})}
+\DoxyCodeLine{00101             \{}
+\DoxyCodeLine{00102                 UnityEngine.Object.Destroy(this.websocketConnectionObject);}
+\DoxyCodeLine{00103             \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             this.websocketConnectionObject = \textcolor{keyword}{new} GameObject(\textcolor{stringliteral}{"{}websocketConnectionObject"{}});}
+\DoxyCodeLine{00106             MonoBehaviour mb = this.websocketConnectionObject.AddComponent<MonoBehaviourExt>();}
+\DoxyCodeLine{00107             this.websocketConnectionObject.hideFlags = HideFlags.HideInHierarchy;}
+\DoxyCodeLine{00108             UnityEngine.Object.DontDestroyOnLoad(this.websocketConnectionObject);}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110 \textcolor{preprocessor}{            \#if UNITY\_WEBGL || NETFX\_CORE}}
+\DoxyCodeLine{00111             this.sock = \textcolor{keyword}{new} WebSocket(\textcolor{keyword}{new} Uri(this.ConnectAddress), this.SerializationProtocol);}
+\DoxyCodeLine{00112             this.sock.Connect();}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             mb.StartCoroutine(this.ReceiveLoop());}
+\DoxyCodeLine{00115 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             mb.StartCoroutine(this.DetectIpVersionAndConnect(mb));}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 \textcolor{preprocessor}{        \#if !(UNITY\_WEBGL || NETFX\_CORE)}}
+\DoxyCodeLine{00125         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} ipVersionDetectDone;}
+\DoxyCodeLine{00126         \textcolor{keyword}{private} IEnumerator DetectIpVersionAndConnect(MonoBehaviour mb)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             Uri uri = \textcolor{keyword}{null};}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 uri = \textcolor{keyword}{new} Uri(this.ConnectAddress);}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{catch} (Exception ex)}
+\DoxyCodeLine{00134             \{}
+\DoxyCodeLine{00135                 \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.ERROR))}
+\DoxyCodeLine{00136                 \{}
+\DoxyCodeLine{00137                     this.Listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Failed to create a URI from ConnectAddress ("{}} + ConnectAddress + \textcolor{stringliteral}{"{}). Exception: "{}} + ex);}
+\DoxyCodeLine{00138                 \}}
+\DoxyCodeLine{00139             \}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             \textcolor{keywordflow}{if} (uri != \textcolor{keyword}{null} \&\& uri.HostNameType == UriHostNameType.Dns)}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 ipVersionDetectDone = \textcolor{keyword}{false};}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 ThreadPool.QueueUserWorkItem(this.DetectIpVersion, uri.Host);}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{while} (!this.ipVersionDetectDone)}
+\DoxyCodeLine{00148                 \{}
+\DoxyCodeLine{00149                     yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForRealSeconds(0.1f);}
+\DoxyCodeLine{00150                 \}}
+\DoxyCodeLine{00151             \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             \textcolor{keywordflow}{if} (this.AddressResolvedAsIpv6)}
+\DoxyCodeLine{00154             \{}
+\DoxyCodeLine{00155                 this.ConnectAddress += \textcolor{stringliteral}{"{}\&IPv6"{}};}
+\DoxyCodeLine{00156             \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.INFO))}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}DetectIpVersionAndConnect() AddressResolvedAsIpv6: "{}} + \textcolor{keyword}{this}.AddressResolvedAsIpv6 + \textcolor{stringliteral}{"{} ConnectAddress: "{}} + ConnectAddress);}
+\DoxyCodeLine{00161             \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             this.sock = \textcolor{keyword}{new} WebSocket(\textcolor{keyword}{new} Uri(this.ConnectAddress), this.SerializationProtocol);}
+\DoxyCodeLine{00165             this.sock.Connect();}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             mb.StartCoroutine(this.ReceiveLoop());}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         \textcolor{comment}{// state has to be the hostname string}}
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DetectIpVersion(\textcolor{keywordtype}{object} state)}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             \textcolor{keywordtype}{string} host = state as string;}
+\DoxyCodeLine{00174             IPAddress[] ipAddresses;}
+\DoxyCodeLine{00175             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00176             \{}
+\DoxyCodeLine{00177                 ipAddresses = Dns.GetHostAddresses(host);}
+\DoxyCodeLine{00178                 \textcolor{keywordflow}{foreach} (IPAddress ipAddress \textcolor{keywordflow}{in} ipAddresses)}
+\DoxyCodeLine{00179                 \{}
+\DoxyCodeLine{00180                     \textcolor{keywordflow}{if} (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)}
+\DoxyCodeLine{00181                     \{}
+\DoxyCodeLine{00182                         this.AddressResolvedAsIpv6 = \textcolor{keyword}{true};}
+\DoxyCodeLine{00183                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00184                     \}}
+\DoxyCodeLine{00185                 \}}
+\DoxyCodeLine{00186             \}}
+\DoxyCodeLine{00187             \textcolor{keywordflow}{catch} (Exception ex)}
+\DoxyCodeLine{00188             \{}
+\DoxyCodeLine{00189                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}DetectIpVersionAndConnect (uri: "{}} + host + \textcolor{stringliteral}{"{}= thread failed: "{}} + ex);}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             this.ipVersionDetectDone = \textcolor{keyword}{true};}
+\DoxyCodeLine{00193         \}}
+\DoxyCodeLine{00194 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Disconnect()}
+\DoxyCodeLine{00198         \{}
+\DoxyCodeLine{00199             \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.INFO))}
+\DoxyCodeLine{00200             \{}
+\DoxyCodeLine{00201                 this.Listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}SocketWebTcp.Disconnect()"{}});}
+\DoxyCodeLine{00202             \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204             this.State = PhotonSocketState.Disconnecting;}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             lock (this.syncer)}
+\DoxyCodeLine{00207             \{}
+\DoxyCodeLine{00208                 \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00209                 \{}
+\DoxyCodeLine{00210                     \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00211                     \{}
+\DoxyCodeLine{00212                         this.sock.Close();}
+\DoxyCodeLine{00213                     \}}
+\DoxyCodeLine{00214                     \textcolor{keywordflow}{catch} (Exception ex)}
+\DoxyCodeLine{00215                     \{}
+\DoxyCodeLine{00216                         this.Listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Exception in Disconnect(): "{}} + ex);}
+\DoxyCodeLine{00217                     \}}
+\DoxyCodeLine{00218                     this.sock = \textcolor{keyword}{null};}
+\DoxyCodeLine{00219                 \}}
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (this.websocketConnectionObject != \textcolor{keyword}{null})}
+\DoxyCodeLine{00223             \{}
+\DoxyCodeLine{00224                 UnityEngine.Object.Destroy(this.websocketConnectionObject);}
+\DoxyCodeLine{00225             \}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227             this.State = PhotonSocketState.Disconnected;}
+\DoxyCodeLine{00228             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00229         \}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00234         \textcolor{keyword}{public} \textcolor{keyword}{override} PhotonSocketError Send(\textcolor{keywordtype}{byte}[] data, \textcolor{keywordtype}{int} length)}
+\DoxyCodeLine{00235         \{}
+\DoxyCodeLine{00236             \textcolor{keywordflow}{if} (this.State != PhotonSocketState.Connected)}
+\DoxyCodeLine{00237             \{}
+\DoxyCodeLine{00238                 \textcolor{keywordflow}{return} PhotonSocketError.Skipped;}
+\DoxyCodeLine{00239             \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00242             \{}
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{if} (data.Length > length)}
+\DoxyCodeLine{00244                 \{}
+\DoxyCodeLine{00245                     \textcolor{keywordtype}{byte}[] trimmedData = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[length];}
+\DoxyCodeLine{00246                     Buffer.BlockCopy(data, 0, trimmedData, 0, length);}
+\DoxyCodeLine{00247                     data = trimmedData;}
+\DoxyCodeLine{00248                 \}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.ALL))}
+\DoxyCodeLine{00251                 \{}
+\DoxyCodeLine{00252                     this.Listener.DebugReturn(DebugLevel.ALL, \textcolor{stringliteral}{"{}Sending: "{}} + SupportClassPun.ByteArrayToString(data));}
+\DoxyCodeLine{00253                 \}}
+\DoxyCodeLine{00254 }
+\DoxyCodeLine{00255                 \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00256                 \{}
+\DoxyCodeLine{00257                     this.sock.Send(data);}
+\DoxyCodeLine{00258                 \}}
+\DoxyCodeLine{00259             \}}
+\DoxyCodeLine{00260             \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00261             \{}
+\DoxyCodeLine{00262                 this.Listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Cannot send to: "{}} + \textcolor{keyword}{this}.ServerAddress + \textcolor{stringliteral}{"{}. "{}} + e.Message);}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264                 this.HandleException(StatusCode.Exception);}
+\DoxyCodeLine{00265                 \textcolor{keywordflow}{return} PhotonSocketError.Exception;}
+\DoxyCodeLine{00266             \}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268             \textcolor{keywordflow}{return} PhotonSocketError.Success;}
+\DoxyCodeLine{00269         \}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keyword}{override} PhotonSocketError Receive(out \textcolor{keywordtype}{byte}[] data)}
+\DoxyCodeLine{00272         \{}
+\DoxyCodeLine{00273             data = \textcolor{keyword}{null};}
+\DoxyCodeLine{00274             \textcolor{keywordflow}{return} PhotonSocketError.NoData;}
+\DoxyCodeLine{00275         \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278         \textcolor{keyword}{internal} \textcolor{keyword}{const} \textcolor{keywordtype}{int} ALL\_HEADER\_BYTES = 9;}
+\DoxyCodeLine{00279         \textcolor{keyword}{internal} \textcolor{keyword}{const} \textcolor{keywordtype}{int} TCP\_HEADER\_BYTES = 7;}
+\DoxyCodeLine{00280         \textcolor{keyword}{internal} \textcolor{keyword}{const} \textcolor{keywordtype}{int} MSG\_HEADER\_BYTES = 2;}
+\DoxyCodeLine{00281 }
+\DoxyCodeLine{00282         \textcolor{keyword}{public} IEnumerator ReceiveLoop()}
+\DoxyCodeLine{00283         \{}
+\DoxyCodeLine{00284             \textcolor{comment}{//this.Listener.DebugReturn(DebugLevel.INFO, "{}ReceiveLoop()"{});}}
+\DoxyCodeLine{00285             \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00286             \{}
+\DoxyCodeLine{00287                 \textcolor{keywordflow}{while} (this.sock != \textcolor{keyword}{null} \&\& !this.sock.Connected \&\& \textcolor{keyword}{this}.sock.Error == \textcolor{keyword}{null})}
+\DoxyCodeLine{00288                 \{}
+\DoxyCodeLine{00289                     yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForRealSeconds(0.1f);}
+\DoxyCodeLine{00290                 \}}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                 \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00294                 \{}
+\DoxyCodeLine{00295                     \textcolor{keywordflow}{if} (this.sock.Error != \textcolor{keyword}{null})}
+\DoxyCodeLine{00296                     \{}
+\DoxyCodeLine{00297                         this.Listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Exiting receive thread. Server: "{}} + \textcolor{keyword}{this}.ServerAddress + \textcolor{stringliteral}{"{}:"{}} + \textcolor{keyword}{this}.ServerPort + \textcolor{stringliteral}{"{} Error: "{}} + \textcolor{keyword}{this}.sock.Error);}
+\DoxyCodeLine{00298                         this.HandleException(StatusCode.ExceptionOnConnect);}
+\DoxyCodeLine{00299                     \}}
+\DoxyCodeLine{00300                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00301                     \{}
+\DoxyCodeLine{00302                         \textcolor{comment}{// connected}}
+\DoxyCodeLine{00303                         \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.ALL))}
+\DoxyCodeLine{00304                         \{}
+\DoxyCodeLine{00305                             this.Listener.DebugReturn(DebugLevel.ALL, \textcolor{stringliteral}{"{}Receiving by websocket. this.State: "{}} + \textcolor{keyword}{this}.State);}
+\DoxyCodeLine{00306                         \}}
+\DoxyCodeLine{00307 }
+\DoxyCodeLine{00308                         this.State = PhotonSocketState.Connected;}
+\DoxyCodeLine{00309                         this.peerBase.OnConnect();}
+\DoxyCodeLine{00310 }
+\DoxyCodeLine{00311                         \textcolor{keywordflow}{while} (this.State == PhotonSocketState.Connected)}
+\DoxyCodeLine{00312                         \{}
+\DoxyCodeLine{00313                             \textcolor{keywordflow}{if} (this.sock != \textcolor{keyword}{null})}
+\DoxyCodeLine{00314                             \{}
+\DoxyCodeLine{00315                                 \textcolor{keywordflow}{if} (this.sock.Error != \textcolor{keyword}{null})}
+\DoxyCodeLine{00316                                 \{}
+\DoxyCodeLine{00317                                     this.Listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Exiting receive thread (inside loop). Server: "{}} + \textcolor{keyword}{this}.ServerAddress + \textcolor{stringliteral}{"{}:"{}} + \textcolor{keyword}{this}.ServerPort + \textcolor{stringliteral}{"{} Error: "{}} + \textcolor{keyword}{this}.sock.Error);}
+\DoxyCodeLine{00318                                     this.HandleException(StatusCode.ExceptionOnReceive);}
+\DoxyCodeLine{00319                                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00320                                 \}}
+\DoxyCodeLine{00321                                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00322                                 \{}
+\DoxyCodeLine{00323                                     \textcolor{keywordtype}{byte}[] inBuff = this.sock.Recv();}
+\DoxyCodeLine{00324                                     \textcolor{keywordflow}{if} (inBuff == \textcolor{keyword}{null} || inBuff.Length == 0)}
+\DoxyCodeLine{00325                                     \{}
+\DoxyCodeLine{00326                                         \textcolor{comment}{// nothing received. wait a bit, try again}}
+\DoxyCodeLine{00327                                         yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForRealSeconds(0.02f);}
+\DoxyCodeLine{00328                                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00329                                     \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331                                     \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.ALL))}
+\DoxyCodeLine{00332                                     \{}
+\DoxyCodeLine{00333                                         this.Listener.DebugReturn(DebugLevel.ALL, \textcolor{stringliteral}{"{}TCP << "{}} + inBuff.Length + \textcolor{stringliteral}{"{} = "{}} + SupportClassPun.ByteArrayToString(inBuff));}
+\DoxyCodeLine{00334                                     \}}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336                                     \textcolor{keywordflow}{if} (inBuff.Length > 0)}
+\DoxyCodeLine{00337                                     \{}
+\DoxyCodeLine{00338                                         \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00339                                         \{}
+\DoxyCodeLine{00340                                             this.HandleReceivedDatagram(inBuff, inBuff.Length, \textcolor{keyword}{false});}
+\DoxyCodeLine{00341                                         \}}
+\DoxyCodeLine{00342                                         \textcolor{keywordflow}{catch} (Exception e)}
+\DoxyCodeLine{00343                                         \{}
+\DoxyCodeLine{00344                                             \textcolor{keywordflow}{if} (this.State != PhotonSocketState.Disconnecting \&\& \textcolor{keyword}{this}.State != PhotonSocketState.Disconnected)}
+\DoxyCodeLine{00345                                             \{}
+\DoxyCodeLine{00346                                                 \textcolor{keywordflow}{if} (this.ReportDebugOfLevel(DebugLevel.ERROR))}
+\DoxyCodeLine{00347                                                 \{}
+\DoxyCodeLine{00348                                                     this.EnqueueDebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Receive issue. State: "{}} + \textcolor{keyword}{this}.State + \textcolor{stringliteral}{"{}. Server: '"{}} + \textcolor{keyword}{this}.ServerAddress + \textcolor{stringliteral}{"{}' Exception: "{}} + e);}
+\DoxyCodeLine{00349                                                 \}}
+\DoxyCodeLine{00350 }
+\DoxyCodeLine{00351                                                 this.HandleException(StatusCode.ExceptionOnReceive);}
+\DoxyCodeLine{00352                                             \}}
+\DoxyCodeLine{00353                                         \}}
+\DoxyCodeLine{00354                                     \}}
+\DoxyCodeLine{00355                                 \}}
+\DoxyCodeLine{00356                             \}}
+\DoxyCodeLine{00357                         \}}
+\DoxyCodeLine{00358                     \}}
+\DoxyCodeLine{00359                 \}}
+\DoxyCodeLine{00360             \}}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362             this.Disconnect();}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00365         \textcolor{keyword}{private} \textcolor{keyword}{class }MonoBehaviourExt : MonoBehaviour \{ \}}
+\DoxyCodeLine{00366     \}}
+\DoxyCodeLine{00367 \}}
+\DoxyCodeLine{00368 }
+\DoxyCodeLine{00369 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

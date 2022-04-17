@@ -1,0 +1,281 @@
+\doxysection{Water\+Editor.\+cs}
+\label{_water_editor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Editor/WaterEditor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/FlatKit/[Render Pipeline] URP/Water/Editor/WaterEditor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.IO;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Text.RegularExpressions;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} FlatKit.Water;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} UnityEngine.Rendering;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{public} \textcolor{keyword}{class }FlatKitWaterEditor : ShaderGUI \{}
+\DoxyCodeLine{00010     \textcolor{keyword}{private} Gradient \_gradient;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties) \{}
+\DoxyCodeLine{00013         Material targetMaterial = materialEditor.target as Material;}
+\DoxyCodeLine{00014         \textcolor{keywordtype}{string}[] keywords = targetMaterial.shaderKeywords;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016         \textcolor{keywordflow}{if} (!targetMaterial.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_COLORMODE\_LINEAR"{}}) \&\&}
+\DoxyCodeLine{00017             !targetMaterial.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_COLORMODE\_GRADIENT\_TEXTURE"{}})) \{}
+\DoxyCodeLine{00018             targetMaterial.EnableKeyword(\textcolor{stringliteral}{"{}\_COLORMODE\_LINEAR"{}});}
+\DoxyCodeLine{00019         \}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021         \textcolor{keywordtype}{bool} isColorModeGradient = targetMaterial.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_COLORMODE\_GRADIENT\_TEXTURE"{}});}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keywordflow}{foreach} (MaterialProperty property \textcolor{keywordflow}{in} properties) \{}
+\DoxyCodeLine{00024             \textcolor{keywordtype}{bool} skipProperty = \textcolor{keyword}{false};}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026             \textcolor{keywordflow}{if} (isColorModeGradient) \{}
+\DoxyCodeLine{00027                 skipProperty |= ShowColorGradientExportBox(materialEditor, property);}
+\DoxyCodeLine{00028             \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030             \{}
+\DoxyCodeLine{00031                 var brackets = \textcolor{keyword}{property}.displayName.Split(\textcolor{charliteral}{'['}, \textcolor{charliteral}{']'});}
+\DoxyCodeLine{00032                 \textcolor{keywordflow}{foreach} (var bracket \textcolor{keywordflow}{in} brackets) \{}
+\DoxyCodeLine{00033                     \textcolor{keywordflow}{if} (!property.displayName.Contains(\textcolor{charliteral}{'['} + bracket + \textcolor{charliteral}{']'})) \{}
+\DoxyCodeLine{00034                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00035                     \}}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037                     var param = bracket;}
+\DoxyCodeLine{00038                     \textcolor{keywordtype}{bool} isNegative = bracket.StartsWith(\textcolor{stringliteral}{"{}!"{}});}
+\DoxyCodeLine{00039                     \textcolor{keywordtype}{bool} isPositive = !isNegative;}
+\DoxyCodeLine{00040                     param = bracket.TrimStart(\textcolor{charliteral}{'!'});}
+\DoxyCodeLine{00041                     \textcolor{keywordtype}{bool} keywordOn = ArrayUtility.Contains(keywords, param);}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043                     \textcolor{keywordflow}{if} (isPositive \&\& !keywordOn) \{}
+\DoxyCodeLine{00044                         skipProperty = \textcolor{keyword}{true};}
+\DoxyCodeLine{00045                     \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047                     \textcolor{keywordflow}{if} (isNegative \&\& keywordOn) \{}
+\DoxyCodeLine{00048                         skipProperty = \textcolor{keyword}{true};}
+\DoxyCodeLine{00049                     \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051                     \textcolor{keywordflow}{if} (skipProperty) \{}
+\DoxyCodeLine{00052                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00053                     \}}
+\DoxyCodeLine{00054                 \}}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             \textcolor{keywordtype}{bool} hideInInspector = (\textcolor{keyword}{property}.flags \& MaterialProperty.PropFlags.HideInInspector) != 0;}
+\DoxyCodeLine{00058             \textcolor{keywordflow}{if} (!skipProperty \&\& !hideInInspector) \{}
+\DoxyCodeLine{00059                 DrawStandard(materialEditor, property);}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{if} (targetMaterial.IsKeywordEnabled(\textcolor{stringliteral}{"{}\_COLORMODE\_GRADIENT\_TEXTURE"{}}) \&\&}
+\DoxyCodeLine{00063                 property.type == MaterialProperty.PropType.Texture \&\&}
+\DoxyCodeLine{00064                 property.displayName.StartsWith(\textcolor{stringliteral}{"{}[\_COLORMODE\_GRADIENT\_TEXTURE]"{}}) \&\&}
+\DoxyCodeLine{00065                 property.textureValue != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00066                 GUILayout.Space(-\/50);}
+\DoxyCodeLine{00067                 \textcolor{keyword}{using} (\textcolor{keyword}{new} EditorGUILayout.HorizontalScope()) \{}
+\DoxyCodeLine{00068                     GUILayout.Space(15);}
+\DoxyCodeLine{00069                     \textcolor{keywordflow}{if} (GUILayout.Button(\textcolor{stringliteral}{"{}Reset"{}}, EditorStyles.miniButtonLeft,}
+\DoxyCodeLine{00070                         GUILayout.Width(60f), GUILayout.ExpandWidth(\textcolor{keyword}{false}))) \{}
+\DoxyCodeLine{00071                         \textcolor{keyword}{property}.textureValue = \textcolor{keyword}{null};}
+\DoxyCodeLine{00072                     \}}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074                     GUILayout.FlexibleSpace();}
+\DoxyCodeLine{00075                 \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 EditorGUILayout.Space(60);}
+\DoxyCodeLine{00078             \}}
+\DoxyCodeLine{00079         \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keywordtype}{int} opaque = targetMaterial.GetInt(\textcolor{stringliteral}{"{}\_Opaque"{}});}
+\DoxyCodeLine{00082         \textcolor{keywordflow}{if} (opaque == 1) \{}
+\DoxyCodeLine{00083             targetMaterial.SetOverrideTag(\textcolor{stringliteral}{"{}RenderType"{}}, \textcolor{stringliteral}{"{}Opaque"{}});}
+\DoxyCodeLine{00084             targetMaterial.SetInt(\textcolor{stringliteral}{"{}\_ZWrite"{}}, 1);}
+\DoxyCodeLine{00085             targetMaterial.renderQueue = (int) RenderQueue.Geometry;}
+\DoxyCodeLine{00086         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00087             targetMaterial.SetOverrideTag(\textcolor{stringliteral}{"{}RenderType"{}}, \textcolor{stringliteral}{"{}Transparent"{}});}
+\DoxyCodeLine{00088             targetMaterial.SetInt(\textcolor{stringliteral}{"{}\_ZWrite"{}}, 0);}
+\DoxyCodeLine{00089             targetMaterial.renderQueue = (int) RenderQueue.Transparent;}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         DrawQueueOffsetField(properties, targetMaterial);}
+\DoxyCodeLine{00093     \}}
+\DoxyCodeLine{00094 }
+\DoxyCodeLine{00095     \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawStandard(MaterialEditor materialEditor, MaterialProperty property) \{}
+\DoxyCodeLine{00096         \textcolor{keywordtype}{string} displayName = \textcolor{keyword}{property}.displayName;}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098         \textcolor{comment}{// Remove everything in brackets.}}
+\DoxyCodeLine{00099         displayName = Regex.Replace(displayName, \textcolor{stringliteral}{@"{} ?\(\backslash\)[.*?\(\backslash\)]"{}}, \textcolor{keywordtype}{string}.Empty);}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101         Tooltips.map.TryGetValue(displayName.Trim(), out \textcolor{keywordtype}{string} tooltip);}
+\DoxyCodeLine{00102         displayName = Regex.Replace(displayName, \textcolor{stringliteral}{@"{} ?\(\backslash\)\{.*?\(\backslash\)\}"{}}, \textcolor{keywordtype}{string}.Empty);}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104         var guiContent = \textcolor{keyword}{new} GUIContent(displayName, tooltip);}
+\DoxyCodeLine{00105         materialEditor.ShaderProperty(property, guiContent);}
+\DoxyCodeLine{00106     \}}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} ShowColorGradientExportBox(MaterialEditor materialEditor, MaterialProperty property) \{}
+\DoxyCodeLine{00109         \textcolor{keywordtype}{bool} isGradientTexture = \textcolor{keyword}{property}.type == MaterialProperty.PropType.Texture \&\&}
+\DoxyCodeLine{00110                                  \textcolor{keyword}{property}.displayName.StartsWith(\textcolor{stringliteral}{"{}[\_COLORMODE\_GRADIENT\_TEXTURE]"{}});}
+\DoxyCodeLine{00111         \textcolor{keywordflow}{if} (isGradientTexture) \{}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (property.textureValue != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00114             \}}
+\DoxyCodeLine{00115         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00116             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119         var messageContent =}
+\DoxyCodeLine{00120             EditorGUIUtility.TrTextContent(}
+\DoxyCodeLine{00121                 \textcolor{stringliteral}{"{}Before the gradient can be used it needs to be exported as a texture."{}});}
+\DoxyCodeLine{00122         var buttonContent = EditorGUIUtility.TrTextContent(\textcolor{stringliteral}{"{}Export"{}});}
+\DoxyCodeLine{00123         \textcolor{keywordtype}{bool} buttonPressed = GradientBoxWithButton(messageContent, buttonContent);}
+\DoxyCodeLine{00124         \textcolor{keywordflow}{if} (buttonPressed) \{}
+\DoxyCodeLine{00125             var texture = GradientToTexture(\_gradient);}
+\DoxyCodeLine{00126             PromptTextureSave(materialEditor, texture, property.name);}
+\DoxyCodeLine{00127         \}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00130     \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132     \textcolor{keyword}{private} \textcolor{keywordtype}{bool} GradientBoxWithButton(GUIContent messageContent, GUIContent buttonContent) \{}
+\DoxyCodeLine{00133         \textcolor{keywordtype}{float} boxHeight = 40f;}
+\DoxyCodeLine{00134         EditorGUILayout.Space(5);}
+\DoxyCodeLine{00135         Rect rect = GUILayoutUtility.GetRect(messageContent, EditorStyles.helpBox);}
+\DoxyCodeLine{00136         GUILayoutUtility.GetRect(0f, boxHeight);}
+\DoxyCodeLine{00137         rect.height += boxHeight;}
+\DoxyCodeLine{00138         var style = \textcolor{keyword}{new} GUIStyle(EditorStyles.helpBox);}
+\DoxyCodeLine{00139         style.fontSize += 2;}
+\DoxyCodeLine{00140         GUI.Label(rect, messageContent, style);}
+\DoxyCodeLine{00141         \textcolor{keywordtype}{float} secondLineHeight = 20f;}
+\DoxyCodeLine{00142         \textcolor{keywordtype}{float} secondLineY = rect.yMax -\/ secondLineHeight -\/ 15f;}
+\DoxyCodeLine{00143         var buttonPosition = \textcolor{keyword}{new} Rect(rect.xMax -\/ 60f -\/ 4f, secondLineY, 60f, secondLineHeight);}
+\DoxyCodeLine{00144         \textcolor{keywordtype}{bool} result = GUI.Button(buttonPosition, buttonContent);}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         var gradientPosition = \textcolor{keyword}{new} Rect(rect.xMin + 8f, secondLineY, rect.width -\/ 60f -\/ 18f, secondLineHeight);}
+\DoxyCodeLine{00147         \textcolor{keywordflow}{if} (\_gradient == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00148             \_gradient = \textcolor{keyword}{new} Gradient();}
+\DoxyCodeLine{00149         \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151         \_gradient = EditorGUI.GradientField(gradientPosition, \_gradient);}
+\DoxyCodeLine{00152         EditorGUILayout.Space(10);}
+\DoxyCodeLine{00153         \textcolor{keywordflow}{return} result;}
+\DoxyCodeLine{00154     \}}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156     \textcolor{keyword}{private} Texture2D GradientToTexture(Gradient g) \{}
+\DoxyCodeLine{00157         \textcolor{keyword}{const} \textcolor{keywordtype}{int} width = 256;}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159         Texture2D texture = \textcolor{keyword}{new} Texture2D(width, 1, TextureFormat.RGBA32, \textcolor{comment}{/*mipChain=*/}\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{00160             name = \textcolor{stringliteral}{"{}Flat Kit Water Color Gradient"{}},}
+\DoxyCodeLine{00161             wrapMode = TextureWrapMode.Clamp,}
+\DoxyCodeLine{00162             hideFlags = HideFlags.HideAndDontSave,}
+\DoxyCodeLine{00163             filterMode = FilterMode.Point}
+\DoxyCodeLine{00164         \};}
+\DoxyCodeLine{00165         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{float} x = 0;}
+\DoxyCodeLine{00166             x < width;}
+\DoxyCodeLine{00167             x++) \{}
+\DoxyCodeLine{00168             Color32 color = g.Evaluate(x / (width -\/ 1));}
+\DoxyCodeLine{00169             texture.SetPixel(Mathf.CeilToInt(x), 0, color);}
+\DoxyCodeLine{00170         \}}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172         texture.Apply();}
+\DoxyCodeLine{00173         \textcolor{keywordflow}{return} texture;}
+\DoxyCodeLine{00174     \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176     \textcolor{keyword}{private} \textcolor{keywordtype}{void} PromptTextureSave(MaterialEditor materialEditor, Texture2D texture, \textcolor{keywordtype}{string} propertyName) \{}
+\DoxyCodeLine{00177         Material material = materialEditor.target as Material;}
+\DoxyCodeLine{00178         \textcolor{keywordflow}{if} (material == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00180         \}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         var pngNameWithExtension = \$\textcolor{stringliteral}{"{}\{materialEditor.target.name\}\{propertyName\}.png"{}};}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184         var fullPath =}
+\DoxyCodeLine{00185             EditorUtility.SaveFilePanel(\textcolor{stringliteral}{"{}Save Gradient Texture"{}}, \textcolor{stringliteral}{"{}Assets"{}}, pngNameWithExtension, \textcolor{stringliteral}{"{}png"{}});}
+\DoxyCodeLine{00186         \textcolor{keywordflow}{if} (fullPath.Length > 0) \{}
+\DoxyCodeLine{00187             SaveTextureAsPng(texture, fullPath, FilterMode.Point);}
+\DoxyCodeLine{00188             var loadedTexture = LoadTexture(fullPath);}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{if} (loadedTexture != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00190                 material.SetTexture(propertyName, loadedTexture);}
+\DoxyCodeLine{00191             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00192                 Debug.LogWarning(\$\textcolor{stringliteral}{"{}Could not load the texture from \{fullPath\}"{}});}
+\DoxyCodeLine{00193             \}}
+\DoxyCodeLine{00194         \}}
+\DoxyCodeLine{00195     \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197     \textcolor{keyword}{private} \textcolor{keywordtype}{void} SaveTextureAsPng(Texture2D texture, \textcolor{keywordtype}{string} fullPath, FilterMode filterMode) \{}
+\DoxyCodeLine{00198         \textcolor{keywordtype}{byte}[] bytes = texture.EncodeToPNG();}
+\DoxyCodeLine{00199         \textcolor{keywordflow}{if} (bytes == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00200             Debug.LogError(\textcolor{stringliteral}{"{}Could not encode texture as PNG."{}});}
+\DoxyCodeLine{00201             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00202         \}}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204         File.WriteAllBytes(fullPath, bytes);}
+\DoxyCodeLine{00205         AssetDatabase.Refresh();}
+\DoxyCodeLine{00206         Debug.Log(\$\textcolor{stringliteral}{"{}Texture saved as: \{fullPath\}"{}});}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         \textcolor{keywordtype}{string} pathRelativeToAssets = ConvertFullPathToAssetPath(fullPath);}
+\DoxyCodeLine{00209         \textcolor{keywordflow}{if} (pathRelativeToAssets.Length == 0) \{}
+\DoxyCodeLine{00210             Debug.LogWarning(\$\textcolor{stringliteral}{"{}Could not save the texture to \{fullPath\}."{}});}
+\DoxyCodeLine{00211         \}}
+\DoxyCodeLine{00212 }
+\DoxyCodeLine{00213         TextureImporter importer = (TextureImporter) TextureImporter.GetAtPath(pathRelativeToAssets);}
+\DoxyCodeLine{00214         Debug.Assert(importer != \textcolor{keyword}{null},}
+\DoxyCodeLine{00215             \$\textcolor{stringliteral}{"{}[FlatKit] Could not create importer at \{pathRelativeToAssets\}."{}});}
+\DoxyCodeLine{00216         \textcolor{keywordflow}{if} (importer != \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00217             importer.filterMode = filterMode;}
+\DoxyCodeLine{00218             importer.textureType = TextureImporterType.Default;}
+\DoxyCodeLine{00219             importer.textureCompression = TextureImporterCompression.Uncompressed;}
+\DoxyCodeLine{00220             importer.mipmapEnabled = \textcolor{keyword}{false};}
+\DoxyCodeLine{00221             var textureSettings = \textcolor{keyword}{new} TextureImporterPlatformSettings \{}
+\DoxyCodeLine{00222                 format = TextureImporterFormat.RGBA32}
+\DoxyCodeLine{00223             \};}
+\DoxyCodeLine{00224             importer.SetPlatformTextureSettings(textureSettings);}
+\DoxyCodeLine{00225             EditorUtility.SetDirty(importer);}
+\DoxyCodeLine{00226             importer.SaveAndReimport();}
+\DoxyCodeLine{00227         \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229         Debug.Assert(importer != \textcolor{keyword}{null},}
+\DoxyCodeLine{00230             \$\textcolor{stringliteral}{"{}[FlatKit] Could not change import settings of \{fullPath\} [\{pathRelativeToAssets\}]"{}});}
+\DoxyCodeLine{00231     \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233     \textcolor{keyword}{private} \textcolor{keyword}{static} Texture2D LoadTexture(\textcolor{keywordtype}{string} fullPath) \{}
+\DoxyCodeLine{00234         \textcolor{keywordtype}{string} pathRelativeToAssets = ConvertFullPathToAssetPath(fullPath);}
+\DoxyCodeLine{00235         \textcolor{keywordflow}{if} (pathRelativeToAssets.Length == 0) \{}
+\DoxyCodeLine{00236             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00237         \}}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239         var loadedTexture = AssetDatabase.LoadAssetAtPath(pathRelativeToAssets, typeof(Texture2D)) as Texture2D;}
+\DoxyCodeLine{00240         \textcolor{keywordflow}{if} (loadedTexture == \textcolor{keyword}{null}) \{}
+\DoxyCodeLine{00241             Debug.LogError(\$\textcolor{stringliteral}{"{}[FlatKit] Could not load texture from \{fullPath\} [\{pathRelativeToAssets\}]."{}});}
+\DoxyCodeLine{00242             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00243         \}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245         loadedTexture.filterMode = FilterMode.Point;}
+\DoxyCodeLine{00246         loadedTexture.wrapMode = TextureWrapMode.Clamp;}
+\DoxyCodeLine{00247         \textcolor{keywordflow}{return} loadedTexture;}
+\DoxyCodeLine{00248     \}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250     \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{string} ConvertFullPathToAssetPath(\textcolor{keywordtype}{string} fullPath) \{}
+\DoxyCodeLine{00251         \textcolor{keywordtype}{int} count = (Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar).Length;}
+\DoxyCodeLine{00252         \textcolor{keywordflow}{if} (count < 0) \{}
+\DoxyCodeLine{00253             \textcolor{keywordflow}{return} String.Empty;}
+\DoxyCodeLine{00254         \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256         \textcolor{keywordflow}{return} fullPath.Remove(0, count);}
+\DoxyCodeLine{00257     \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259     \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawQueueOffsetField(MaterialProperty[] properties, Material material) \{}
+\DoxyCodeLine{00260         GUIContent queueSlider = \textcolor{keyword}{new} GUIContent(\textcolor{stringliteral}{"{}     Priority"{}},}
+\DoxyCodeLine{00261             \textcolor{stringliteral}{"{}Determines the chronological rendering order for a Material. High values are rendered first."{}});}
+\DoxyCodeLine{00262         \textcolor{keyword}{const} \textcolor{keywordtype}{int} queueOffsetRange = 50;}
+\DoxyCodeLine{00263         MaterialProperty queueOffsetProp = FindProperty(\textcolor{stringliteral}{"{}\_QueueOffset"{}}, properties, \textcolor{keyword}{false});}
+\DoxyCodeLine{00264         \textcolor{keywordflow}{if} (queueOffsetProp == \textcolor{keyword}{null}) \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00265         EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00266         EditorGUI.showMixedValue = queueOffsetProp.hasMixedValue;}
+\DoxyCodeLine{00267         var queue = EditorGUILayout.IntSlider(queueSlider, (\textcolor{keywordtype}{int}) queueOffsetProp.floatValue, -\/queueOffsetRange,}
+\DoxyCodeLine{00268             queueOffsetRange);}
+\DoxyCodeLine{00269         \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00270             queueOffsetProp.floatValue = queue;}
+\DoxyCodeLine{00271         EditorGUI.showMixedValue = \textcolor{keyword}{false};}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         material.renderQueue = (int)RenderQueue.Transparent + queue;}
+\DoxyCodeLine{00274     \}}
+\DoxyCodeLine{00275 \}}
+
+\end{DoxyCode}

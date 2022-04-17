@@ -1,0 +1,258 @@
+\doxysection{Player\+Manager.\+cs}
+\label{_photon_2_photon_unity_networking_2_demos_2_pun_basics-_tutorial_2_scripts_2_player_manager_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/PlayerManager.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/PunBasics-\/Tutorial/Scripts/PlayerManager.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PlayerManager.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Networking Demos}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  Used in PUN Basics Tutorial to deal with the networked player instance}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine.EventSystems;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Demo.PunBasics}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{    \#pragma warning disable 649}}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00022     \textcolor{keyword}{public} \textcolor{keyword}{class }PlayerManager : MonoBehaviourPunCallbacks, IPunObservable}
+\DoxyCodeLine{00023     \{}
+\DoxyCodeLine{00024 \textcolor{preprocessor}{        \#region Public Fields}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         [Tooltip(\textcolor{stringliteral}{"{}The current Health of our player"{}})]}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keywordtype}{float} Health = 1f;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         [Tooltip(\textcolor{stringliteral}{"{}The local player instance. Use this to know if the local player is represented in the Scene"{}})]}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{static} GameObject LocalPlayerInstance;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 \textcolor{preprocessor}{        \#region Private Fields}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         [Tooltip(\textcolor{stringliteral}{"{}The Player's UI GameObject Prefab"{}})]}
+\DoxyCodeLine{00037         [SerializeField]}
+\DoxyCodeLine{00038         \textcolor{keyword}{private} GameObject playerUiPrefab;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         [Tooltip(\textcolor{stringliteral}{"{}The Beams GameObject to control"{}})]}
+\DoxyCodeLine{00041         [SerializeField]}
+\DoxyCodeLine{00042         \textcolor{keyword}{private} GameObject beams;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{comment}{//True, when the user is firing}}
+\DoxyCodeLine{00045         \textcolor{keywordtype}{bool} IsFiring;}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049 \textcolor{preprocessor}{        \#region MonoBehaviour CallBacks}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00054         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00055         \{}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (this.beams == \textcolor{keyword}{null})}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 Debug.LogError(\textcolor{stringliteral}{"{}<Color=Red><b>Missing</b></Color> Beams Reference."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00061             \{}
+\DoxyCodeLine{00062                 this.beams.SetActive(\textcolor{keyword}{false});}
+\DoxyCodeLine{00063             \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065             \textcolor{comment}{// \#Important}}
+\DoxyCodeLine{00066             \textcolor{comment}{// used in GameManager.cs: we keep track of the localPlayer instance to prevent instanciation when levels are synchronized}}
+\DoxyCodeLine{00067             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 LocalPlayerInstance = gameObject;}
+\DoxyCodeLine{00070             \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072             \textcolor{comment}{// \#Critical}}
+\DoxyCodeLine{00073             \textcolor{comment}{// we flag as don't destroy on load so that instance survives level synchronization, thus giving a seamless experience when levels load.}}
+\DoxyCodeLine{00074             DontDestroyOnLoad(gameObject);}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00080         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00081         \{}
+\DoxyCodeLine{00082             CameraWork \_cameraWork = gameObject.GetComponent<CameraWork>();}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084             \textcolor{keywordflow}{if} (\_cameraWork != \textcolor{keyword}{null})}
+\DoxyCodeLine{00085             \{}
+\DoxyCodeLine{00086                 \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00087                 \{}
+\DoxyCodeLine{00088                     \_cameraWork.OnStartFollowing();}
+\DoxyCodeLine{00089                 \}}
+\DoxyCodeLine{00090             \}}
+\DoxyCodeLine{00091             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 Debug.LogError(\textcolor{stringliteral}{"{}<Color=Red><b>Missing</b></Color> CameraWork Component on player Prefab."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{00094             \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096             \textcolor{comment}{// Create the UI}}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (this.playerUiPrefab != \textcolor{keyword}{null})}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 GameObject \_uiGo = Instantiate(this.playerUiPrefab);}
+\DoxyCodeLine{00100                 \_uiGo.SendMessage(\textcolor{stringliteral}{"{}SetTarget"{}}, \textcolor{keyword}{this}, SendMessageOptions.RequireReceiver);}
+\DoxyCodeLine{00101             \}}
+\DoxyCodeLine{00102             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103             \{}
+\DoxyCodeLine{00104                 Debug.LogWarning(\textcolor{stringliteral}{"{}<Color=Red><b>Missing</b></Color> PlayerUiPrefab reference on player Prefab."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{00105             \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107 \textcolor{preprocessor}{            \#if UNITY\_5\_4\_OR\_NEWER}}
+\DoxyCodeLine{00108             \textcolor{comment}{// Unity 5.4 has a new scene management. register a method to call CalledOnLevelWasLoaded.}}
+\DoxyCodeLine{00109             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;}
+\DoxyCodeLine{00110 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00115         \{}
+\DoxyCodeLine{00116             \textcolor{comment}{// Always call the base to remove callbacks}}
+\DoxyCodeLine{00117             base.OnDisable ();}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119 \textcolor{preprocessor}{            \#if UNITY\_5\_4\_OR\_NEWER}}
+\DoxyCodeLine{00120             UnityEngine.SceneManagement.SceneManager.sceneLoaded -\/= OnSceneLoaded;}
+\DoxyCodeLine{00121 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00122         \}}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00131         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00132         \{}
+\DoxyCodeLine{00133             \textcolor{comment}{// we only process Inputs and check health if we are the local player}}
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (photonView.IsMine)}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 this.ProcessInputs();}
+\DoxyCodeLine{00137 }
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{if} (this.Health <= 0f)}
+\DoxyCodeLine{00139                 \{}
+\DoxyCodeLine{00140                     GameManager.Instance.LeaveRoom();}
+\DoxyCodeLine{00141                 \}}
+\DoxyCodeLine{00142             \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144             \textcolor{keywordflow}{if} (this.beams != \textcolor{keyword}{null} \&\& this.IsFiring != this.beams.activeInHierarchy)}
+\DoxyCodeLine{00145             \{}
+\DoxyCodeLine{00146                 this.beams.SetActive(this.IsFiring);}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148         \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00156         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnTriggerEnter(Collider other)}
+\DoxyCodeLine{00157         \{}
+\DoxyCodeLine{00158             \textcolor{keywordflow}{if} (!photonView.IsMine)}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00161             \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             \textcolor{comment}{// We are only interested in Beamers}}
+\DoxyCodeLine{00165             \textcolor{comment}{// we should be using tags but for the sake of distribution, let's simply check by name.}}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{if} (!other.name.Contains(\textcolor{stringliteral}{"{}Beam"{}}))}
+\DoxyCodeLine{00167             \{}
+\DoxyCodeLine{00168                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00169             \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171             this.Health -\/= 0.1f;}
+\DoxyCodeLine{00172         \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00179         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnTriggerStay(Collider other)}
+\DoxyCodeLine{00180         \{}
+\DoxyCodeLine{00181             \textcolor{comment}{// we dont' do anything if we are not the local player.}}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (!photonView.IsMine)}
+\DoxyCodeLine{00183             \{}
+\DoxyCodeLine{00184                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00185             \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187             \textcolor{comment}{// We are only interested in Beamers}}
+\DoxyCodeLine{00188             \textcolor{comment}{// we should be using tags but for the sake of distribution, let's simply check by name.}}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{if} (!other.name.Contains(\textcolor{stringliteral}{"{}Beam"{}}))}
+\DoxyCodeLine{00190             \{}
+\DoxyCodeLine{00191                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00192             \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             \textcolor{comment}{// we slowly affect health when beam is constantly hitting us, so player has to move to prevent death.}}
+\DoxyCodeLine{00195             this.Health -\/= 0.1f*Time.deltaTime;}
+\DoxyCodeLine{00196         \}}
+\DoxyCodeLine{00197 }
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00199 \textcolor{preprocessor}{        \#if !UNITY\_5\_4\_OR\_NEWER}}
+\DoxyCodeLine{00201         \textcolor{keywordtype}{void} OnLevelWasLoaded(\textcolor{keywordtype}{int} level)}
+\DoxyCodeLine{00202         \{}
+\DoxyCodeLine{00203             this.CalledOnLevelWasLoaded(level);}
+\DoxyCodeLine{00204         \}}
+\DoxyCodeLine{00205 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00214         \textcolor{keywordtype}{void} CalledOnLevelWasLoaded(\textcolor{keywordtype}{int} level)}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             \textcolor{comment}{// check if we are outside the Arena and if it's the case, spawn around the center of the arena in a safe zone}}
+\DoxyCodeLine{00217             \textcolor{keywordflow}{if} (!Physics.Raycast(transform.position, -\/Vector3.up, 5f))}
+\DoxyCodeLine{00218             \{}
+\DoxyCodeLine{00219                 transform.position = \textcolor{keyword}{new} Vector3(0f, 5f, 0f);}
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             GameObject \_uiGo = Instantiate(this.playerUiPrefab);}
+\DoxyCodeLine{00223             \_uiGo.SendMessage(\textcolor{stringliteral}{"{}SetTarget"{}}, \textcolor{keyword}{this}, SendMessageOptions.RequireReceiver);}
+\DoxyCodeLine{00224         \}}
+\DoxyCodeLine{00225 }
+\DoxyCodeLine{00226 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228 \textcolor{preprocessor}{        \#region Private Methods}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231 \textcolor{preprocessor}{        \#if UNITY\_5\_4\_OR\_NEWER}}
+\DoxyCodeLine{00232         \textcolor{keywordtype}{void} OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode loadingMode)}
+\DoxyCodeLine{00233         \{}
+\DoxyCodeLine{00234             this.CalledOnLevelWasLoaded(scene.buildIndex);}
+\DoxyCodeLine{00235         \}}
+\DoxyCodeLine{00236 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00241         \textcolor{keywordtype}{void} ProcessInputs()}
+\DoxyCodeLine{00242         \{}
+\DoxyCodeLine{00243             \textcolor{keywordflow}{if} (Input.GetButtonDown(\textcolor{stringliteral}{"{}Fire1"{}}))}
+\DoxyCodeLine{00244             \{}
+\DoxyCodeLine{00245                 \textcolor{comment}{// we don't want to fire when we interact with UI buttons for example. IsPointerOverGameObject really means IsPointerOver*UI*GameObject}}
+\DoxyCodeLine{00246                 \textcolor{comment}{// notice we don't use on on GetbuttonUp() few lines down, because one can mouse down, move over a UI element and release, which would lead to not lower the isFiring Flag.}}
+\DoxyCodeLine{00247                 \textcolor{keywordflow}{if} (EventSystem.current.IsPointerOverGameObject())}
+\DoxyCodeLine{00248                 \{}
+\DoxyCodeLine{00249                     \textcolor{comment}{//  return;}}
+\DoxyCodeLine{00250                 \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{if} (!this.IsFiring)}
+\DoxyCodeLine{00253                 \{}
+\DoxyCodeLine{00254                     this.IsFiring = \textcolor{keyword}{true};}
+\DoxyCodeLine{00255                 \}}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258             \textcolor{keywordflow}{if} (Input.GetButtonUp(\textcolor{stringliteral}{"{}Fire1"{}}))}
+\DoxyCodeLine{00259             \{}
+\DoxyCodeLine{00260                 \textcolor{keywordflow}{if} (this.IsFiring)}
+\DoxyCodeLine{00261                 \{}
+\DoxyCodeLine{00262                     this.IsFiring = \textcolor{keyword}{false};}
+\DoxyCodeLine{00263                 \}}
+\DoxyCodeLine{00264             \}}
+\DoxyCodeLine{00265         \}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269 \textcolor{preprocessor}{        \#region IPunObservable implementation}}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)}
+\DoxyCodeLine{00272         \{}
+\DoxyCodeLine{00273             \textcolor{keywordflow}{if} (stream.IsWriting)}
+\DoxyCodeLine{00274             \{}
+\DoxyCodeLine{00275                 \textcolor{comment}{// We own this player: send the others our data}}
+\DoxyCodeLine{00276                 stream.SendNext(this.IsFiring);}
+\DoxyCodeLine{00277                 stream.SendNext(this.Health);}
+\DoxyCodeLine{00278             \}}
+\DoxyCodeLine{00279             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00280             \{}
+\DoxyCodeLine{00281                 \textcolor{comment}{// Network player, receive data}}
+\DoxyCodeLine{00282                 this.IsFiring = (bool)stream.ReceiveNext();}
+\DoxyCodeLine{00283                 this.Health = (float)stream.ReceiveNext();}
+\DoxyCodeLine{00284             \}}
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00288     \}}
+\DoxyCodeLine{00289 \}}
+
+\end{DoxyCode}

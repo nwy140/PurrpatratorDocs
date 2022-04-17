@@ -1,0 +1,170 @@
+\doxysection{Photon\+Stream\+Queue.\+cs}
+\label{_photon_stream_queue_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonStreamQueue.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Code/PhotonStreamQueue.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}PhotonStreamQueue.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Contains the PhotonStreamQueue.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keyword}{class }PhotonStreamQueue}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_SampleRate;}
+\DoxyCodeLine{00027         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_SampleCount;}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_ObjectsPerSample = -\/1;}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keywordtype}{float} m\_LastSampleTime = -\/Mathf.Infinity;}
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_LastFrameCount = -\/1;}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keywordtype}{int} m\_NextObjectIndex = -\/1;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{keyword}{private} List<object> m\_Objects = \textcolor{keyword}{new} List<object>();}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} m\_IsWriting;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00042         \textcolor{keyword}{public} PhotonStreamQueue(\textcolor{keywordtype}{int} sampleRate)}
+\DoxyCodeLine{00043         \{}
+\DoxyCodeLine{00044             this.m\_SampleRate = sampleRate;}
+\DoxyCodeLine{00045         \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         \textcolor{keyword}{private} \textcolor{keywordtype}{void} BeginWritePackage()}
+\DoxyCodeLine{00048         \{}
+\DoxyCodeLine{00049             \textcolor{comment}{//If not enough time has passed since the last sample, we don't want to write anything}}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{if} (Time.realtimeSinceStartup < \textcolor{keyword}{this}.m\_LastSampleTime + 1f / \textcolor{keyword}{this}.m\_SampleRate)}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 this.m\_IsWriting = \textcolor{keyword}{false};}
+\DoxyCodeLine{00053                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00054             \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056             \textcolor{keywordflow}{if} (this.m\_SampleCount == 1)}
+\DoxyCodeLine{00057             \{}
+\DoxyCodeLine{00058                 this.m\_ObjectsPerSample = this.m\_Objects.Count;}
+\DoxyCodeLine{00059                 \textcolor{comment}{//Debug.Log( "{}Setting m\_ObjectsPerSample to "{} + m\_ObjectsPerSample );}}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.m\_SampleCount > 1)}
+\DoxyCodeLine{00062             \{}
+\DoxyCodeLine{00063                 \textcolor{keywordflow}{if} (this.m\_Objects.Count / \textcolor{keyword}{this}.m\_SampleCount != \textcolor{keyword}{this}.m\_ObjectsPerSample)}
+\DoxyCodeLine{00064                 \{}
+\DoxyCodeLine{00065                     Debug.LogWarning(\textcolor{stringliteral}{"{}The number of objects sent via a PhotonStreamQueue has to be the same each frame"{}});}
+\DoxyCodeLine{00066                     Debug.LogWarning(\textcolor{stringliteral}{"{}Objects in List: "{}} + this.m\_Objects.Count + \textcolor{stringliteral}{"{} / Sample Count: "{}} + \textcolor{keyword}{this}.m\_SampleCount + \textcolor{stringliteral}{"{} = "{}} + \textcolor{keyword}{this}.m\_Objects.Count / \textcolor{keyword}{this}.m\_SampleCount + \textcolor{stringliteral}{"{} != "{}} + \textcolor{keyword}{this}.m\_ObjectsPerSample);}
+\DoxyCodeLine{00067                 \}}
+\DoxyCodeLine{00068             \}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             this.m\_IsWriting = \textcolor{keyword}{true};}
+\DoxyCodeLine{00071             this.m\_SampleCount++;}
+\DoxyCodeLine{00072             this.m\_LastSampleTime = Time.realtimeSinceStartup;}
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074             \textcolor{comment}{/*if( m\_SampleCount  > 1 )}}
+\DoxyCodeLine{00075 \textcolor{comment}{            \{}}
+\DoxyCodeLine{00076 \textcolor{comment}{                Debug.Log( "{}Check: "{} + m\_Objects.Count + "{} / "{} + m\_SampleCount + "{} = "{} + ( m\_Objects.Count / m\_SampleCount ) + "{} = "{} + m\_ObjectsPerSample );}}
+\DoxyCodeLine{00077 \textcolor{comment}{            \}*/}}
+\DoxyCodeLine{00078         \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00083         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00084         \{}
+\DoxyCodeLine{00085             this.m\_SampleCount = 0;}
+\DoxyCodeLine{00086             this.m\_ObjectsPerSample = -\/1;}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088             this.m\_LastSampleTime = -\/Mathf.Infinity;}
+\DoxyCodeLine{00089             this.m\_LastFrameCount = -\/1;}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             this.m\_Objects.Clear();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00098         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SendNext(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{00099         \{}
+\DoxyCodeLine{00100             \textcolor{keywordflow}{if} (Time.frameCount != \textcolor{keyword}{this}.m\_LastFrameCount)}
+\DoxyCodeLine{00101             \{}
+\DoxyCodeLine{00102                 this.BeginWritePackage();}
+\DoxyCodeLine{00103             \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105             this.m\_LastFrameCount = Time.frameCount;}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107             \textcolor{keywordflow}{if} (this.m\_IsWriting == \textcolor{keyword}{false})}
+\DoxyCodeLine{00108             \{}
+\DoxyCodeLine{00109                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00110             \}}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             this.m\_Objects.Add(obj);}
+\DoxyCodeLine{00113         \}}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} HasQueuedObjects()}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{return} this.m\_NextObjectIndex != -\/1;}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00127         \textcolor{keyword}{public} \textcolor{keywordtype}{object} ReceiveNext()}
+\DoxyCodeLine{00128         \{}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{if} (this.m\_NextObjectIndex == -\/1)}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134             \textcolor{keywordflow}{if} (this.m\_NextObjectIndex >= this.m\_Objects.Count)}
+\DoxyCodeLine{00135             \{}
+\DoxyCodeLine{00136                 this.m\_NextObjectIndex -\/= this.m\_ObjectsPerSample;}
+\DoxyCodeLine{00137             \}}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139             \textcolor{keywordflow}{return} this.m\_Objects[this.m\_NextObjectIndex++];}
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00146         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Serialize(PhotonStream stream)}
+\DoxyCodeLine{00147         \{}
+\DoxyCodeLine{00148             \textcolor{comment}{// TODO: find a better solution for this:}}
+\DoxyCodeLine{00149             \textcolor{comment}{// the "{}if"{} is a workaround for packages which have only 1 sample/frame. in that case, SendNext didn't set the obj per sample.}}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{if} (this.m\_Objects.Count > 0 \&\& \textcolor{keyword}{this}.m\_ObjectsPerSample < 0)}
+\DoxyCodeLine{00151             \{}
+\DoxyCodeLine{00152                 this.m\_ObjectsPerSample = this.m\_Objects.Count;}
+\DoxyCodeLine{00153             \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155             stream.SendNext(this.m\_SampleCount);}
+\DoxyCodeLine{00156             stream.SendNext(this.m\_ObjectsPerSample);}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_Objects.Count; ++i)}
+\DoxyCodeLine{00159             \{}
+\DoxyCodeLine{00160                 stream.SendNext(this.m\_Objects[i]);}
+\DoxyCodeLine{00161             \}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163             \textcolor{comment}{//Debug.Log( "{}Serialize "{} + m\_SampleCount + "{} samples with "{} + m\_ObjectsPerSample + "{} objects per sample. object count: "{} + m\_Objects.Count + "{} / "{} + ( m\_SampleCount * m\_ObjectsPerSample ) );}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165             this.m\_Objects.Clear();}
+\DoxyCodeLine{00166             this.m\_SampleCount = 0;}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00173         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Deserialize(PhotonStream stream)}
+\DoxyCodeLine{00174         \{}
+\DoxyCodeLine{00175             this.m\_Objects.Clear();}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177             this.m\_SampleCount = (int) stream.ReceiveNext();}
+\DoxyCodeLine{00178             this.m\_ObjectsPerSample = (int) stream.ReceiveNext();}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.m\_SampleCount * this.m\_ObjectsPerSample; ++i)}
+\DoxyCodeLine{00181             \{}
+\DoxyCodeLine{00182                 this.m\_Objects.Add(stream.ReceiveNext());}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185             \textcolor{keywordflow}{if} (this.m\_Objects.Count > 0)}
+\DoxyCodeLine{00186             \{}
+\DoxyCodeLine{00187                 this.m\_NextObjectIndex = 0;}
+\DoxyCodeLine{00188             \}}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00190             \{}
+\DoxyCodeLine{00191                 this.m\_NextObjectIndex = -\/1;}
+\DoxyCodeLine{00192             \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             \textcolor{comment}{//Debug.Log( "{}Deserialized "{} + m\_SampleCount + "{} samples with "{} + m\_ObjectsPerSample + "{} objects per sample. object count: "{} + m\_Objects.Count + "{} / "{} + ( m\_SampleCount * m\_ObjectsPerSample ) );}}
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196     \}}
+\DoxyCodeLine{00197 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,345 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__projectile_8cs_source" xml:lang="en-US">
+<title>Projectile.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/Simple/Components/ContactSystems/SyncShoot/Projectile.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__projectile_8cs_source_1l00001"/>00001 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00002"/>00002 <emphasis role="comment">//&#32;&lt;copyright&gt;PhotonNetwork&#32;Framework&#32;for&#32;Unity&#32;-&#32;Copyright&#32;(C)&#32;2020&#32;Exit&#32;Games&#32;GmbH&lt;/copyright&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00003"/>00003 <emphasis role="comment">//&#32;&lt;author&gt;developer@exitgames.com&lt;/author&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00004"/>00004 <emphasis role="comment">//&#32;---------------------------------------------------------------------------------------------</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00005"/>00005 
+<anchor xml:id="__projectile_8cs_source_1l00006"/>00006 <emphasis role="comment">//using&#32;System.Collections.Generic;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00007"/>00007 <emphasis role="comment">//using&#32;UnityEngine;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00008"/>00008 <emphasis role="comment">//using&#32;Photon.Utilities;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00009"/>00009 
+<anchor xml:id="__projectile_8cs_source_1l00010"/>00010 <emphasis role="comment">//#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00011"/>00011 <emphasis role="comment">//using&#32;UnityEditor;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00012"/>00012 <emphasis role="comment">//#endif</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00013"/>00013 
+<anchor xml:id="__projectile_8cs_source_1l00014"/>00014 
+<anchor xml:id="__projectile_8cs_source_1l00015"/>00015 <emphasis role="comment">//namespace&#32;Photon.Pun.Simple</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00016"/>00016 <emphasis role="comment">//{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00017"/>00017 <emphasis role="comment">//&#32;&#32;&#32;&#32;public&#32;class&#32;Projectile&#32;:&#32;MonoBehaviour</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00018"/>00018 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;IProjectile</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00019"/>00019 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;IOnPreSimulate</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00020"/>00020 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//,&#32;IOnInterpolate</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00021"/>00021 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;IOnContactEvent</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00022"/>00022 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;,&#32;IOnPreUpdate</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00023"/>00023 <emphasis role="comment">//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00024"/>00024 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;IProjectileCannon&#32;owner;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00025"/>00025 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;IProjectileCannon&#32;Owner&#32;{&#32;get&#32;{&#32;return&#32;owner;&#32;}&#32;set&#32;{&#32;owner&#32;=&#32;value;&#32;}&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00026"/>00026 
+<anchor xml:id="__projectile_8cs_source_1l00027"/>00027 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;public&#32;Vector3&#32;velocity;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00028"/>00028 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//[System.NonSerialized]&#32;public&#32;Vector3&#32;angVelocity;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00029"/>00029 
+<anchor xml:id="__projectile_8cs_source_1l00030"/>00030 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;public&#32;int&#32;frameId;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00031"/>00031 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[System.NonSerialized]&#32;public&#32;int&#32;subFrameId;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00032"/>00032 
+<anchor xml:id="__projectile_8cs_source_1l00033"/>00033 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Inspector</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00034"/>00034 
+<anchor xml:id="__projectile_8cs_source_1l00035"/>00035 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00036"/>00036 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[EnumMask(true)]</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00037"/>00037 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;ContactType&#32;triggerOn&#32;=&#32;ContactType.Enter;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00038"/>00038 
+<anchor xml:id="__projectile_8cs_source_1l00039"/>00039 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;[EnumMask]&#32;protected&#32;RespondTo&#32;terminateOn&#32;=&#32;RespondTo.IContactTrigger&#32;|&#32;RespondTo.HitNetObj&#32;|&#32;RespondTo.HitNonNetObj;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00040"/>00040 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;[EnumMask]&#32;protected&#32;RespondTo&#32;damageOn&#32;=&#32;RespondTo.IContactTrigger&#32;|&#32;RespondTo.HitNetObj&#32;|&#32;RespondTo.HitNonNetObj;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00041"/>00041 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;[SerializeField]&#32;protected&#32;bool&#32;ignoreOwner;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00042"/>00042 
+<anchor xml:id="__projectile_8cs_source_1l00043"/>00043 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00044"/>00044 
+<anchor xml:id="__projectile_8cs_source_1l00045"/>00045 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;Cache</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00046"/>00046 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;Rigidbody&#32;rb;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00047"/>00047 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;Rigidbody2D&#32;rb2d;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00048"/>00048 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;bool&#32;_hasRigidBody;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00049"/>00049 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;bool&#32;HasRigidbody&#32;{&#32;get&#32;{&#32;return&#32;_hasRigidBody;&#32;}&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00050"/>00050 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;bool&#32;needsSnapshot;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00051"/>00051 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//protected&#32;IContactTrigger&#32;ownerContactTrigger;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00052"/>00052 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;IContactTrigger&#32;localContactTrigger;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00053"/>00053 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;bool&#32;useRbForces,&#32;useRb2dForces;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00054"/>00054 
+<anchor xml:id="__projectile_8cs_source_1l00055"/>00055 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;VitalNameType&#32;VitalNameType&#32;{&#32;get&#32;{&#32;return&#32;new&#32;VitalNameType(VitalType.None);&#32;}&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00056"/>00056 
+<anchor xml:id="__projectile_8cs_source_1l00057"/>00057 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Hit&#32;callbacks</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00058"/>00058 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;List&lt;IOnNetworkHit&gt;&#32;onHit&#32;=&#32;new&#32;List&lt;IOnNetworkHit&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00059"/>00059 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;List&lt;IOnTerminate&gt;&#32;onTerminate&#32;=&#32;new&#32;List&lt;IOnTerminate&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00060"/>00060 
+<anchor xml:id="__projectile_8cs_source_1l00061"/>00061 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;private&#32;void&#32;Reset()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00062"/>00062 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00063"/>00063 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Projectiles&#32;need&#32;to&#32;detect&#32;collisions&#32;with&#32;everything</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00064"/>00064 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;localContactTrigger&#32;=&#32;GetComponent&lt;IContactTrigger&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00065"/>00065 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(ReferenceEquals(localContactTrigger,&#32;null))</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00066"/>00066 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;localContactTrigger&#32;=&#32;gameObject.AddComponent&lt;ContactTrigger&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00067"/>00067 
+<anchor xml:id="__projectile_8cs_source_1l00068"/>00068 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00069"/>00069 
+<anchor xml:id="__projectile_8cs_source_1l00070"/>00070 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;private&#32;void&#32;Awake()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00071"/>00071 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00072"/>00072 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb&#32;=&#32;GetComponentInParent&lt;Rigidbody&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00073"/>00073 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb2d&#32;=&#32;GetComponentInParent&lt;Rigidbody2D&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00074"/>00074 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;_hasRigidBody&#32;=&#32;rb&#32;||&#32;rb2d;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00075"/>00075 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;useRbForces&#32;=&#32;rb&#32;&amp;&amp;&#32;!rb.isKinematic;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00076"/>00076 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;useRb2dForces&#32;=&#32;rb2d&#32;&amp;&amp;&#32;!rb2d.isKinematic;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00077"/>00077 
+<anchor xml:id="__projectile_8cs_source_1l00078"/>00078 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;needsSnapshot&#32;=&#32;!_hasRigidBody&#32;||&#32;(rb&#32;&amp;&amp;&#32;rb.isKinematic)&#32;||&#32;(rb2d&#32;&amp;&amp;&#32;rb2d.isKinematic);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00079"/>00079 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;localContactTrigger&#32;=&#32;GetComponent&lt;IContactTrigger&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00080"/>00080 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Register&#32;timing&#32;callbacks&#32;with&#32;Master.&#32;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00081"/>00081 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;TODO:&#32;We&#32;likely&#32;should&#32;slave&#32;timings&#32;off&#32;of&#32;the&#32;owner</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00082"/>00082 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(needsSnapshot)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00083"/>00083 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;NetMasterCallbacks.RegisterCallbackInterfaces(this);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00084"/>00084 
+<anchor xml:id="__projectile_8cs_source_1l00085"/>00085 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;No&#32;need&#32;for&#32;the&#32;interpolation&#32;callback&#32;if&#32;we&#32;are&#32;using&#32;forces.</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00086"/>00086 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(_hasRigidBody)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00087"/>00087 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;NetMasterCallbacks.onPreUpdates.Remove(this);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00088"/>00088 
+<anchor xml:id="__projectile_8cs_source_1l00089"/>00089 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Find&#32;interfaces&#32;for&#32;termination&#32;callbacks</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00090"/>00090 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GetComponents(onHit);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00091"/>00091 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;GetComponents(onTerminate);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00092"/>00092 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00093"/>00093 
+<anchor xml:id="__projectile_8cs_source_1l00094"/>00094 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;private&#32;void&#32;OnDestroy()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00095"/>00095 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00096"/>00096 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;NetMasterCallbacks.RegisterCallbackInterfaces(this,&#32;false,&#32;true);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00097"/>00097 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00098"/>00098 
+<anchor xml:id="__projectile_8cs_source_1l00099"/>00099 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00100"/>00100 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Override&#32;this&#32;method&#32;to&#32;implement&#32;more&#32;advanced&#32;initial&#32;lag&#32;compensated&#32;snap&#32;and&#32;velocity&#32;values.&#32;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00101"/>00101 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Advance&#32;the&#32;position/rotation&#32;of&#32;the&#32;projectile&#32;here,&#32;and&#32;set&#32;the&#32;velocity&#32;to&#32;a&#32;value&#32;it&#32;should&#32;be&#32;at&#32;AFTER&#32;the&#32;timeshift&#32;is&#32;applied,&#32;so&#32;that&#32;it&#32;accounts&#32;for&#32;gravity&#32;and&#32;drag.</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00102"/>00102 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00103"/>00103 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;&lt;param&#32;name=&quot;timeshift&quot;&gt;&lt;/param&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00104"/>00104 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;virtual&#32;void&#32;LagCompensate(float&#32;timeshift)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00105"/>00105 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00106"/>00106 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;snapPos&#32;=&#32;transform.position&#32;+&#32;velocity&#32;*&#32;timeshift;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00107"/>00107 
+<anchor xml:id="__projectile_8cs_source_1l00108"/>00108 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;timeshift;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00109"/>00109 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00110"/>00110 
+<anchor xml:id="__projectile_8cs_source_1l00111"/>00111 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;void&#32;Initialize(IProjectileCannon&#32;owner,&#32;int&#32;frameId,&#32;int&#32;subFrameId,&#32;Vector3&#32;localVelocity,&#32;RespondTo&#32;terminateOn,&#32;RespondTo&#32;damageOn,&#32;float&#32;timeshift&#32;=&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00112"/>00112 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00113"/>00113 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.owner&#32;=&#32;owner;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00114"/>00114 
+<anchor xml:id="__projectile_8cs_source_1l00115"/>00115 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;Convert&#32;velocity&#32;from&#32;local&#32;to&#32;global</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00116"/>00116 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.velocity&#32;=&#32;transform.TransformDirection(localVelocity);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00117"/>00117 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.terminateOn&#32;=&#32;terminateOn;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00118"/>00118 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.damageOn&#32;=&#32;damageOn;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00119"/>00119 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.frameId&#32;=&#32;frameId;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00120"/>00120 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.subFrameId&#32;=&#32;subFrameId;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00121"/>00121 
+<anchor xml:id="__projectile_8cs_source_1l00122"/>00122 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(timeshift&#32;!=&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00123"/>00123 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;LagCompensate(timeshift);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00124"/>00124 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00125"/>00125 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;snapPos&#32;=&#32;transform.position;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00126"/>00126 
+<anchor xml:id="__projectile_8cs_source_1l00127"/>00127 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(useRbForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00128"/>00128 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00129"/>00129 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//rb.position&#32;=&#32;transform.position;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00130"/>00130 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb.MovePosition(snapPos);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00131"/>00131 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb.velocity&#32;=&#32;this.velocity;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00132"/>00132 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00133"/>00133 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;TODO:&#32;NOT&#32;TESTED</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00134"/>00134 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else&#32;if&#32;(rb2d)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00135"/>00135 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00136"/>00136 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//rb2d.position&#32;=&#32;transform.position;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00137"/>00137 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb2d.MovePosition(snapPos);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00138"/>00138 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb2d.velocity&#32;=&#32;this.velocity;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00139"/>00139 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00140"/>00140 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00141"/>00141 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00142"/>00142 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.position&#32;=&#32;snapPos;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00143"/>00143 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targPos&#32;=&#32;snapPos&#32;+&#32;velocity&#32;*&#32;Time.fixedDeltaTime;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00144"/>00144 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.position&#32;=&#32;snapPos;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00145"/>00145 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00146"/>00146 
+<anchor xml:id="__projectile_8cs_source_1l00147"/>00147 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;localContactTrigger.Proxy&#32;=&#32;owner.ContactTrigger;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00148"/>00148 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00149"/>00149 
+<anchor xml:id="__projectile_8cs_source_1l00150"/>00150 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;bool&#32;OnContactEvent(ref&#32;ContactEvent&#32;contactEvent)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00151"/>00151 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00152"/>00152 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;contactType&#32;=&#32;contactEvent.contactType;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00153"/>00153 
+<anchor xml:id="__projectile_8cs_source_1l00154"/>00154 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(triggerOn&#32;!=&#32;0&#32;&amp;&amp;&#32;(triggerOn&#32;&amp;&#32;contactType)&#32;==&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00155"/>00155 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00156"/>00156 
+<anchor xml:id="__projectile_8cs_source_1l00157"/>00157 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(ignoreOwner&#32;&amp;&amp;&#32;!ReferenceEquals(contactEvent.contactSystem,&#32;null)&#32;&amp;&amp;&#32;contactEvent.contactSystem.ViewID&#32;==&#32;owner.ViewID)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00158"/>00158 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00159"/>00159 
+<anchor xml:id="__projectile_8cs_source_1l00160"/>00160 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;OnHit(contactEvent);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00161"/>00161 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;true;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00162"/>00162 
+<anchor xml:id="__projectile_8cs_source_1l00163"/>00163 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00164"/>00164 
+<anchor xml:id="__projectile_8cs_source_1l00165"/>00165 
+<anchor xml:id="__projectile_8cs_source_1l00166"/>00166 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Vector3&#32;snapPos,&#32;targPos;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00167"/>00167 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Quaternion&#32;snapRot,&#32;targRot;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00168"/>00168 
+<anchor xml:id="__projectile_8cs_source_1l00169"/>00169 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Pre&#32;Fixed</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00170"/>00170 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;void&#32;OnPreSimulate(int&#32;frameId,&#32;int&#32;subFrameId)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00171"/>00171 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00172"/>00172 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!useRbForces&#32;&amp;&amp;&#32;!useRb2dForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00173"/>00173 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;SimulateTime(Time.fixedDeltaTime);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00174"/>00174 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00175"/>00175 
+<anchor xml:id="__projectile_8cs_source_1l00176"/>00176 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//public&#32;void&#32;InitialSimulate(float&#32;t)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00177"/>00177 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00178"/>00178 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;if&#32;(useRbForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00179"/>00179 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00180"/>00180 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb.MovePosition(rb.position&#32;+&#32;rb.rotation&#32;*&#32;velocity&#32;*&#32;t);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00181"/>00181 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(rb.useGravity)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00182"/>00182 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00183"/>00183 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00184"/>00184 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;///&#32;UNTESTED</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00185"/>00185 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;else&#32;if&#32;(useRb2dForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00186"/>00186 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00187"/>00187 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;rb2d.MovePosition(rb2d.position&#32;+&#32;(Vector2)transform.TransformVector(velocity));</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00188"/>00188 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(rb2d.gravityScale&#32;!=&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00189"/>00189 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;rb2d.gravityScale&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00190"/>00190 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00191"/>00191 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00192"/>00192 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00193"/>00193 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targ&#32;=&#32;snap&#32;+&#32;transform.rotation&#32;*&#32;velocity&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00194"/>00194 
+<anchor xml:id="__projectile_8cs_source_1l00195"/>00195 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00196"/>00196 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Interpolate(0);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00197"/>00197 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00198"/>00198 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00199"/>00199 
+<anchor xml:id="__projectile_8cs_source_1l00200"/>00200 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;virtual&#32;void&#32;SimulateTime(float&#32;t)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00201"/>00201 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00202"/>00202 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;oldtarget&#32;=&#32;targPos;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00203"/>00203 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;targPos&#32;=&#32;oldtarget&#32;+&#32;velocity&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00204"/>00204 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;snapPos&#32;=&#32;oldtarget;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00205"/>00205 
+<anchor xml:id="__projectile_8cs_source_1l00206"/>00206 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(useRb2dForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00207"/>00207 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;rb2d.gravityScale&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00208"/>00208 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00209"/>00209 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;velocity&#32;+=&#32;Physics.gravity&#32;*&#32;t;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00210"/>00210 
+<anchor xml:id="__projectile_8cs_source_1l00211"/>00211 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Interpolate(0);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00212"/>00212 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00213"/>00213 
+<anchor xml:id="__projectile_8cs_source_1l00214"/>00214 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Interpolation</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00215"/>00215 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;public&#32;virtual&#32;void&#32;OnPreUpdate()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00216"/>00216 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00217"/>00217 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!useRbForces&#32;&amp;&amp;&#32;!useRb2dForces)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00218"/>00218 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Interpolate(NetMaster.NormTimeSinceFixed);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00219"/>00219 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00220"/>00220 
+<anchor xml:id="__projectile_8cs_source_1l00221"/>00221 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;void&#32;Interpolate(float&#32;t)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00222"/>00222 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00223"/>00223 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;transform.position&#32;=&#32;Vector3.Lerp(snapPos,&#32;targPos,&#32;t);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00224"/>00224 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00225"/>00225 
+<anchor xml:id="__projectile_8cs_source_1l00226"/>00226 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#region&#32;Hit&#32;Triggers</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00227"/>00227 
+<anchor xml:id="__projectile_8cs_source_1l00228"/>00228 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;static&#32;List&lt;NetObject&gt;&#32;reusableNetObjects&#32;=&#32;new&#32;List&lt;NetObject&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00229"/>00229 
+<anchor xml:id="__projectile_8cs_source_1l00230"/>00230 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;virtual&#32;void&#32;OnHit(ContactEvent&#32;contactEvent)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00231"/>00231 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00232"/>00232 
+<anchor xml:id="__projectile_8cs_source_1l00233"/>00233 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Debug.Log(&quot;OnHit&quot;);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00234"/>00234 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;List&lt;NetObject&gt;&#32;netObjects&#32;=&#32;reusableNetObjects;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00235"/>00235 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Collect&#32;the&#32;nested&#32;parent&#32;NetObjs&#32;for&#32;correct&#32;self-hit&#32;testing.&#32;The&#32;first&#32;one&#32;returned&#32;is&#32;actual&#32;object&#32;that&#32;was&#32;hit.</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00236"/>00236 
+<anchor xml:id="__projectile_8cs_source_1l00237"/>00237 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;other&#32;=&#32;contactEvent.contacter;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00238"/>00238 
+<anchor xml:id="__projectile_8cs_source_1l00239"/>00239 <emphasis role="comment">//#if&#32;PUN_2_OR_NEWER</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00240"/>00240 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;other.NetObj.transform.GetNestedComponentsInParents(netObjects);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00241"/>00241 <emphasis role="comment">//#endif</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00242"/>00242 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;NetObject&#32;netObj&#32;=&#32;netObjects.Count&#32;==&#32;0&#32;?&#32;null&#32;:&#32;netObjects[0];</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00243"/>00243 
+<anchor xml:id="__projectile_8cs_source_1l00244"/>00244 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Hit&#32;was&#32;not&#32;NetOBj</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00245"/>00245 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(ReferenceEquals(netObj,&#32;null))</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00246"/>00246 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00247"/>00247 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;bool&#32;terminateOnNonNetObj&#32;=&#32;(terminateOn&#32;&amp;&#32;RespondTo.HitNonNetObj)&#32;!=&#32;0;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00248"/>00248 
+<anchor xml:id="__projectile_8cs_source_1l00249"/>00249 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(terminateOnNonNetObj)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00250"/>00250 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Terminate();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00251"/>00251 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00252"/>00252 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Hit&#32;was&#32;NetObj</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00253"/>00253 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00254"/>00254 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00255"/>00255 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;int&#32;netObjId&#32;=&#32;netObj.ViewID;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00256"/>00256 
+<anchor xml:id="__projectile_8cs_source_1l00257"/>00257 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Test&#32;all&#32;nested&#32;NetObjs&#32;for&#32;a&#32;match&#32;with&#32;self</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00258"/>00258 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;bool&#32;hitWasOwner&#32;=&#32;false;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00259"/>00259 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;ownerNetObj&#32;=&#32;owner.NetObj;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00260"/>00260 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;foreach&#32;(var&#32;netobj&#32;in&#32;netObjects)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00261"/>00261 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(ReferenceEquals(netobj,&#32;ownerNetObj))</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00262"/>00262 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00263"/>00263 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;hitWasOwner&#32;=&#32;true;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00264"/>00264 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00265"/>00265 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00266"/>00266 
+<anchor xml:id="__projectile_8cs_source_1l00267"/>00267 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Hit&#32;was&#32;self</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00268"/>00268 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(hitWasOwner)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00269"/>00269 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00270"/>00270 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;((terminateOn&#32;&amp;&#32;RespondTo.HitSelf)&#32;!=&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00271"/>00271 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00272"/>00272 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Debug.LogError(&quot;Terminate&#32;On&#32;Self&quot;);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00273"/>00273 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Terminate();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00274"/>00274 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00275"/>00275 
+<anchor xml:id="__projectile_8cs_source_1l00276"/>00276 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;((damageOn&#32;&amp;&#32;RespondTo.HitSelf)&#32;==&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00277"/>00277 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00278"/>00278 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00279"/>00279 
+<anchor xml:id="__projectile_8cs_source_1l00280"/>00280 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;TODO:&#32;this&#32;collider&#32;ID&#32;code&#32;is&#32;pretty&#32;hacked&#32;together.&#32;Need&#32;to&#32;decide&#32;if&#32;syncing&#32;the&#32;collider&#32;ID</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00281"/>00281 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;should&#32;even&#32;happen,&#32;and&#32;if&#32;so&#32;how&#32;colliders&#32;are&#32;determined&#32;for&#32;some&#32;events&#32;like&#32;triggers.</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00282"/>00282 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;bool&#32;isCollider&#32;=&#32;((other&#32;is&#32;Collider)&#32;||&#32;(other&#32;is&#32;Collider2D));</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00283"/>00283 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;int&#32;colliderId&#32;=&#32;(isCollider)&#32;?&#32;netObj.colliderLookup[other]&#32;:&#32;0;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00284"/>00284 
+<anchor xml:id="__projectile_8cs_source_1l00285"/>00285 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Hit&#32;was&#32;NetObj</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00286"/>00286 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;var&#32;contactGroup&#32;=&#32;other.GetComponent&lt;IContactGroupAssign&gt;();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00287"/>00287 
+<anchor xml:id="__projectile_8cs_source_1l00288"/>00288 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;int&#32;mask&#32;=&#32;ReferenceEquals(contactGroup,&#32;null)&#32;?&#32;0&#32;:&#32;contactGroup.Mask;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00289"/>00289 
+<anchor xml:id="__projectile_8cs_source_1l00290"/>00290 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;/////&#32;TEST</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00291"/>00291 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//if&#32;(true)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00292"/>00292 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00293"/>00293 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;localContactTrigger.Proxy.Trigger(contactEvent);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00294"/>00294 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00295"/>00295 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//else</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00296"/>00296 
+<anchor xml:id="__projectile_8cs_source_1l00297"/>00297 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;If&#32;this&#32;connection&#32;owns&#32;this&#32;launcher/projectile,&#32;log&#32;this&#32;hit</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00298"/>00298 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;owner.QueueHit(new&#32;NetworkHit(netObjId,&#32;mask,&#32;colliderId));</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00299"/>00299 
+<anchor xml:id="__projectile_8cs_source_1l00300"/>00300 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;((terminateOn&#32;&amp;&#32;RespondTo.HitNetObj)&#32;!=&#32;0)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00301"/>00301 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Terminate();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00302"/>00302 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00303"/>00303 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00304"/>00304 
+<anchor xml:id="__projectile_8cs_source_1l00305"/>00305 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;&lt;summary&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00306"/>00306 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;Override&#32;this&#32;and&#32;extend&#32;the&#32;base&#32;with&#32;your&#32;own&#32;projectile&#32;termination&#32;code,&#32;or&#32;place&#32;a&#32;component&#32;on&#32;this&#32;GameObject&#32;with&#32;IOnTerminate&#32;to&#32;define&#32;a&#32;response.</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00307"/>00307 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;///&#32;&lt;/summary&gt;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00308"/>00308 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;virtual&#32;void&#32;Terminate()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00309"/>00309 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00310"/>00310 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;for&#32;(int&#32;i&#32;=&#32;0,&#32;cnt&#32;=&#32;onTerminate.Count;&#32;i&#32;&lt;&#32;cnt;&#32;++i)</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00311"/>00311 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;onTerminate[i].OnTerminate();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00312"/>00312 
+<anchor xml:id="__projectile_8cs_source_1l00313"/>00313 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;gameObject.SetActive(false);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00314"/>00314 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00315"/>00315 
+<anchor xml:id="__projectile_8cs_source_1l00316"/>00316 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#endregion</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00317"/>00317 <emphasis role="comment">//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00318"/>00318 
+<anchor xml:id="__projectile_8cs_source_1l00319"/>00319 <emphasis role="comment">//#if&#32;UNITY_EDITOR</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00320"/>00320 
+<anchor xml:id="__projectile_8cs_source_1l00321"/>00321 <emphasis role="comment">//&#32;&#32;&#32;&#32;[CustomEditor(typeof(Projectile),&#32;true)]</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00322"/>00322 <emphasis role="comment">//&#32;&#32;&#32;&#32;[CanEditMultipleObjects]</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00323"/>00323 <emphasis role="comment">//&#32;&#32;&#32;&#32;public&#32;class&#32;ProjectileEditor&#32;:&#32;ReactorHeaderEditor</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00324"/>00324 <emphasis role="comment">//&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00325"/>00325 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;protected&#32;override&#32;string&#32;Instructions</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00326"/>00326 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00327"/>00327 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;get</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00328"/>00328 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00329"/>00329 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;&quot;Defines&#32;a&#32;projectile&#32;that&#32;can&#32;be&#32;used&#32;by&#32;&quot;&#32;+&#32;typeof(SyncCannon).Name&#32;+&#32;&quot;.&quot;;</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00330"/>00330 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00331"/>00331 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00332"/>00332 
+<anchor xml:id="__projectile_8cs_source_1l00333"/>00333 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//protected&#32;override&#32;void&#32;OnInspectorGUIInjectMiddle()</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00334"/>00334 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//{</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00335"/>00335 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;base.OnInspectorGUIInjectMiddle();</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00336"/>00336 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;&#32;&#32;&#32;EditorGUILayout.LabelField(&quot;&lt;b&gt;OnTriggerEvent()&lt;/b&gt;\n{\n&#32;&#32;Terminate()\n&#32;&#32;owner.QueueHit()&#32;\n}&quot;,&#32;richBox);</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00337"/>00337 <emphasis role="comment">//&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00338"/>00338 <emphasis role="comment">//&#32;&#32;&#32;&#32;}</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00339"/>00339 <emphasis role="comment">//#endif</emphasis>
+<anchor xml:id="__projectile_8cs_source_1l00340"/>00340 <emphasis role="comment">//}</emphasis>
+</programlisting></section>

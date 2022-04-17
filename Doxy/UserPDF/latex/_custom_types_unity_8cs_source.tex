@@ -1,0 +1,168 @@
+\doxysection{Custom\+Types\+Unity.\+cs}
+\label{_custom_types_unity_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/CustomTypesUnity.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/CustomTypesUnity.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}CustomTypes.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   PhotonNetwork Framework for Unity -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{// Sets up support for Unity-\/specific types. Can be a blueprint how to register your own Custom Types for sending.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00016 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00017 \{}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} Debug = UnityEngine.Debug;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00028     \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keyword}{class }CustomTypesUnity}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SizeV2 = 2 * 4;}
+\DoxyCodeLine{00031         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SizeV3 = 3 * 4;}
+\DoxyCodeLine{00032         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{int} SizeQuat = 4 * 4;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00036         \textcolor{keyword}{internal} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Register()}
+\DoxyCodeLine{00037         \{}
+\DoxyCodeLine{00038             PhotonPeer.RegisterType(typeof(Vector2), (\textcolor{keywordtype}{byte}) \textcolor{charliteral}{'W'}, SerializeVector2, DeserializeVector2);}
+\DoxyCodeLine{00039             PhotonPeer.RegisterType(typeof(Vector3), (\textcolor{keywordtype}{byte}) \textcolor{charliteral}{'V'}, SerializeVector3, DeserializeVector3);}
+\DoxyCodeLine{00040             PhotonPeer.RegisterType(typeof(Quaternion), (\textcolor{keywordtype}{byte}) \textcolor{charliteral}{'Q'}, SerializeQuaternion, DeserializeQuaternion);}
+\DoxyCodeLine{00041         \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{        \#region Custom De/Serializer Methods}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] memVector3 = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[SizeV3];}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{short} SerializeVector3(StreamBuffer outStream, \textcolor{keywordtype}{object} customobject)}
+\DoxyCodeLine{00049         \{}
+\DoxyCodeLine{00050             Vector3 vo = (Vector3) customobject;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052             \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00053             lock (memVector3)}
+\DoxyCodeLine{00054             \{}
+\DoxyCodeLine{00055                 \textcolor{keywordtype}{byte}[] bytes = memVector3;}
+\DoxyCodeLine{00056                 Protocol.Serialize(vo.x, bytes, ref index);}
+\DoxyCodeLine{00057                 Protocol.Serialize(vo.y, bytes, ref index);}
+\DoxyCodeLine{00058                 Protocol.Serialize(vo.z, bytes, ref index);}
+\DoxyCodeLine{00059                 outStream.Write(bytes, 0, SizeV3);}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062             \textcolor{keywordflow}{return} SizeV3;}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} DeserializeVector3(StreamBuffer inStream, \textcolor{keywordtype}{short} length)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             Vector3 vo = \textcolor{keyword}{new} Vector3();}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{if} (length != SizeV3)}
+\DoxyCodeLine{00069             \{}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{return} vo;}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073             lock (memVector3)}
+\DoxyCodeLine{00074             \{}
+\DoxyCodeLine{00075                 inStream.Read(memVector3, 0, SizeV3);}
+\DoxyCodeLine{00076                 \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00077                 Protocol.Deserialize(out vo.x, memVector3, ref index);}
+\DoxyCodeLine{00078                 Protocol.Deserialize(out vo.y, memVector3, ref index);}
+\DoxyCodeLine{00079                 Protocol.Deserialize(out vo.z, memVector3, ref index);}
+\DoxyCodeLine{00080             \}}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{keywordflow}{return} vo;}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] memVector2 = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[SizeV2];}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{short} SerializeVector2(StreamBuffer outStream, \textcolor{keywordtype}{object} customobject)}
+\DoxyCodeLine{00089         \{}
+\DoxyCodeLine{00090             Vector2 vo = (Vector2) customobject;}
+\DoxyCodeLine{00091             lock (memVector2)}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 \textcolor{keywordtype}{byte}[] bytes = memVector2;}
+\DoxyCodeLine{00094                 \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00095                 Protocol.Serialize(vo.x, bytes, ref index);}
+\DoxyCodeLine{00096                 Protocol.Serialize(vo.y, bytes, ref index);}
+\DoxyCodeLine{00097                 outStream.Write(bytes, 0, SizeV2);}
+\DoxyCodeLine{00098             \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100             \textcolor{keywordflow}{return} SizeV2;}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} DeserializeVector2(StreamBuffer inStream, \textcolor{keywordtype}{short} length)}
+\DoxyCodeLine{00104         \{}
+\DoxyCodeLine{00105             Vector2 vo = \textcolor{keyword}{new} Vector2();}
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (length != SizeV2)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{return} vo;}
+\DoxyCodeLine{00109             \}}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             lock (memVector2)}
+\DoxyCodeLine{00112             \{}
+\DoxyCodeLine{00113                 inStream.Read(memVector2, 0, SizeV2);}
+\DoxyCodeLine{00114                 \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00115                 Protocol.Deserialize(out vo.x, memVector2, ref index);}
+\DoxyCodeLine{00116                 Protocol.Deserialize(out vo.y, memVector2, ref index);}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{return} vo;}
+\DoxyCodeLine{00120         \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] memQuarternion = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[SizeQuat];}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{short} SerializeQuaternion(StreamBuffer outStream, \textcolor{keywordtype}{object} customobject)}
+\DoxyCodeLine{00126         \{}
+\DoxyCodeLine{00127             Quaternion o = (Quaternion) customobject;}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             lock (memQuarternion)}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 \textcolor{keywordtype}{byte}[] bytes = memQuarternion;}
+\DoxyCodeLine{00132                 \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00133                 Protocol.Serialize(o.w, bytes, ref index);}
+\DoxyCodeLine{00134                 Protocol.Serialize(o.x, bytes, ref index);}
+\DoxyCodeLine{00135                 Protocol.Serialize(o.y, bytes, ref index);}
+\DoxyCodeLine{00136                 Protocol.Serialize(o.z, bytes, ref index);}
+\DoxyCodeLine{00137                 outStream.Write(bytes, 0, SizeQuat);}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140             \textcolor{keywordflow}{return} 4 * 4;}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{object} DeserializeQuaternion(StreamBuffer inStream, \textcolor{keywordtype}{short} length)}
+\DoxyCodeLine{00144         \{}
+\DoxyCodeLine{00145             Quaternion o = Quaternion.identity;}
+\DoxyCodeLine{00146             \textcolor{keywordflow}{if} (length != SizeQuat)}
+\DoxyCodeLine{00147             \{}
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{return} o;}
+\DoxyCodeLine{00149             \}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             lock (memQuarternion)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 inStream.Read(memQuarternion, 0, SizeQuat);}
+\DoxyCodeLine{00154                 \textcolor{keywordtype}{int} index = 0;}
+\DoxyCodeLine{00155                 Protocol.Deserialize(out o.w, memQuarternion, ref index);}
+\DoxyCodeLine{00156                 Protocol.Deserialize(out o.x, memQuarternion, ref index);}
+\DoxyCodeLine{00157                 Protocol.Deserialize(out o.y, memQuarternion, ref index);}
+\DoxyCodeLine{00158                 Protocol.Deserialize(out o.z, memQuarternion, ref index);}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             \textcolor{keywordflow}{return} o;}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00165     \}}
+\DoxyCodeLine{00166 \}}
+\DoxyCodeLine{00167 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

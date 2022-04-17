@@ -1,0 +1,260 @@
+\doxysection{World\+Bounds.\+cs}
+\label{_world_bounds_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBounds.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/WorldBounds/WorldBounds.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016     \textcolor{keyword}{public} \textcolor{keyword}{enum} FactorBoundsOn \{ EnableDisable, AwakeDestroy \}}
+\DoxyCodeLine{00021     \textcolor{comment}{//[HelpURL("{}https://docs.google.com/document/d/1nPWGC\_2xa6t4f9P0sI7wAe4osrg4UP0n\_9BVYnr5dkQ/edit\#heading=h.4n2gizaw79m0"{})]}}
+\DoxyCodeLine{00022     \textcolor{comment}{//[AddComponentMenu("{}Transform Crusher/World Bounds"{})]}}
+\DoxyCodeLine{00023     [ExecuteInEditMode]}
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBounds : MonoBehaviour}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         [SerializeField][HideInInspector]}
+\DoxyCodeLine{00028         \textcolor{keyword}{private} Bounds manualBounds = \textcolor{keyword}{new} Bounds(\textcolor{keyword}{new} Vector3(0,0,0), \textcolor{keyword}{new} Vector3(600, 40, 600));}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} Bounds ManualBounds}
+\DoxyCodeLine{00030         \{}
+\DoxyCodeLine{00031             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} manualBounds; \}}
+\DoxyCodeLine{00032             \textcolor{keyword}{set}}
+\DoxyCodeLine{00033             \{}
+\DoxyCodeLine{00034                 manualBounds = value;}
+\DoxyCodeLine{00035                 CollectMyBounds();}
+\DoxyCodeLine{00036             \}}
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [Tooltip(\textcolor{stringliteral}{"{}Selects which WorldBounds group this object should be factored into."{}})]}
+\DoxyCodeLine{00040         [WorldBoundsSelectAttribute]}
+\DoxyCodeLine{00041         [SerializeField][HideInInspector]}
+\DoxyCodeLine{00042         \textcolor{keyword}{public} \textcolor{keywordtype}{int} worldBoundsGrp;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [SerializeField]}
+\DoxyCodeLine{00045         [HideInInspector]}
+\DoxyCodeLine{00046         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} includeChildren = \textcolor{keyword}{true};}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         [Tooltip(\textcolor{stringliteral}{"{}Awake/Destroy will consider element into the world size as long as it exists in the scene (You may need to wake it though). Enable/Disable only factors it in if it is active."{}})]}
+\DoxyCodeLine{00049         [SerializeField]}
+\DoxyCodeLine{00050         [HideInInspector]}
+\DoxyCodeLine{00051         \textcolor{keyword}{private} BoundsTools.BoundsType factorIn = BoundsTools.BoundsType.Both;}
+\DoxyCodeLine{00052         \textcolor{keyword}{public} BoundsTools.BoundsType FactorIn}
+\DoxyCodeLine{00053         \{}
+\DoxyCodeLine{00054             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} factorIn; \}}
+\DoxyCodeLine{00055             \textcolor{keyword}{set}}
+\DoxyCodeLine{00056             \{}
+\DoxyCodeLine{00057                 factorIn = value;}
+\DoxyCodeLine{00058                 CollectMyBounds();}
+\DoxyCodeLine{00059             \}}
+\DoxyCodeLine{00060         \}}
+\DoxyCodeLine{00061         \textcolor{comment}{// sum of all bounds (children included)}}
+\DoxyCodeLine{00062         [HideInInspector] \textcolor{keyword}{public} Bounds myBounds;}
+\DoxyCodeLine{00063         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{int} myBoundsCount;}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{keyword}{public} System.Action OnWorldBoundsChange;}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00070         \{}
+\DoxyCodeLine{00071             \textcolor{comment}{// When mapobjects are waking up, this likely means we are seeing a map change. Silence messages until Start().}}
+\DoxyCodeLine{00072             \textcolor{comment}{//muteMessages = true;}}
+\DoxyCodeLine{00073             CollectMyBounds();}
+\DoxyCodeLine{00074         \}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CollectMyBounds()}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             var wbso = WorldBoundsSettings.Single;}
+\DoxyCodeLine{00079             \textcolor{keywordflow}{if} (!wbso)}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             \textcolor{keywordflow}{if} (WorldBoundsSettings.Single.worldBoundsGroups.Count == 0)}
+\DoxyCodeLine{00083                 WorldBoundsSettings.Single.worldBoundsGroups.Add(\textcolor{keyword}{new} WorldBoundsGroup());}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085             \textcolor{comment}{// If this is no longer a existing worldbounds layer, reset to default}}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (worldBoundsGrp >= WorldBoundsSettings.Single.worldBoundsGroups.Count)}
+\DoxyCodeLine{00087                 worldBoundsGrp = 0;}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             var grp = wbso.worldBoundsGroups[worldBoundsGrp];}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (factorIn == BoundsTools.BoundsType.Manual)}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 myBounds = manualBounds;}
+\DoxyCodeLine{00094                 myBoundsCount = 1;}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00097             \{}
+\DoxyCodeLine{00098                 myBounds = BoundsTools.CollectMyBounds(gameObject, factorIn, out myBoundsCount, includeChildren, \textcolor{keyword}{false});}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             \textcolor{comment}{// Remove this from all Groups then readd to the one it currently belongs to.}}
+\DoxyCodeLine{00102             WorldBoundsSettings.RemoveWorldBoundsFromAll(\textcolor{keyword}{this});}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{if} (myBoundsCount > 0 \&\& enabled)}
+\DoxyCodeLine{00105             \{}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{if} (!grp.activeWorldBounds.Contains(\textcolor{keyword}{this}))}
+\DoxyCodeLine{00107                 \{}
+\DoxyCodeLine{00108                     grp.activeWorldBounds.Add(\textcolor{keyword}{this});}
+\DoxyCodeLine{00109                     grp.RecalculateWorldCombinedBounds();}
+\DoxyCodeLine{00110                 \}}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (OnWorldBoundsChange != \textcolor{keyword}{null})}
+\DoxyCodeLine{00114                 OnWorldBoundsChange();}
+\DoxyCodeLine{00115         \}}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{comment}{//muteMessages = false;}}
+\DoxyCodeLine{00120         \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00123         \{}
+\DoxyCodeLine{00124             FactorInBounds(\textcolor{keyword}{true});}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00128         \{}
+\DoxyCodeLine{00129             FactorInBounds(\textcolor{keyword}{false});}
+\DoxyCodeLine{00130         \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnDrawGizmosSelected()}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134             Gizmos.color = Color.magenta;}
+\DoxyCodeLine{00135             Gizmos.DrawWireCube(}
+\DoxyCodeLine{00136                 WorldBoundsSettings.Single.worldBoundsGroups[worldBoundsGrp].\_combinedWorldBounds.center,}
+\DoxyCodeLine{00137                 WorldBoundsSettings.Single.worldBoundsGroups[worldBoundsGrp].\_combinedWorldBounds.size);}
+\DoxyCodeLine{00138         \}}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140         \textcolor{keyword}{public} \textcolor{keywordtype}{void} FactorInBounds(\textcolor{keywordtype}{bool} b)}
+\DoxyCodeLine{00141         \{}
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (\textcolor{keyword}{this} == \textcolor{keyword}{null})}
+\DoxyCodeLine{00143                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             \textcolor{comment}{// if worldboundsgrp is no longer a layer, reset to default}}
+\DoxyCodeLine{00146             \textcolor{keywordflow}{if} (worldBoundsGrp >= WorldBoundsSettings.Single.worldBoundsGroups.Count)}
+\DoxyCodeLine{00147                 worldBoundsGrp = 0;}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             var grp = WorldBoundsSettings.Single.worldBoundsGroups[worldBoundsGrp];}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (b)}
+\DoxyCodeLine{00152             \{}
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (!grp.activeWorldBounds.Contains(\textcolor{keyword}{this}))}
+\DoxyCodeLine{00154                     grp.activeWorldBounds.Add(\textcolor{keyword}{this});}
+\DoxyCodeLine{00155             \}}
+\DoxyCodeLine{00156             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00157             \{}
+\DoxyCodeLine{00158                 grp.activeWorldBounds.Remove(\textcolor{keyword}{this});}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161             grp.RecalculateWorldCombinedBounds();}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00166         \textcolor{keywordtype}{float} recheckTimer;}
+\DoxyCodeLine{00167         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Update()}
+\DoxyCodeLine{00168         \{}
+\DoxyCodeLine{00169             \textcolor{keywordflow}{if} (Application.isPlaying)}
+\DoxyCodeLine{00170                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             recheckTimer += Time.deltaTime;}
+\DoxyCodeLine{00173             \textcolor{keywordflow}{if} (recheckTimer > 1f)}
+\DoxyCodeLine{00174             \{}
+\DoxyCodeLine{00175                 CollectMyBounds();}
+\DoxyCodeLine{00176             \}}
+\DoxyCodeLine{00177         \}}
+\DoxyCodeLine{00178 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \textcolor{keyword}{public} \textcolor{keywordtype}{string} BoundsReport()}
+\DoxyCodeLine{00183         \{}
+\DoxyCodeLine{00184             \textcolor{keywordflow}{return} WorldBoundsSettings.single.worldBoundsGroups[worldBoundsGrp].BoundsReport();}
+\DoxyCodeLine{00185             \textcolor{comment}{//return ("{}Contains "{} + myBoundsCount + "{} bound(s) objects:\(\backslash\)n"{} +}}
+\DoxyCodeLine{00186             \textcolor{comment}{//  "{}Center: "{} + myBounds.center + "{}\(\backslash\)n"{} +}}
+\DoxyCodeLine{00187             \textcolor{comment}{//  "{}Size: "{} + myBounds.size);}}
+\DoxyCodeLine{00188         \}}
+\DoxyCodeLine{00189 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191     \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195     [CustomEditor(typeof(WorldBounds))]}
+\DoxyCodeLine{00196     [CanEditMultipleObjects]}
+\DoxyCodeLine{00197     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldBoundsEditor : Editor}
+\DoxyCodeLine{00198     \{}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             base.OnInspectorGUI();}
+\DoxyCodeLine{00203 }
+\DoxyCodeLine{00204             var \_target = target as WorldBounds;}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206             \textcolor{comment}{//EditorGUILayout.Space();}}
+\DoxyCodeLine{00207             \textcolor{comment}{//var mb = serializedObject.FindProperty("{}manualBounds"{});}}
+\DoxyCodeLine{00208             \textcolor{comment}{//EditorGUILayout.PropertyField(mb);}}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210             var factorin = (BoundsTools.BoundsType)EditorGUILayout.EnumPopup(\textcolor{stringliteral}{"{}Factor In"{}}, \_target.FactorIn);}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (\_target.FactorIn != factorin)}
+\DoxyCodeLine{00212             \{}
+\DoxyCodeLine{00213                 Undo.RecordObject(\_target, \textcolor{stringliteral}{"{}Change bounds Factor In"{}});}
+\DoxyCodeLine{00214                 \_target.FactorIn = factorin;}
+\DoxyCodeLine{00215                 \_target.CollectMyBounds();}
+\DoxyCodeLine{00216                 EditorUtility.SetDirty(target);}
+\DoxyCodeLine{00217                 serializedObject.Update();}
+\DoxyCodeLine{00218             \}}
+\DoxyCodeLine{00219             \textcolor{keywordflow}{if} (\_target.FactorIn == BoundsTools.BoundsType.Manual)}
+\DoxyCodeLine{00220             \{}
+\DoxyCodeLine{00221                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00222                 var manualBounds = serializedObject.FindProperty(\textcolor{stringliteral}{"{}manualBounds"{}});}
+\DoxyCodeLine{00223                 EditorGUILayout.PropertyField(manualBounds);}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00225                     \_target.CollectMyBounds();}
+\DoxyCodeLine{00226             \}}
+\DoxyCodeLine{00227             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00228             \{}
+\DoxyCodeLine{00229                 EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00230                 var includeChildren = serializedObject.FindProperty(\textcolor{stringliteral}{"{}includeChildren"{}});}
+\DoxyCodeLine{00231                 EditorGUILayout.PropertyField(includeChildren);}
+\DoxyCodeLine{00232                 \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00233                     \_target.CollectMyBounds();}
+\DoxyCodeLine{00234             \}}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             EditorGUILayout.Space();}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             var wrlBndsGrp = serializedObject.FindProperty(\textcolor{stringliteral}{"{}worldBoundsGrp"{}});}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240             \textcolor{keywordtype}{int} holdval = wrlBndsGrp.intValue;}
+\DoxyCodeLine{00241             EditorGUILayout.PropertyField(wrlBndsGrp);}
+\DoxyCodeLine{00242             serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00243             \textcolor{comment}{// If the bounds have changed, we need to recalculate the WorldBoundsGroups to make sure this is factored into the right one.}}
+\DoxyCodeLine{00244             \textcolor{keywordflow}{if} (wrlBndsGrp.intValue != holdval)}
+\DoxyCodeLine{00245             \{}
+\DoxyCodeLine{00246                 \_target.CollectMyBounds();}
+\DoxyCodeLine{00247             \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             EditorGUILayout.Space();}
+\DoxyCodeLine{00251             }
+\DoxyCodeLine{00252         \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254     \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00257 \}}
+\DoxyCodeLine{00258 }
+
+\end{DoxyCode}

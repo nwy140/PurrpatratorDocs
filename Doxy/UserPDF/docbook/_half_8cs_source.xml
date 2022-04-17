@@ -1,0 +1,359 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__half_8cs_source" xml:lang="en-US">
+<title>Half.cs</title>
+<indexterm><primary>C:/_SSDSPEEDUP/2021/GPS/gps2_purrpatrator/GPS2_Purrpatrator/Assets/Photon/PhotonUtilities/Compression/HalfFloat/Half.cs</primary></indexterm>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered"><anchor xml:id="__half_8cs_source_1l00001"/>00001 <emphasis role="comment">/*</emphasis>
+<anchor xml:id="__half_8cs_source_1l00002"/>00002 <emphasis role="comment">*&#32;Copyright&#32;(c)&#32;2007-2010&#32;SlimMath&#32;Group</emphasis>
+<anchor xml:id="__half_8cs_source_1l00003"/>00003 <emphasis role="comment">*</emphasis>
+<anchor xml:id="__half_8cs_source_1l00004"/>00004 <emphasis role="comment">*&#32;Permission&#32;is&#32;hereby&#32;granted,&#32;free&#32;of&#32;charge,&#32;to&#32;any&#32;person&#32;obtaining&#32;a&#32;copy</emphasis>
+<anchor xml:id="__half_8cs_source_1l00005"/>00005 <emphasis role="comment">*&#32;of&#32;this&#32;software&#32;and&#32;associated&#32;documentation&#32;files&#32;(the&#32;&quot;Software&quot;),&#32;to&#32;deal</emphasis>
+<anchor xml:id="__half_8cs_source_1l00006"/>00006 <emphasis role="comment">*&#32;in&#32;the&#32;Software&#32;without&#32;restriction,&#32;including&#32;without&#32;limitation&#32;the&#32;rights</emphasis>
+<anchor xml:id="__half_8cs_source_1l00007"/>00007 <emphasis role="comment">*&#32;to&#32;use,&#32;copy,&#32;modify,&#32;merge,&#32;publish,&#32;distribute,&#32;sublicense,&#32;and/or&#32;sell</emphasis>
+<anchor xml:id="__half_8cs_source_1l00008"/>00008 <emphasis role="comment">*&#32;copies&#32;of&#32;the&#32;Software,&#32;and&#32;to&#32;permit&#32;persons&#32;to&#32;whom&#32;the&#32;Software&#32;is</emphasis>
+<anchor xml:id="__half_8cs_source_1l00009"/>00009 <emphasis role="comment">*&#32;furnished&#32;to&#32;do&#32;so,&#32;subject&#32;to&#32;the&#32;following&#32;conditions:</emphasis>
+<anchor xml:id="__half_8cs_source_1l00010"/>00010 <emphasis role="comment">*</emphasis>
+<anchor xml:id="__half_8cs_source_1l00011"/>00011 <emphasis role="comment">*&#32;The&#32;above&#32;copyright&#32;notice&#32;and&#32;this&#32;permission&#32;notice&#32;shall&#32;be&#32;included&#32;in</emphasis>
+<anchor xml:id="__half_8cs_source_1l00012"/>00012 <emphasis role="comment">*&#32;all&#32;copies&#32;or&#32;substantial&#32;portions&#32;of&#32;the&#32;Software.</emphasis>
+<anchor xml:id="__half_8cs_source_1l00013"/>00013 <emphasis role="comment">*</emphasis>
+<anchor xml:id="__half_8cs_source_1l00014"/>00014 <emphasis role="comment">*&#32;THE&#32;SOFTWARE&#32;IS&#32;PROVIDED&#32;&quot;AS&#32;IS&quot;,&#32;WITHOUT&#32;WARRANTY&#32;OF&#32;ANY&#32;KIND,&#32;EXPRESS&#32;OR</emphasis>
+<anchor xml:id="__half_8cs_source_1l00015"/>00015 <emphasis role="comment">*&#32;IMPLIED,&#32;INCLUDING&#32;BUT&#32;NOT&#32;LIMITED&#32;TO&#32;THE&#32;WARRANTIES&#32;OF&#32;MERCHANTABILITY,</emphasis>
+<anchor xml:id="__half_8cs_source_1l00016"/>00016 <emphasis role="comment">*&#32;FITNESS&#32;FOR&#32;A&#32;PARTICULAR&#32;PURPOSE&#32;AND&#32;NONINFRINGEMENT.&#32;IN&#32;NO&#32;EVENT&#32;SHALL&#32;THE</emphasis>
+<anchor xml:id="__half_8cs_source_1l00017"/>00017 <emphasis role="comment">*&#32;AUTHORS&#32;OR&#32;COPYRIGHT&#32;HOLDERS&#32;BE&#32;LIABLE&#32;FOR&#32;ANY&#32;CLAIM,&#32;DAMAGES&#32;OR&#32;OTHER</emphasis>
+<anchor xml:id="__half_8cs_source_1l00018"/>00018 <emphasis role="comment">*&#32;LIABILITY,&#32;WHETHER&#32;IN&#32;AN&#32;ACTION&#32;OF&#32;CONTRACT,&#32;TORT&#32;OR&#32;OTHERWISE,&#32;ARISING&#32;FROM,</emphasis>
+<anchor xml:id="__half_8cs_source_1l00019"/>00019 <emphasis role="comment">*&#32;OUT&#32;OF&#32;OR&#32;IN&#32;CONNECTION&#32;WITH&#32;THE&#32;SOFTWARE&#32;OR&#32;THE&#32;USE&#32;OR&#32;OTHER&#32;DEALINGS&#32;IN</emphasis>
+<anchor xml:id="__half_8cs_source_1l00020"/>00020 <emphasis role="comment">*&#32;THE&#32;SOFTWARE.</emphasis>
+<anchor xml:id="__half_8cs_source_1l00021"/>00021 <emphasis role="comment">*/</emphasis>
+<anchor xml:id="__half_8cs_source_1l00022"/>00022 
+<anchor xml:id="__half_8cs_source_1l00023"/>00023 <emphasis role="keyword">using</emphasis>&#32;System;
+<anchor xml:id="__half_8cs_source_1l00024"/>00024 <emphasis role="keyword">using</emphasis>&#32;System.Globalization;
+<anchor xml:id="__half_8cs_source_1l00025"/>00025 <emphasis role="keyword">using</emphasis>&#32;System.Runtime.InteropServices;
+<anchor xml:id="__half_8cs_source_1l00026"/>00026 <emphasis role="comment">//using&#32;System.ComponentModel;</emphasis>
+<anchor xml:id="__half_8cs_source_1l00027"/>00027 
+<anchor xml:id="__half_8cs_source_1l00028"/><link linkend="_namespace_photon_1_1_compression_1_1_half_float">00028</link> <emphasis role="keyword">namespace&#32;</emphasis><link linkend="_namespace_photon_1_1_compression_1_1_half_float">Photon.Compression.HalfFloat</link>
+<anchor xml:id="__half_8cs_source_1l00029"/>00029 {
+<anchor xml:id="__half_8cs_source_1l00033"/>00033 &#32;&#32;&#32;&#32;[Serializable]
+<anchor xml:id="__half_8cs_source_1l00034"/>00034 &#32;&#32;&#32;&#32;[StructLayout(LayoutKind.Sequential)]
+<anchor xml:id="__half_8cs_source_1l00035"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">00035</link> &#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">struct&#32;</emphasis><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;:&#32;IConvertible,&#32;IComparable,&#32;IComparable&lt;Half&gt;,&#32;IEquatable&lt;Half&gt;,&#32;IFormattable
+<anchor xml:id="__half_8cs_source_1l00036"/>00036 &#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00037"/>00037 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">private</emphasis>&#32;ushort&#32;value;
+<anchor xml:id="__half_8cs_source_1l00038"/>00038 
+<anchor xml:id="__half_8cs_source_1l00042"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4ec44ed1e835977107d1b9f3899736df">00042</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4ec44ed1e835977107d1b9f3899736df">PrecisionDigits</link>&#32;=&#32;3;
+<anchor xml:id="__half_8cs_source_1l00043"/>00043 
+<anchor xml:id="__half_8cs_source_1l00047"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a73aa258f916d6e7655bb07416a9a542e">00047</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a73aa258f916d6e7655bb07416a9a542e">MantissaBits</link>&#32;=&#32;11;
+<anchor xml:id="__half_8cs_source_1l00048"/>00048 
+<anchor xml:id="__half_8cs_source_1l00052"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9a64e19598a35caab2afb7101d9941d7">00052</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9a64e19598a35caab2afb7101d9941d7">MaximumDecimalExponent</link>&#32;=&#32;4;
+<anchor xml:id="__half_8cs_source_1l00053"/>00053 
+<anchor xml:id="__half_8cs_source_1l00057"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aaec191fbb42075e874ec2998517e5f8b">00057</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aaec191fbb42075e874ec2998517e5f8b">MaximumBinaryExponent</link>&#32;=&#32;15;
+<anchor xml:id="__half_8cs_source_1l00058"/>00058 
+<anchor xml:id="__half_8cs_source_1l00062"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ab70e4820792d6e7c9f66ef13bf2d4d54">00062</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ab70e4820792d6e7c9f66ef13bf2d4d54">MinimumDecimalExponent</link>&#32;=&#32;-4;
+<anchor xml:id="__half_8cs_source_1l00063"/>00063 
+<anchor xml:id="__half_8cs_source_1l00067"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a61e9dd4a961c137bed10343726448b9a">00067</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a61e9dd4a961c137bed10343726448b9a">MinimumBinaryExponent</link>&#32;=&#32;-14;
+<anchor xml:id="__half_8cs_source_1l00068"/>00068 
+<anchor xml:id="__half_8cs_source_1l00072"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a0a14c19d6f00936bb94d0989b182d55e">00072</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a0a14c19d6f00936bb94d0989b182d55e">ExponentRadix</link>&#32;=&#32;2;
+<anchor xml:id="__half_8cs_source_1l00073"/>00073 
+<anchor xml:id="__half_8cs_source_1l00077"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4fb1bedeb1c88643aa4b448ea1671b9c">00077</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">const</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4fb1bedeb1c88643aa4b448ea1671b9c">AdditionRounding</link>&#32;=&#32;1;
+<anchor xml:id="__half_8cs_source_1l00078"/>00078 
+<anchor xml:id="__half_8cs_source_1l00082"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aba21e4c390efd4ee131f5c25501d5c0c">00082</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aba21e4c390efd4ee131f5c25501d5c0c">Epsilon</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(0.0004887581f);
+<anchor xml:id="__half_8cs_source_1l00083"/>00083 
+<anchor xml:id="__half_8cs_source_1l00087"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af3cda36319ae890f04a731cb53e06764">00087</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af3cda36319ae890f04a731cb53e06764">MaxValue</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(65504f);
+<anchor xml:id="__half_8cs_source_1l00088"/>00088 
+<anchor xml:id="__half_8cs_source_1l00092"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a59ed128f39c31360e082f369c5194191">00092</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a59ed128f39c31360e082f369c5194191">MinValue</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(6.103516E-05f);
+<anchor xml:id="__half_8cs_source_1l00093"/>00093 
+<anchor xml:id="__half_8cs_source_1l00097"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a30a2004288a495029a686eefadeadecc">00097</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a30a2004288a495029a686eefadeadecc">NaN</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(0.0f&#32;/&#32;0.0f);
+<anchor xml:id="__half_8cs_source_1l00098"/>00098 
+<anchor xml:id="__half_8cs_source_1l00102"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a6d616994f2e0928d8abfee678e3cb381">00102</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a6d616994f2e0928d8abfee678e3cb381">NegativeInfinity</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(-1.0f&#32;/&#32;0.0f);
+<anchor xml:id="__half_8cs_source_1l00103"/>00103 
+<anchor xml:id="__half_8cs_source_1l00107"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a44058ecd87e425be56ebd495cc655aec">00107</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;readonly&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a44058ecd87e425be56ebd495cc655aec">PositiveInfinity</link>&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(1.0f&#32;/&#32;0.0f);
+<anchor xml:id="__half_8cs_source_1l00108"/>00108 
+<anchor xml:id="__half_8cs_source_1l00113"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">00113</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(<emphasis role="keywordtype">float</emphasis>&#32;value)
+<anchor xml:id="__half_8cs_source_1l00114"/>00114 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00115"/>00115 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;this.value&#32;=&#32;<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities">HalfUtilities</link>.<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities_1af78ec1ecbeb94b6180cc2e3239337180">Pack</link>(value);
+<anchor xml:id="__half_8cs_source_1l00116"/>00116 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00117"/>00117 
+<anchor xml:id="__half_8cs_source_1l00121"/>00121 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="comment">//[CLSCompliant(false)]</emphasis>
+<anchor xml:id="__half_8cs_source_1l00122"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af83a4f32d18a4063627b0f37370cff7e">00122</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;ushort&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af83a4f32d18a4063627b0f37370cff7e">RawValue</link>
+<anchor xml:id="__half_8cs_source_1l00123"/>00123 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00124"/>00124 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">get</emphasis>&#32;{&#32;<emphasis role="keywordflow">return</emphasis>&#32;value;&#32;}
+<anchor xml:id="__half_8cs_source_1l00125"/>00125 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00126"/>00126 
+<anchor xml:id="__half_8cs_source_1l00132"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1adbba489e73b6aeae38d7647b437be5bb">00132</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>[]&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1adbba489e73b6aeae38d7647b437be5bb">ConvertToFloat</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>[]&#32;values)
+<anchor xml:id="__half_8cs_source_1l00133"/>00133 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00134"/>00134 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>[]&#32;results&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<emphasis role="keywordtype">float</emphasis>[values.Length];
+<anchor xml:id="__half_8cs_source_1l00135"/>00135 
+<anchor xml:id="__half_8cs_source_1l00136"/>00136 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;results.Length;&#32;i++)
+<anchor xml:id="__half_8cs_source_1l00137"/>00137 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;results[i]&#32;=&#32;<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities">HalfUtilities</link>.<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities_1a2cac775fbea70517a297a1a3b6408bac">Unpack</link>(values[i].<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af83a4f32d18a4063627b0f37370cff7e">RawValue</link>);
+<anchor xml:id="__half_8cs_source_1l00138"/>00138 
+<anchor xml:id="__half_8cs_source_1l00139"/>00139 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;results;
+<anchor xml:id="__half_8cs_source_1l00140"/>00140 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00141"/>00141 
+<anchor xml:id="__half_8cs_source_1l00147"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a1495c53ecb7a355a52130c1202801c05">00147</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>[]&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a1495c53ecb7a355a52130c1202801c05">ConvertToHalf</link>(<emphasis role="keywordtype">float</emphasis>[]&#32;values)
+<anchor xml:id="__half_8cs_source_1l00148"/>00148 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00149"/>00149 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>[]&#32;results&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>[values.Length];
+<anchor xml:id="__half_8cs_source_1l00150"/>00150 
+<anchor xml:id="__half_8cs_source_1l00151"/>00151 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">for</emphasis>&#32;(<emphasis role="keywordtype">int</emphasis>&#32;i&#32;=&#32;0;&#32;i&#32;&lt;&#32;results.Length;&#32;i++)
+<anchor xml:id="__half_8cs_source_1l00152"/>00152 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;results[i]&#32;=&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(values[i]);
+<anchor xml:id="__half_8cs_source_1l00153"/>00153 
+<anchor xml:id="__half_8cs_source_1l00154"/>00154 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;results;
+<anchor xml:id="__half_8cs_source_1l00155"/>00155 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00156"/>00156 
+<anchor xml:id="__half_8cs_source_1l00161"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aa18ae94a3c7a3c158224132008ced06e">00161</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aa18ae94a3c7a3c158224132008ced06e">IsInfinity</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;half)
+<anchor xml:id="__half_8cs_source_1l00162"/>00162 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00163"/>00163 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(half&#32;==&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a44058ecd87e425be56ebd495cc655aec">PositiveInfinity</link>)&#32;||&#32;(half&#32;==&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a6d616994f2e0928d8abfee678e3cb381">NegativeInfinity</link>);
+<anchor xml:id="__half_8cs_source_1l00164"/>00164 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00165"/>00165 
+<anchor xml:id="__half_8cs_source_1l00170"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">00170</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">IsNaN</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;half)
+<anchor xml:id="__half_8cs_source_1l00171"/>00171 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00172"/>00172 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;half&#32;==&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a30a2004288a495029a686eefadeadecc">NaN</link>;
+<anchor xml:id="__half_8cs_source_1l00173"/>00173 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00174"/>00174 
+<anchor xml:id="__half_8cs_source_1l00179"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906fea5725f206a38cdabedd0ab56417">00179</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906fea5725f206a38cdabedd0ab56417">IsNegativeInfinity</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;half)
+<anchor xml:id="__half_8cs_source_1l00180"/>00180 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00181"/>00181 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;half&#32;==&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a6d616994f2e0928d8abfee678e3cb381">NegativeInfinity</link>;
+<anchor xml:id="__half_8cs_source_1l00182"/>00182 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00183"/>00183 
+<anchor xml:id="__half_8cs_source_1l00188"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a7e4e4314d2e1bca9fd1755cc10ccd550">00188</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a7e4e4314d2e1bca9fd1755cc10ccd550">IsPositiveInfinity</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;half)
+<anchor xml:id="__half_8cs_source_1l00189"/>00189 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00190"/>00190 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;half&#32;==&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a44058ecd87e425be56ebd495cc655aec">PositiveInfinity</link>;
+<anchor xml:id="__half_8cs_source_1l00191"/>00191 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00192"/>00192 
+<anchor xml:id="__half_8cs_source_1l00200"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9e09a8639293e29493e8bcab08150235">00200</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9e09a8639293e29493e8bcab08150235">operator &lt;</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00201"/>00201 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00202"/>00202 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(<emphasis role="keywordtype">float</emphasis>)left&#32;&lt;&#32;(float)right;
+<anchor xml:id="__half_8cs_source_1l00203"/>00203 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00204"/>00204 
+<anchor xml:id="__half_8cs_source_1l00212"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a34a595f78d9d04cec5f1958e71b9ab86">00212</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a34a595f78d9d04cec5f1958e71b9ab86">operator &gt;</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00213"/>00213 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00214"/>00214 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(<emphasis role="keywordtype">float</emphasis>)left&#32;&gt;&#32;(float)right;
+<anchor xml:id="__half_8cs_source_1l00215"/>00215 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00216"/>00216 
+<anchor xml:id="__half_8cs_source_1l00224"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a674e44fa492edfc3431d4a7d845cda71">00224</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a674e44fa492edfc3431d4a7d845cda71">operator &lt;=</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00225"/>00225 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00226"/>00226 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(<emphasis role="keywordtype">float</emphasis>)left&#32;&lt;=&#32;(float)right;
+<anchor xml:id="__half_8cs_source_1l00227"/>00227 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00228"/>00228 
+<anchor xml:id="__half_8cs_source_1l00236"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1afcfeb9a643a610550a333913a6d35610">00236</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1afcfeb9a643a610550a333913a6d35610">operator &gt;=</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00237"/>00237 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00238"/>00238 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(<emphasis role="keywordtype">float</emphasis>)left&#32;&gt;=&#32;(float)right;
+<anchor xml:id="__half_8cs_source_1l00239"/>00239 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00240"/>00240 
+<anchor xml:id="__half_8cs_source_1l00248"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a586f47f97bc299c7dcc3beb3a9b59096">00248</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a586f47f97bc299c7dcc3beb3a9b59096">operator ==</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00249"/>00249 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00250"/>00250 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;left.<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3c766d4c16ebaabed730158b25b8332c">Equals</link>(right);
+<anchor xml:id="__half_8cs_source_1l00251"/>00251 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00252"/>00252 
+<anchor xml:id="__half_8cs_source_1l00260"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ac4d330e8555714e71600e87df17c4abc">00260</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ac4d330e8555714e71600e87df17c4abc">operator !=</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;left,&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;right)
+<anchor xml:id="__half_8cs_source_1l00261"/>00261 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00262"/>00262 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;!left.<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3c766d4c16ebaabed730158b25b8332c">Equals</link>(right);
+<anchor xml:id="__half_8cs_source_1l00263"/>00263 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00264"/>00264 
+<anchor xml:id="__half_8cs_source_1l00270"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ab2a811eace135b03c3d544d407553709">00270</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keyword">explicit</emphasis>&#32;<emphasis role="keyword">operator</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(<emphasis role="keywordtype">float</emphasis>&#32;value)
+<anchor xml:id="__half_8cs_source_1l00271"/>00271 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00272"/>00272 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">new</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>(value);
+<anchor xml:id="__half_8cs_source_1l00273"/>00273 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00274"/>00274 
+<anchor xml:id="__half_8cs_source_1l00280"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4c3c90130d1d96aa1a47dc6955223719">00280</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;implicit&#32;<emphasis role="keyword">operator</emphasis>&#32;float(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;value)
+<anchor xml:id="__half_8cs_source_1l00281"/>00281 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00282"/>00282 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities">HalfUtilities</link>.<link linkend="_class_photon_1_1_compression_1_1_half_float_1_1_half_utilities_1a2cac775fbea70517a297a1a3b6408bac">Unpack</link>(value.value);
+<anchor xml:id="__half_8cs_source_1l00283"/>00283 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00284"/>00284 
+<anchor xml:id="__half_8cs_source_1l00289"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">00289</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">ToString</link>()
+<anchor xml:id="__half_8cs_source_1l00290"/>00290 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00291"/>00291 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(CultureInfo.CurrentCulture,&#32;((<emphasis role="keywordtype">float</emphasis>)<emphasis role="keyword">this</emphasis>).ToString());
+<anchor xml:id="__half_8cs_source_1l00292"/>00292 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00293"/>00293 
+<anchor xml:id="__half_8cs_source_1l00301"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1afa018f6d7983bfd79e19c0e9c9222783">00301</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1afa018f6d7983bfd79e19c0e9c9222783">ToString</link>(<emphasis role="keywordtype">string</emphasis>&#32;format)
+<anchor xml:id="__half_8cs_source_1l00302"/>00302 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00303"/>00303 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(format&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__half_8cs_source_1l00304"/>00304 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">ToString</link>();
+<anchor xml:id="__half_8cs_source_1l00305"/>00305 
+<anchor xml:id="__half_8cs_source_1l00306"/>00306 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(CultureInfo.CurrentCulture,&#32;((<emphasis role="keywordtype">float</emphasis>)<emphasis role="keyword">this</emphasis>).ToString(format,&#32;CultureInfo.CurrentCulture));
+<anchor xml:id="__half_8cs_source_1l00307"/>00307 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00308"/>00308 
+<anchor xml:id="__half_8cs_source_1l00316"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3908d873e3584acbbacfb9c0482a0b6f">00316</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3908d873e3584acbbacfb9c0482a0b6f">ToString</link>(IFormatProvider&#32;formatProvider)
+<anchor xml:id="__half_8cs_source_1l00317"/>00317 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00318"/>00318 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(formatProvider,&#32;((<emphasis role="keywordtype">float</emphasis>)<emphasis role="keyword">this</emphasis>).<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">ToString</link>());
+<anchor xml:id="__half_8cs_source_1l00319"/>00319 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00320"/>00320 
+<anchor xml:id="__half_8cs_source_1l00329"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ac5475150e7047b8f7807edd2768c855b">00329</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ac5475150e7047b8f7807edd2768c855b">ToString</link>(<emphasis role="keywordtype">string</emphasis>&#32;format,&#32;IFormatProvider&#32;formatProvider)
+<anchor xml:id="__half_8cs_source_1l00330"/>00330 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00331"/>00331 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(format&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__half_8cs_source_1l00332"/>00332 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">ToString</link>(formatProvider);
+<anchor xml:id="__half_8cs_source_1l00333"/>00333 
+<anchor xml:id="__half_8cs_source_1l00334"/>00334 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keywordtype">string</emphasis>.Format(formatProvider,&#32;((<emphasis role="keywordtype">float</emphasis>)<emphasis role="keyword">this</emphasis>).<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a906c1fefd372a1b788ead0739aed59e4">ToString</link>(format,&#32;formatProvider));
+<anchor xml:id="__half_8cs_source_1l00335"/>00335 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00336"/>00336 
+<anchor xml:id="__half_8cs_source_1l00341"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1adf7e7432daae305a5887eed9c9e444c8">00341</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1adf7e7432daae305a5887eed9c9e444c8">GetHashCode</link>()
+<anchor xml:id="__half_8cs_source_1l00342"/>00342 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00343"/>00343 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;(((value&#32;*&#32;3)&#32;/&#32;2)&#32;^&#32;value);
+<anchor xml:id="__half_8cs_source_1l00344"/>00344 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00345"/>00345 
+<anchor xml:id="__half_8cs_source_1l00351"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a7218ef863787bfab3f75615940f15503">00351</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a7218ef863787bfab3f75615940f15503">CompareTo</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;value)
+<anchor xml:id="__half_8cs_source_1l00352"/>00352 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00353"/>00353 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;&lt;&#32;value)
+<anchor xml:id="__half_8cs_source_1l00354"/>00354 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00355"/>00355 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;-1;
+<anchor xml:id="__half_8cs_source_1l00356"/>00356 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00357"/>00357 
+<anchor xml:id="__half_8cs_source_1l00358"/>00358 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;&gt;&#32;value)
+<anchor xml:id="__half_8cs_source_1l00359"/>00359 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00360"/>00360 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;1;
+<anchor xml:id="__half_8cs_source_1l00361"/>00361 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00362"/>00362 
+<anchor xml:id="__half_8cs_source_1l00363"/>00363 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;!=&#32;value)
+<anchor xml:id="__half_8cs_source_1l00364"/>00364 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00365"/>00365 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">IsNaN</link>(<emphasis role="keyword">this</emphasis>))
+<anchor xml:id="__half_8cs_source_1l00366"/>00366 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00367"/>00367 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;1;
+<anchor xml:id="__half_8cs_source_1l00368"/>00368 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00369"/>00369 
+<anchor xml:id="__half_8cs_source_1l00370"/>00370 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">IsNaN</link>(value))
+<anchor xml:id="__half_8cs_source_1l00371"/>00371 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00372"/>00372 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;-1;
+<anchor xml:id="__half_8cs_source_1l00373"/>00373 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00374"/>00374 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00375"/>00375 
+<anchor xml:id="__half_8cs_source_1l00376"/>00376 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;0;
+<anchor xml:id="__half_8cs_source_1l00377"/>00377 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00378"/>00378 
+<anchor xml:id="__half_8cs_source_1l00384"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a459ce79f8bc00dd6964aa2821e3ee050">00384</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a459ce79f8bc00dd6964aa2821e3ee050">CompareTo</link>(<emphasis role="keywordtype">object</emphasis>&#32;value)
+<anchor xml:id="__half_8cs_source_1l00385"/>00385 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00386"/>00386 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(value&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__half_8cs_source_1l00387"/>00387 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00388"/>00388 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;1;
+<anchor xml:id="__half_8cs_source_1l00389"/>00389 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00390"/>00390 
+<anchor xml:id="__half_8cs_source_1l00391"/>00391 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!(value&#32;is&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>))
+<anchor xml:id="__half_8cs_source_1l00392"/>00392 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00393"/>00393 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">throw</emphasis>&#32;<emphasis role="keyword">new</emphasis>&#32;ArgumentException(<emphasis role="stringliteral">&quot;The&#32;argument&#32;value&#32;must&#32;be&#32;a&#32;SlimMath.Half.&quot;</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00394"/>00394 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00395"/>00395 
+<anchor xml:id="__half_8cs_source_1l00396"/>00396 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;f&#32;=&#32;(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a046c52bc5180178e3f43a593d79165ea">Half</link>)value;
+<anchor xml:id="__half_8cs_source_1l00397"/>00397 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;&lt;&#32;f)
+<anchor xml:id="__half_8cs_source_1l00398"/>00398 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00399"/>00399 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;-1;
+<anchor xml:id="__half_8cs_source_1l00400"/>00400 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00401"/>00401 
+<anchor xml:id="__half_8cs_source_1l00402"/>00402 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;&gt;&#32;f)
+<anchor xml:id="__half_8cs_source_1l00403"/>00403 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00404"/>00404 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;1;
+<anchor xml:id="__half_8cs_source_1l00405"/>00405 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00406"/>00406 
+<anchor xml:id="__half_8cs_source_1l00407"/>00407 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(<emphasis role="keyword">this</emphasis>&#32;!=&#32;f)
+<anchor xml:id="__half_8cs_source_1l00408"/>00408 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00409"/>00409 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">IsNaN</link>(<emphasis role="keyword">this</emphasis>))
+<anchor xml:id="__half_8cs_source_1l00410"/>00410 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00411"/>00411 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;1;
+<anchor xml:id="__half_8cs_source_1l00412"/>00412 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00413"/>00413 
+<anchor xml:id="__half_8cs_source_1l00414"/>00414 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(!<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9ce2438193b882b63bfec1a6efb1dc15">IsNaN</link>(f))
+<anchor xml:id="__half_8cs_source_1l00415"/>00415 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00416"/>00416 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;-1;
+<anchor xml:id="__half_8cs_source_1l00417"/>00417 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00418"/>00418 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00419"/>00419 
+<anchor xml:id="__half_8cs_source_1l00420"/>00420 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;0;
+<anchor xml:id="__half_8cs_source_1l00421"/>00421 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00422"/>00422 
+<anchor xml:id="__half_8cs_source_1l00432"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3c766d4c16ebaabed730158b25b8332c">00432</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">static</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3c766d4c16ebaabed730158b25b8332c">Equals</link>(ref&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;value1,&#32;ref&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;value2)
+<anchor xml:id="__half_8cs_source_1l00433"/>00433 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00434"/>00434 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;value1.value&#32;==&#32;value2.value;
+<anchor xml:id="__half_8cs_source_1l00435"/>00435 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00436"/>00436 
+<anchor xml:id="__half_8cs_source_1l00443"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ae73ad7877bde6b823bf0736c24f3c218">00443</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ae73ad7877bde6b823bf0736c24f3c218">Equals</link>(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>&#32;other)
+<anchor xml:id="__half_8cs_source_1l00444"/>00444 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00445"/>00445 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;other.value&#32;==&#32;value;
+<anchor xml:id="__half_8cs_source_1l00446"/>00446 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00447"/>00447 
+<anchor xml:id="__half_8cs_source_1l00454"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a995606b36233aca6583ff51ad1f8d44c">00454</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;<emphasis role="keyword">override</emphasis>&#32;<emphasis role="keywordtype">bool</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a995606b36233aca6583ff51ad1f8d44c">Equals</link>(<emphasis role="keywordtype">object</emphasis>&#32;obj)
+<anchor xml:id="__half_8cs_source_1l00455"/>00455 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00456"/>00456 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(obj&#32;==&#32;<emphasis role="keyword">null</emphasis>)
+<anchor xml:id="__half_8cs_source_1l00457"/>00457 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__half_8cs_source_1l00458"/>00458 
+<anchor xml:id="__half_8cs_source_1l00459"/>00459 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">if</emphasis>&#32;(obj.GetType()&#32;!=&#32;GetType())
+<anchor xml:id="__half_8cs_source_1l00460"/>00460 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">false</emphasis>;
+<anchor xml:id="__half_8cs_source_1l00461"/>00461 
+<anchor xml:id="__half_8cs_source_1l00462"/>00462 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3c766d4c16ebaabed730158b25b8332c">Equals</link>((<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>)obj);
+<anchor xml:id="__half_8cs_source_1l00463"/>00463 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00464"/>00464 
+<anchor xml:id="__half_8cs_source_1l00469"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3211582b8061ae2891b70f2fbde74c7f">00469</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keyword">public</emphasis>&#32;TypeCode&#32;<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3211582b8061ae2891b70f2fbde74c7f">GetTypeCode</link>()
+<anchor xml:id="__half_8cs_source_1l00470"/>00470 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00471"/>00471 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Type.GetTypeCode(typeof(<link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half">Half</link>));
+<anchor xml:id="__half_8cs_source_1l00472"/>00472 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00473"/>00473 
+<anchor xml:id="__half_8cs_source_1l00474"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1af76e515aa550090bd5b6f170980356c6">00474</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">bool</emphasis>&#32;IConvertible.ToBoolean(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00475"/>00475 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00476"/>00476 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToBoolean(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00477"/>00477 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00478"/>00478 
+<anchor xml:id="__half_8cs_source_1l00479"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ab43dd952765e82d5bf23ffcdad0448c8">00479</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">byte</emphasis>&#32;IConvertible.ToByte(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00480"/>00480 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00481"/>00481 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToByte(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00482"/>00482 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00483"/>00483 
+<anchor xml:id="__half_8cs_source_1l00484"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a25eb40fdd55c1b530353e89450343010">00484</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">char</emphasis>&#32;IConvertible.ToChar(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00485"/>00485 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00486"/>00486 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">throw</emphasis>&#32;<emphasis role="keyword">new</emphasis>&#32;InvalidCastException(<emphasis role="stringliteral">&quot;Invalid&#32;cast&#32;from&#32;SlimMath.Half&#32;to&#32;System.Char.&quot;</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00487"/>00487 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00488"/>00488 
+<anchor xml:id="__half_8cs_source_1l00489"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a8a6c0db7df065913503d2917e0d1ad07">00489</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;DateTime&#32;IConvertible.ToDateTime(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00490"/>00490 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00491"/>00491 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">throw</emphasis>&#32;<emphasis role="keyword">new</emphasis>&#32;InvalidCastException(<emphasis role="stringliteral">&quot;Invalid&#32;cast&#32;from&#32;SlimMath.Half&#32;to&#32;System.DateTime.&quot;</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00492"/>00492 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00493"/>00493 
+<anchor xml:id="__half_8cs_source_1l00494"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a7df4ae718efc762b17e3a5912ff6d218">00494</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;decimal&#32;IConvertible.ToDecimal(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00495"/>00495 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00496"/>00496 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToDecimal(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00497"/>00497 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00498"/>00498 
+<anchor xml:id="__half_8cs_source_1l00499"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a9c878c24478757d597b723758bfaa25f">00499</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">double</emphasis>&#32;IConvertible.ToDouble(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00500"/>00500 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00501"/>00501 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToDouble(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00502"/>00502 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00503"/>00503 
+<anchor xml:id="__half_8cs_source_1l00504"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a4d7e2260b96c3f2c48682c686e55ea08">00504</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">short</emphasis>&#32;IConvertible.ToInt16(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00505"/>00505 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00506"/>00506 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToInt16(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00507"/>00507 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00508"/>00508 
+<anchor xml:id="__half_8cs_source_1l00509"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a06c60039a4abb97e5a2815ba3b516c85">00509</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">int</emphasis>&#32;IConvertible.ToInt32(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00510"/>00510 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00511"/>00511 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToInt32(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00512"/>00512 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00513"/>00513 
+<anchor xml:id="__half_8cs_source_1l00514"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a07d943420fd00445ea9de879ea6afc1f">00514</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">long</emphasis>&#32;IConvertible.ToInt64(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00515"/>00515 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00516"/>00516 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToInt64(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00517"/>00517 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00518"/>00518 
+<anchor xml:id="__half_8cs_source_1l00519"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a3943d20bf430e64952d980dd02e00ccb">00519</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;sbyte&#32;IConvertible.ToSByte(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00520"/>00520 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00521"/>00521 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToSByte(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00522"/>00522 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00523"/>00523 
+<anchor xml:id="__half_8cs_source_1l00524"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aa281954e80a8ebf127b90b2284677b61">00524</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">float</emphasis>&#32;IConvertible.ToSingle(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00525"/>00525 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00526"/>00526 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;<emphasis role="keyword">this</emphasis>;
+<anchor xml:id="__half_8cs_source_1l00527"/>00527 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00528"/>00528 
+<anchor xml:id="__half_8cs_source_1l00529"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1ad885addca113125f53e962620882f692">00529</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordtype">object</emphasis>&#32;IConvertible.ToType(Type&#32;type,&#32;IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00530"/>00530 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00531"/>00531 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;((IConvertible)((<emphasis role="keywordtype">float</emphasis>)<emphasis role="keyword">this</emphasis>)).ToType(type,&#32;provider);
+<anchor xml:id="__half_8cs_source_1l00532"/>00532 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00533"/>00533 
+<anchor xml:id="__half_8cs_source_1l00534"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a50507e92d757786b6d24cab61d569ca0">00534</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ushort&#32;IConvertible.ToUInt16(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00535"/>00535 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00536"/>00536 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToUInt16(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00537"/>00537 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00538"/>00538 
+<anchor xml:id="__half_8cs_source_1l00539"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1aba4380d5d9125bdbab8e7956014cac1e">00539</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;uint&#32;IConvertible.ToUInt32(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00540"/>00540 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00541"/>00541 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToUInt32(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00542"/>00542 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00543"/>00543 
+<anchor xml:id="__half_8cs_source_1l00544"/><link linkend="_struct_photon_1_1_compression_1_1_half_float_1_1_half_1a023a216a0cdf89e2036307ce9976f5e4">00544</link> &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ulong&#32;IConvertible.ToUInt64(IFormatProvider&#32;provider)
+<anchor xml:id="__half_8cs_source_1l00545"/>00545 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{
+<anchor xml:id="__half_8cs_source_1l00546"/>00546 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;<emphasis role="keywordflow">return</emphasis>&#32;Convert.ToUInt64(<emphasis role="keyword">this</emphasis>);
+<anchor xml:id="__half_8cs_source_1l00547"/>00547 &#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00548"/>00548 &#32;&#32;&#32;&#32;}
+<anchor xml:id="__half_8cs_source_1l00549"/>00549 }
+</programlisting></section>

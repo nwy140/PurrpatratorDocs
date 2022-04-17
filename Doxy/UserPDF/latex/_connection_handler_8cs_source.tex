@@ -1,0 +1,182 @@
+\doxysection{Connection\+Handler.\+cs}
+\label{_connection_handler_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/ConnectionHandler.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/ConnectionHandler.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}ConnectionHandler.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   If the game logic does not call Service() for whatever reason, this keeps the connection.}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00018 \{}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00024     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00025 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00029     \textcolor{keyword}{public} \textcolor{keyword}{class }ConnectionHandler : MonoBehaviour}
+\DoxyCodeLine{00030 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{00031     \textcolor{keyword}{public} class ConnectionHandler}
+\DoxyCodeLine{00032 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00033     \{}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} LoadBalancingClient Client \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} DisconnectAfterKeepAlive = \textcolor{keyword}{false};}
+\DoxyCodeLine{00047         }
+\DoxyCodeLine{00050         \textcolor{keyword}{public} \textcolor{keywordtype}{int} KeepAliveInBackground = 60000;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{int} CountSendAcksOnly \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00054 }
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} FallbackThreadRunning}
+\DoxyCodeLine{00057         \{}
+\DoxyCodeLine{00058             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.fallbackThreadId < 255; \}}
+\DoxyCodeLine{00059         \}}
+\DoxyCodeLine{00060         }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ApplyDontDestroyOnLoad = \textcolor{keyword}{true};}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00065         [NonSerialized]}
+\DoxyCodeLine{00066         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} AppQuits;}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069         \textcolor{keyword}{private} \textcolor{keywordtype}{byte} fallbackThreadId = 255;}
+\DoxyCodeLine{00070         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} didSendAcks;}
+\DoxyCodeLine{00071         \textcolor{keyword}{private} readonly Stopwatch backgroundStopwatch = \textcolor{keyword}{new} Stopwatch();}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073 }
+\DoxyCodeLine{00074 \textcolor{preprocessor}{        \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076 \textcolor{preprocessor}{        \#if UNITY\_2019\_4\_OR\_NEWER}}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00081         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]}
+\DoxyCodeLine{00082         \textcolor{keyword}{static} \textcolor{keywordtype}{void} StaticReset()}
+\DoxyCodeLine{00083         \{}
+\DoxyCodeLine{00084             AppQuits = \textcolor{keyword}{false};}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00091         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} OnApplicationQuit()}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             AppQuits = \textcolor{keyword}{true};}
+\DoxyCodeLine{00094         \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00098         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00099         \{}
+\DoxyCodeLine{00100             \textcolor{keywordflow}{if} (this.ApplyDontDestroyOnLoad)}
+\DoxyCodeLine{00101             \{}
+\DoxyCodeLine{00102                 DontDestroyOnLoad(this.gameObject);}
+\DoxyCodeLine{00103             \}}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00107         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             this.StopFallbackSendAckThread();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             \textcolor{keywordflow}{if} (AppQuits)}
+\DoxyCodeLine{00112             \{}
+\DoxyCodeLine{00113                 \textcolor{keywordflow}{if} (this.Client != \textcolor{keyword}{null} \&\& this.Client.IsConnected)}
+\DoxyCodeLine{00114                 \{}
+\DoxyCodeLine{00115                     this.Client.Disconnect();}
+\DoxyCodeLine{00116                     this.Client.LoadBalancingPeer.StopThread();}
+\DoxyCodeLine{00117                 \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119                 SupportClass.StopAllBackgroundCalls();}
+\DoxyCodeLine{00120             \}}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keywordtype}{void} StartFallbackSendAckThread()}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128 \textcolor{preprocessor}{            \#if !UNITY\_WEBGL}}
+\DoxyCodeLine{00129             \textcolor{keywordflow}{if} (this.FallbackThreadRunning)}
+\DoxyCodeLine{00130             \{}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00132             \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134 \textcolor{preprocessor}{            \#if UNITY\_SWITCH}}
+\DoxyCodeLine{00135             this.fallbackThreadId = SupportClass.StartBackgroundCalls(this.RealtimeFallbackThread, 50);  \textcolor{comment}{// as workaround, we don't name the Thread.}}
+\DoxyCodeLine{00136 \textcolor{preprocessor}{            \#else}}
+\DoxyCodeLine{00137             this.fallbackThreadId = SupportClass.StartBackgroundCalls(this.RealtimeFallbackThread, 50, \textcolor{stringliteral}{"{}RealtimeFallbackThread"{}});}
+\DoxyCodeLine{00138 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00139 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00140         \}}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keywordtype}{void} StopFallbackSendAckThread()}
+\DoxyCodeLine{00143         \{}
+\DoxyCodeLine{00144 \textcolor{preprocessor}{            \#if !UNITY\_WEBGL}}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{if} (!this.FallbackThreadRunning)}
+\DoxyCodeLine{00146             \{}
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00148             \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             SupportClass.StopBackgroundCalls(this.fallbackThreadId);}
+\DoxyCodeLine{00151             this.fallbackThreadId = 255;}
+\DoxyCodeLine{00152 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00153         \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00157         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} RealtimeFallbackThread()}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (this.Client != \textcolor{keyword}{null})}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{if} (!this.Client.IsConnected)}
+\DoxyCodeLine{00162                 \{}
+\DoxyCodeLine{00163                     this.didSendAcks = \textcolor{keyword}{false};}
+\DoxyCodeLine{00164                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167                 \textcolor{keywordflow}{if} (this.Client.LoadBalancingPeer.ConnectionTime -\/ \textcolor{keyword}{this}.Client.LoadBalancingPeer.LastSendOutgoingTime > 100)}
+\DoxyCodeLine{00168                 \{}
+\DoxyCodeLine{00169                     \textcolor{keywordflow}{if} (!this.didSendAcks)}
+\DoxyCodeLine{00170                     \{}
+\DoxyCodeLine{00171                         backgroundStopwatch.Reset();}
+\DoxyCodeLine{00172                         backgroundStopwatch.Start();}
+\DoxyCodeLine{00173                     \}}
+\DoxyCodeLine{00174                     }
+\DoxyCodeLine{00175                     \textcolor{comment}{// check if the client should disconnect after some seconds in background}}
+\DoxyCodeLine{00176                     \textcolor{keywordflow}{if} (backgroundStopwatch.ElapsedMilliseconds > \textcolor{keyword}{this}.KeepAliveInBackground)}
+\DoxyCodeLine{00177                     \{}
+\DoxyCodeLine{00178                         \textcolor{keywordflow}{if} (this.DisconnectAfterKeepAlive)}
+\DoxyCodeLine{00179                         \{}
+\DoxyCodeLine{00180                             this.Client.Disconnect();}
+\DoxyCodeLine{00181                         \}}
+\DoxyCodeLine{00182                         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00183                     \}}
+\DoxyCodeLine{00184                     }
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00186                     this.didSendAcks = \textcolor{keyword}{true};}
+\DoxyCodeLine{00187                     this.CountSendAcksOnly++;}
+\DoxyCodeLine{00188                     this.Client.LoadBalancingPeer.SendAcksOnly();}
+\DoxyCodeLine{00189                 \}}
+\DoxyCodeLine{00190                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00191                 \{}
+\DoxyCodeLine{00192                     this.didSendAcks = \textcolor{keyword}{false};}
+\DoxyCodeLine{00193                 \}}
+\DoxyCodeLine{00194             \}}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00197         \}}
+\DoxyCodeLine{00198     \}}
+\DoxyCodeLine{00199 \}}
+
+\end{DoxyCode}

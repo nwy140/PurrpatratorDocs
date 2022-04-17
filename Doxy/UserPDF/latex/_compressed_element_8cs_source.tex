@@ -1,0 +1,857 @@
+\doxysection{Compressed\+Element.\+cs}
+\label{_compressed_element_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/CompressedElement.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUtilities/TransformCrusher/Structs/CompressedElement.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Runtime.InteropServices;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} emotitron.Compression;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Compression}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00018     [StructLayout(LayoutKind.Explicit)]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }CompressedElement : IEquatable<CompressedElement>}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021 \textcolor{preprocessor}{        \#region Fields}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement reusable = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         [FieldOffset(0)]}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} CompressedFloat cx;}
+\DoxyCodeLine{00027         [FieldOffset(16)]}
+\DoxyCodeLine{00028         \textcolor{keyword}{public} CompressedFloat cy;}
+\DoxyCodeLine{00029         [FieldOffset(32)]}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} CompressedFloat cz;}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032         [FieldOffset(0)]}
+\DoxyCodeLine{00033         \textcolor{keyword}{public} CompressedFloat cUniform;}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035         [FieldOffset(0)]}
+\DoxyCodeLine{00036         \textcolor{keyword}{public} CompressedQuat cQuat;}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         [FieldOffset(48)]}
+\DoxyCodeLine{00039         \textcolor{keyword}{public} ElementCrusher crusher;}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Clear()}
+\DoxyCodeLine{00044         \{}
+\DoxyCodeLine{00045             this.crusher = \textcolor{keyword}{null};}
+\DoxyCodeLine{00046             this.cx = \textcolor{keyword}{new} CompressedFloat(\textcolor{keyword}{null}, 0);}
+\DoxyCodeLine{00047             this.cy = \textcolor{keyword}{new} CompressedFloat(\textcolor{keyword}{null}, 0);}
+\DoxyCodeLine{00048             this.cz = \textcolor{keyword}{new} CompressedFloat(\textcolor{keyword}{null}, 0);}
+\DoxyCodeLine{00049         \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051 \textcolor{preprocessor}{        \#region AsArray}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly ulong[] reusableArray64 = \textcolor{keyword}{new} ulong[2];}
+\DoxyCodeLine{00054         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly uint[] reusableArray32 = \textcolor{keyword}{new} uint[4];}
+\DoxyCodeLine{00055         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly \textcolor{keywordtype}{byte}[] reusableArray8 = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[16];}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} ulong[] AsArray64(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00065             reusableArray64.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00066             reusableArray64.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00067             reusableArray64.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00068             reusableArray64.Zero((bitposition + 63) >> 6);}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{return} reusableArray64;}
+\DoxyCodeLine{00070         \}}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00076         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray64(ulong[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00077         \{}
+\DoxyCodeLine{00078             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00079             nonalloc.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00080             nonalloc.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00081             nonalloc.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00082             nonalloc.Zero((bitposition + 63) >> 6);}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{comment}{// 32}}
+\DoxyCodeLine{00091 \textcolor{comment}{}        \textcolor{keyword}{public} uint[] AsArray32(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00092         \{}
+\DoxyCodeLine{00093             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00094             reusableArray64.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00095             reusableArray64.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00096             reusableArray64.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00097             reusableArray64.Zero(bitposition + 31 >> 5);}
+\DoxyCodeLine{00098             \textcolor{keywordflow}{return} reusableArray32;}
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray32(uint[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00108             nonalloc.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00109             nonalloc.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00110             nonalloc.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00111             nonalloc.Zero((bitposition + 31) >> 5);}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114         \textcolor{comment}{// 8}}
+\DoxyCodeLine{00120 \textcolor{comment}{}        \textcolor{keyword}{public} \textcolor{keywordtype}{byte}[] AsArray8(BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00121         \{}
+\DoxyCodeLine{00122             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00123             reusableArray8.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00124             reusableArray8.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00125             reusableArray8.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00126             reusableArray64.Zero(bitposition + 7 >> 3);}
+\DoxyCodeLine{00127             \textcolor{keywordflow}{return} reusableArray8;}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keywordtype}{void} AsArray8(\textcolor{keywordtype}{byte}[] nonalloc, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{keywordtype}{int} bitposition = 0;}
+\DoxyCodeLine{00137             nonalloc.Append(cx.cvalue, ref bitposition, cx.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00138             nonalloc.Append(cy.cvalue, ref bitposition, cy.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00139             nonalloc.Append(cz.cvalue, ref bitposition, cz.crusher.\_bits[(\textcolor{keywordtype}{int})bcl]);}
+\DoxyCodeLine{00140             nonalloc.Zero((bitposition + 7) >> 3);}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145 \textcolor{preprocessor}{        \#region Implicit/Explicit Casts}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ulong(CompressedElement ce)}
+\DoxyCodeLine{00148         \{}
+\DoxyCodeLine{00149 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{if} (ce.crusher.Cached\_TotalBits[0] > 64)}
+\DoxyCodeLine{00151                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedElement to ulong only works if the total bits of all crushers is >= 64 bits."{}});}
+\DoxyCodeLine{00152 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00153             ulong buffer = 0;}
+\DoxyCodeLine{00154             ce.crusher.Write(ce, ref buffer);}
+\DoxyCodeLine{00155             \textcolor{keywordflow}{return} buffer;}
+\DoxyCodeLine{00156         \}}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} uint(CompressedElement ce)}
+\DoxyCodeLine{00159         \{}
+\DoxyCodeLine{00160 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00161             \textcolor{keywordflow}{if} (ce.crusher.Cached\_TotalBits[0] > 32)}
+\DoxyCodeLine{00162                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedElement to uint only works if the total bits of all crushers is >= 32 bits."{}});}
+\DoxyCodeLine{00163 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00164             ulong buffer = 0;}
+\DoxyCodeLine{00165             ce.crusher.Write(ce, ref buffer);}
+\DoxyCodeLine{00166             \textcolor{keywordflow}{return} (uint)buffer;}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ushort(CompressedElement ce)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{if} (ce.crusher.Cached\_TotalBits[0] > 16)}
+\DoxyCodeLine{00173                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedElement to ushort only works if the total bits of all crushers is >= 16 bits."{}});}
+\DoxyCodeLine{00174 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00175             ulong buffer = 0;}
+\DoxyCodeLine{00176             ce.crusher.Write(ce, ref buffer);}
+\DoxyCodeLine{00177             \textcolor{keywordflow}{return} (ushort)buffer;}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} byte(CompressedElement ce)}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182 \textcolor{preprocessor}{\#if DEVELOPMENT\_BUILD || UNITY\_EDITOR}}
+\DoxyCodeLine{00183             \textcolor{keywordflow}{if} (ce.crusher.Cached\_TotalBits[0] > 8)}
+\DoxyCodeLine{00184                 Debug.LogError(\textcolor{stringliteral}{"{}Cast of CompressedElement to byte only works if the total bits of all crushers is >= 8 bits."{}});}
+\DoxyCodeLine{00185 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186             ulong buffer = 0;}
+\DoxyCodeLine{00187             ce.crusher.Write(ce, ref buffer);}
+\DoxyCodeLine{00188             \textcolor{keywordflow}{return} (\textcolor{keywordtype}{byte})buffer;}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} ulong[] (CompressedElement ce)}
+\DoxyCodeLine{00192         \{}
+\DoxyCodeLine{00193             ce.AsArray64(reusableArray64);}
+\DoxyCodeLine{00194             \textcolor{keywordflow}{return} reusableArray64;}
+\DoxyCodeLine{00195         \}}
+\DoxyCodeLine{00196 }
+\DoxyCodeLine{00197         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} uint[] (CompressedElement ce)}
+\DoxyCodeLine{00198         \{}
+\DoxyCodeLine{00199             ce.AsArray32(reusableArray32);}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{return} reusableArray32;}
+\DoxyCodeLine{00201         \}}
+\DoxyCodeLine{00202 }
+\DoxyCodeLine{00203         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} \textcolor{keywordtype}{byte}[] (CompressedElement ce)}
+\DoxyCodeLine{00204         \{}
+\DoxyCodeLine{00205             ce.AsArray8(reusableArray8);}
+\DoxyCodeLine{00206             \textcolor{keywordflow}{return} reusableArray8;}
+\DoxyCodeLine{00207         \}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} Element(CompressedElement ce)}
+\DoxyCodeLine{00210         \{}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{return} ce.Decompress();}
+\DoxyCodeLine{00212         \}}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} Vector3(CompressedElement ce)}
+\DoxyCodeLine{00215         \{}
+\DoxyCodeLine{00216             Element e = ce.Decompress();}
+\DoxyCodeLine{00217             \textcolor{keywordflow}{if} (ce.crusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00218             \{}
+\DoxyCodeLine{00219 \textcolor{preprocessor}{\#if !DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00220                 Debug.LogWarning(\textcolor{stringliteral}{"{}Casting CompressedElement of type Quaternion to a Vector3 using quaternion.eulerAngles. Is this intentional? Cast to Quaternion and convert to eulerAnges yourself to silence this warning."{}});}
+\DoxyCodeLine{00221 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00222                 \textcolor{keywordflow}{return} e.quat.eulerAngles;}
+\DoxyCodeLine{00223             \}}
+\DoxyCodeLine{00224             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00225             \{}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{return} e.v;}
+\DoxyCodeLine{00227             \}}
+\DoxyCodeLine{00228         \}}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{explicit} \textcolor{keyword}{operator} Quaternion(CompressedElement ce)}
+\DoxyCodeLine{00231         \{}
+\DoxyCodeLine{00232             Element e = ce.Decompress();}
+\DoxyCodeLine{00233             var crusher = ce.crusher;}
+\DoxyCodeLine{00234             var trsType = crusher.TRSType;}
+\DoxyCodeLine{00235 }
+\DoxyCodeLine{00236             \textcolor{keywordflow}{if} (trsType == TRSType.Quaternion)}
+\DoxyCodeLine{00237             \{}
+\DoxyCodeLine{00238                 \textcolor{keywordflow}{return} e.quat;}
+\DoxyCodeLine{00239             \}}
+\DoxyCodeLine{00240             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (trsType == TRSType.Euler)}
+\DoxyCodeLine{00241             \{}
+\DoxyCodeLine{00242 \textcolor{preprocessor}{\#if !DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00243                 Debug.LogWarning(\textcolor{stringliteral}{"{}Casting a CompressedElement of TRSType.Euler to a Quaternion using Quaternion.Euler(). Is this intentional? Cast to Vector3 and convert to Quaternion yourself to silence this warning."{}});}
+\DoxyCodeLine{00244 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00245                 \textcolor{keywordflow}{return} Quaternion.Euler(e.v);}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248             \{}
+\DoxyCodeLine{00249 \textcolor{preprocessor}{\#if !DEVELOPMENT\_BUILD}}
+\DoxyCodeLine{00250                 Debug.LogError(\textcolor{stringliteral}{"{}Trying to cast a CompresedElement of "{}} + trsType + \textcolor{stringliteral}{"{} to a quaternion, even though it is not a rotation type. Are you using the correct ElementCrusher to compressed this value?"{}});}
+\DoxyCodeLine{00251 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{return} e.quat;}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254         \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258 \textcolor{preprocessor}{        \#region Constructors}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         [Obsolete(\textcolor{stringliteral}{"{}Compressed Element is now a class and no longer a struct. Where this used to be used, now compressedElement.Clear() should be used instead."{}})]}
+\DoxyCodeLine{00261         \textcolor{keyword}{public} \textcolor{keyword}{static} readonly CompressedElement Empty = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263         \textcolor{keyword}{public} CompressedElement()}
+\DoxyCodeLine{00264         \{}
+\DoxyCodeLine{00265             \textcolor{comment}{//UnityEngine.Debug.LogWarning("{}CE Construct NULL"{});}}
+\DoxyCodeLine{00266         \}}
+\DoxyCodeLine{00267         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00268         \textcolor{keyword}{public} CompressedElement(ElementCrusher crusher, CompressedFloat cx, CompressedFloat cy, CompressedFloat cz)\textcolor{comment}{/* : this()*/}}
+\DoxyCodeLine{00269         \{}
+\DoxyCodeLine{00270             \textcolor{comment}{//UnityEngine.Debug.LogWarning("{}CE Construct"{});}}
+\DoxyCodeLine{00271             this.crusher = crusher;}
+\DoxyCodeLine{00272             this.cx = cx;}
+\DoxyCodeLine{00273             this.cy = cy;}
+\DoxyCodeLine{00274             this.cz = cz;}
+\DoxyCodeLine{00275         \}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00278         \textcolor{keyword}{public} CompressedElement(ElementCrusher crusher, uint cx, uint cy, uint cz) \textcolor{comment}{/*: this()*/}}
+\DoxyCodeLine{00279         \{}
+\DoxyCodeLine{00280             UnityEngine.Debug.LogWarning(\textcolor{stringliteral}{"{}CE Construct"{}});}
+\DoxyCodeLine{00281             this.crusher = crusher;}
+\DoxyCodeLine{00282             this.cx = \textcolor{keyword}{new} CompressedFloat(crusher.XCrusher, cx);}
+\DoxyCodeLine{00283             this.cy = \textcolor{keyword}{new} CompressedFloat(crusher.YCrusher, cy);}
+\DoxyCodeLine{00284             this.cz = \textcolor{keyword}{new} CompressedFloat(crusher.ZCrusher, cz);}
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287         \textcolor{comment}{// Constructor for uniform scale}}
+\DoxyCodeLine{00295 \textcolor{comment}{}        \textcolor{keyword}{public} CompressedElement(ElementCrusher crusher, uint cUniform) \textcolor{comment}{/*: this()*/}}
+\DoxyCodeLine{00296         \{}
+\DoxyCodeLine{00297             UnityEngine.Debug.LogWarning(\textcolor{stringliteral}{"{}CE Construct"{}});}
+\DoxyCodeLine{00298             this.crusher = crusher;}
+\DoxyCodeLine{00299             this.cUniform = \textcolor{keyword}{new} CompressedFloat(crusher.UCrusher, cUniform);}
+\DoxyCodeLine{00300         \}}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302         \textcolor{comment}{// Constructor for Quaternion rotation}}
+\DoxyCodeLine{00309 \textcolor{comment}{}        \textcolor{keyword}{public} CompressedElement(ElementCrusher crusher, ulong cQuat)\textcolor{comment}{/* : this()*/}}
+\DoxyCodeLine{00310         \{}
+\DoxyCodeLine{00311             UnityEngine.Debug.LogWarning(\textcolor{stringliteral}{"{}CE Construct"{}});}
+\DoxyCodeLine{00312             this.crusher = crusher;}
+\DoxyCodeLine{00313             this.cQuat = \textcolor{keyword}{new} CompressedQuat(crusher.QCrusher, cQuat);}
+\DoxyCodeLine{00314         \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00318 \textcolor{preprocessor}{        \#region Set}}
+\DoxyCodeLine{00319 }
+\DoxyCodeLine{00320         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(ElementCrusher crusher, CompressedFloat cx, CompressedFloat cy, CompressedFloat cz)}
+\DoxyCodeLine{00321         \{}
+\DoxyCodeLine{00322             this.crusher = crusher;}
+\DoxyCodeLine{00323             this.cx = cx;}
+\DoxyCodeLine{00324             this.cy = cy;}
+\DoxyCodeLine{00325             this.cz = cz;}
+\DoxyCodeLine{00326         \}}
+\DoxyCodeLine{00327         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(ElementCrusher crusher, uint cx, uint cy, uint cz)}
+\DoxyCodeLine{00328         \{}
+\DoxyCodeLine{00329             this.crusher = crusher;}
+\DoxyCodeLine{00330             this.cx = \textcolor{keyword}{new} CompressedFloat(crusher.XCrusher, cx);}
+\DoxyCodeLine{00331             this.cy = \textcolor{keyword}{new} CompressedFloat(crusher.YCrusher, cy);}
+\DoxyCodeLine{00332             this.cz = \textcolor{keyword}{new} CompressedFloat(crusher.ZCrusher, cz);}
+\DoxyCodeLine{00333         \}}
+\DoxyCodeLine{00334         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(ElementCrusher crusher, uint cUniform) \textcolor{comment}{/*: this()*/}}
+\DoxyCodeLine{00335         \{}
+\DoxyCodeLine{00336             this.crusher = crusher;}
+\DoxyCodeLine{00337             this.cUniform = \textcolor{keyword}{new} CompressedFloat(crusher.UCrusher, cUniform);}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Set(ElementCrusher crusher, ulong cQuat)\textcolor{comment}{/* : this()*/}}
+\DoxyCodeLine{00340         \{}
+\DoxyCodeLine{00341             this.crusher = crusher;}
+\DoxyCodeLine{00342             this.cQuat = \textcolor{keyword}{new} CompressedQuat(crusher.QCrusher, cQuat);}
+\DoxyCodeLine{00343         \}}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CopyTo(CompressedElement copyTarget)}
+\DoxyCodeLine{00348         \{}
+\DoxyCodeLine{00349             copyTarget.crusher = this.crusher;}
+\DoxyCodeLine{00350             copyTarget.cx = this.cx;}
+\DoxyCodeLine{00351             copyTarget.cy = this.cy;}
+\DoxyCodeLine{00352             copyTarget.cz = this.cz;}
+\DoxyCodeLine{00353         \}}
+\DoxyCodeLine{00354         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CopyFrom(CompressedElement copySource)}
+\DoxyCodeLine{00355         \{}
+\DoxyCodeLine{00356             this.crusher = copySource.crusher;}
+\DoxyCodeLine{00357             this.cx = copySource.cx;}
+\DoxyCodeLine{00358             this.cy = copySource.cy;}
+\DoxyCodeLine{00359             this.cz = copySource.cz;}
+\DoxyCodeLine{00360         \}}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362         \textcolor{comment}{// Indexer}}
+\DoxyCodeLine{00363         \textcolor{comment}{//TODO make these switches}}
+\DoxyCodeLine{00364         \textcolor{keyword}{public} uint \textcolor{keyword}{this}[\textcolor{keywordtype}{int} axis]}
+\DoxyCodeLine{00365         \{}
+\DoxyCodeLine{00366             \textcolor{keyword}{get}}
+\DoxyCodeLine{00367             \{}
+\DoxyCodeLine{00368                 \textcolor{keywordflow}{return} (axis == 0) ? cx : (axis == 1) ? cy : cz;}
+\DoxyCodeLine{00369             \}}
+\DoxyCodeLine{00370         \}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{00372         \textcolor{keyword}{public} uint GetUInt(\textcolor{keywordtype}{int} axis)}
+\DoxyCodeLine{00373         \{}
+\DoxyCodeLine{00374             \textcolor{keywordflow}{return} (axis == 0) ? cx : (axis == 1) ? cy : cz;}
+\DoxyCodeLine{00375         \}}
+\DoxyCodeLine{00376 }
+\DoxyCodeLine{00377         \textcolor{keyword}{public} Element Decompress()}
+\DoxyCodeLine{00378         \{}
+\DoxyCodeLine{00379             \textcolor{keywordflow}{return} crusher.Decompress(\textcolor{keyword}{this});}
+\DoxyCodeLine{00380         \}}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Serialize(\textcolor{keywordtype}{byte}[] buffer, ref \textcolor{keywordtype}{int} bitposition, IncludedAxes ia, BitCullingLevel bcl = BitCullingLevel.NoCulling)}
+\DoxyCodeLine{00383         \{}
+\DoxyCodeLine{00384             crusher.Write(\textcolor{keyword}{this}, buffer, ref bitposition, ia, bcl);}
+\DoxyCodeLine{00385         \}}
+\DoxyCodeLine{00386 }
+\DoxyCodeLine{00390         [System.Obsolete(\textcolor{stringliteral}{"{}Use a.Compare(b) now instead."{}})]}
+\DoxyCodeLine{00391         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} Compare(CompressedElement a, CompressedElement b)}
+\DoxyCodeLine{00392         \{}
+\DoxyCodeLine{00393             \textcolor{keywordflow}{return} a.Equals(b);}
+\DoxyCodeLine{00394         \}}
+\DoxyCodeLine{00395 }
+\DoxyCodeLine{00400         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} HighestDifferentBit(uint a, uint b)}
+\DoxyCodeLine{00401         \{}
+\DoxyCodeLine{00402             \textcolor{keywordtype}{int} highestDiffBit = 0;}
+\DoxyCodeLine{00403 }
+\DoxyCodeLine{00404             \textcolor{comment}{// TODO: This needs testing}}
+\DoxyCodeLine{00405             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < 32; i++)}
+\DoxyCodeLine{00406             \{}
+\DoxyCodeLine{00407                 uint mask = (uint)1 << i;}
+\DoxyCodeLine{00408 }
+\DoxyCodeLine{00409                 \textcolor{keywordflow}{if} ((a \& mask) == (b \& mask))}
+\DoxyCodeLine{00410                 \{}
+\DoxyCodeLine{00411                     highestDiffBit = i;}
+\DoxyCodeLine{00412                 \}}
+\DoxyCodeLine{00413             \}}
+\DoxyCodeLine{00414             \textcolor{keywordflow}{return} highestDiffBit;}
+\DoxyCodeLine{00415         \}}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417         \textcolor{comment}{//public static CompressedElement operator +(CompressedElement a, CompressedElement b)}}
+\DoxyCodeLine{00418         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00419         \textcolor{comment}{//  return new CompressedElement(a.crusher, (uint)((long)a.cx + b.cx), (uint)((long)a.cy + b.cy), (uint)((long)a.cz + b.cz));}}
+\DoxyCodeLine{00420         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00421         \textcolor{comment}{//public static CompressedElement operator -\/(CompressedElement a, CompressedElement b)}}
+\DoxyCodeLine{00422         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00423         \textcolor{comment}{//  return new CompressedElement(a.crusher, (uint)((long)a.cx -\/ b.cx), (uint)((long)a.cy -\/ b.cy), (uint)((long)a.cz -\/ b.cz));}}
+\DoxyCodeLine{00424         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00425         \textcolor{comment}{//public static CompressedElement operator *(CompressedElement a, float b)}}
+\DoxyCodeLine{00426         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00427         \textcolor{comment}{//  return new CompressedElement(a.crusher, (uint)(a.cx * b), (uint)(a.cy * b), (uint)(a.cz * b));}}
+\DoxyCodeLine{00428         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00433         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Extrapolate(ElementCrusher crusher, CompressedElement target, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{int} divisor = 2)}
+\DoxyCodeLine{00434         \{}
+\DoxyCodeLine{00435             target.Set}
+\DoxyCodeLine{00436                 (}
+\DoxyCodeLine{00437                 crusher,}
+\DoxyCodeLine{00438                 (uint)(curr.cx + (((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx)) / divisor),}
+\DoxyCodeLine{00439                 (uint)(curr.cy + (((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy)) / divisor),}
+\DoxyCodeLine{00440                 (uint)(curr.cz + (((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz)) / divisor)}
+\DoxyCodeLine{00441                 );}
+\DoxyCodeLine{00442         \}}
+\DoxyCodeLine{00443         [System.Obsolete]}
+\DoxyCodeLine{00444         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement Extrapolate(ElementCrusher crusher, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{int} divisor = 2)}
+\DoxyCodeLine{00445         \{}
+\DoxyCodeLine{00446             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement}
+\DoxyCodeLine{00447                 (}
+\DoxyCodeLine{00448                 crusher,}
+\DoxyCodeLine{00449                 (uint)(curr.cx + (((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx)) / divisor),}
+\DoxyCodeLine{00450                 (uint)(curr.cy + (((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy)) / divisor),}
+\DoxyCodeLine{00451                 (uint)(curr.cz + (((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz)) / divisor)}
+\DoxyCodeLine{00452                 );}
+\DoxyCodeLine{00453         \}}
+\DoxyCodeLine{00458         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Extrapolate(CompressedElement target, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{int} divisor = 2)}
+\DoxyCodeLine{00459         \{}
+\DoxyCodeLine{00460             target.Set}
+\DoxyCodeLine{00461                 (}
+\DoxyCodeLine{00462                 curr.crusher,}
+\DoxyCodeLine{00463                 (uint)(curr.cx + (((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx)) / divisor),}
+\DoxyCodeLine{00464                 (uint)(curr.cy + (((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy)) / divisor),}
+\DoxyCodeLine{00465                 (uint)(curr.cz + (((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz)) / divisor)}
+\DoxyCodeLine{00466                 );}
+\DoxyCodeLine{00467         \}}
+\DoxyCodeLine{00468         [System.Obsolete]}
+\DoxyCodeLine{00469         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement Extrapolate(CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{int} divisor = 2)}
+\DoxyCodeLine{00470         \{}
+\DoxyCodeLine{00471             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement}
+\DoxyCodeLine{00472                 (}
+\DoxyCodeLine{00473                 curr.crusher,}
+\DoxyCodeLine{00474                 (uint)(curr.cx + (((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx)) / divisor),}
+\DoxyCodeLine{00475                 (uint)(curr.cy + (((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy)) / divisor),}
+\DoxyCodeLine{00476                 (uint)(curr.cz + (((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz)) / divisor)}
+\DoxyCodeLine{00477                 );}
+\DoxyCodeLine{00478         \}}
+\DoxyCodeLine{00482         [System.Obsolete()]}
+\DoxyCodeLine{00483         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Extrapolate(ElementCrusher crusher, CompressedElement target, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{float} amount = .5f)}
+\DoxyCodeLine{00484         \{}
+\DoxyCodeLine{00485             \textcolor{comment}{//int divisor = (int)(1f / amount);}}
+\DoxyCodeLine{00486             \textcolor{comment}{//return Extrapolate(curr, prev, divisor);}}
+\DoxyCodeLine{00487             target.Set}
+\DoxyCodeLine{00488                 (}
+\DoxyCodeLine{00489                 crusher,}
+\DoxyCodeLine{00490                 (uint)(curr.cx + ((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx) * amount),}
+\DoxyCodeLine{00491                 (uint)(curr.cy + ((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy) * amount),}
+\DoxyCodeLine{00492                 (uint)(curr.cz + ((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz) * amount)}
+\DoxyCodeLine{00493                 );}
+\DoxyCodeLine{00494         \}}
+\DoxyCodeLine{00495         [System.Obsolete]}
+\DoxyCodeLine{00496         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement Extrapolate(ElementCrusher crusher, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{float} amount = .5f)}
+\DoxyCodeLine{00497         \{}
+\DoxyCodeLine{00498             \textcolor{comment}{//int divisor = (int)(1f / amount);}}
+\DoxyCodeLine{00499             \textcolor{comment}{//return Extrapolate(curr, prev, divisor);}}
+\DoxyCodeLine{00500             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement}
+\DoxyCodeLine{00501                 (}
+\DoxyCodeLine{00502                 crusher,}
+\DoxyCodeLine{00503                 (uint)(curr.cx + ((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx) * amount),}
+\DoxyCodeLine{00504                 (uint)(curr.cy + ((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy) * amount),}
+\DoxyCodeLine{00505                 (uint)(curr.cz + ((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz) * amount)}
+\DoxyCodeLine{00506                 );}
+\DoxyCodeLine{00507         \}}
+\DoxyCodeLine{00511         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Extrapolate(CompressedElement target, CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{float} amount = .5f)}
+\DoxyCodeLine{00512         \{}
+\DoxyCodeLine{00513             \textcolor{comment}{//int divisor = (int)(1f / amount);}}
+\DoxyCodeLine{00514             \textcolor{comment}{//return Extrapolate(curr, prev, divisor);}}
+\DoxyCodeLine{00515             target.Set}
+\DoxyCodeLine{00516                 (}
+\DoxyCodeLine{00517                 curr.crusher,}
+\DoxyCodeLine{00518                 (uint)(curr.cx + ((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx) * amount),}
+\DoxyCodeLine{00519                 (uint)(curr.cy + ((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy) * amount),}
+\DoxyCodeLine{00520                 (uint)(curr.cz + ((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz) * amount)}
+\DoxyCodeLine{00521                 );}
+\DoxyCodeLine{00522         \}}
+\DoxyCodeLine{00523         [System.Obsolete()]}
+\DoxyCodeLine{00524         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement Extrapolate(CompressedElement curr, CompressedElement prev, \textcolor{keywordtype}{float} amount = .5f)}
+\DoxyCodeLine{00525         \{}
+\DoxyCodeLine{00526             \textcolor{comment}{//int divisor = (int)(1f / amount);}}
+\DoxyCodeLine{00527             \textcolor{comment}{//return Extrapolate(curr, prev, divisor);}}
+\DoxyCodeLine{00528             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement}
+\DoxyCodeLine{00529                 (}
+\DoxyCodeLine{00530                 curr.crusher,}
+\DoxyCodeLine{00531                 (uint)(curr.cx + ((\textcolor{keywordtype}{long})curr.cx -\/ prev.cx) * amount),}
+\DoxyCodeLine{00532                 (uint)(curr.cy + ((\textcolor{keywordtype}{long})curr.cy -\/ prev.cy) * amount),}
+\DoxyCodeLine{00533                 (uint)(curr.cz + ((\textcolor{keywordtype}{long})curr.cz -\/ prev.cz) * amount)}
+\DoxyCodeLine{00534                 );}
+\DoxyCodeLine{00535         \}}
+\DoxyCodeLine{00536 }
+\DoxyCodeLine{00537         \textcolor{keyword}{private} \textcolor{keyword}{static} CompressedElement uppers = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00538         \textcolor{keyword}{private} \textcolor{keyword}{static} CompressedElement lowers = \textcolor{keyword}{new} CompressedElement();}
+\DoxyCodeLine{00549         \textcolor{keyword}{public} \textcolor{keyword}{static} BitCullingLevel GetGuessableBitCullLevel(CompressedElement a, CompressedElement b, BitCullingLevel maxCullLvl)}
+\DoxyCodeLine{00550         \{}
+\DoxyCodeLine{00551             \textcolor{keywordflow}{for} (BitCullingLevel lvl = maxCullLvl; lvl > 0; lvl-\/-\/)}
+\DoxyCodeLine{00552             \{}
+\DoxyCodeLine{00553                 a.ZeroLowerBits(uppers, lvl);}
+\DoxyCodeLine{00554                 b.ZeroUpperBits(lowers, lvl);}
+\DoxyCodeLine{00555 }
+\DoxyCodeLine{00556                 \textcolor{keywordflow}{if} ((uppers.cx | lowers.cx) == b.cx \&\&}
+\DoxyCodeLine{00557                     (uppers.cy | lowers.cy) == b.cy \&\&}
+\DoxyCodeLine{00558                     (uppers.cz | lowers.cz) == b.cz)}
+\DoxyCodeLine{00559                     \textcolor{keywordflow}{return} lvl;}
+\DoxyCodeLine{00560             \}}
+\DoxyCodeLine{00561             \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00562         \}}
+\DoxyCodeLine{00563         [System.Obsolete()]}
+\DoxyCodeLine{00564         \textcolor{keyword}{public} \textcolor{keyword}{static} BitCullingLevel GetGuessableBitCullLevel(CompressedElement oldComp, CompressedElement newComp, ElementCrusher ec, BitCullingLevel maxCullLvl)}
+\DoxyCodeLine{00565         \{}
+\DoxyCodeLine{00566             \textcolor{keywordflow}{for} (BitCullingLevel lvl = maxCullLvl; lvl > 0; lvl-\/-\/)}
+\DoxyCodeLine{00567             \{}
+\DoxyCodeLine{00568                 oldComp.ZeroLowerBits(uppers, lvl);}
+\DoxyCodeLine{00569                 newComp.ZeroUpperBits(lowers, lvl);}
+\DoxyCodeLine{00570 }
+\DoxyCodeLine{00571                 \textcolor{keywordflow}{if} ((uppers.cx | lowers.cx) == newComp.cx \&\&}
+\DoxyCodeLine{00572                     (uppers.cy | lowers.cy) == newComp.cy \&\&}
+\DoxyCodeLine{00573                     (uppers.cz | lowers.cz) == newComp.cz)}
+\DoxyCodeLine{00574                     \textcolor{keywordflow}{return} lvl;}
+\DoxyCodeLine{00575             \}}
+\DoxyCodeLine{00576             \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00577         \}}
+\DoxyCodeLine{00578 }
+\DoxyCodeLine{00582         \textcolor{keyword}{public} \textcolor{keyword}{static} BitCullingLevel FindBestBitCullLevel(CompressedElement a, CompressedElement b, BitCullingLevel maxCulling)}
+\DoxyCodeLine{00583         \{}
+\DoxyCodeLine{00584             ElementCrusher ec = a.crusher;}
+\DoxyCodeLine{00585             \textcolor{keywordflow}{if} (ec == \textcolor{keyword}{null})}
+\DoxyCodeLine{00586             \{}
+\DoxyCodeLine{00587                 UnityEngine.Debug.Log(\textcolor{stringliteral}{"{}NUL CE CRUSHER FindBestBitCullLevel"{}});}
+\DoxyCodeLine{00588                 \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00589             \}}
+\DoxyCodeLine{00590 }
+\DoxyCodeLine{00592             \textcolor{keywordflow}{if} (ec.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00593             \{}
+\DoxyCodeLine{00594                 \textcolor{keywordflow}{if} ((ulong)a.cQuat == (ulong)b.cQuat)}
+\DoxyCodeLine{00595                     \textcolor{keywordflow}{return} BitCullingLevel.DropAll;}
+\DoxyCodeLine{00596                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00597                     \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00598             \}}
+\DoxyCodeLine{00599 }
+\DoxyCodeLine{00600             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.NoCulling || !TestMatchingUpper(a, b, BitCullingLevel.DropThird))}
+\DoxyCodeLine{00601                 \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00602 }
+\DoxyCodeLine{00603             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropThird || !TestMatchingUpper(a, b, BitCullingLevel.DropHalf))}
+\DoxyCodeLine{00604                 \textcolor{keywordflow}{return} BitCullingLevel.DropThird;}
+\DoxyCodeLine{00605 }
+\DoxyCodeLine{00606             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropHalf || !TestMatchingUpper(a, b, BitCullingLevel.DropAll))}
+\DoxyCodeLine{00607                 \textcolor{keywordflow}{return} BitCullingLevel.DropHalf;}
+\DoxyCodeLine{00608 }
+\DoxyCodeLine{00609             \textcolor{comment}{// both values are the same}}
+\DoxyCodeLine{00610             \textcolor{keywordflow}{return} BitCullingLevel.DropAll;}
+\DoxyCodeLine{00611         \}}
+\DoxyCodeLine{00612         [System.Obsolete()]}
+\DoxyCodeLine{00613         \textcolor{keyword}{public} \textcolor{keyword}{static} BitCullingLevel FindBestBitCullLevel(CompressedElement a, CompressedElement b, ElementCrusher ec, BitCullingLevel maxCulling)}
+\DoxyCodeLine{00614         \{}
+\DoxyCodeLine{00616             \textcolor{keywordflow}{if} (ec.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00617             \{}
+\DoxyCodeLine{00618                 \textcolor{keywordflow}{if} ((ulong)a.cQuat == (ulong)b.cQuat)}
+\DoxyCodeLine{00619                     \textcolor{keywordflow}{return} BitCullingLevel.DropAll;}
+\DoxyCodeLine{00620                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00621                     \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00622             \}}
+\DoxyCodeLine{00623 }
+\DoxyCodeLine{00624             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.NoCulling || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropThird))}
+\DoxyCodeLine{00625                 \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00626 }
+\DoxyCodeLine{00627             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropThird || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropHalf))}
+\DoxyCodeLine{00628                 \textcolor{keywordflow}{return} BitCullingLevel.DropThird;}
+\DoxyCodeLine{00629 }
+\DoxyCodeLine{00630             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropHalf || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropAll))}
+\DoxyCodeLine{00631                 \textcolor{keywordflow}{return} BitCullingLevel.DropHalf;}
+\DoxyCodeLine{00632 }
+\DoxyCodeLine{00633             \textcolor{comment}{// both values are the same}}
+\DoxyCodeLine{00634             \textcolor{keywordflow}{return} BitCullingLevel.DropAll;}
+\DoxyCodeLine{00635         \}}
+\DoxyCodeLine{00636         [System.Obsolete()]}
+\DoxyCodeLine{00637         \textcolor{keyword}{public} \textcolor{keyword}{static} BitCullingLevel FindBestBitCullLevel(CompressedElement a, CompressedElement b, FloatCrusher[] ec, BitCullingLevel maxCulling)}
+\DoxyCodeLine{00638         \{}
+\DoxyCodeLine{00639             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.NoCulling || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropThird))}
+\DoxyCodeLine{00640                 \textcolor{keywordflow}{return} BitCullingLevel.NoCulling;}
+\DoxyCodeLine{00641 }
+\DoxyCodeLine{00642             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropThird || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropHalf))}
+\DoxyCodeLine{00643                 \textcolor{keywordflow}{return} BitCullingLevel.DropThird;}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00645             \textcolor{keywordflow}{if} (maxCulling == BitCullingLevel.DropHalf || !TestMatchingUpper(a, b, ec, BitCullingLevel.DropAll))}
+\DoxyCodeLine{00646                 \textcolor{keywordflow}{return} BitCullingLevel.DropHalf;}
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648             \textcolor{comment}{// both values are the same}}
+\DoxyCodeLine{00649             \textcolor{keywordflow}{return} BitCullingLevel.DropAll;}
+\DoxyCodeLine{00650         \}}
+\DoxyCodeLine{00651 }
+\DoxyCodeLine{00652         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TestMatchingUpper(uint a, uint b, \textcolor{keywordtype}{int} lowerbits)}
+\DoxyCodeLine{00653         \{}
+\DoxyCodeLine{00654             \textcolor{keywordflow}{return} (((a >> lowerbits) << lowerbits) == ((b >> lowerbits) << lowerbits));}
+\DoxyCodeLine{00655         \}}
+\DoxyCodeLine{00656         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TestMatchingUpper(CompressedElement a, CompressedElement b, BitCullingLevel bcl)}
+\DoxyCodeLine{00657         \{}
+\DoxyCodeLine{00658             ElementCrusher ec = a.crusher;}
+\DoxyCodeLine{00659             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00660                 (}
+\DoxyCodeLine{00661                 TestMatchingUpper(a.cx, b.cx, ec.XCrusher.GetBits(bcl)) \&\&}
+\DoxyCodeLine{00662                 TestMatchingUpper(a.cy, b.cy, ec.YCrusher.GetBits(bcl)) \&\&}
+\DoxyCodeLine{00663                 TestMatchingUpper(a.cz, b.cz, ec.ZCrusher.GetBits(bcl))}
+\DoxyCodeLine{00664                 );}
+\DoxyCodeLine{00665         \}}
+\DoxyCodeLine{00666         [System.Obsolete()]}
+\DoxyCodeLine{00667         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TestMatchingUpper(CompressedElement a, CompressedElement b, ElementCrusher ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00668         \{}
+\DoxyCodeLine{00669             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00670                 (}
+\DoxyCodeLine{00671                 TestMatchingUpper(a.cx, b.cx, ec[0].GetBits(bcl)) \&\&}
+\DoxyCodeLine{00672                 TestMatchingUpper(a.cy, b.cy, ec[1].GetBits(bcl)) \&\&}
+\DoxyCodeLine{00673                 TestMatchingUpper(a.cz, b.cz, ec[2].GetBits(bcl))}
+\DoxyCodeLine{00674                 );}
+\DoxyCodeLine{00675         \}}
+\DoxyCodeLine{00676         [System.Obsolete()]}
+\DoxyCodeLine{00677         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} TestMatchingUpper(CompressedElement a, CompressedElement b, FloatCrusher[] ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00678         \{}
+\DoxyCodeLine{00679             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00680                 (}
+\DoxyCodeLine{00681                 TestMatchingUpper(a.cx, b.cx, ec[0].GetBitsAtCullLevel(bcl)) \&\&}
+\DoxyCodeLine{00682                 TestMatchingUpper(a.cy, b.cy, ec[1].GetBitsAtCullLevel(bcl)) \&\&}
+\DoxyCodeLine{00683                 TestMatchingUpper(a.cz, b.cz, ec[2].GetBitsAtCullLevel(bcl))}
+\DoxyCodeLine{00684                 );}
+\DoxyCodeLine{00685         \}}
+\DoxyCodeLine{00686 }
+\DoxyCodeLine{00687 }
+\DoxyCodeLine{00688         \textcolor{comment}{//public static bool operator ==(CompressedElement a, CompressedElement b)}}
+\DoxyCodeLine{00689         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00690         \textcolor{comment}{//  return a.Equals(b);}}
+\DoxyCodeLine{00691         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00692         \textcolor{comment}{//public static bool operator !=(CompressedElement a, CompressedElement b)}}
+\DoxyCodeLine{00693         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00694         \textcolor{comment}{//  return !(a.Equals(b));}}
+\DoxyCodeLine{00695         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00696         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00697         \{}
+\DoxyCodeLine{00698             \textcolor{keywordflow}{if} (crusher == \textcolor{keyword}{null})}
+\DoxyCodeLine{00699                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}[Empty CompElement]"{}};}
+\DoxyCodeLine{00700 }
+\DoxyCodeLine{00701             \textcolor{keywordflow}{if} (crusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00702                 \textcolor{keywordflow}{return} crusher.TRSType + \textcolor{stringliteral}{"{} ["{}} + cQuat.cvalue + \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00704             \textcolor{keywordflow}{if} (crusher.TRSType == TRSType.Scale \&\& crusher.uniformAxes != ElementCrusher.UniformAxes.NonUniform)}
+\DoxyCodeLine{00705                 \textcolor{keywordflow}{return} crusher.TRSType + \textcolor{stringliteral}{"{} ["{}} + crusher.uniformAxes + \textcolor{stringliteral}{"{} : "{}} + cUniform.cvalue + \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00706 }
+\DoxyCodeLine{00707             \textcolor{keywordflow}{return} crusher.TRSType + \textcolor{stringliteral}{"{} [x:"{}} + cx.cvalue + \textcolor{stringliteral}{"{} y:"{}} + cy.cvalue + \textcolor{stringliteral}{"{} z:"{}} + cz.cvalue + \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00708         \}}
+\DoxyCodeLine{00709 }
+\DoxyCodeLine{00710 }
+\DoxyCodeLine{00711         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator ==(CompressedElement a, CompressedElement b)}
+\DoxyCodeLine{00712         \{}
+\DoxyCodeLine{00713             \textcolor{keywordflow}{if} (ReferenceEquals(a, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00714                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00715 }
+\DoxyCodeLine{00716             \textcolor{keywordflow}{return} a.Equals(b);}
+\DoxyCodeLine{00717         \}}
+\DoxyCodeLine{00718         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{bool} operator !=(CompressedElement a, CompressedElement b)}
+\DoxyCodeLine{00719         \{}
+\DoxyCodeLine{00720             \textcolor{keywordflow}{if} (ReferenceEquals(a, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00721                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00722 }
+\DoxyCodeLine{00723             \textcolor{keywordflow}{return} !a.Equals(b);}
+\DoxyCodeLine{00724         \}}
+\DoxyCodeLine{00725 }
+\DoxyCodeLine{00726 }
+\DoxyCodeLine{00727         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} obj)}
+\DoxyCodeLine{00728         \{}
+\DoxyCodeLine{00729             \textcolor{keywordflow}{return} Equals(obj as CompressedElement);}
+\DoxyCodeLine{00730         \}}
+\DoxyCodeLine{00731 }
+\DoxyCodeLine{00732         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Equals(CompressedElement other)}
+\DoxyCodeLine{00733         \{}
+\DoxyCodeLine{00734             \textcolor{comment}{//if (crusher != other.crusher)}}
+\DoxyCodeLine{00735             \textcolor{comment}{//  return false;}}
+\DoxyCodeLine{00736 }
+\DoxyCodeLine{00737             \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00738                 !ReferenceEquals(other, \textcolor{keyword}{null}) \&\&}
+\DoxyCodeLine{00739                 cx.cvalue == other.cx.cvalue \&\&}
+\DoxyCodeLine{00740                 cy.cvalue == other.cy.cvalue \&\&}
+\DoxyCodeLine{00741                 cz.cvalue == other.cz.cvalue \&\&}
+\DoxyCodeLine{00742                 cUniform.cvalue == other.cUniform.cvalue \&\&}
+\DoxyCodeLine{00743                 cQuat.cvalue == other.cQuat.cvalue;}
+\DoxyCodeLine{00744         \}}
+\DoxyCodeLine{00745 }
+\DoxyCodeLine{00746         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{00747         \{}
+\DoxyCodeLine{00748             var hashCode = -\/1337834834;}
+\DoxyCodeLine{00749             hashCode = hashCode * -\/1521134295 + cx.GetHashCode();}
+\DoxyCodeLine{00750             hashCode = hashCode * -\/1521134295 + cy.GetHashCode();}
+\DoxyCodeLine{00751             hashCode = hashCode * -\/1521134295 + cz.GetHashCode();}
+\DoxyCodeLine{00752             hashCode = hashCode * -\/1521134295 + cUniform.GetHashCode();}
+\DoxyCodeLine{00753             hashCode = hashCode * -\/1521134295 + cQuat.GetHashCode();}
+\DoxyCodeLine{00754             \textcolor{keywordflow}{return} hashCode;}
+\DoxyCodeLine{00755         \}}
+\DoxyCodeLine{00756     \}}
+\DoxyCodeLine{00757 }
+\DoxyCodeLine{00758     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }CompressedElementExt}
+\DoxyCodeLine{00759     \{}
+\DoxyCodeLine{00760         \textcolor{keyword}{public} \textcolor{keyword}{static} System.UInt32[] reusableInts = \textcolor{keyword}{new} System.UInt32[3];}
+\DoxyCodeLine{00761 }
+\DoxyCodeLine{00762         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder AppendSB(\textcolor{keyword}{this} StringBuilder strb, CompressedElement ce)}
+\DoxyCodeLine{00763         \{}
+\DoxyCodeLine{00764             \textcolor{keywordflow}{if} (ReferenceEquals(ce, \textcolor{keyword}{null}))}
+\DoxyCodeLine{00765             \{}
+\DoxyCodeLine{00766                 strb.Append(\textcolor{stringliteral}{"{}[Null CompElement]"{}});}
+\DoxyCodeLine{00767             \}}
+\DoxyCodeLine{00768             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00769             \{}
+\DoxyCodeLine{00770                 var crusher = ce.crusher;}
+\DoxyCodeLine{00771                 \textcolor{keywordflow}{if} (crusher == \textcolor{keyword}{null})}
+\DoxyCodeLine{00772                 \{}
+\DoxyCodeLine{00773                     strb.Append(\textcolor{stringliteral}{"{}[CE Null Crusher]"{}});}
+\DoxyCodeLine{00774                 \}}
+\DoxyCodeLine{00775                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (crusher.TRSType == TRSType.Quaternion)}
+\DoxyCodeLine{00776                 \{}
+\DoxyCodeLine{00777                     strb.Append(crusher.TRSType).Append(\textcolor{stringliteral}{"{} cQuat: ["{}}).Append(ce.cQuat.cvalue).Append(\textcolor{stringliteral}{"{}]"{}});}
+\DoxyCodeLine{00778                 \}}
+\DoxyCodeLine{00779                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (crusher.TRSType == TRSType.Scale \&\& crusher.uniformAxes != ElementCrusher.UniformAxes.NonUniform)}
+\DoxyCodeLine{00780                 \{}
+\DoxyCodeLine{00781                     strb.Append(crusher.TRSType).Append(\textcolor{stringliteral}{"{} cUni: ["{}}).Append(crusher.uniformAxes).Append(\textcolor{stringliteral}{"{} : "{}}).Append(ce.cUniform.cvalue).Append(\textcolor{stringliteral}{"{}]"{}});}
+\DoxyCodeLine{00782                 \}}
+\DoxyCodeLine{00783                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00784                 \{}
+\DoxyCodeLine{00785                     strb.Append(crusher.TRSType).Append(\textcolor{stringliteral}{"{} cXYZ: [x:"{}}).Append(ce.cx.cvalue).Append(\textcolor{stringliteral}{"{} y:"{}}).Append(ce.cy.cvalue).Append(\textcolor{stringliteral}{"{} z:"{}}).Append(ce.cz.cvalue).Append(\textcolor{stringliteral}{"{}]"{}});}
+\DoxyCodeLine{00786                 \}}
+\DoxyCodeLine{00787 }
+\DoxyCodeLine{00788             \}}
+\DoxyCodeLine{00789             \textcolor{keywordflow}{return} strb;}
+\DoxyCodeLine{00790         \}}
+\DoxyCodeLine{00791 }
+\DoxyCodeLine{00792 }
+\DoxyCodeLine{00793         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GetChangeAmount(uint[] results, CompressedElement a, CompressedElement b)}
+\DoxyCodeLine{00794         \{}
+\DoxyCodeLine{00795             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < 3; i++)}
+\DoxyCodeLine{00796                 results[i] = (System.UInt32)System.Math.Abs(a[i] -\/ b[0]);}
+\DoxyCodeLine{00797         \}}
+\DoxyCodeLine{00798         [System.Obsolete()]}
+\DoxyCodeLine{00799         \textcolor{keyword}{public} \textcolor{keyword}{static} uint[] GetChangeAmount(CompressedElement a, CompressedElement b)}
+\DoxyCodeLine{00800         \{}
+\DoxyCodeLine{00801             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < 3; i++)}
+\DoxyCodeLine{00802                 reusableInts[i] = (System.UInt32)System.Math.Abs(a[i] -\/ b[0]);}
+\DoxyCodeLine{00803 }
+\DoxyCodeLine{00804             \textcolor{keywordflow}{return} reusableInts;}
+\DoxyCodeLine{00805         \}}
+\DoxyCodeLine{00806 }
+\DoxyCodeLine{00813         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} GuessUpperBits(\textcolor{keyword}{this} CompressedElement newcpos, ElementCrusher ec, CompressedElement oldcpos, BitCullingLevel bcl)}
+\DoxyCodeLine{00814         \{}
+\DoxyCodeLine{00815             \textcolor{comment}{//var crusher = oldcpos.crusher;}}
+\DoxyCodeLine{00816             newcpos.Set(}
+\DoxyCodeLine{00817                 ec,}
+\DoxyCodeLine{00818                 ec.XCrusher.GuessUpperBits(newcpos[0], oldcpos[0], bcl),}
+\DoxyCodeLine{00819                 ec.YCrusher.GuessUpperBits(newcpos[1], oldcpos[1], bcl),}
+\DoxyCodeLine{00820                 ec.ZCrusher.GuessUpperBits(newcpos[2], oldcpos[2], bcl)}
+\DoxyCodeLine{00821                 );}
+\DoxyCodeLine{00822         \}}
+\DoxyCodeLine{00823         [System.Obsolete()]}
+\DoxyCodeLine{00824         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement GuessUpperBits(\textcolor{keyword}{this} CompressedElement newcpos, CompressedElement oldcpos, ElementCrusher ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00825         \{}
+\DoxyCodeLine{00826             \textcolor{comment}{//var crusher = oldcpos.crusher;}}
+\DoxyCodeLine{00827             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement(}
+\DoxyCodeLine{00828                 ec,}
+\DoxyCodeLine{00829                 ec.XCrusher.GuessUpperBits(newcpos[0], oldcpos[0], bcl),}
+\DoxyCodeLine{00830                 ec.YCrusher.GuessUpperBits(newcpos[1], oldcpos[1], bcl),}
+\DoxyCodeLine{00831                 ec.ZCrusher.GuessUpperBits(newcpos[2], oldcpos[2], bcl)}
+\DoxyCodeLine{00832                 );}
+\DoxyCodeLine{00833         \}}
+\DoxyCodeLine{00834         \textcolor{comment}{//public static CompressedElement GuessUpperBits(this CompressedElement newcpos, CompressedElement oldcpos, FloatCrusher[] ec, BitCullingLevel bcl)}}
+\DoxyCodeLine{00835         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00836         \textcolor{comment}{//  var crusher = oldcpos.crusher;}}
+\DoxyCodeLine{00837         \textcolor{comment}{//  return new CompressedElement(}}
+\DoxyCodeLine{00838         \textcolor{comment}{//      crusher,}}
+\DoxyCodeLine{00839         \textcolor{comment}{//      new CompressedValue(crusher.xcrusher, ec[0].GuessUpperBits(newcpos.cx, oldcpos.cx, bcl), crusher.xcrusher.GetBits(bcl)),}}
+\DoxyCodeLine{00840         \textcolor{comment}{//      new CompressedValue(crusher.ycrusher, ec[1].GuessUpperBits(newcpos.cx, oldcpos.cx, bcl), crusher.xcrusher.GetBits(bcl)),}}
+\DoxyCodeLine{00841         \textcolor{comment}{//      new CompressedValue(crusher.zcrusher, ec[2].GuessUpperBits(newcpos.cx, oldcpos.cx, bcl), crusher.xcrusher.GetBits(bcl))}}
+\DoxyCodeLine{00842         \textcolor{comment}{//      );}}
+\DoxyCodeLine{00843         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00844 }
+\DoxyCodeLine{00848         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} OverwriteUpperBits(\textcolor{keyword}{this} CompressedElement low, CompressedElement uppers, BitCullingLevel bcl)}
+\DoxyCodeLine{00849         \{}
+\DoxyCodeLine{00850             ElementCrusher ec = low.crusher;}
+\DoxyCodeLine{00851             low.Set(}
+\DoxyCodeLine{00852                 ec,}
+\DoxyCodeLine{00853                 ec.XCrusher.OverwriteUpperBits(low.cx, uppers.cx, bcl),}
+\DoxyCodeLine{00854                 ec.YCrusher.OverwriteUpperBits(low.cy, uppers.cy, bcl),}
+\DoxyCodeLine{00855                 ec.ZCrusher.OverwriteUpperBits(low.cz, uppers.cz, bcl)}
+\DoxyCodeLine{00856                 );}
+\DoxyCodeLine{00857         \}}
+\DoxyCodeLine{00858         [System.Obsolete()]}
+\DoxyCodeLine{00859         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement OverwriteUpperBits(\textcolor{keyword}{this} CompressedElement low, CompressedElement up, ElementCrusher ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00860         \{}
+\DoxyCodeLine{00861             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement(}
+\DoxyCodeLine{00862                 ec,}
+\DoxyCodeLine{00863                 ec[0].OverwriteUpperBits(low.cx, up.cx, bcl),}
+\DoxyCodeLine{00864                 ec[1].OverwriteUpperBits(low.cy, up.cy, bcl),}
+\DoxyCodeLine{00865                 ec[2].OverwriteUpperBits(low.cz, up.cz, bcl)}
+\DoxyCodeLine{00866                 );}
+\DoxyCodeLine{00867         \}}
+\DoxyCodeLine{00868         \textcolor{comment}{//public static CompressedElement OverwriteUpperBits(this CompressedElement low, CompressedElement up, FloatCrusher[] ec, BitCullingLevel bcl)}}
+\DoxyCodeLine{00869         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00870         \textcolor{comment}{//  return new CompressedElement(}}
+\DoxyCodeLine{00871         \textcolor{comment}{//      //ec,}}
+\DoxyCodeLine{00872         \textcolor{comment}{//      ec[0].OverwriteUpperBits(low.cx, up.cx, bcl),}}
+\DoxyCodeLine{00873         \textcolor{comment}{//      ec[1].OverwriteUpperBits(low.cy, up.cy, bcl),}}
+\DoxyCodeLine{00874         \textcolor{comment}{//      ec[2].OverwriteUpperBits(low.cz, up.cz, bcl)}}
+\DoxyCodeLine{00875         \textcolor{comment}{//      );}}
+\DoxyCodeLine{00876         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00877 }
+\DoxyCodeLine{00878         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ZeroLowerBits(\textcolor{keyword}{this} CompressedElement fullpos, CompressedElement target, BitCullingLevel bcl)}
+\DoxyCodeLine{00879         \{}
+\DoxyCodeLine{00880             ElementCrusher ec = fullpos.crusher;}
+\DoxyCodeLine{00881             target.Set(}
+\DoxyCodeLine{00882                 ec, \textcolor{comment}{//fullpos.crusher,}}
+\DoxyCodeLine{00883                 ec.XCrusher.ZeroLowerBits(fullpos.cx, bcl),}
+\DoxyCodeLine{00884                 ec.YCrusher.ZeroLowerBits(fullpos.cy, bcl),}
+\DoxyCodeLine{00885                 ec.ZCrusher.ZeroLowerBits(fullpos.cz, bcl)}
+\DoxyCodeLine{00886                 );}
+\DoxyCodeLine{00887         \}}
+\DoxyCodeLine{00888         [System.Obsolete()]}
+\DoxyCodeLine{00889         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement ZeroLowerBits(\textcolor{keyword}{this} CompressedElement fullpos, ElementCrusher ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00890         \{}
+\DoxyCodeLine{00891             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement(}
+\DoxyCodeLine{00892                 ec, \textcolor{comment}{//fullpos.crusher,}}
+\DoxyCodeLine{00893                 ec[0].ZeroLowerBits(fullpos.cx, bcl),}
+\DoxyCodeLine{00894                 ec[1].ZeroLowerBits(fullpos.cy, bcl),}
+\DoxyCodeLine{00895                 ec[2].ZeroLowerBits(fullpos.cz, bcl)}
+\DoxyCodeLine{00896                 );}
+\DoxyCodeLine{00897         \}}
+\DoxyCodeLine{00898         \textcolor{comment}{//public static CompressedElement ZeroLowerBits(this CompressedElement fullpos, FloatCrusher[] ec, BitCullingLevel bcl)}}
+\DoxyCodeLine{00899         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00900         \textcolor{comment}{//  return new CompressedElement(}}
+\DoxyCodeLine{00901         \textcolor{comment}{//      fullpos.crusher,}}
+\DoxyCodeLine{00902         \textcolor{comment}{//      ec[0].ZeroLowerBits(fullpos.cx, bcl),}}
+\DoxyCodeLine{00903         \textcolor{comment}{//      ec[1].ZeroLowerBits(fullpos.cy, bcl),}}
+\DoxyCodeLine{00904         \textcolor{comment}{//      ec[2].ZeroLowerBits(fullpos.cz, bcl)}}
+\DoxyCodeLine{00905         \textcolor{comment}{//      );}}
+\DoxyCodeLine{00906         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00907         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} ZeroUpperBits(\textcolor{keyword}{this} CompressedElement fullpos, CompressedElement target, BitCullingLevel bcl)}
+\DoxyCodeLine{00908         \{}
+\DoxyCodeLine{00909             ElementCrusher ec = fullpos.crusher;}
+\DoxyCodeLine{00910             target.Set(}
+\DoxyCodeLine{00911                 ec, \textcolor{comment}{/*fullpos.crusher,*/}}
+\DoxyCodeLine{00912                 ec.XCrusher.ZeroUpperBits(fullpos.cx, bcl),}
+\DoxyCodeLine{00913                 ec.YCrusher.ZeroUpperBits(fullpos.cy, bcl),}
+\DoxyCodeLine{00914                 ec.ZCrusher.ZeroUpperBits(fullpos.cz, bcl)}
+\DoxyCodeLine{00915                 );}
+\DoxyCodeLine{00916         \}}
+\DoxyCodeLine{00917         [System.Obsolete()]}
+\DoxyCodeLine{00918         \textcolor{keyword}{public} \textcolor{keyword}{static} CompressedElement ZeroUpperBits(\textcolor{keyword}{this} CompressedElement fullpos, ElementCrusher ec, BitCullingLevel bcl)}
+\DoxyCodeLine{00919         \{}
+\DoxyCodeLine{00920             \textcolor{keywordflow}{return} \textcolor{keyword}{new} CompressedElement(}
+\DoxyCodeLine{00921                 ec, \textcolor{comment}{/*fullpos.crusher,*/}}
+\DoxyCodeLine{00922                 ec[0].ZeroUpperBits(fullpos.cx, bcl),}
+\DoxyCodeLine{00923                 ec[1].ZeroUpperBits(fullpos.cy, bcl),}
+\DoxyCodeLine{00924                 ec[2].ZeroUpperBits(fullpos.cz, bcl)}
+\DoxyCodeLine{00925                 );}
+\DoxyCodeLine{00926         \}}
+\DoxyCodeLine{00927         \textcolor{comment}{//public static CompressedElement ZeroUpperBits(this CompressedElement fullpos, FloatCrusher[] ec, BitCullingLevel bcl)}}
+\DoxyCodeLine{00928         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00929         \textcolor{comment}{//  return new CompressedElement(}}
+\DoxyCodeLine{00930         \textcolor{comment}{//      ec, /*fullpos.crusher,*/}}
+\DoxyCodeLine{00931         \textcolor{comment}{//      ec[0].ZeroUpperBits(fullpos.cx, bcl),}}
+\DoxyCodeLine{00932         \textcolor{comment}{//      ec[1].ZeroUpperBits(fullpos.cy, bcl),}}
+\DoxyCodeLine{00933         \textcolor{comment}{//      ec[2].ZeroUpperBits(fullpos.cz, bcl)}}
+\DoxyCodeLine{00934         \textcolor{comment}{//      );}}
+\DoxyCodeLine{00935         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00936 }
+\DoxyCodeLine{00937     \}}
+\DoxyCodeLine{00938 \}}
+
+\end{DoxyCode}

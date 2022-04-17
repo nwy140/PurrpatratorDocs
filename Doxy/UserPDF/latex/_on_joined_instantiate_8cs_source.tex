@@ -1,0 +1,417 @@
+\doxysection{On\+Joined\+Instantiate.\+cs}
+\label{_on_joined_instantiate_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Prototyping/OnJoinedInstantiate.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/UtilityScripts/Prototyping/OnJoinedInstantiate.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}OnJoinedInstantiate.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Part of: Photon Unity Utilities, }}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//  This component will instantiate a network GameObject when a room is joined}}
+\DoxyCodeLine{00007 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00008 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00009 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00012 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00013 \textcolor{keyword}{using} UnityEngine.Serialization;}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00018 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00022 \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00027     \textcolor{keyword}{public} \textcolor{keyword}{class }OnJoinedInstantiate : MonoBehaviour}
+\DoxyCodeLine{00028         , IMatchmakingCallbacks}
+\DoxyCodeLine{00029     \{}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{enum} SpawnSequence \{ Connection, Random, RoundRobin \}}
+\DoxyCodeLine{00031 }
+\DoxyCodeLine{00032 \textcolor{preprocessor}{        \#region Inspector Items}}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         \textcolor{comment}{// Old field, only here for backwards compat. Value copies over to SpawnPoints in OnValidate}}
+\DoxyCodeLine{00035         [HideInInspector] \textcolor{keyword}{private} Transform SpawnPosition;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         [HideInInspector] \textcolor{keyword}{public} SpawnSequence Sequence = SpawnSequence.Connection;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         [HideInInspector] \textcolor{keyword}{public} List<Transform> SpawnPoints = \textcolor{keyword}{new} List<Transform>(1) \{ \textcolor{keyword}{null} \};}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         [Tooltip(\textcolor{stringliteral}{"{}Add a random variance to a spawn point position. GetRandomOffset() can be overridden with your own method for producing offsets."{}})]}
+\DoxyCodeLine{00042         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} UseRandomOffset = \textcolor{keyword}{true};}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         [Tooltip(\textcolor{stringliteral}{"{}Radius of the RandomOffset."{}})]}
+\DoxyCodeLine{00045         [FormerlySerializedAs(\textcolor{stringliteral}{"{}PositionOffset"{}})]}
+\DoxyCodeLine{00046         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{float} RandomOffset = 2.0f;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         [Tooltip(\textcolor{stringliteral}{"{}Disables the Y axis of RandomOffset. The Y value of the spawn point will be used."{}})]}
+\DoxyCodeLine{00049         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ClampY = \textcolor{keyword}{true};}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00051         [HideInInspector] \textcolor{keyword}{public} List<GameObject> PrefabsToInstantiate = \textcolor{keyword}{new} List<GameObject>(1) \{ \textcolor{keyword}{null} \}; \textcolor{comment}{// set in inspector}}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [FormerlySerializedAs(\textcolor{stringliteral}{"{}autoSpawnObjects"{}})]}
+\DoxyCodeLine{00054         [HideInInspector] \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AutoSpawnObjects = \textcolor{keyword}{true};}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         \textcolor{comment}{// Record of spawned objects, used for Despawn All}}
+\DoxyCodeLine{00059         \textcolor{keyword}{public} Stack<GameObject> SpawnedObjects = \textcolor{keyword}{new} Stack<GameObject>();}
+\DoxyCodeLine{00060         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} spawnedAsActorId;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{protected} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00069             \textcolor{keywordflow}{if} (PrefabsToInstantiate != \textcolor{keyword}{null})}
+\DoxyCodeLine{00070                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < PrefabsToInstantiate.Count; ++i)}
+\DoxyCodeLine{00071                 \{}
+\DoxyCodeLine{00072                     var prefab = PrefabsToInstantiate[i];}
+\DoxyCodeLine{00073                     \textcolor{keywordflow}{if} (prefab)}
+\DoxyCodeLine{00074                         PrefabsToInstantiate[i] = ValidatePrefab(prefab);}
+\DoxyCodeLine{00075                 \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00078             \textcolor{keywordflow}{if} (SpawnPosition)}
+\DoxyCodeLine{00079             \{}
+\DoxyCodeLine{00080                 \textcolor{keywordflow}{if} (SpawnPoints == \textcolor{keyword}{null})}
+\DoxyCodeLine{00081                     SpawnPoints = \textcolor{keyword}{new} List<Transform>();}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083                 SpawnPoints.Add(SpawnPosition);}
+\DoxyCodeLine{00084                 SpawnPosition = \textcolor{keyword}{null};}
+\DoxyCodeLine{00085             \}}
+\DoxyCodeLine{00086         \}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AddPrefabToList(GameObject prefab)}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             var validated = ValidatePrefab(prefab);}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{if} (validated)}
+\DoxyCodeLine{00096             \{}
+\DoxyCodeLine{00097                 \textcolor{comment}{// Don't add to list if this prefab already is on the list}}
+\DoxyCodeLine{00098                 \textcolor{keywordflow}{if} (PrefabsToInstantiate.Contains(validated))}
+\DoxyCodeLine{00099                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101                 \textcolor{comment}{// First try to use any null array slots to keep things tidy}}
+\DoxyCodeLine{00102                 \textcolor{keywordflow}{if} (PrefabsToInstantiate.Contains(\textcolor{keyword}{null}))}
+\DoxyCodeLine{00103                     PrefabsToInstantiate[PrefabsToInstantiate.IndexOf(\textcolor{keyword}{null})] = validated;}
+\DoxyCodeLine{00104                 \textcolor{comment}{// Otherwise, just add this prefab.}}
+\DoxyCodeLine{00105                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00106                     PrefabsToInstantiate.Add(validated);}
+\DoxyCodeLine{00107                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00119         \textcolor{keyword}{protected} \textcolor{keyword}{static} GameObject ValidatePrefab(GameObject unvalidated)}
+\DoxyCodeLine{00120         \{}
+\DoxyCodeLine{00121             \textcolor{keywordflow}{if} (unvalidated == \textcolor{keyword}{null})}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             \textcolor{comment}{//if (!unvalidated.GetComponent<PhotonView>())}}
+\DoxyCodeLine{00125             \textcolor{comment}{//    return null;}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{preprocessor}{\#if UNITY\_2018\_3\_OR\_NEWER}}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129             GameObject validated = \textcolor{keyword}{null};}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{if} (unvalidated != \textcolor{keyword}{null})}
+\DoxyCodeLine{00132             \{}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00134                 \textcolor{keywordflow}{if} (PrefabUtility.IsPartOfPrefabAsset(unvalidated))}
+\DoxyCodeLine{00135                     \textcolor{keywordflow}{return} unvalidated;}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137                 var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(unvalidated);}
+\DoxyCodeLine{00138                 var isValidPrefab = prefabStatus == PrefabInstanceStatus.Connected || prefabStatus == PrefabInstanceStatus.Disconnected;}
+\DoxyCodeLine{00139 }
+\DoxyCodeLine{00140                 \textcolor{keywordflow}{if} (isValidPrefab)}
+\DoxyCodeLine{00141                     validated = PrefabUtility.GetCorrespondingObjectFromSource(unvalidated) as GameObject;}
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00143                     \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 \textcolor{keywordflow}{if} (!PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(validated).Contains(\textcolor{stringliteral}{"{}/Resources"{}}))}
+\DoxyCodeLine{00146                     Debug.LogWarning(\textcolor{stringliteral}{"{}Player Prefab needs to be a Prefab in a Resource folder."{}});}
+\DoxyCodeLine{00147             \}}
+\DoxyCodeLine{00148 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00149             GameObject validated = unvalidated;}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151             \textcolor{keywordflow}{if} (unvalidated != \textcolor{keyword}{null} \&\& PrefabUtility.GetPrefabType(unvalidated) != PrefabType.Prefab)}
+\DoxyCodeLine{00152                 validated = PrefabUtility.GetPrefabParent(unvalidated) as GameObject;}
+\DoxyCodeLine{00153 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00154             \textcolor{keywordflow}{return} validated;}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159 }
+\DoxyCodeLine{00160         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00161         \{}
+\DoxyCodeLine{00162             PhotonNetwork.AddCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00165         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnDisable()}
+\DoxyCodeLine{00166         \{}
+\DoxyCodeLine{00167             PhotonNetwork.RemoveCallbackTarget(\textcolor{keyword}{this});}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             \textcolor{comment}{// Only AutoSpawn if we are a new ActorId. Rejoining should reproduce the objects by server instantiation.}}
+\DoxyCodeLine{00174             \textcolor{keywordflow}{if} (AutoSpawnObjects \&\& !PhotonNetwork.LocalPlayer.HasRejoined)}
+\DoxyCodeLine{00175             \{}
+\DoxyCodeLine{00176                 SpawnObjects();}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} SpawnObjects()}
+\DoxyCodeLine{00181         \{}
+\DoxyCodeLine{00182             \textcolor{keywordflow}{if} (this.PrefabsToInstantiate != \textcolor{keyword}{null})}
+\DoxyCodeLine{00183             \{}
+\DoxyCodeLine{00184                 \textcolor{keywordflow}{foreach} (GameObject o \textcolor{keywordflow}{in} this.PrefabsToInstantiate)}
+\DoxyCodeLine{00185                 \{}
+\DoxyCodeLine{00186                     \textcolor{keywordflow}{if} (o == \textcolor{keyword}{null})}
+\DoxyCodeLine{00187                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00188 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00189                     Debug.Log(\textcolor{stringliteral}{"{}Auto-\/Instantiating: "{}} + o.name);}
+\DoxyCodeLine{00190 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00191                     Vector3 spawnPos; Quaternion spawnRot;}
+\DoxyCodeLine{00192                     GetSpawnPoint(out spawnPos, out spawnRot);}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                     var newobj = PhotonNetwork.Instantiate(o.name, spawnPos, spawnRot, 0);}
+\DoxyCodeLine{00196                     SpawnedObjects.Push(newobj);}
+\DoxyCodeLine{00197                 \}}
+\DoxyCodeLine{00198             \}}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00205         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} DespawnObjects(\textcolor{keywordtype}{bool} localOnly)}
+\DoxyCodeLine{00206         \{}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208             \textcolor{keywordflow}{while} (SpawnedObjects.Count > 0)}
+\DoxyCodeLine{00209             \{}
+\DoxyCodeLine{00210                 var go = SpawnedObjects.Pop();}
+\DoxyCodeLine{00211                 \textcolor{keywordflow}{if} (go)}
+\DoxyCodeLine{00212                 \{}
+\DoxyCodeLine{00213                     \textcolor{keywordflow}{if} (localOnly)}
+\DoxyCodeLine{00214                         Object.Destroy(go);}
+\DoxyCodeLine{00215                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00216                         PhotonNetwork.Destroy(go);}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218                 \}}
+\DoxyCodeLine{00219             \}}
+\DoxyCodeLine{00220         \}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnFriendListUpdate(List<FriendInfo> friendList) \{ \}}
+\DoxyCodeLine{00223         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCreatedRoom() \{ \}}
+\DoxyCodeLine{00224         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00225         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00226         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message) \{ \}}
+\DoxyCodeLine{00227         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnLeftRoom() \{ \}}
+\DoxyCodeLine{00228 }
+\DoxyCodeLine{00229         \textcolor{keyword}{protected} \textcolor{keywordtype}{int} lastUsedSpawnPointIndex = -\/1;}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00235         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} GetSpawnPoint(out Vector3 spawnPos, out Quaternion spawnRot)}
+\DoxyCodeLine{00236         \{}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             \textcolor{comment}{// Fetch a point using the Sequence method indicated}}
+\DoxyCodeLine{00239             Transform point = GetSpawnPoint();}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241             \textcolor{keywordflow}{if} (point != \textcolor{keyword}{null})}
+\DoxyCodeLine{00242             \{}
+\DoxyCodeLine{00243                 spawnPos = point.position;}
+\DoxyCodeLine{00244                 spawnRot = point.rotation;}
+\DoxyCodeLine{00245             \}}
+\DoxyCodeLine{00246             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00247             \{}
+\DoxyCodeLine{00248                 spawnPos = \textcolor{keyword}{new} Vector3(0, 0, 0);}
+\DoxyCodeLine{00249                 spawnRot = \textcolor{keyword}{new} Quaternion(0, 0, 0, 1);}
+\DoxyCodeLine{00250             \}}
+\DoxyCodeLine{00251             }
+\DoxyCodeLine{00252             \textcolor{keywordflow}{if} (UseRandomOffset)}
+\DoxyCodeLine{00253             \{}
+\DoxyCodeLine{00254                 Random.InitState((\textcolor{keywordtype}{int})(Time.time * 10000));}
+\DoxyCodeLine{00255                 spawnPos += GetRandomOffset();}
+\DoxyCodeLine{00256             \}}
+\DoxyCodeLine{00257         \}}
+\DoxyCodeLine{00258         }
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00266         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} Transform GetSpawnPoint()}
+\DoxyCodeLine{00267         \{}
+\DoxyCodeLine{00268             \textcolor{comment}{// Fetch a point using the Sequence method indicated}}
+\DoxyCodeLine{00269             \textcolor{keywordflow}{if} (SpawnPoints == \textcolor{keyword}{null} || SpawnPoints.Count == 0)}
+\DoxyCodeLine{00270             \{}
+\DoxyCodeLine{00271                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00272             \}}
+\DoxyCodeLine{00273             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00274             \{}
+\DoxyCodeLine{00275                 \textcolor{keywordflow}{switch} (Sequence)}
+\DoxyCodeLine{00276                 \{}
+\DoxyCodeLine{00277                     \textcolor{keywordflow}{case} SpawnSequence.Connection:}
+\DoxyCodeLine{00278                         \{}
+\DoxyCodeLine{00279                             \textcolor{keywordtype}{int} \textcolor{keywordtype}{id} = PhotonNetwork.LocalPlayer.ActorNumber;}
+\DoxyCodeLine{00280                             \textcolor{keywordflow}{return} SpawnPoints[(\textcolor{keywordtype}{id} == -\/1) ? 0 : \textcolor{keywordtype}{id} \% SpawnPoints.Count];}
+\DoxyCodeLine{00281                         \}}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283                     \textcolor{keywordflow}{case} SpawnSequence.RoundRobin:}
+\DoxyCodeLine{00284                         \{}
+\DoxyCodeLine{00285                             lastUsedSpawnPointIndex++;}
+\DoxyCodeLine{00286                             \textcolor{keywordflow}{if} (lastUsedSpawnPointIndex >= SpawnPoints.Count)}
+\DoxyCodeLine{00287                                 lastUsedSpawnPointIndex = 0;}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00290                             \textcolor{keywordflow}{return} SpawnPoints == \textcolor{keyword}{null} || SpawnPoints.Count == 0 ? null : SpawnPoints[lastUsedSpawnPointIndex];}
+\DoxyCodeLine{00291                         \}}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                     \textcolor{keywordflow}{case} SpawnSequence.Random:}
+\DoxyCodeLine{00294                         \{}
+\DoxyCodeLine{00295                             \textcolor{keywordflow}{return} SpawnPoints[Random.Range(0, SpawnPoints.Count)];}
+\DoxyCodeLine{00296                         \}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298                     \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00299                         \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00300                 \}}
+\DoxyCodeLine{00301             \}}
+\DoxyCodeLine{00302         \}}
+\DoxyCodeLine{00303 }
+\DoxyCodeLine{00307         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} Vector3 GetRandomOffset()}
+\DoxyCodeLine{00308         \{}
+\DoxyCodeLine{00309             Vector3 random = Random.insideUnitSphere;}
+\DoxyCodeLine{00310             \textcolor{keywordflow}{if} (ClampY)}
+\DoxyCodeLine{00311                 random.y = 0;}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{return} RandomOffset * random.normalized;}
+\DoxyCodeLine{00313         \}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315     \}}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319     [CustomEditor(typeof(OnJoinedInstantiate), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00320     [CanEditMultipleObjects]}
+\DoxyCodeLine{00321     \textcolor{keyword}{public} \textcolor{keyword}{class }OnJoinedInstantiateEditor : Editor}
+\DoxyCodeLine{00322     \{}
+\DoxyCodeLine{00323 }
+\DoxyCodeLine{00324         SerializedProperty SpawnPoints, PrefabsToInstantiate, UseRandomOffset, ClampY, RandomOffset, Sequence, autoSpawnObjects;}
+\DoxyCodeLine{00325         GUIStyle fieldBox;}
+\DoxyCodeLine{00326 }
+\DoxyCodeLine{00327         \textcolor{keyword}{private} \textcolor{keywordtype}{void} OnEnable()}
+\DoxyCodeLine{00328         \{}
+\DoxyCodeLine{00329             SpawnPoints = serializedObject.FindProperty(\textcolor{stringliteral}{"{}SpawnPoints"{}});}
+\DoxyCodeLine{00330             PrefabsToInstantiate = serializedObject.FindProperty(\textcolor{stringliteral}{"{}PrefabsToInstantiate"{}});}
+\DoxyCodeLine{00331             UseRandomOffset = serializedObject.FindProperty(\textcolor{stringliteral}{"{}UseRandomOffset"{}});}
+\DoxyCodeLine{00332             ClampY = serializedObject.FindProperty(\textcolor{stringliteral}{"{}ClampY"{}});}
+\DoxyCodeLine{00333             RandomOffset = serializedObject.FindProperty(\textcolor{stringliteral}{"{}RandomOffset"{}});}
+\DoxyCodeLine{00334             Sequence = serializedObject.FindProperty(\textcolor{stringliteral}{"{}Sequence"{}});}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336             autoSpawnObjects = serializedObject.FindProperty(\textcolor{stringliteral}{"{}AutoSpawnObjects"{}});}
+\DoxyCodeLine{00337         \}}
+\DoxyCodeLine{00338 }
+\DoxyCodeLine{00339         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00340         \{}
+\DoxyCodeLine{00341             base.OnInspectorGUI();}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343             \textcolor{keyword}{const} \textcolor{keywordtype}{int} PAD = 6;}
+\DoxyCodeLine{00344 }
+\DoxyCodeLine{00345             \textcolor{keywordflow}{if} (fieldBox == \textcolor{keyword}{null})}
+\DoxyCodeLine{00346                 fieldBox = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(PAD, PAD, PAD, PAD) \};}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00349 }
+\DoxyCodeLine{00350             EditableReferenceList(PrefabsToInstantiate, \textcolor{keyword}{new} GUIContent(PrefabsToInstantiate.displayName, PrefabsToInstantiate.tooltip), fieldBox);}
+\DoxyCodeLine{00351 }
+\DoxyCodeLine{00352             EditableReferenceList(SpawnPoints, \textcolor{keyword}{new} GUIContent(SpawnPoints.displayName, SpawnPoints.tooltip), fieldBox);}
+\DoxyCodeLine{00353 }
+\DoxyCodeLine{00355             EditorGUILayout.BeginVertical(fieldBox);}
+\DoxyCodeLine{00356             EditorGUILayout.PropertyField(Sequence);}
+\DoxyCodeLine{00357             EditorGUILayout.PropertyField(UseRandomOffset);}
+\DoxyCodeLine{00358             \textcolor{keywordflow}{if} (UseRandomOffset.boolValue)}
+\DoxyCodeLine{00359             \{}
+\DoxyCodeLine{00360                 EditorGUILayout.PropertyField(RandomOffset);}
+\DoxyCodeLine{00361                 EditorGUILayout.PropertyField(ClampY);}
+\DoxyCodeLine{00362             \}}
+\DoxyCodeLine{00363             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00366             EditorGUILayout.BeginVertical(fieldBox);}
+\DoxyCodeLine{00367             EditorGUILayout.PropertyField(autoSpawnObjects);}
+\DoxyCodeLine{00368             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00369 }
+\DoxyCodeLine{00370             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00371             \{}
+\DoxyCodeLine{00372                 serializedObject.ApplyModifiedProperties();}
+\DoxyCodeLine{00373             \}}
+\DoxyCodeLine{00374         \}}
+\DoxyCodeLine{00375 }
+\DoxyCodeLine{00381         \textcolor{keyword}{public} \textcolor{keywordtype}{void} EditableReferenceList(SerializedProperty list, GUIContent gc, GUIStyle style = \textcolor{keyword}{null})}
+\DoxyCodeLine{00382         \{}
+\DoxyCodeLine{00383             EditorGUILayout.LabelField(gc);}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385             \textcolor{keywordflow}{if} (style == \textcolor{keyword}{null})}
+\DoxyCodeLine{00386                 style = \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(6, 6, 6, 6) \};}
+\DoxyCodeLine{00387 }
+\DoxyCodeLine{00388             EditorGUILayout.BeginVertical(style);}
+\DoxyCodeLine{00389 }
+\DoxyCodeLine{00390             \textcolor{keywordtype}{int} count = list.arraySize;}
+\DoxyCodeLine{00391 }
+\DoxyCodeLine{00392             \textcolor{keywordflow}{if} (count == 0)}
+\DoxyCodeLine{00393             \{}
+\DoxyCodeLine{00394                 \textcolor{keywordflow}{if} (GUI.Button(EditorGUILayout.GetControlRect(GUILayout.MaxWidth(20)), \textcolor{stringliteral}{"{}+"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00395                 \{}
+\DoxyCodeLine{00396                     \textcolor{keywordtype}{int} newindex = list.arraySize;}
+\DoxyCodeLine{00397                     list.InsertArrayElementAtIndex(0);}
+\DoxyCodeLine{00398                     list.GetArrayElementAtIndex(0).objectReferenceValue = \textcolor{keyword}{null};}
+\DoxyCodeLine{00399                 \}}
+\DoxyCodeLine{00400             \}}
+\DoxyCodeLine{00401             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00402             \{}
+\DoxyCodeLine{00403                 \textcolor{comment}{// List Elements and Delete buttons}}
+\DoxyCodeLine{00404                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < count; ++i)}
+\DoxyCodeLine{00405                 \{}
+\DoxyCodeLine{00406                     EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00407                     \textcolor{keywordtype}{bool} add = (GUI.Button(EditorGUILayout.GetControlRect(GUILayout.MaxWidth(20)), \textcolor{stringliteral}{"{}+"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}));}
+\DoxyCodeLine{00408                     EditorGUILayout.PropertyField(list.GetArrayElementAtIndex(i), GUIContent.none);}
+\DoxyCodeLine{00409                     \textcolor{keywordtype}{bool} \textcolor{keyword}{remove} = (GUI.Button(EditorGUILayout.GetControlRect(GUILayout.MaxWidth(20)), \textcolor{stringliteral}{"{}x"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}));}
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411                     EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00412 }
+\DoxyCodeLine{00413                     \textcolor{keywordflow}{if} (add)}
+\DoxyCodeLine{00414                     \{}
+\DoxyCodeLine{00415                         Add(list, i);}
+\DoxyCodeLine{00416                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00417                     \}}
+\DoxyCodeLine{00418 }
+\DoxyCodeLine{00419                     \textcolor{keywordflow}{if} (\textcolor{keyword}{remove})}
+\DoxyCodeLine{00420                     \{}
+\DoxyCodeLine{00421                         list.DeleteArrayElementAtIndex(i);}
+\DoxyCodeLine{00422                         \textcolor{comment}{//EditorGUILayout.EndHorizontal();}}
+\DoxyCodeLine{00423                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00424                     \}}
+\DoxyCodeLine{00425                 \}}
+\DoxyCodeLine{00426 }
+\DoxyCodeLine{00427                 EditorGUILayout.GetControlRect(\textcolor{keyword}{false}, 4);}
+\DoxyCodeLine{00428                 }
+\DoxyCodeLine{00429                 \textcolor{keywordflow}{if} (GUI.Button(EditorGUILayout.GetControlRect(), \textcolor{stringliteral}{"{}Add"{}}, (GUIStyle)\textcolor{stringliteral}{"{}minibutton"{}}))}
+\DoxyCodeLine{00430                     Add(list, count);}
+\DoxyCodeLine{00431 }
+\DoxyCodeLine{00432             \}}
+\DoxyCodeLine{00433                }
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00436         \}}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438         \textcolor{keyword}{private} \textcolor{keywordtype}{void} Add(SerializedProperty list, \textcolor{keywordtype}{int} i)}
+\DoxyCodeLine{00439         \{}
+\DoxyCodeLine{00440             \{}
+\DoxyCodeLine{00441                 \textcolor{keywordtype}{int} newindex = list.arraySize;}
+\DoxyCodeLine{00442                 list.InsertArrayElementAtIndex(i);}
+\DoxyCodeLine{00443                 list.GetArrayElementAtIndex(i).objectReferenceValue = \textcolor{keyword}{null};}
+\DoxyCodeLine{00444             \}}
+\DoxyCodeLine{00445         \}}
+\DoxyCodeLine{00446     \}}
+\DoxyCodeLine{00447    }
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00450 \}}
+
+\end{DoxyCode}

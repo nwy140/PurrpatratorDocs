@@ -1,0 +1,96 @@
+\doxysection{Utility\+Assists.\+cs}
+\label{_utility_assists_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/UtilityAssists.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/Assistants/UtilityAssists.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if PUN\_2\_OR\_NEWER}}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Pun;}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple.Assists}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }UtilityAssists}
+\DoxyCodeLine{00015     \{}
+\DoxyCodeLine{00016         \textcolor{keyword}{public} \textcolor{keyword}{static} SystemPresence GetRootSystemPresence<T>(\textcolor{keyword}{this} GameObject go, params MonoBehaviour[] depends) where T : MonoBehaviour}
+\DoxyCodeLine{00017         \{}
+\DoxyCodeLine{00018             var netobj = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020             var comp = netobj ? netobj.transform.GetNestedComponentInChildren<T, NetObject>(\textcolor{keyword}{true}) : go.GetComponent<T>();}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022             \textcolor{keywordflow}{if} (comp)}
+\DoxyCodeLine{00023             \{}
+\DoxyCodeLine{00024                 \textcolor{keywordflow}{if} (!netobj)}
+\DoxyCodeLine{00025                 \{}
+\DoxyCodeLine{00026                     Object.DestroyImmediate(comp);}
+\DoxyCodeLine{00027                     \textcolor{keywordflow}{return} SystemPresence.Absent;}
+\DoxyCodeLine{00028                 \}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030                 \textcolor{keywordflow}{if} (comp.gameObject.gameObject == go)}
+\DoxyCodeLine{00031                     \textcolor{keywordflow}{return} SystemPresence.Complete;}
+\DoxyCodeLine{00032                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00033                     \textcolor{keywordflow}{return} SystemPresence.Nested;}
+\DoxyCodeLine{00034             \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036             \textcolor{keywordflow}{return} SystemPresence.Absent;}
+\DoxyCodeLine{00037         \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddRootSystem<T>(\textcolor{keyword}{this} GameObject go, \textcolor{keywordtype}{bool} add, params MonoBehaviour[] depends) where T : MonoBehaviour}
+\DoxyCodeLine{00040         \{}
+\DoxyCodeLine{00041             var netobj = go.transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordflow}{if} (add)}
+\DoxyCodeLine{00044             \{}
+\DoxyCodeLine{00045                 \textcolor{keywordflow}{if} (netobj)}
+\DoxyCodeLine{00046                     netobj.gameObject.EnsureComponentExists<T>();}
+\DoxyCodeLine{00047                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00048                     go.EnsureComponentExists<T>();}
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00051             \{}
+\DoxyCodeLine{00052                 var comp = netobj ? netobj.gameObject.GetComponentInChildren<T>() : go.GetComponent<T>();}
+\DoxyCodeLine{00053                 \textcolor{keywordflow}{if} (comp)}
+\DoxyCodeLine{00054                     Object.DestroyImmediate(comp);}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058         \textcolor{comment}{//public static SystemPresence GetSystemPresence<T>(this GameObject go, params MonoBehaviour[] rootdependencies) where T : MonoBehaviour}}
+\DoxyCodeLine{00059         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{comment}{//public static void AddSystem<T>(this GameObject go, bool add, params MonoBehaviour[] rootdependencies) where T : MonoBehaviour}}
+\DoxyCodeLine{00064         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00065         \textcolor{comment}{//  var netobj = go.transform.GetParentNetObject();}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         \textcolor{comment}{//  if (add)}}
+\DoxyCodeLine{00068         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070         \textcolor{comment}{//      for (int i = 0; i < rootdependencies.Length; ++i)}}
+\DoxyCodeLine{00071         \textcolor{comment}{//          if (netobj.gameObject.EnsureComponentExists<>)}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{comment}{//      if (netobj)}}
+\DoxyCodeLine{00074         \textcolor{comment}{//          netobj.gameObject.EnsureComponentExists<T>();}}
+\DoxyCodeLine{00075         \textcolor{comment}{//      else}}
+\DoxyCodeLine{00076         \textcolor{comment}{//          go.EnsureComponentExists<T>();}}
+\DoxyCodeLine{00077         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00078         \textcolor{comment}{//  else}}
+\DoxyCodeLine{00079         \textcolor{comment}{//  \{}}
+\DoxyCodeLine{00080         \textcolor{comment}{//      var comp = netobj ? netobj.gameObject.GetComponentInChildren<T>() : go.GetComponent<T>();}}
+\DoxyCodeLine{00081         \textcolor{comment}{//      if (comp)}}
+\DoxyCodeLine{00082         \textcolor{comment}{//          Object.DestroyImmediate(comp);}}
+\DoxyCodeLine{00083         \textcolor{comment}{//  \}}}
+\DoxyCodeLine{00084         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086     \}}
+\DoxyCodeLine{00087 \}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00090 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,316 @@
+\doxysection{Player.\+cs}
+\label{_player_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/Player.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonRealtime/Code/Player.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright file="{}Player.cs"{} company="{}Exit Games GmbH"{}>}}
+\DoxyCodeLine{00003 \textcolor{comment}{//   Loadbalancing Framework for Photon -\/ Copyright (C) 2018 Exit Games GmbH}}
+\DoxyCodeLine{00004 \textcolor{comment}{// </copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// <summary>}}
+\DoxyCodeLine{00006 \textcolor{comment}{//   Per client in a room, a Player is created. This client's Player is also}}
+\DoxyCodeLine{00007 \textcolor{comment}{//   known as PhotonClient.LocalPlayer and the only one you might change}}
+\DoxyCodeLine{00008 \textcolor{comment}{//   properties for.}}
+\DoxyCodeLine{00009 \textcolor{comment}{// </summary>}}
+\DoxyCodeLine{00010 \textcolor{comment}{// <author>developer@photonengine.com</author>}}
+\DoxyCodeLine{00011 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00014 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00015 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{keyword}{namespace }Photon.Realtime}
+\DoxyCodeLine{00019 \{}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00021     \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00022     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00023     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY}}
+\DoxyCodeLine{00026     \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00028 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00029     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00030     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00040     \textcolor{keyword}{public} \textcolor{keyword}{class }Player}
+\DoxyCodeLine{00041     \{}
+\DoxyCodeLine{00045         \textcolor{keyword}{protected} \textcolor{keyword}{internal} Room RoomReference \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00049         \textcolor{keyword}{private} \textcolor{keywordtype}{int} actorNumber = -\/1;}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00053         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ActorNumber}
+\DoxyCodeLine{00054         \{}
+\DoxyCodeLine{00055             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.actorNumber; \}}
+\DoxyCodeLine{00056         \}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{bool} IsLocal;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} HasRejoined}
+\DoxyCodeLine{00064         \{}
+\DoxyCodeLine{00065             \textcolor{keyword}{get}; \textcolor{keyword}{internal} \textcolor{keyword}{set};}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00070         \textcolor{keyword}{private} \textcolor{keywordtype}{string} nickName = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{string} NickName}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             \textcolor{keyword}{get}}
+\DoxyCodeLine{00080             \{}
+\DoxyCodeLine{00081                 \textcolor{keywordflow}{return} this.nickName;}
+\DoxyCodeLine{00082             \}}
+\DoxyCodeLine{00083             \textcolor{keyword}{set}}
+\DoxyCodeLine{00084             \{}
+\DoxyCodeLine{00085                 \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(this.nickName) \&\& this.nickName.Equals(value))}
+\DoxyCodeLine{00086                 \{}
+\DoxyCodeLine{00087                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090                 this.nickName = value;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092                 \textcolor{comment}{// update a room, if we changed our nickName locally}}
+\DoxyCodeLine{00093                 \textcolor{keywordflow}{if} (this.IsLocal)}
+\DoxyCodeLine{00094                 \{}
+\DoxyCodeLine{00095                     this.SetPlayerNameProperty();}
+\DoxyCodeLine{00096                 \}}
+\DoxyCodeLine{00097             \}}
+\DoxyCodeLine{00098         \}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId \{ \textcolor{keyword}{get}; \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsMasterClient}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             \textcolor{keyword}{get}}
+\DoxyCodeLine{00110             \{}
+\DoxyCodeLine{00111                 \textcolor{keywordflow}{if} (this.RoomReference == \textcolor{keyword}{null})}
+\DoxyCodeLine{00112                 \{}
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00114                 \}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116                 \textcolor{keywordflow}{return} this.ActorNumber == this.RoomReference.MasterClientId;}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118         \}}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00126         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsInactive \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00135         \textcolor{keyword}{public} Hashtable CustomProperties \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00139         \textcolor{keyword}{public} \textcolor{keywordtype}{object} TagObject;}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00149         \textcolor{keyword}{protected} \textcolor{keyword}{internal} Player(\textcolor{keywordtype}{string} nickName, \textcolor{keywordtype}{int} actorNumber, \textcolor{keywordtype}{bool} isLocal) : this(nickName, actorNumber, isLocal, null)}
+\DoxyCodeLine{00150         \{}
+\DoxyCodeLine{00151         \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00161         \textcolor{keyword}{protected} \textcolor{keyword}{internal} Player(\textcolor{keywordtype}{string} nickName, \textcolor{keywordtype}{int} actorNumber, \textcolor{keywordtype}{bool} isLocal, Hashtable playerProperties)}
+\DoxyCodeLine{00162         \{}
+\DoxyCodeLine{00163             this.IsLocal = isLocal;}
+\DoxyCodeLine{00164             this.actorNumber = actorNumber;}
+\DoxyCodeLine{00165             this.NickName = nickName;}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167             this.CustomProperties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00168             this.InternalCacheProperties(playerProperties);}
+\DoxyCodeLine{00169         \}}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} Player Get(\textcolor{keywordtype}{int} \textcolor{keywordtype}{id})}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (this.RoomReference == \textcolor{keyword}{null})}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{keywordflow}{return} this.RoomReference.GetPlayer(\textcolor{keywordtype}{id});}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00189         \textcolor{keyword}{public} Player GetNext()}
+\DoxyCodeLine{00190         \{}
+\DoxyCodeLine{00191             \textcolor{keywordflow}{return} GetNextFor(this.ActorNumber);}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00198         \textcolor{keyword}{public} Player GetNextFor(Player currentPlayer)}
+\DoxyCodeLine{00199         \{}
+\DoxyCodeLine{00200             \textcolor{keywordflow}{if} (currentPlayer == \textcolor{keyword}{null})}
+\DoxyCodeLine{00201             \{}
+\DoxyCodeLine{00202                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00203             \}}
+\DoxyCodeLine{00204             \textcolor{keywordflow}{return} GetNextFor(currentPlayer.ActorNumber);}
+\DoxyCodeLine{00205         \}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00211         \textcolor{keyword}{public} Player GetNextFor(\textcolor{keywordtype}{int} currentPlayerId)}
+\DoxyCodeLine{00212         \{}
+\DoxyCodeLine{00213             \textcolor{keywordflow}{if} (this.RoomReference == \textcolor{keyword}{null} || this.RoomReference.Players == \textcolor{keyword}{null} || \textcolor{keyword}{this}.RoomReference.Players.Count < 2)}
+\DoxyCodeLine{00214             \{}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00216             \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218             Dictionary<int, Player> players = this.RoomReference.Players;}
+\DoxyCodeLine{00219             \textcolor{keywordtype}{int} nextHigherId = \textcolor{keywordtype}{int}.MaxValue;    \textcolor{comment}{// we look for the next higher ID}}
+\DoxyCodeLine{00220             \textcolor{keywordtype}{int} lowestId = currentPlayerId;     \textcolor{comment}{// if we are the player with the highest ID, there is no higher and we return to the lowest player's id}}
+\DoxyCodeLine{00221 }
+\DoxyCodeLine{00222             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{int} playerid \textcolor{keywordflow}{in} players.Keys)}
+\DoxyCodeLine{00223             \{}
+\DoxyCodeLine{00224                 \textcolor{keywordflow}{if} (playerid < lowestId)}
+\DoxyCodeLine{00225                 \{}
+\DoxyCodeLine{00226                     lowestId = playerid;        \textcolor{comment}{// less than any other ID (which must be at least less than this player's id).}}
+\DoxyCodeLine{00227                 \}}
+\DoxyCodeLine{00228                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (playerid > currentPlayerId \&\& playerid < nextHigherId)}
+\DoxyCodeLine{00229                 \{}
+\DoxyCodeLine{00230                     nextHigherId = playerid;    \textcolor{comment}{// more than our ID and less than those found so far.}}
+\DoxyCodeLine{00231                 \}}
+\DoxyCodeLine{00232             \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234             \textcolor{comment}{//UnityEngine.Debug.LogWarning("{}Debug. "{} + currentPlayerId + "{} lower: "{} + lowestId + "{} higher: "{} + nextHigherId + "{} "{});}}
+\DoxyCodeLine{00235             \textcolor{comment}{//UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(currentPlayerId));}}
+\DoxyCodeLine{00236             \textcolor{comment}{//UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(lowestId));}}
+\DoxyCodeLine{00237             \textcolor{comment}{//if (nextHigherId != int.MaxValue) UnityEngine.Debug.LogWarning(this.RoomReference.GetPlayer(nextHigherId));}}
+\DoxyCodeLine{00238             \textcolor{keywordflow}{return} (nextHigherId != \textcolor{keywordtype}{int}.MaxValue) ? players[nextHigherId] : players[lowestId];}
+\DoxyCodeLine{00239         \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00247         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} InternalCacheProperties(Hashtable properties)}
+\DoxyCodeLine{00248         \{}
+\DoxyCodeLine{00249             \textcolor{keywordflow}{if} (properties == \textcolor{keyword}{null} || properties.Count == 0 || \textcolor{keyword}{this}.CustomProperties.Equals(properties))}
+\DoxyCodeLine{00250             \{}
+\DoxyCodeLine{00251                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00252             \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254             \textcolor{keywordflow}{if} (properties.ContainsKey(ActorProperties.PlayerName))}
+\DoxyCodeLine{00255             \{}
+\DoxyCodeLine{00256                 \textcolor{keywordtype}{string} nameInServersProperties = (string)properties[ActorProperties.PlayerName];}
+\DoxyCodeLine{00257                 if (nameInServersProperties != \textcolor{keyword}{null})}
+\DoxyCodeLine{00258                 \{}
+\DoxyCodeLine{00259                     \textcolor{keywordflow}{if} (this.IsLocal)}
+\DoxyCodeLine{00260                     \{}
+\DoxyCodeLine{00261                         \textcolor{comment}{// the local playername is different than in the properties coming from the server}}
+\DoxyCodeLine{00262                         \textcolor{comment}{// so the local nickName was changed and the server is outdated -\/> update server}}
+\DoxyCodeLine{00263                         \textcolor{comment}{// update property instead of using the outdated nickName coming from server}}
+\DoxyCodeLine{00264                         \textcolor{keywordflow}{if} (!nameInServersProperties.Equals(\textcolor{keyword}{this}.nickName))}
+\DoxyCodeLine{00265                         \{}
+\DoxyCodeLine{00266                             this.SetPlayerNameProperty();}
+\DoxyCodeLine{00267                         \}}
+\DoxyCodeLine{00268                     \}}
+\DoxyCodeLine{00269                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00270                     \{}
+\DoxyCodeLine{00271                         this.NickName = nameInServersProperties;}
+\DoxyCodeLine{00272                     \}}
+\DoxyCodeLine{00273                 \}}
+\DoxyCodeLine{00274             \}}
+\DoxyCodeLine{00275             \textcolor{keywordflow}{if} (properties.ContainsKey(ActorProperties.UserId))}
+\DoxyCodeLine{00276             \{}
+\DoxyCodeLine{00277                 this.UserId = (string)properties[ActorProperties.UserId];}
+\DoxyCodeLine{00278             \}}
+\DoxyCodeLine{00279             \textcolor{keywordflow}{if} (properties.ContainsKey(ActorProperties.IsInactive))}
+\DoxyCodeLine{00280             \{}
+\DoxyCodeLine{00281                 this.IsInactive = (bool)properties[ActorProperties.IsInactive]; \textcolor{comment}{//TURNBASED new well-\/known propery for players}}
+\DoxyCodeLine{00282             \}}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284             this.CustomProperties.MergeStringKeys(properties);}
+\DoxyCodeLine{00285             this.CustomProperties.StripKeysWithNullValues();}
+\DoxyCodeLine{00286         \}}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00292         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} ToString()}
+\DoxyCodeLine{00293         \{}
+\DoxyCodeLine{00294             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\#\{0:00\} '\{1\}'"{}},this.ActorNumber, this.NickName);}
+\DoxyCodeLine{00295         \}}
+\DoxyCodeLine{00296 }
+\DoxyCodeLine{00304         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ToStringFull()}
+\DoxyCodeLine{00305         \{}
+\DoxyCodeLine{00306             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\#\{0:00\} '\{1\}'\{2\} \{3\}"{}}, this.ActorNumber, this.NickName, this.IsInactive ? \textcolor{stringliteral}{"{} (inactive)"{}} : \textcolor{stringliteral}{"{}"{}}, this.CustomProperties.ToStringFull());}
+\DoxyCodeLine{00307         \}}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00312         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} Equals(\textcolor{keywordtype}{object} p)}
+\DoxyCodeLine{00313         \{}
+\DoxyCodeLine{00314             Player pp = p as Player;}
+\DoxyCodeLine{00315             \textcolor{keywordflow}{return} (pp != \textcolor{keyword}{null} \&\& this.GetHashCode() == pp.GetHashCode());}
+\DoxyCodeLine{00316         \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00321         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{int} GetHashCode()}
+\DoxyCodeLine{00322         \{}
+\DoxyCodeLine{00323             \textcolor{keywordflow}{return} this.ActorNumber;}
+\DoxyCodeLine{00324         \}}
+\DoxyCodeLine{00325 }
+\DoxyCodeLine{00329         \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keywordtype}{void} ChangeLocalID(\textcolor{keywordtype}{int} newID)}
+\DoxyCodeLine{00330         \{}
+\DoxyCodeLine{00331             \textcolor{keywordflow}{if} (!this.IsLocal)}
+\DoxyCodeLine{00332             \{}
+\DoxyCodeLine{00333                 \textcolor{comment}{//Debug.LogError("{}ERROR You should never change Player IDs!"{});}}
+\DoxyCodeLine{00334                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00335             \}}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00337             this.actorNumber = newID;}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339 }
+\DoxyCodeLine{00340 }
+\DoxyCodeLine{00341 }
+\DoxyCodeLine{00390         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SetCustomProperties(Hashtable propertiesToSet, Hashtable expectedValues = \textcolor{keyword}{null}, WebFlags webFlags = \textcolor{keyword}{null})}
+\DoxyCodeLine{00391         \{}
+\DoxyCodeLine{00392             \textcolor{keywordflow}{if} (propertiesToSet == \textcolor{keyword}{null} || propertiesToSet.Count == 0)}
+\DoxyCodeLine{00393             \{}
+\DoxyCodeLine{00394                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00395             \}}
+\DoxyCodeLine{00396 }
+\DoxyCodeLine{00397             Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399             \textcolor{keywordflow}{if} (this.RoomReference != \textcolor{keyword}{null})}
+\DoxyCodeLine{00400             \{}
+\DoxyCodeLine{00401                 \textcolor{keywordflow}{if} (this.RoomReference.IsOffline)}
+\DoxyCodeLine{00402                 \{}
+\DoxyCodeLine{00403                     \textcolor{keywordflow}{if} (customProps.Count == 0)}
+\DoxyCodeLine{00404                     \{}
+\DoxyCodeLine{00405                         \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00406                     \}}
+\DoxyCodeLine{00407                     this.CustomProperties.Merge(customProps);}
+\DoxyCodeLine{00408                     this.CustomProperties.StripKeysWithNullValues();}
+\DoxyCodeLine{00409                     \textcolor{comment}{// invoking callbacks}}
+\DoxyCodeLine{00410                     this.RoomReference.LoadBalancingClient.InRoomCallbackTargets.OnPlayerPropertiesUpdate(\textcolor{keyword}{this}, customProps);}
+\DoxyCodeLine{00411                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00412                 \}}
+\DoxyCodeLine{00413                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00414                 \{}
+\DoxyCodeLine{00415                     Hashtable customPropsToCheck = expectedValues.StripToStringKeys() as Hashtable;}
+\DoxyCodeLine{00416 }
+\DoxyCodeLine{00417                     \textcolor{comment}{// send (sync) these new values if in online room}}
+\DoxyCodeLine{00418                     \textcolor{keywordflow}{return} this.RoomReference.LoadBalancingClient.OpSetPropertiesOfActor(this.actorNumber, customProps, customPropsToCheck, webFlags);}
+\DoxyCodeLine{00419                 \}}
+\DoxyCodeLine{00420             \}}
+\DoxyCodeLine{00421             \textcolor{keywordflow}{if} (this.IsLocal)}
+\DoxyCodeLine{00422             \{}
+\DoxyCodeLine{00423                 \textcolor{keywordflow}{if} (customProps.Count == 0)}
+\DoxyCodeLine{00424                 \{}
+\DoxyCodeLine{00425                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00426                 \}}
+\DoxyCodeLine{00427                 \textcolor{keywordflow}{if} (expectedValues == \textcolor{keyword}{null} \&\& webFlags == \textcolor{keyword}{null})}
+\DoxyCodeLine{00428                 \{}
+\DoxyCodeLine{00429                     this.CustomProperties.Merge(customProps);}
+\DoxyCodeLine{00430                     this.CustomProperties.StripKeysWithNullValues();}
+\DoxyCodeLine{00431                     \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00432                 \}}
+\DoxyCodeLine{00433             \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00436         \}}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438 }
+\DoxyCodeLine{00440         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} SetPlayerNameProperty()}
+\DoxyCodeLine{00441         \{}
+\DoxyCodeLine{00442             \textcolor{keywordflow}{if} (this.RoomReference != \textcolor{keyword}{null} \&\& !this.RoomReference.IsOffline)}
+\DoxyCodeLine{00443             \{}
+\DoxyCodeLine{00444                 Hashtable properties = \textcolor{keyword}{new} Hashtable();}
+\DoxyCodeLine{00445                 properties[ActorProperties.PlayerName] = this.nickName;}
+\DoxyCodeLine{00446                 \textcolor{keywordflow}{return} this.RoomReference.LoadBalancingClient.OpSetPropertiesOfActor(this.ActorNumber, properties);}
+\DoxyCodeLine{00447             \}}
+\DoxyCodeLine{00448 }
+\DoxyCodeLine{00449             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00450         \}}
+\DoxyCodeLine{00451     \}}
+\DoxyCodeLine{00452 \}}
+
+\end{DoxyCode}

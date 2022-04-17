@@ -1,0 +1,139 @@
+\doxysection{Simple\+Data\+Monitor.\+cs}
+\label{_simple_data_monitor_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/DataMonitor/SimpleDataMonitor.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/DataMonitor/SimpleDataMonitor.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#if SNS\_REPORTS \&\& (UNITY\_EDITOR || DEVELOPMENT\_BUILD)}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00015     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }SimpleDataMonitor}
+\DoxyCodeLine{00016     \{}
+\DoxyCodeLine{00020         \textcolor{keyword}{private} \textcolor{keyword}{class }CountValue \{ \textcolor{keyword}{public} \textcolor{keywordtype}{int} value; \textcolor{keyword}{public} CountValue(\textcolor{keywordtype}{int} val) \{ value = val; \} \}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<NetObject, CountValue> byteTotalsPerNetObj = \textcolor{keyword}{new} Dictionary<NetObject, CountValue>();}
+\DoxyCodeLine{00023         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<NetObject, Dictionary<SyncObject, CountValue>> bitsPerSyncObj = \textcolor{keyword}{new} Dictionary<NetObject, Dictionary<SyncObject, CountValue>>();}
+\DoxyCodeLine{00024         \textcolor{keyword}{private} \textcolor{keyword}{static} Dictionary<NetObject, Dictionary<SyncObject, CountValue>> byteTotalsPerSyncObj = \textcolor{keyword}{new} Dictionary<NetObject, Dictionary<SyncObject, CountValue>>();}
+\DoxyCodeLine{00025         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} byteTotalLastSecond;}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{00027         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} lastTotalsTime;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} AddData(SyncObject so, \textcolor{keywordtype}{int} bits)}
+\DoxyCodeLine{00030         \{}
+\DoxyCodeLine{00031             var no = so.NetObj;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             EnsureKeysExists(so);}
+\DoxyCodeLine{00034 }
+\DoxyCodeLine{00035             \textcolor{keywordtype}{int} t = (int)Time.time;}
+\DoxyCodeLine{00036             if (t != lastTotalsTime)}
+\DoxyCodeLine{00037                 NextSecond();}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039             var soDict = bitsPerSyncObj[no];}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             soDict[so].value += bits;}
+\DoxyCodeLine{00042         \}}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} EnsureKeysExists(SyncObject so)}
+\DoxyCodeLine{00045         \{}
+\DoxyCodeLine{00046             var no = so.NetObj;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048             \textcolor{keywordflow}{if} (!bitsPerSyncObj.ContainsKey(no))}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 bitsPerSyncObj.Add(no, \textcolor{keyword}{new} Dictionary<SyncObject, CountValue>());}
+\DoxyCodeLine{00051                 bitsPerSyncObj[no][so] = \textcolor{keyword}{new} CountValue(0);}
+\DoxyCodeLine{00052                 byteTotalsPerSyncObj.Add(no, \textcolor{keyword}{new} Dictionary<SyncObject, CountValue>());}
+\DoxyCodeLine{00053                 byteTotalsPerSyncObj[no][so] = \textcolor{keyword}{new} CountValue(0);}
+\DoxyCodeLine{00054                 byteTotalsPerNetObj.Add(no, \textcolor{keyword}{new} CountValue(0));}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057             var soDict = bitsPerSyncObj[no];}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059             \textcolor{keywordflow}{if} (!soDict.ContainsKey(so))}
+\DoxyCodeLine{00060             \{}
+\DoxyCodeLine{00061                 soDict.Add(so, \textcolor{keyword}{new} CountValue(0));}
+\DoxyCodeLine{00062                 byteTotalsPerSyncObj[no].Add(so, \textcolor{keyword}{new} CountValue(0));}
+\DoxyCodeLine{00063             \}}
+\DoxyCodeLine{00064         \}}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} NextSecond()}
+\DoxyCodeLine{00067         \{}
+\DoxyCodeLine{00068             byteTotalLastSecond = 0;}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070             \textcolor{keywordflow}{foreach} (var noKvp \textcolor{keywordflow}{in} bitsPerSyncObj)}
+\DoxyCodeLine{00071             \{}
+\DoxyCodeLine{00072                 var no = noKvp.Key;}
+\DoxyCodeLine{00073                 byteTotalsPerNetObj[no].value = 0;}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075                 var byteDict = byteTotalsPerSyncObj[no];}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077                 \textcolor{keywordflow}{foreach} (var soKvp \textcolor{keywordflow}{in} noKvp.Value)}
+\DoxyCodeLine{00078                 \{}
+\DoxyCodeLine{00079                     var so = soKvp.Key;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081                     \textcolor{keywordtype}{int} bytes = (soKvp.Value.value + 7) >> 3;}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083                     byteDict[so].value = bytes;}
+\DoxyCodeLine{00084                     byteTotalLastSecond += bytes;}
+\DoxyCodeLine{00085                     byteTotalsPerNetObj[no].value += bytes;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087                     \textcolor{comment}{// reset the syncObj bit counter}}
+\DoxyCodeLine{00088                     bitsPerSyncObj[no][so].value = 0;}
+\DoxyCodeLine{00089                 \}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091                 lastTotalsTime = (int)Time.time;}
+\DoxyCodeLine{00092             \}}
+\DoxyCodeLine{00093             strb.Length = 0;}
+\DoxyCodeLine{00094             Debug.Log(Report(strb, ReportType.PerSyncObject).ToString());}
+\DoxyCodeLine{00095         \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} \textcolor{keyword}{enum} ReportType \{ Total, PerNetObject, PerSyncObject \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder strb = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keyword}{static} StringBuilder Report(StringBuilder strb, ReportType reportType)}
+\DoxyCodeLine{00102         \{}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             strb.Append(byteTotalLastSecond).Append(\textcolor{stringliteral}{"{} Total Sent Bytes/Sec\(\backslash\)n"{}});}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106             \textcolor{keywordflow}{if} (reportType != ReportType.Total)}
+\DoxyCodeLine{00107             \{}
+\DoxyCodeLine{00108                 \textcolor{keywordflow}{foreach} (var noKvp \textcolor{keywordflow}{in} byteTotalsPerNetObj)}
+\DoxyCodeLine{00109                 \{}
+\DoxyCodeLine{00110                     var no = noKvp.Key;}
+\DoxyCodeLine{00111                     var noTotal = noKvp.Value.value;}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113                     \textcolor{keywordflow}{if} (!no)}
+\DoxyCodeLine{00114                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116                     strb.Append(\textcolor{stringliteral}{"{}-\/ "{}}).Append(noTotal).Append(\textcolor{stringliteral}{"{} Bytes from "{}}).Append(no.name).Append(no.NetObjId).Append(\textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118                     \textcolor{keywordflow}{if} (reportType == ReportType.PerSyncObject)}
+\DoxyCodeLine{00119                         \textcolor{keywordflow}{foreach} (var soKvp \textcolor{keywordflow}{in} byteTotalsPerSyncObj[no])}
+\DoxyCodeLine{00120                         \{}
+\DoxyCodeLine{00121                             var so = soKvp.Key;}
+\DoxyCodeLine{00122                             var soTotal = soKvp.Value.value;}
+\DoxyCodeLine{00123                             strb.Append(\textcolor{stringliteral}{"{}-\/-\/ "{}}).Append(soTotal.ToString(\textcolor{stringliteral}{"{}0000"{}})).Append(\textcolor{stringliteral}{"{} Bytes from "{}}).Append(so.GetType().Name);}
+\DoxyCodeLine{00124                             \textcolor{keywordflow}{if} (so.transform.parent != \textcolor{keyword}{null})}
+\DoxyCodeLine{00125                                 strb.Append(\textcolor{stringliteral}{"{} ("{}}).Append(so.name).Append(\textcolor{stringliteral}{"{})"{}});}
+\DoxyCodeLine{00126                             strb.Append(\textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00127                         \}}
+\DoxyCodeLine{00128                 \}}
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131             \textcolor{keywordflow}{return} strb;}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133     \}}
+\DoxyCodeLine{00134 \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

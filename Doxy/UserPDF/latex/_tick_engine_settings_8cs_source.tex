@@ -1,0 +1,340 @@
+\doxysection{Tick\+Engine\+Settings.\+cs}
+\label{_tick_engine_settings_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/TickEngineSettings.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/TickEngineSettings.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00011 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00015 \{}
+\DoxyCodeLine{00016 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00017     [HelpURL(Internal.SimpleDocsURLS.TICK\_SETTINGS)]}
+\DoxyCodeLine{00018 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }TickEngineSettings : SettingsScriptableObject<TickEngineSettings>}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{string} HelpURL \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Internal.SimpleDocsURLS.TICK\_SETTINGS; \} \}}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{string} instructions = \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029         \textcolor{keyword}{public} \textcolor{keyword}{enum} FrameCountEnum \{ FrameCount12 = 12, FrameCount30 = 30, FrameCount60 = 60, FrameCount120 = 120 \}}
+\DoxyCodeLine{00030         \textcolor{keyword}{public} \textcolor{keyword}{enum} BufferCorrection \{ Manual, Auto \}}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} \textcolor{keyword}{enum} LogInfoLevel \{ All, WarningsAndErrors, ErrorsOnly, None \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         [Space]}
+\DoxyCodeLine{00034         [Tooltip(\textcolor{stringliteral}{"{}Enable/Disable for the NetMaster timing callbacks. This needs to be enabled for networking to work."{}})]}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} enableTickEngine = \textcolor{keyword}{true};}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         [Tooltip(\textcolor{stringliteral}{"{}Disable to pause sending Updates to Relay if no other Players are in the current Room. Default is false to save on data usage. Enable if your code requires updates to echo back to controller."{}})]}
+\DoxyCodeLine{00039         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} sendWhenSolo = \textcolor{keyword}{false};}
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041         [Header(\textcolor{stringliteral}{"{}Debugging"{}})]}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         [SerializeField]}
+\DoxyCodeLine{00044         \textcolor{keyword}{private} LogInfoLevel logLevel = LogInfoLevel.WarningsAndErrors;}
+\DoxyCodeLine{00045         \textcolor{keyword}{public} \textcolor{keyword}{static} LogInfoLevel LogLevel \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} Single.logLevel; \} \}}
+\DoxyCodeLine{00046 }
+\DoxyCodeLine{00047         [Tooltip(\textcolor{stringliteral}{"{}The size of the circular buffer."{}})]}
+\DoxyCodeLine{00048         [SerializeField]}
+\DoxyCodeLine{00049         [HideInInspector]}
+\DoxyCodeLine{00050         \textcolor{keyword}{private} FrameCountEnum \_frameCount = FrameCountEnum.FrameCount30;}
+\DoxyCodeLine{00051         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} frameCount;}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053         [SerializeField]}
+\DoxyCodeLine{00054         [HideInInspector]}
+\DoxyCodeLine{00055         \textcolor{keyword}{private} BufferCorrection \_bufferCorrection = BufferCorrection.Manual;}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057         [Tooltip(\textcolor{stringliteral}{"{}Target size of the frame buffer. This is the number of frames in the buffer that is considered ideal. "{}} +}
+\DoxyCodeLine{00058             \textcolor{stringliteral}{"{}The lower the number the less latency, but with a greater risk of buffer underruns that lead to extrapolation/hitching."{}})]}
+\DoxyCodeLine{00059         [SerializeField] [HideInInspector] \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_targetBufferSize = 2;}
+\DoxyCodeLine{00060         \textcolor{comment}{//public static int TargetBufferSize \{ get \{ return Single.\_targetBufferSize; \} \}}}
+\DoxyCodeLine{00061         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} targetBufferSize;}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063         [Tooltip(\textcolor{stringliteral}{"{}Buffer sizes above this value wll be considered to be excessive, and will trigger multiple frames being processed to shrink the buffer."{}})]}
+\DoxyCodeLine{00064         [SerializeField] [HideInInspector] \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_maxBufferSize = 3;}
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} maxBufferSize;}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067         [Tooltip(\textcolor{stringliteral}{"{}Buffer sizes below this value will trigger the frames to hold for extra ticks in order to grow the buffer."{}})]}
+\DoxyCodeLine{00068         [SerializeField] [HideInInspector] \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_minBufferSize = 1;}
+\DoxyCodeLine{00069         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} minBufferSize;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071         [Tooltip(\textcolor{stringliteral}{"{}The number of ticks a buffer will be allowed to be below the the Min Buffer Size before starting to correct. "{}} +}
+\DoxyCodeLine{00072             \textcolor{stringliteral}{"{}This value prevents overreaction to network hiccups and allows for a few ticks before applying harsh corrections. Ideally this value will be larger than Ticks Before Shrink."{}})]}
+\DoxyCodeLine{00073         [SerializeField] [HideInInspector] \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_ticksBeforeGrow = 8;}
+\DoxyCodeLine{00074         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ticksBeforeGrow;}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         [Tooltip(\textcolor{stringliteral}{"{}The number of ticks a buffer will be allowed to exceed Max Buffer Size before starting to correct. "{}} +}
+\DoxyCodeLine{00077             \textcolor{stringliteral}{"{}This value prevents overreaction to network hiccups and allows for a few ticks before applying harsh corrections. Ideally this value will be smaller than Ticks Before Grow."{}})]}
+\DoxyCodeLine{00078         [SerializeField] [HideInInspector] \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_ticksBeforeShrink = 5;}
+\DoxyCodeLine{00079         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} ticksBeforeShrink;}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082         [Tooltip(\textcolor{stringliteral}{"{}States are sent post PhysX/FixedUpdate. Setting this to a value greater than one reduces these sends by only sending every X fixed tick.\(\backslash\)n1 = Every Tick\(\backslash\)n2 = Every Other\(\backslash\)n3 = Every Third, etc."{}})]}
+\DoxyCodeLine{00083         [SerializeField]}
+\DoxyCodeLine{00084         [HideInInspector]}
+\DoxyCodeLine{00085         \textcolor{keyword}{private} \textcolor{keywordtype}{int} \_sendEveryXTick = 3;}
+\DoxyCodeLine{00086         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} sendEveryXTick = 3;}
+\DoxyCodeLine{00087         \textcolor{comment}{//public static int SendEveryXTick \{ get \{ return Single.sendEveryXTick; \} \}}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         [Space(4)]}
+\DoxyCodeLine{00090 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00091         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} showGUIHeaders = \textcolor{keyword}{true};}
+\DoxyCodeLine{00092 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00093         \textcolor{comment}{//[Header("{}Code Generation"{})]}}
+\DoxyCodeLine{00094         \textcolor{comment}{//[Tooltip("{}Enables the codegen for PackObjects / PackAttributes. Disable this if you would like to suspend codegen. Existing codegen will remain, unless it produces errors."{})]}}
+\DoxyCodeLine{00095         \textcolor{comment}{//public bool enableCodegen = true;}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{comment}{//[Tooltip("{}Automatically deletes codegen if it produces any compile errors. Typically you will want to leave this enabled."{})]}}
+\DoxyCodeLine{00098         \textcolor{comment}{//public bool deleteBadCode = true;}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00101         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} halfFrameCount;}
+\DoxyCodeLine{00102         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} thirdFrameCount;}
+\DoxyCodeLine{00103         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} quaterFrameCount;}
+\DoxyCodeLine{00104         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} frameCountBits;}
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{float} netTickInterval, netTickIntervalInv, targetBufferInterval;}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107 \textcolor{preprocessor}{\#pragma warning disable 0414}}
+\DoxyCodeLine{00108         \textcolor{keyword}{static} \textcolor{keywordtype}{float} secondsOfBuffer;}
+\DoxyCodeLine{00109         \textcolor{keyword}{static} \textcolor{keywordtype}{float} secondsOfHalfBuffer;}
+\DoxyCodeLine{00110         \textcolor{keyword}{static} \textcolor{keywordtype}{float} bufferTargSecs;}
+\DoxyCodeLine{00111 \textcolor{preprocessor}{\#pragma warning restore 0414}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00117         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{int} MaxKeyframes}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} (\textcolor{keywordtype}{int})Single.\_frameCount / 3; \}}
+\DoxyCodeLine{00120         \}}
+\DoxyCodeLine{00121 }
+\DoxyCodeLine{00122         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]}
+\DoxyCodeLine{00123         \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keywordtype}{void} Bootstrap()}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126             var single = Single;}
+\DoxyCodeLine{00127             single.CalculateBufferValues();}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00130         \textcolor{keyword}{private} \textcolor{keywordtype}{void} CalculateBufferValues()}
+\DoxyCodeLine{00131         \{}
+\DoxyCodeLine{00133             \textcolor{keywordflow}{if} (\_bufferCorrection == BufferCorrection.Manual)}
+\DoxyCodeLine{00134             \{}
+\DoxyCodeLine{00135                 \textcolor{comment}{//targetBufferSize = single.\_targetBufferSize;}}
+\DoxyCodeLine{00136                 minBufferSize = \_minBufferSize;}
+\DoxyCodeLine{00137                 maxBufferSize = \_maxBufferSize;}
+\DoxyCodeLine{00138             \}}
+\DoxyCodeLine{00139             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140             \{}
+\DoxyCodeLine{00141                 minBufferSize = \_minBufferSize;}
+\DoxyCodeLine{00142                 maxBufferSize = \_maxBufferSize;}
+\DoxyCodeLine{00143             \}}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145             frameCount = (int)\_frameCount;}
+\DoxyCodeLine{00146             halfFrameCount = frameCount / 2;}
+\DoxyCodeLine{00147             thirdFrameCount = frameCount / 3;}
+\DoxyCodeLine{00148             quaterFrameCount = frameCount / 4;}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150             frameCountBits = frameCount.GetBitsForMaxValue();}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00152             netTickInterval = Time.fixedDeltaTime * \_sendEveryXTick;}
+\DoxyCodeLine{00153             netTickIntervalInv = 1f / (Time.fixedDeltaTime * \_sendEveryXTick);}
+\DoxyCodeLine{00154             targetBufferInterval = Time.fixedDeltaTime * \_sendEveryXTick * \_targetBufferSize;}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00156             sendEveryXTick = \_sendEveryXTick;}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158             targetBufferSize = \_targetBufferSize;}
+\DoxyCodeLine{00159             ticksBeforeGrow = \_ticksBeforeGrow;}
+\DoxyCodeLine{00160             ticksBeforeShrink = \_ticksBeforeShrink;}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162             secondsOfBuffer = Time.fixedDeltaTime * \_sendEveryXTick * frameCount;}
+\DoxyCodeLine{00163             secondsOfHalfBuffer = secondsOfBuffer * .5f;}
+\DoxyCodeLine{00164             bufferTargSecs = netTickInterval * \_targetBufferSize;}
+\DoxyCodeLine{00165         \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167        }
+\DoxyCodeLine{00168 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         [MenuItem(\textcolor{stringliteral}{"{}Window/Photon Unity Networking/Tick Engine Settings"{}}, \textcolor{keyword}{false}, 105)]}
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{void} SelectInstance()}
+\DoxyCodeLine{00172         \{}
+\DoxyCodeLine{00173             Single.SelectThisInstance();}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} DrawGui(Object target, \textcolor{keywordtype}{bool} asFoldout, \textcolor{keywordtype}{bool} includeScriptField, \textcolor{keywordtype}{bool} initializeAsOpen = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} asWindow = \textcolor{keyword}{false})}
+\DoxyCodeLine{00177         \{}
+\DoxyCodeLine{00178             EditorGUI.BeginChangeCheck();}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180             \textcolor{keywordtype}{bool} isexpanded = base.DrawGui(target, asFoldout, includeScriptField, initializeAsOpen, asWindow);}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182             SerializedObject soTarget = \textcolor{keyword}{new} SerializedObject(Single);}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184             \textcolor{keywordflow}{if} (isexpanded)}
+\DoxyCodeLine{00185             \{}
+\DoxyCodeLine{00186             }
+\DoxyCodeLine{00187                 EditorGUILayout.Space();}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189                 SerializedProperty frameCount = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_frameCount"{}});}
+\DoxyCodeLine{00190                 SerializedProperty \_sendEveryXTick = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_sendEveryXTick"{}});}
+\DoxyCodeLine{00191                 SerializedProperty bufferCorrection = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_bufferCorrection"{}});}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Time Manager"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195                 Time.fixedDeltaTime = EditorGUILayout.DelayedFloatField(\textcolor{stringliteral}{"{}Fixed Timestep"{}}, Time.fixedDeltaTime);}
+\DoxyCodeLine{00196                 EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Note: Fixed Timestep is the PhysX/FixedUpdate rate. Changing this value changes the Project Settings / Time settings, and will affect physics behavior in Unity."{}}, MessageType.None);}
+\DoxyCodeLine{00197                 EditorGUILayout.LabelField(\textcolor{stringliteral}{"{}Ring Buffer"{}}, (GUIStyle)\textcolor{stringliteral}{"{}BoldLabel"{}});}
+\DoxyCodeLine{00198 }
+\DoxyCodeLine{00200                 \textcolor{keywordflow}{if} (bufferCorrection.enumValueIndex == (\textcolor{keywordtype}{int})BufferCorrection.Manual \&\& frameCount.intValue == 12 \&\& \_sendEveryXTick.intValue > 4)}
+\DoxyCodeLine{00201                 \{}
+\DoxyCodeLine{00202                     \_sendEveryXTick.intValue = 4;}
+\DoxyCodeLine{00203                 \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205                 EditorGUILayout.IntSlider(\_sendEveryXTick, 1, 12);}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207                 EditorGUILayout.PropertyField(bufferCorrection);}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209                 \textcolor{keywordflow}{if} (bufferCorrection.enumValueIndex == (\textcolor{keywordtype}{int})BufferCorrection.Manual)}
+\DoxyCodeLine{00210                 \{}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212                     EditorGUILayout.PropertyField(frameCount);}
+\DoxyCodeLine{00213                     DrawBufferSizes(soTarget);}
+\DoxyCodeLine{00214                 \}}
+\DoxyCodeLine{00215                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00216                 \{}
+\DoxyCodeLine{00217                     AutoSetBuffer(frameCount, \_sendEveryXTick);}
+\DoxyCodeLine{00218                     EditorGUI.BeginDisabledGroup(\textcolor{keyword}{true});}
+\DoxyCodeLine{00219                     EditorGUILayout.PropertyField(frameCount);}
+\DoxyCodeLine{00220                     DrawBufferSizes(soTarget);}
+\DoxyCodeLine{00221                     EditorGUI.EndDisabledGroup();}
+\DoxyCodeLine{00222                 \}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224                 CalculateBufferValues();}
+\DoxyCodeLine{00225                 \textcolor{comment}{//float secondsOfBuffer = Time.fixedDeltaTime * \_sendEveryXTick.intValue * frameCount.intValue;}}
+\DoxyCodeLine{00226                 \textcolor{comment}{//float secondsOfHalfBuffer = secondsOfBuffer * .5f;}}
+\DoxyCodeLine{00227                 \textcolor{keywordtype}{float} fixrate = Time.fixedDeltaTime;}
+\DoxyCodeLine{00228                 \textcolor{comment}{//float netrate = Time.fixedDeltaTime * \_sendEveryXTick.intValue;}}
+\DoxyCodeLine{00229                 \textcolor{comment}{//float bufferTargSecs = netrate * \_targetBufferSize;}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231                 EditorGUILayout.LabelField(}
+\DoxyCodeLine{00232                     \textcolor{stringliteral}{"{}Fixed/Sim Tick Rate:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00233                     fixrate.ToString(\textcolor{stringliteral}{"{}G4"{}}) + \textcolor{stringliteral}{"{} ms ("{}} + (1 / fixrate).ToString(\textcolor{stringliteral}{"{}G4"{}}) + \textcolor{stringliteral}{"{} ticks per sec)\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00234                     \textcolor{stringliteral}{"{}Net Tick Rate:\(\backslash\)n"{}} +}
+\DoxyCodeLine{00235                     netTickInterval.ToString(\textcolor{stringliteral}{"{}G4"{}}) + \textcolor{stringliteral}{"{} ms ("{}} + (netTickIntervalInv).ToString(\textcolor{stringliteral}{"{}G4"{}}) + \textcolor{stringliteral}{"{} ticks per sec)\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237                     bufferTargSecs.ToString(\textcolor{stringliteral}{"{}0.000"{}}) + \textcolor{stringliteral}{"{} ms target buffer size\(\backslash\)n\(\backslash\)n"{}} +}
+\DoxyCodeLine{00238                     secondsOfBuffer.ToString(\textcolor{stringliteral}{"{}0.000"{}}) + \textcolor{stringliteral}{"{} secs Buffer Total\(\backslash\)n"{}} +}
+\DoxyCodeLine{00239                     secondsOfHalfBuffer.ToString(\textcolor{stringliteral}{"{}0.000"{}}) + \textcolor{stringliteral}{"{} secs Buffer Look Ahead\(\backslash\)n"{}} +}
+\DoxyCodeLine{00240                     secondsOfHalfBuffer.ToString(\textcolor{stringliteral}{"{}0.000"{}}) + \textcolor{stringliteral}{"{} secs Buffer History"{}}}
+\DoxyCodeLine{00241                     , \textcolor{keyword}{new} GUIStyle(\textcolor{stringliteral}{"{}HelpBox"{}}) \{ padding = \textcolor{keyword}{new} RectOffset(8, 8, 8, 8) \});}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243                 \textcolor{keywordflow}{if} (secondsOfBuffer < 1)}
+\DoxyCodeLine{00244                     EditorGUILayout.HelpBox(\textcolor{stringliteral}{"{}Warning: Less than 1 Second of buffer may break catastrophically for users with high pings. Increase FrameCount, increase SendEveryX value, or reduce the physics/fixed rate to make the buffer larger."{}}, MessageType.Warning);}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             \textcolor{keywordflow}{if} (EditorGUI.EndChangeCheck())}
+\DoxyCodeLine{00249             \{}
+\DoxyCodeLine{00250                 soTarget.ApplyModifiedProperties();}
+\DoxyCodeLine{00251                 AssetDatabase.SaveAssets();}
+\DoxyCodeLine{00252             \}}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{00254             \textcolor{keywordflow}{return} isexpanded;}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256         \}}
+\DoxyCodeLine{00257 }
+\DoxyCodeLine{00258         \textcolor{keyword}{private} \textcolor{keywordtype}{void} AutoSetBuffer(SerializedProperty frameCount, SerializedProperty sendEveryX)}
+\DoxyCodeLine{00259         \{}
+\DoxyCodeLine{00260             \textcolor{keywordtype}{float} secondsPerTick = Time.fixedDeltaTime * sendEveryX.intValue;}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00262             \textcolor{keywordtype}{float} framesNeeded = 1 / secondsPerTick;}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265             \textcolor{keywordflow}{if} (framesNeeded < (\textcolor{keywordtype}{float})FrameCountEnum.FrameCount12)}
+\DoxyCodeLine{00266                 frameCount.intValue = (int)FrameCountEnum.FrameCount12;}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268             \textcolor{keywordflow}{else} if (framesNeeded < (\textcolor{keywordtype}{float})FrameCountEnum.FrameCount30)}
+\DoxyCodeLine{00269                 frameCount.intValue = (\textcolor{keywordtype}{int})FrameCountEnum.FrameCount30;}
+\DoxyCodeLine{00270 }
+\DoxyCodeLine{00271             \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (framesNeeded < (\textcolor{keywordtype}{float})FrameCountEnum.FrameCount60)}
+\DoxyCodeLine{00272                 frameCount.intValue = (\textcolor{keywordtype}{int})FrameCountEnum.FrameCount60;}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00275                 frameCount.intValue = (int)FrameCountEnum.FrameCount120;}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277             \textcolor{comment}{//Debug.Log("{}Frames needed for 1 sec "{} + framesNeeded + "{} : "{} + secondsPerTick + "{} frameCount: "{} + FrameCount + "{} fixed: "{} + Time.fixedDeltaTime + "{} "{} + sendEveryX.intValue);}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279         \}}
+\DoxyCodeLine{00280 }
+\DoxyCodeLine{00281         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DrawBufferSizes(SerializedObject soTarget)}
+\DoxyCodeLine{00282         \{}
+\DoxyCodeLine{00283             SerializedProperty \_trgSize = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_targetBufferSize"{}});}
+\DoxyCodeLine{00284             SerializedProperty \_min = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_minBufferSize"{}});}
+\DoxyCodeLine{00285             SerializedProperty \_max = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_maxBufferSize"{}});}
+\DoxyCodeLine{00286             SerializedProperty \_ticksBeforeGrow = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_ticksBeforeGrow"{}});}
+\DoxyCodeLine{00287             SerializedProperty \_ticksBeforeShrink = soTarget.FindProperty(\textcolor{stringliteral}{"{}\_ticksBeforeShrink"{}});}
+\DoxyCodeLine{00288 }
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             EditorGUILayout.BeginVertical(\textcolor{comment}{/*"{}HelpBox"{}*/});}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292             \textcolor{keywordtype}{int} bufferLimit = (int)\_frameCount / 3;}
+\DoxyCodeLine{00293             EditorGUILayout.IntSlider(\_trgSize, 0, bufferLimit);}
+\DoxyCodeLine{00294 }
+\DoxyCodeLine{00295             \textcolor{keywordflow}{if} (\_trgSize.intValue < 1) \_trgSize.intValue = 1;}
+\DoxyCodeLine{00296             \textcolor{keywordflow}{if} (\_trgSize.intValue >= bufferLimit) \_trgSize.intValue = bufferLimit;}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             \textcolor{keywordflow}{if} (\_min.intValue > \_trgSize.intValue) \_min.intValue = \_trgSize.intValue;}
+\DoxyCodeLine{00299             \textcolor{keywordflow}{if} (\_max.intValue < \_trgSize.intValue) \_max.intValue = \_trgSize.intValue;}
+\DoxyCodeLine{00300 }
+\DoxyCodeLine{00301             \textcolor{keywordflow}{if} (\_max.intValue > bufferLimit) \_max.intValue = bufferLimit;}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303             \textcolor{keywordtype}{float} min = \_min.intValue;}
+\DoxyCodeLine{00304             \textcolor{keywordtype}{float} max = \_max.intValue;}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00307             EditorGUILayout.BeginHorizontal();}
+\DoxyCodeLine{00308             EditorGUILayout.MinMaxSlider(\textcolor{stringliteral}{"{}Buffer Min/Max"{}}, ref min, ref max, 0, bufferLimit);}
+\DoxyCodeLine{00309             min = EditorGUILayout.DelayedIntField(GUIContent.none, (\textcolor{keywordtype}{int})min, GUILayout.MaxWidth(23), GUILayout.MinWidth(23));}
+\DoxyCodeLine{00310             max = EditorGUILayout.DelayedIntField(GUIContent.none, (\textcolor{keywordtype}{int})max, GUILayout.MaxWidth(23), GUILayout.MinWidth(23));}
+\DoxyCodeLine{00311             EditorGUILayout.EndHorizontal();}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             \_min.intValue = (int)min;}
+\DoxyCodeLine{00314             \_max.intValue = (int)max;}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316             \textcolor{keywordflow}{if} (\_min.intValue > \_trgSize.intValue) \_min.intValue = \_trgSize.intValue;}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{if} (\_max.intValue < \_trgSize.intValue) \_max.intValue = \_trgSize.intValue;}
+\DoxyCodeLine{00318 }
+\DoxyCodeLine{00319             EditorGUILayout.IntSlider(\_ticksBeforeGrow, 1, 12);}
+\DoxyCodeLine{00320             EditorGUILayout.IntSlider(\_ticksBeforeShrink, 1, 12);}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             EditorGUILayout.EndVertical();}
+\DoxyCodeLine{00323         \}}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00326     \}}
+\DoxyCodeLine{00327 }
+\DoxyCodeLine{00328 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00329 }
+\DoxyCodeLine{00330     [CustomEditor(typeof(TickEngineSettings))]}
+\DoxyCodeLine{00331     [CanEditMultipleObjects]}
+\DoxyCodeLine{00332     \textcolor{keyword}{public} \textcolor{keyword}{class }TickEngineSettingsEditor : Editor}
+\DoxyCodeLine{00333     \{}
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnInspectorGUI()}
+\DoxyCodeLine{00336         \{}
+\DoxyCodeLine{00337             TickEngineSettings.Single.DrawGui(target, \textcolor{keyword}{false}, \textcolor{keyword}{false}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00338         \}}
+\DoxyCodeLine{00339     \}}
+\DoxyCodeLine{00340 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00341 \}}
+
+\end{DoxyCode}

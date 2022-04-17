@@ -1,0 +1,1500 @@
+\doxysection{Chat\+Client.\+cs}
+\label{_chat_client_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatClient.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatClient.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <summary>The Photon Chat Api enables clients to connect to a chat server and communicate with other clients.</summary>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <remarks>ChatClient is the main class of this api.</remarks>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <copyright company="{}Exit Games GmbH"{}>Photon Chat Api -\/ Copyright (C) 2014 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Chat}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00015     \textcolor{keyword}{using} System.Diagnostics;}
+\DoxyCodeLine{00016     \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00017 }
+\DoxyCodeLine{00018 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00019     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00020     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00021 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00022 }
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00041     \textcolor{keyword}{public} \textcolor{keyword}{class }ChatClient : IPhotonPeerListener}
+\DoxyCodeLine{00042     \{}
+\DoxyCodeLine{00043         \textcolor{keyword}{const} \textcolor{keywordtype}{int} FriendRequestListMax = 1024;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keyword}{const} \textcolor{keywordtype}{int} DefaultMaxSubscribers = 100;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00048         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{byte} HttpForwardWebFlag = 0x01;}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} EnableProtocolFallback \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{string} NameServerAddress \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keywordtype}{string} FrontendAddress \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00068         \textcolor{keyword}{private} \textcolor{keywordtype}{string} chatRegion = \textcolor{stringliteral}{"{}EU"{}};}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ChatRegion}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.chatRegion; \}}
+\DoxyCodeLine{00074             \textcolor{keyword}{set} \{ this.chatRegion = value; \}}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00078         \textcolor{keyword}{public} ChatState State \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} ChatDisconnectCause DisconnectedCause \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00085         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CanChat}
+\DoxyCodeLine{00086         \{}
+\DoxyCodeLine{00087             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.State == ChatState.ConnectedToFrontEnd \&\& this.HasPeer; \}}
+\DoxyCodeLine{00088         \}}
+\DoxyCodeLine{00094         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} CanChatInChannel(\textcolor{keywordtype}{string} channelName)}
+\DoxyCodeLine{00095         \{}
+\DoxyCodeLine{00096             \textcolor{keywordflow}{return} this.CanChat \&\& this.PublicChannels.ContainsKey(channelName) \&\& !this.PublicChannelsUnsubscribing.Contains(channelName);}
+\DoxyCodeLine{00097         \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} HasPeer}
+\DoxyCodeLine{00100         \{}
+\DoxyCodeLine{00101             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.chatPeer != \textcolor{keyword}{null}; \}}
+\DoxyCodeLine{00102         \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AppVersion \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00108         \textcolor{keyword}{public} \textcolor{keywordtype}{string} AppId \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00112         \textcolor{keyword}{public} AuthenticationValues AuthValues \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00118         \textcolor{keyword}{public} \textcolor{keywordtype}{string} UserId}
+\DoxyCodeLine{00119         \{}
+\DoxyCodeLine{00120             \textcolor{keyword}{get}}
+\DoxyCodeLine{00121             \{}
+\DoxyCodeLine{00122                 \textcolor{keywordflow}{return} (this.AuthValues != \textcolor{keyword}{null}) ? this.AuthValues.UserId : \textcolor{keyword}{null};}
+\DoxyCodeLine{00123             \}}
+\DoxyCodeLine{00124             \textcolor{keyword}{private} \textcolor{keyword}{set}}
+\DoxyCodeLine{00125             \{}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (this.AuthValues == \textcolor{keyword}{null})}
+\DoxyCodeLine{00127                 \{}
+\DoxyCodeLine{00128                     this.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{00129                 \}}
+\DoxyCodeLine{00130                 this.AuthValues.UserId = value;}
+\DoxyCodeLine{00131             \}}
+\DoxyCodeLine{00132         \}}
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00142         \textcolor{keyword}{public} \textcolor{keywordtype}{int} MessageLimit;}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00151         \textcolor{keyword}{public} \textcolor{keywordtype}{int} PrivateChatHistoryLength = -\/1;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00154         \textcolor{keyword}{public} readonly Dictionary<string, ChatChannel> PublicChannels;}
+\DoxyCodeLine{00156         \textcolor{keyword}{public} readonly Dictionary<string, ChatChannel> PrivateChannels;}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158         \textcolor{comment}{// channels being in unsubscribing process}}
+\DoxyCodeLine{00159         \textcolor{comment}{// items will be removed on successful unsubscription or subscription (the latter required after attempt to unsubscribe from not existing channel)}}
+\DoxyCodeLine{00160         \textcolor{keyword}{private} readonly HashSet<string> PublicChannelsUnsubscribing;}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162         \textcolor{keyword}{private} readonly IChatClientListener listener = \textcolor{keyword}{null};}
+\DoxyCodeLine{00164         \textcolor{keyword}{public} ChatPeer chatPeer = \textcolor{keyword}{null};}
+\DoxyCodeLine{00165         \textcolor{keyword}{private} \textcolor{keyword}{const} \textcolor{keywordtype}{string} ChatAppName = \textcolor{stringliteral}{"{}chat"{}};}
+\DoxyCodeLine{00166         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} didAuthenticate;}
+\DoxyCodeLine{00167 }
+\DoxyCodeLine{00168         \textcolor{keyword}{private} \textcolor{keywordtype}{int}? statusToSetWhenConnected;}
+\DoxyCodeLine{00169         \textcolor{keyword}{private} \textcolor{keywordtype}{object} messageToSetWhenConnected;}
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keyword}{private} \textcolor{keywordtype}{int} msDeltaForServiceCalls = 50;}
+\DoxyCodeLine{00172         \textcolor{keyword}{private} \textcolor{keywordtype}{int} msTimestampOfLastServiceCall;}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00184         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} UseBackgroundWorkerForSending \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00185 }
+\DoxyCodeLine{00187         \textcolor{keyword}{public} ConnectionProtocol TransportProtocol}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.chatPeer.TransportProtocol; \}}
+\DoxyCodeLine{00190             \textcolor{keyword}{set}}
+\DoxyCodeLine{00191             \{}
+\DoxyCodeLine{00192                 \textcolor{keywordflow}{if} (this.chatPeer == \textcolor{keyword}{null} || this.chatPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{00193                 \{}
+\DoxyCodeLine{00194                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}Can't set TransportProtocol. Disconnect first! "{}} + ((\textcolor{keyword}{this}.chatPeer != \textcolor{keyword}{null}) ? \textcolor{stringliteral}{"{}PeerState: "{}} + \textcolor{keyword}{this}.chatPeer.PeerState : \textcolor{stringliteral}{"{}The chatPeer is null."{}}));}
+\DoxyCodeLine{00195                     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00196                 \}}
+\DoxyCodeLine{00197                 this.chatPeer.TransportProtocol = value;}
+\DoxyCodeLine{00198             \}}
+\DoxyCodeLine{00199         \}}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00210         \textcolor{keyword}{public} Dictionary<ConnectionProtocol, Type> SocketImplementationConfig}
+\DoxyCodeLine{00211         \{}
+\DoxyCodeLine{00212             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.chatPeer.SocketImplementationConfig; \}}
+\DoxyCodeLine{00213         \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00220         \textcolor{keyword}{public} ChatClient(IChatClientListener listener, ConnectionProtocol protocol = ConnectionProtocol.Udp)}
+\DoxyCodeLine{00221         \{}
+\DoxyCodeLine{00222             this.listener = listener;}
+\DoxyCodeLine{00223             this.State = ChatState.Uninitialized;}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225             this.chatPeer = \textcolor{keyword}{new} ChatPeer(\textcolor{keyword}{this}, protocol);}
+\DoxyCodeLine{00226             this.chatPeer.SerializationProtocolType = SerializationProtocol.GpBinaryV18;}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             this.PublicChannels = \textcolor{keyword}{new} Dictionary<string, ChatChannel>();}
+\DoxyCodeLine{00229             this.PrivateChannels = \textcolor{keyword}{new} Dictionary<string, ChatChannel>();}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             this.PublicChannelsUnsubscribing = \textcolor{keyword}{new} HashSet<string>();}
+\DoxyCodeLine{00232         \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234 }
+\DoxyCodeLine{00235         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ConnectUsingSettings(ChatAppSettings appSettings)}
+\DoxyCodeLine{00236         \{}
+\DoxyCodeLine{00237             \textcolor{keywordflow}{if} (appSettings == \textcolor{keyword}{null})}
+\DoxyCodeLine{00238             \{}
+\DoxyCodeLine{00239                 this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}ConnectUsingSettings failed. The appSettings can't be null.'"{}});}
+\DoxyCodeLine{00240                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00241             \}}
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243             \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(appSettings.FixedRegion))}
+\DoxyCodeLine{00244             \{}
+\DoxyCodeLine{00245                 this.ChatRegion = appSettings.FixedRegion;}
+\DoxyCodeLine{00246             \}}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248             this.DebugOut = appSettings.NetworkLogging;}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250             this.TransportProtocol = appSettings.Protocol;}
+\DoxyCodeLine{00251             this.EnableProtocolFallback = appSettings.EnableProtocolFallback;}
+\DoxyCodeLine{00252 }
+\DoxyCodeLine{00253             \textcolor{keywordflow}{if} (!appSettings.IsDefaultNameServer)}
+\DoxyCodeLine{00254             \{}
+\DoxyCodeLine{00255                 this.chatPeer.NameServerHost = appSettings.Server;}
+\DoxyCodeLine{00256                 this.chatPeer.NameServerPortOverride = appSettings.Port;}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259             \textcolor{keywordflow}{return} this.Connect(appSettings.AppIdChat, appSettings.AppVersion, \textcolor{keyword}{this}.AuthValues);}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{00269         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Connect(\textcolor{keywordtype}{string} appId, \textcolor{keywordtype}{string} appVersion, AuthenticationValues authValues)}
+\DoxyCodeLine{00270         \{}
+\DoxyCodeLine{00271             this.chatPeer.TimePingInterval = 3000;}
+\DoxyCodeLine{00272             this.DisconnectedCause = ChatDisconnectCause.None;}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274             \textcolor{keywordflow}{if} (authValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{00275             \{}
+\DoxyCodeLine{00276                 this.AuthValues = authValues;}
+\DoxyCodeLine{00277             \}}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279             this.AppId = appId;}
+\DoxyCodeLine{00280             this.AppVersion = appVersion;}
+\DoxyCodeLine{00281             this.didAuthenticate = \textcolor{keyword}{false};}
+\DoxyCodeLine{00282             this.chatPeer.QuickResendAttempts = 2;}
+\DoxyCodeLine{00283             this.chatPeer.SentCountAllowance = 7;}
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285             \textcolor{comment}{// clean all channels}}
+\DoxyCodeLine{00286             this.PublicChannels.Clear();}
+\DoxyCodeLine{00287             this.PrivateChannels.Clear();}
+\DoxyCodeLine{00288             this.PublicChannelsUnsubscribing.Clear();}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290 \textcolor{preprocessor}{            \#if UNITY\_WEBGL}}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{if} (this.TransportProtocol == ConnectionProtocol.Tcp || \textcolor{keyword}{this}.TransportProtocol == ConnectionProtocol.Udp)}
+\DoxyCodeLine{00292             \{}
+\DoxyCodeLine{00293                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}WebGL requires WebSockets. Switching TransportProtocol to WebSocketSecure."{}});}
+\DoxyCodeLine{00294                 this.TransportProtocol = ConnectionProtocol.WebSocketSecure;}
+\DoxyCodeLine{00295             \}}
+\DoxyCodeLine{00296 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{00297 }
+\DoxyCodeLine{00298             this.NameServerAddress = this.chatPeer.NameServerAddress;}
+\DoxyCodeLine{00299 }
+\DoxyCodeLine{00300             \textcolor{keywordtype}{bool} isConnecting = this.chatPeer.Connect();}
+\DoxyCodeLine{00301             \textcolor{keywordflow}{if} (isConnecting)}
+\DoxyCodeLine{00302             \{}
+\DoxyCodeLine{00303                 this.State = ChatState.ConnectingToNameServer;}
+\DoxyCodeLine{00304             \}}
+\DoxyCodeLine{00305 }
+\DoxyCodeLine{00306             \textcolor{keywordflow}{if} (this.UseBackgroundWorkerForSending)}
+\DoxyCodeLine{00307             \{}
+\DoxyCodeLine{00308 \textcolor{preprocessor}{                \#if UNITY\_SWITCH}}
+\DoxyCodeLine{00309                 SupportClass.StartBackgroundCalls(this.SendOutgoingInBackground, this.msDeltaForServiceCalls);  \textcolor{comment}{// as workaround, we don't name the Thread.}}
+\DoxyCodeLine{00310 \textcolor{preprocessor}{                \#else}}
+\DoxyCodeLine{00311                 SupportClass.StartBackgroundCalls(this.SendOutgoingInBackground, this.msDeltaForServiceCalls, \textcolor{stringliteral}{"{}ChatClient Service Thread"{}});}
+\DoxyCodeLine{00312 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{00313             \}}
+\DoxyCodeLine{00314 }
+\DoxyCodeLine{00315             \textcolor{keywordflow}{return} isConnecting;}
+\DoxyCodeLine{00316         \}}
+\DoxyCodeLine{00317 }
+\DoxyCodeLine{00329         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} ConnectAndSetStatus(\textcolor{keywordtype}{string} appId, \textcolor{keywordtype}{string} appVersion, AuthenticationValues authValues,}
+\DoxyCodeLine{00330             \textcolor{keywordtype}{int} status = ChatUserStatus.Online, \textcolor{keywordtype}{object} message = \textcolor{keyword}{null})}
+\DoxyCodeLine{00331         \{}
+\DoxyCodeLine{00332             statusToSetWhenConnected = status;}
+\DoxyCodeLine{00333             messageToSetWhenConnected = message;}
+\DoxyCodeLine{00334             \textcolor{keywordflow}{return} Connect(appId, appVersion, authValues);}
+\DoxyCodeLine{00335         \}}
+\DoxyCodeLine{00336 }
+\DoxyCodeLine{00344         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Service()}
+\DoxyCodeLine{00345         \{}
+\DoxyCodeLine{00346             \textcolor{comment}{// Dispatch until every already-\/received message got dispatched}}
+\DoxyCodeLine{00347             \textcolor{keywordflow}{while} (this.HasPeer \&\& this.chatPeer.DispatchIncomingCommands())}
+\DoxyCodeLine{00348             \{}
+\DoxyCodeLine{00349             \}}
+\DoxyCodeLine{00350 }
+\DoxyCodeLine{00351             \textcolor{comment}{// if there is no background thread for sending, Service() will do that as well, in intervals}}
+\DoxyCodeLine{00352             \textcolor{keywordflow}{if} (!this.UseBackgroundWorkerForSending)}
+\DoxyCodeLine{00353             \{}
+\DoxyCodeLine{00354                 \textcolor{keywordflow}{if} (Environment.TickCount -\/ \textcolor{keyword}{this}.msTimestampOfLastServiceCall > \textcolor{keyword}{this}.msDeltaForServiceCalls || \textcolor{keyword}{this}.msTimestampOfLastServiceCall == 0)}
+\DoxyCodeLine{00355                 \{}
+\DoxyCodeLine{00356                     this.msTimestampOfLastServiceCall = Environment.TickCount;}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358                     \textcolor{keywordflow}{while} (this.HasPeer \&\& this.chatPeer.SendOutgoingCommands())}
+\DoxyCodeLine{00359                     \{}
+\DoxyCodeLine{00360                     \}}
+\DoxyCodeLine{00361                 \}}
+\DoxyCodeLine{00362             \}}
+\DoxyCodeLine{00363         \}}
+\DoxyCodeLine{00364 }
+\DoxyCodeLine{00369         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} SendOutgoingInBackground()}
+\DoxyCodeLine{00370         \{}
+\DoxyCodeLine{00371             \textcolor{keywordflow}{while} (this.HasPeer \&\& this.chatPeer.SendOutgoingCommands())}
+\DoxyCodeLine{00372             \{}
+\DoxyCodeLine{00373             \}}
+\DoxyCodeLine{00374 }
+\DoxyCodeLine{00375             \textcolor{keywordflow}{return} this.State != ChatState.Disconnected;}
+\DoxyCodeLine{00376         \}}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00379         [Obsolete(\textcolor{stringliteral}{"{}Better use UseBackgroundWorkerForSending and Service()."{}})]}
+\DoxyCodeLine{00380         \textcolor{keyword}{public} \textcolor{keywordtype}{void} SendAcksOnly()}
+\DoxyCodeLine{00381         \{}
+\DoxyCodeLine{00382             \textcolor{keywordflow}{if} (this.HasPeer) this.chatPeer.SendAcksOnly();}
+\DoxyCodeLine{00383         \}}
+\DoxyCodeLine{00384 }
+\DoxyCodeLine{00385 }
+\DoxyCodeLine{00389         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Disconnect(ChatDisconnectCause cause = ChatDisconnectCause.DisconnectByClientLogic)}
+\DoxyCodeLine{00390         \{}
+\DoxyCodeLine{00391             \textcolor{keywordflow}{if} (this.HasPeer \&\& this.chatPeer.PeerState != PeerStateValue.Disconnected)}
+\DoxyCodeLine{00392             \{}
+\DoxyCodeLine{00393                 this.State = ChatState.Disconnecting;}
+\DoxyCodeLine{00394                 this.DisconnectedCause = cause;}
+\DoxyCodeLine{00395                 this.chatPeer.Disconnect();}
+\DoxyCodeLine{00396             \}}
+\DoxyCodeLine{00397         \}}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00402         \textcolor{keyword}{public} \textcolor{keywordtype}{void} StopThread()}
+\DoxyCodeLine{00403         \{}
+\DoxyCodeLine{00404             \textcolor{keywordflow}{if} (this.HasPeer)}
+\DoxyCodeLine{00405             \{}
+\DoxyCodeLine{00406                 this.chatPeer.StopThread();}
+\DoxyCodeLine{00407             \}}
+\DoxyCodeLine{00408         \}}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00413         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Subscribe(\textcolor{keywordtype}{string}[] channels)}
+\DoxyCodeLine{00414         \{}
+\DoxyCodeLine{00415             \textcolor{keywordflow}{return} this.Subscribe(channels, 0);}
+\DoxyCodeLine{00416         \}}
+\DoxyCodeLine{00417 }
+\DoxyCodeLine{00424         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Subscribe(\textcolor{keywordtype}{string}[] channels, \textcolor{keywordtype}{int}[] lastMsgIds)}
+\DoxyCodeLine{00425         \{}
+\DoxyCodeLine{00426             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00427             \{}
+\DoxyCodeLine{00428                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00429                 \{}
+\DoxyCodeLine{00430                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Subscribe called while not connected to front end server."{}});}
+\DoxyCodeLine{00431                 \}}
+\DoxyCodeLine{00432                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00433             \}}
+\DoxyCodeLine{00434 }
+\DoxyCodeLine{00435             \textcolor{keywordflow}{if} (channels == \textcolor{keyword}{null} || channels.Length == 0)}
+\DoxyCodeLine{00436             \{}
+\DoxyCodeLine{00437                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00438                 \{}
+\DoxyCodeLine{00439                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}Subscribe can't be called for empty or null channels-\/list."{}});}
+\DoxyCodeLine{00440                 \}}
+\DoxyCodeLine{00441                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00442             \}}
+\DoxyCodeLine{00443 }
+\DoxyCodeLine{00444             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < channels.Length; i++)}
+\DoxyCodeLine{00445             \{}
+\DoxyCodeLine{00446                 \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(channels[i]))}
+\DoxyCodeLine{00447                 \{}
+\DoxyCodeLine{00448                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00449                     \{}
+\DoxyCodeLine{00450                         this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Subscribe can't be called with a null or empty channel name at index \{0\}."{}}, i));}
+\DoxyCodeLine{00451                     \}}
+\DoxyCodeLine{00452                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00453                 \}}
+\DoxyCodeLine{00454             \}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456             \textcolor{keywordflow}{if} (lastMsgIds == \textcolor{keyword}{null} || lastMsgIds.Length != channels.Length)}
+\DoxyCodeLine{00457             \{}
+\DoxyCodeLine{00458                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00459                 \{}
+\DoxyCodeLine{00460                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Subscribe can't be called when \(\backslash\)"{}lastMsgIds\(\backslash\)"{} array is null or does not have the same length as \(\backslash\)"{}channels\(\backslash\)"{} array."{}});}
+\DoxyCodeLine{00461                 \}}
+\DoxyCodeLine{00462                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00463             \}}
+\DoxyCodeLine{00464 }
+\DoxyCodeLine{00465             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00466             \{}
+\DoxyCodeLine{00467                 \{ ChatParameterCode.Channels, channels \},}
+\DoxyCodeLine{00468                 \{ ChatParameterCode.MsgIds,  lastMsgIds\},}
+\DoxyCodeLine{00469                 \{ ChatParameterCode.HistoryLength, -\/1 \} \textcolor{comment}{// server will decide how many messages to send to client}}
+\DoxyCodeLine{00470             \};}
+\DoxyCodeLine{00471 }
+\DoxyCodeLine{00472             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.Subscribe, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474 }
+\DoxyCodeLine{00485         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Subscribe(\textcolor{keywordtype}{string}[] channels, \textcolor{keywordtype}{int} messagesFromHistory)}
+\DoxyCodeLine{00486         \{}
+\DoxyCodeLine{00487             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00488             \{}
+\DoxyCodeLine{00489                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00490                 \{}
+\DoxyCodeLine{00491                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Subscribe called while not connected to front end server."{}});}
+\DoxyCodeLine{00492                 \}}
+\DoxyCodeLine{00493                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00494             \}}
+\DoxyCodeLine{00495 }
+\DoxyCodeLine{00496             \textcolor{keywordflow}{if} (channels == \textcolor{keyword}{null} || channels.Length == 0)}
+\DoxyCodeLine{00497             \{}
+\DoxyCodeLine{00498                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00499                 \{}
+\DoxyCodeLine{00500                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}Subscribe can't be called for empty or null channels-\/list."{}});}
+\DoxyCodeLine{00501                 \}}
+\DoxyCodeLine{00502                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00503             \}}
+\DoxyCodeLine{00504 }
+\DoxyCodeLine{00505             \textcolor{keywordflow}{return} this.SendChannelOperation(channels, (\textcolor{keywordtype}{byte})ChatOperationCode.Subscribe, messagesFromHistory);}
+\DoxyCodeLine{00506         \}}
+\DoxyCodeLine{00507 }
+\DoxyCodeLine{00519         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Unsubscribe(\textcolor{keywordtype}{string}[] channels)}
+\DoxyCodeLine{00520         \{}
+\DoxyCodeLine{00521             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00522             \{}
+\DoxyCodeLine{00523                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00524                 \{}
+\DoxyCodeLine{00525                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Unsubscribe called while not connected to front end server."{}});}
+\DoxyCodeLine{00526                 \}}
+\DoxyCodeLine{00527                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00528             \}}
+\DoxyCodeLine{00529 }
+\DoxyCodeLine{00530             \textcolor{keywordflow}{if} (channels == \textcolor{keyword}{null} || channels.Length == 0)}
+\DoxyCodeLine{00531             \{}
+\DoxyCodeLine{00532                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00533                 \{}
+\DoxyCodeLine{00534                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}Unsubscribe can't be called for empty or null channels-\/list."{}});}
+\DoxyCodeLine{00535                 \}}
+\DoxyCodeLine{00536                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00537             \}}
+\DoxyCodeLine{00538 }
+\DoxyCodeLine{00539             \textcolor{keywordflow}{foreach} (\textcolor{keywordtype}{string} ch \textcolor{keywordflow}{in} channels)}
+\DoxyCodeLine{00540             \{}
+\DoxyCodeLine{00541                 this.PublicChannelsUnsubscribing.Add(ch);}
+\DoxyCodeLine{00542             \}}
+\DoxyCodeLine{00543             \textcolor{keywordflow}{return} this.SendChannelOperation(channels, ChatOperationCode.Unsubscribe, 0);}
+\DoxyCodeLine{00544         \}}
+\DoxyCodeLine{00545 }
+\DoxyCodeLine{00555         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} PublishMessage(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00556         \{}
+\DoxyCodeLine{00557             \textcolor{keywordflow}{return} this.publishMessage(channelName, message, \textcolor{keyword}{true}, forwardAsWebhook);}
+\DoxyCodeLine{00558         \}}
+\DoxyCodeLine{00559 }
+\DoxyCodeLine{00560         \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} PublishMessageUnreliable(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00561         \{}
+\DoxyCodeLine{00562             \textcolor{keywordflow}{return} this.publishMessage(channelName, message, \textcolor{keyword}{false}, forwardAsWebhook);}
+\DoxyCodeLine{00563         \}}
+\DoxyCodeLine{00564 }
+\DoxyCodeLine{00565         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} publishMessage(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} reliable, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00566         \{}
+\DoxyCodeLine{00567             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00568             \{}
+\DoxyCodeLine{00569                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00570                 \{}
+\DoxyCodeLine{00571                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}PublishMessage called while not connected to front end server."{}});}
+\DoxyCodeLine{00572                 \}}
+\DoxyCodeLine{00573                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00574             \}}
+\DoxyCodeLine{00575 }
+\DoxyCodeLine{00576             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(channelName) || message == \textcolor{keyword}{null})}
+\DoxyCodeLine{00577             \{}
+\DoxyCodeLine{00578                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00579                 \{}
+\DoxyCodeLine{00580                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}PublishMessage parameters must be non-\/null and not empty."{}});}
+\DoxyCodeLine{00581                 \}}
+\DoxyCodeLine{00582                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00583             \}}
+\DoxyCodeLine{00584 }
+\DoxyCodeLine{00585             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00586                 \{}
+\DoxyCodeLine{00587                     \{ (byte)ChatParameterCode.Channel, channelName \},}
+\DoxyCodeLine{00588                     \{ (byte)ChatParameterCode.Message, message \}}
+\DoxyCodeLine{00589                 \};}
+\DoxyCodeLine{00590             \textcolor{keywordflow}{if} (forwardAsWebhook)}
+\DoxyCodeLine{00591             \{}
+\DoxyCodeLine{00592                 parameters.Add(ChatParameterCode.WebFlags, (\textcolor{keywordtype}{byte})0x1);}
+\DoxyCodeLine{00593             \}}
+\DoxyCodeLine{00594 }
+\DoxyCodeLine{00595             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.Publish, parameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = reliable \});}
+\DoxyCodeLine{00596         \}}
+\DoxyCodeLine{00597 }
+\DoxyCodeLine{00605         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SendPrivateMessage(\textcolor{keywordtype}{string} target, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00606         \{}
+\DoxyCodeLine{00607             \textcolor{keywordflow}{return} this.SendPrivateMessage(target, message, \textcolor{keyword}{false}, forwardAsWebhook);}
+\DoxyCodeLine{00608         \}}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00618         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SendPrivateMessage(\textcolor{keywordtype}{string} target, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} encrypt, \textcolor{keywordtype}{bool} forwardAsWebhook)}
+\DoxyCodeLine{00619         \{}
+\DoxyCodeLine{00620             \textcolor{keywordflow}{return} this.sendPrivateMessage(target, message, encrypt, \textcolor{keyword}{true}, forwardAsWebhook);}
+\DoxyCodeLine{00621         \}}
+\DoxyCodeLine{00622 }
+\DoxyCodeLine{00623         \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} SendPrivateMessageUnreliable(\textcolor{keywordtype}{string} target, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} encrypt, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00624         \{}
+\DoxyCodeLine{00625             \textcolor{keywordflow}{return} this.sendPrivateMessage(target, message, encrypt, \textcolor{keyword}{false}, forwardAsWebhook);}
+\DoxyCodeLine{00626         \}}
+\DoxyCodeLine{00627 }
+\DoxyCodeLine{00628         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} sendPrivateMessage(\textcolor{keywordtype}{string} target, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} encrypt, \textcolor{keywordtype}{bool} reliable, \textcolor{keywordtype}{bool} forwardAsWebhook = \textcolor{keyword}{false})}
+\DoxyCodeLine{00629         \{}
+\DoxyCodeLine{00630             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00631             \{}
+\DoxyCodeLine{00632                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00633                 \{}
+\DoxyCodeLine{00634                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}SendPrivateMessage called while not connected to front end server."{}});}
+\DoxyCodeLine{00635                 \}}
+\DoxyCodeLine{00636                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00637             \}}
+\DoxyCodeLine{00638 }
+\DoxyCodeLine{00639             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(target) || message == \textcolor{keyword}{null})}
+\DoxyCodeLine{00640             \{}
+\DoxyCodeLine{00641                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00642                 \{}
+\DoxyCodeLine{00643                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}SendPrivateMessage parameters must be non-\/null and not empty."{}});}
+\DoxyCodeLine{00644                 \}}
+\DoxyCodeLine{00645                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00646             \}}
+\DoxyCodeLine{00647 }
+\DoxyCodeLine{00648             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00649                 \{}
+\DoxyCodeLine{00650                     \{ ChatParameterCode.UserId, target \},}
+\DoxyCodeLine{00651                     \{ ChatParameterCode.Message, message \}}
+\DoxyCodeLine{00652                 \};}
+\DoxyCodeLine{00653             \textcolor{keywordflow}{if} (forwardAsWebhook)}
+\DoxyCodeLine{00654             \{}
+\DoxyCodeLine{00655                 parameters.Add(ChatParameterCode.WebFlags, (\textcolor{keywordtype}{byte})0x1);}
+\DoxyCodeLine{00656             \}}
+\DoxyCodeLine{00657 }
+\DoxyCodeLine{00658             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.SendPrivate, parameters, \textcolor{keyword}{new} SendOptions() \{ Reliability = reliable, Encrypt = encrypt \});}
+\DoxyCodeLine{00659         \}}
+\DoxyCodeLine{00660 }
+\DoxyCodeLine{00676         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} SetOnlineStatus(\textcolor{keywordtype}{int} status, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{bool} skipMessage)}
+\DoxyCodeLine{00677         \{}
+\DoxyCodeLine{00678             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00679             \{}
+\DoxyCodeLine{00680                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00681                 \{}
+\DoxyCodeLine{00682                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}SetOnlineStatus called while not connected to front end server."{}});}
+\DoxyCodeLine{00683                 \}}
+\DoxyCodeLine{00684                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00685             \}}
+\DoxyCodeLine{00686 }
+\DoxyCodeLine{00687             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00688                 \{}
+\DoxyCodeLine{00689                     \{ ChatParameterCode.Status, status \},}
+\DoxyCodeLine{00690                 \};}
+\DoxyCodeLine{00691 }
+\DoxyCodeLine{00692             \textcolor{keywordflow}{if} (skipMessage)}
+\DoxyCodeLine{00693             \{}
+\DoxyCodeLine{00694                 parameters[ChatParameterCode.SkipMessage] = \textcolor{keyword}{true};}
+\DoxyCodeLine{00695             \}}
+\DoxyCodeLine{00696             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00697             \{}
+\DoxyCodeLine{00698                 parameters[ChatParameterCode.Message] = message;}
+\DoxyCodeLine{00699             \}}
+\DoxyCodeLine{00700 }
+\DoxyCodeLine{00701             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.UpdateStatus, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00702         \}}
+\DoxyCodeLine{00703 }
+\DoxyCodeLine{00716         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SetOnlineStatus(\textcolor{keywordtype}{int} status)}
+\DoxyCodeLine{00717         \{}
+\DoxyCodeLine{00718             \textcolor{keywordflow}{return} this.SetOnlineStatus(status, \textcolor{keyword}{null}, \textcolor{keyword}{true});}
+\DoxyCodeLine{00719         \}}
+\DoxyCodeLine{00720 }
+\DoxyCodeLine{00735         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SetOnlineStatus(\textcolor{keywordtype}{int} status, \textcolor{keywordtype}{object} message)}
+\DoxyCodeLine{00736         \{}
+\DoxyCodeLine{00737             \textcolor{keywordflow}{return} this.SetOnlineStatus(status, message, \textcolor{keyword}{false});}
+\DoxyCodeLine{00738         \}}
+\DoxyCodeLine{00739 }
+\DoxyCodeLine{00764         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} AddFriends(\textcolor{keywordtype}{string}[] friends)}
+\DoxyCodeLine{00765         \{}
+\DoxyCodeLine{00766             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00767             \{}
+\DoxyCodeLine{00768                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00769                 \{}
+\DoxyCodeLine{00770                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}AddFriends called while not connected to front end server."{}});}
+\DoxyCodeLine{00771                 \}}
+\DoxyCodeLine{00772                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00773             \}}
+\DoxyCodeLine{00774 }
+\DoxyCodeLine{00775             \textcolor{keywordflow}{if} (friends == \textcolor{keyword}{null} || friends.Length == 0)}
+\DoxyCodeLine{00776             \{}
+\DoxyCodeLine{00777                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00778                 \{}
+\DoxyCodeLine{00779                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}AddFriends can't be called for empty or null list."{}});}
+\DoxyCodeLine{00780                 \}}
+\DoxyCodeLine{00781                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00782             \}}
+\DoxyCodeLine{00783             \textcolor{keywordflow}{if} (friends.Length > FriendRequestListMax)}
+\DoxyCodeLine{00784             \{}
+\DoxyCodeLine{00785                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00786                 \{}
+\DoxyCodeLine{00787                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}AddFriends max list size exceeded: "{}} + friends.Length + \textcolor{stringliteral}{"{} > "{}} + FriendRequestListMax);}
+\DoxyCodeLine{00788                 \}}
+\DoxyCodeLine{00789                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00790             \}}
+\DoxyCodeLine{00791 }
+\DoxyCodeLine{00792             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00793                 \{}
+\DoxyCodeLine{00794                     \{ ChatParameterCode.Friends, friends \},}
+\DoxyCodeLine{00795                 \};}
+\DoxyCodeLine{00796 }
+\DoxyCodeLine{00797             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.AddFriends, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00798         \}}
+\DoxyCodeLine{00799 }
+\DoxyCodeLine{00842         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} RemoveFriends(\textcolor{keywordtype}{string}[] friends)}
+\DoxyCodeLine{00843         \{}
+\DoxyCodeLine{00844             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{00845             \{}
+\DoxyCodeLine{00846                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{00847                 \{}
+\DoxyCodeLine{00848                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}RemoveFriends called while not connected to front end server."{}});}
+\DoxyCodeLine{00849                 \}}
+\DoxyCodeLine{00850                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00851             \}}
+\DoxyCodeLine{00852 }
+\DoxyCodeLine{00853             \textcolor{keywordflow}{if} (friends == \textcolor{keyword}{null} || friends.Length == 0)}
+\DoxyCodeLine{00854             \{}
+\DoxyCodeLine{00855                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00856                 \{}
+\DoxyCodeLine{00857                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}RemoveFriends can't be called for empty or null list."{}});}
+\DoxyCodeLine{00858                 \}}
+\DoxyCodeLine{00859                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00860             \}}
+\DoxyCodeLine{00861             \textcolor{keywordflow}{if} (friends.Length > FriendRequestListMax)}
+\DoxyCodeLine{00862             \{}
+\DoxyCodeLine{00863                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{00864                 \{}
+\DoxyCodeLine{00865                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}RemoveFriends max list size exceeded: "{}} + friends.Length + \textcolor{stringliteral}{"{} > "{}} + FriendRequestListMax);}
+\DoxyCodeLine{00866                 \}}
+\DoxyCodeLine{00867                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00868             \}}
+\DoxyCodeLine{00869 }
+\DoxyCodeLine{00870             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{00871                 \{}
+\DoxyCodeLine{00872                     \{ ChatParameterCode.Friends, friends \},}
+\DoxyCodeLine{00873                 \};}
+\DoxyCodeLine{00874 }
+\DoxyCodeLine{00875             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.RemoveFriends, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{00876         \}}
+\DoxyCodeLine{00877 }
+\DoxyCodeLine{00886         \textcolor{keyword}{public} \textcolor{keywordtype}{string} GetPrivateChannelNameByUser(\textcolor{keywordtype}{string} userName)}
+\DoxyCodeLine{00887         \{}
+\DoxyCodeLine{00888             \textcolor{keywordflow}{return} \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}:\{1\}"{}}, this.UserId, userName);}
+\DoxyCodeLine{00889         \}}
+\DoxyCodeLine{00890 }
+\DoxyCodeLine{00900         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetChannel(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{bool} isPrivate, out ChatChannel channel)}
+\DoxyCodeLine{00901         \{}
+\DoxyCodeLine{00902             \textcolor{keywordflow}{if} (!isPrivate)}
+\DoxyCodeLine{00903             \{}
+\DoxyCodeLine{00904                 \textcolor{keywordflow}{return} this.PublicChannels.TryGetValue(channelName, out channel);}
+\DoxyCodeLine{00905             \}}
+\DoxyCodeLine{00906             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00907             \{}
+\DoxyCodeLine{00908                 \textcolor{keywordflow}{return} this.PrivateChannels.TryGetValue(channelName, out channel);}
+\DoxyCodeLine{00909             \}}
+\DoxyCodeLine{00910         \}}
+\DoxyCodeLine{00911 }
+\DoxyCodeLine{00920         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetChannel(\textcolor{keywordtype}{string} channelName, out ChatChannel channel)}
+\DoxyCodeLine{00921         \{}
+\DoxyCodeLine{00922             \textcolor{keywordtype}{bool} found = \textcolor{keyword}{false};}
+\DoxyCodeLine{00923             found = this.PublicChannels.TryGetValue(channelName, out channel);}
+\DoxyCodeLine{00924             \textcolor{keywordflow}{if} (found) \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00925 }
+\DoxyCodeLine{00926             found = this.PrivateChannels.TryGetValue(channelName, out channel);}
+\DoxyCodeLine{00927             \textcolor{keywordflow}{return} found;}
+\DoxyCodeLine{00928         \}}
+\DoxyCodeLine{00929 }
+\DoxyCodeLine{00936         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetPrivateChannelByUser(\textcolor{keywordtype}{string} userId, out ChatChannel channel)}
+\DoxyCodeLine{00937         \{}
+\DoxyCodeLine{00938             channel = \textcolor{keyword}{null};}
+\DoxyCodeLine{00939             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(userId))}
+\DoxyCodeLine{00940             \{}
+\DoxyCodeLine{00941                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00942             \}}
+\DoxyCodeLine{00943             \textcolor{keywordtype}{string} channelName = this.GetPrivateChannelNameByUser(userId);}
+\DoxyCodeLine{00944             \textcolor{keywordflow}{return} this.TryGetChannel(channelName, \textcolor{keyword}{true}, out channel);}
+\DoxyCodeLine{00945         \}}
+\DoxyCodeLine{00946 }
+\DoxyCodeLine{00954         \textcolor{keyword}{public} DebugLevel DebugOut}
+\DoxyCodeLine{00955         \{}
+\DoxyCodeLine{00956             \textcolor{keyword}{set} \{ this.chatPeer.DebugOut = value; \}}
+\DoxyCodeLine{00957             \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.chatPeer.DebugOut; \}}
+\DoxyCodeLine{00958         \}}
+\DoxyCodeLine{00959 }
+\DoxyCodeLine{00960 \textcolor{preprocessor}{        \#region Private methods area}}
+\DoxyCodeLine{00961 }
+\DoxyCodeLine{00962 \textcolor{preprocessor}{        \#region IPhotonPeerListener implementation}}
+\DoxyCodeLine{00963 }
+\DoxyCodeLine{00964         \textcolor{keywordtype}{void} IPhotonPeerListener.DebugReturn(DebugLevel level, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00965         \{}
+\DoxyCodeLine{00966             this.listener.DebugReturn(level, message);}
+\DoxyCodeLine{00967         \}}
+\DoxyCodeLine{00968 }
+\DoxyCodeLine{00969         \textcolor{keywordtype}{void} IPhotonPeerListener.OnEvent(EventData eventData)}
+\DoxyCodeLine{00970         \{}
+\DoxyCodeLine{00971             \textcolor{keywordflow}{switch} (eventData.Code)}
+\DoxyCodeLine{00972             \{}
+\DoxyCodeLine{00973                 \textcolor{keywordflow}{case} ChatEventCode.ChatMessages:}
+\DoxyCodeLine{00974                     this.HandleChatMessagesEvent(eventData);}
+\DoxyCodeLine{00975                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00976                 \textcolor{keywordflow}{case} ChatEventCode.PrivateMessage:}
+\DoxyCodeLine{00977                     this.HandlePrivateMessageEvent(eventData);}
+\DoxyCodeLine{00978                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00979                 \textcolor{keywordflow}{case} ChatEventCode.StatusUpdate:}
+\DoxyCodeLine{00980                     this.HandleStatusUpdate(eventData);}
+\DoxyCodeLine{00981                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00982                 \textcolor{keywordflow}{case} ChatEventCode.Subscribe:}
+\DoxyCodeLine{00983                     this.HandleSubscribeEvent(eventData);}
+\DoxyCodeLine{00984                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00985                 \textcolor{keywordflow}{case} ChatEventCode.Unsubscribe:}
+\DoxyCodeLine{00986                     this.HandleUnsubscribeEvent(eventData);}
+\DoxyCodeLine{00987                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00988                 \textcolor{keywordflow}{case} ChatEventCode.UserSubscribed:}
+\DoxyCodeLine{00989                     this.HandleUserSubscribedEvent(eventData);}
+\DoxyCodeLine{00990                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00991                 \textcolor{keywordflow}{case} ChatEventCode.UserUnsubscribed:}
+\DoxyCodeLine{00992                     this.HandleUserUnsubscribedEvent(eventData);}
+\DoxyCodeLine{00993                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00994 \textcolor{preprocessor}{                \#if CHAT\_EXTENDED}}
+\DoxyCodeLine{00995                 \textcolor{keywordflow}{case} ChatEventCode.PropertiesChanged:}
+\DoxyCodeLine{00996                     this.HandlePropertiesChanged(eventData);}
+\DoxyCodeLine{00997                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00998                 \textcolor{keywordflow}{case} ChatEventCode.ErrorInfo:}
+\DoxyCodeLine{00999                     this.HandleErrorInfoEvent(eventData);}
+\DoxyCodeLine{01000                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01001 \textcolor{preprocessor}{                \#endif}}
+\DoxyCodeLine{01002             \}}
+\DoxyCodeLine{01003         \}}
+\DoxyCodeLine{01004 }
+\DoxyCodeLine{01005         \textcolor{keywordtype}{void} IPhotonPeerListener.OnOperationResponse(OperationResponse operationResponse)}
+\DoxyCodeLine{01006         \{}
+\DoxyCodeLine{01007             \textcolor{keywordflow}{switch} (operationResponse.OperationCode)}
+\DoxyCodeLine{01008             \{}
+\DoxyCodeLine{01009                 \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})ChatOperationCode.Authenticate:}
+\DoxyCodeLine{01010                     this.HandleAuthResponse(operationResponse);}
+\DoxyCodeLine{01011                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01012 }
+\DoxyCodeLine{01013                 \textcolor{comment}{// the following operations usually don't return useful data and no error.}}
+\DoxyCodeLine{01014                 \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})ChatOperationCode.Subscribe:}
+\DoxyCodeLine{01015                 \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})ChatOperationCode.Unsubscribe:}
+\DoxyCodeLine{01016                 \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})ChatOperationCode.Publish:}
+\DoxyCodeLine{01017                 \textcolor{keywordflow}{case} (\textcolor{keywordtype}{byte})ChatOperationCode.SendPrivate:}
+\DoxyCodeLine{01018                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{01019                     \textcolor{keywordflow}{if} ((operationResponse.ReturnCode != 0) \&\& (\textcolor{keyword}{this}.DebugOut >= DebugLevel.ERROR))}
+\DoxyCodeLine{01020                     \{}
+\DoxyCodeLine{01021                         \textcolor{keywordflow}{if} (operationResponse.ReturnCode == -\/2)}
+\DoxyCodeLine{01022                         \{}
+\DoxyCodeLine{01023                             this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Chat Operation \{0\} unknown on server. Check your AppId and make sure it's for a Chat application."{}}, operationResponse.OperationCode));}
+\DoxyCodeLine{01024                         \}}
+\DoxyCodeLine{01025                         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01026                         \{}
+\DoxyCodeLine{01027                             this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Chat Operation \{0\} failed (Code: \{1\}). Debug Message: \{2\}"{}}, operationResponse.OperationCode, operationResponse.ReturnCode, operationResponse.DebugMessage));}
+\DoxyCodeLine{01028                         \}}
+\DoxyCodeLine{01029                     \}}
+\DoxyCodeLine{01030                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01031             \}}
+\DoxyCodeLine{01032         \}}
+\DoxyCodeLine{01033 }
+\DoxyCodeLine{01034         \textcolor{keywordtype}{void} IPhotonPeerListener.OnStatusChanged(StatusCode statusCode)}
+\DoxyCodeLine{01035         \{}
+\DoxyCodeLine{01036             \textcolor{keywordflow}{switch} (statusCode)}
+\DoxyCodeLine{01037             \{}
+\DoxyCodeLine{01038                 \textcolor{keywordflow}{case} StatusCode.Connect:}
+\DoxyCodeLine{01039                     \textcolor{keywordflow}{if} (!this.chatPeer.IsProtocolSecure)}
+\DoxyCodeLine{01040                     \{}
+\DoxyCodeLine{01041                         \textcolor{keywordflow}{if} (!this.chatPeer.EstablishEncryption())}
+\DoxyCodeLine{01042                         \{}
+\DoxyCodeLine{01043                             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01044                             \{}
+\DoxyCodeLine{01045                                 this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Error establishing encryption"{}});}
+\DoxyCodeLine{01046                             \}}
+\DoxyCodeLine{01047                         \}}
+\DoxyCodeLine{01048                     \}}
+\DoxyCodeLine{01049                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01050                     \{}
+\DoxyCodeLine{01051                         this.TryAuthenticateOnNameServer();}
+\DoxyCodeLine{01052                     \}}
+\DoxyCodeLine{01053 }
+\DoxyCodeLine{01054                     \textcolor{keywordflow}{if} (this.State == ChatState.ConnectingToNameServer)}
+\DoxyCodeLine{01055                     \{}
+\DoxyCodeLine{01056                         this.State = ChatState.ConnectedToNameServer;}
+\DoxyCodeLine{01057                         this.listener.OnChatStateChange(this.State);}
+\DoxyCodeLine{01058                     \}}
+\DoxyCodeLine{01059                     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.State == ChatState.ConnectingToFrontEnd)}
+\DoxyCodeLine{01060                     \{}
+\DoxyCodeLine{01061                         \textcolor{keywordflow}{if} (!this.AuthenticateOnFrontEnd())}
+\DoxyCodeLine{01062                         \{}
+\DoxyCodeLine{01063                             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01064                             \{}
+\DoxyCodeLine{01065                                 this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Error authenticating on frontend! Check log output, AuthValues and if you're connected. State: \{0\}"{}}, \textcolor{keyword}{this}.State));}
+\DoxyCodeLine{01066                             \}}
+\DoxyCodeLine{01067                         \}}
+\DoxyCodeLine{01068                     \}}
+\DoxyCodeLine{01069                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01070                 \textcolor{keywordflow}{case} StatusCode.EncryptionEstablished:}
+\DoxyCodeLine{01071                     \textcolor{comment}{// once encryption is available, the client should send one (secure) authenticate. it includes the AppId (which identifies your app on the Photon Cloud)}}
+\DoxyCodeLine{01072                     this.TryAuthenticateOnNameServer();}
+\DoxyCodeLine{01073                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01074                 \textcolor{keywordflow}{case} StatusCode.Disconnect:}
+\DoxyCodeLine{01075                     \textcolor{keywordflow}{switch} (this.State)}
+\DoxyCodeLine{01076                     \{}
+\DoxyCodeLine{01077                         \textcolor{keywordflow}{case} ChatState.ConnectWithFallbackProtocol:}
+\DoxyCodeLine{01078                             this.EnableProtocolFallback = \textcolor{keyword}{false};        \textcolor{comment}{// the client does a fallback only one time}}
+\DoxyCodeLine{01079                             this.chatPeer.NameServerPortOverride = 0;   \textcolor{comment}{// resets a value in the peer only (as we change the protocol, the port has to change, too)}}
+\DoxyCodeLine{01080                             this.chatPeer.TransportProtocol = (this.chatPeer.TransportProtocol == ConnectionProtocol.Tcp) ? ConnectionProtocol.Udp : ConnectionProtocol.Tcp;}
+\DoxyCodeLine{01081                             \textcolor{keyword}{this}.Connect(\textcolor{keyword}{this}.AppId, \textcolor{keyword}{this}.AppVersion, \textcolor{keyword}{null});}
+\DoxyCodeLine{01082 }
+\DoxyCodeLine{01083                             \textcolor{comment}{// the client now has to return, instead of break, to avoid further processing of the disconnect call}}
+\DoxyCodeLine{01084                             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01085 }
+\DoxyCodeLine{01086                         \textcolor{keywordflow}{case} ChatState.Authenticated:}
+\DoxyCodeLine{01087                             this.ConnectToFrontEnd();}
+\DoxyCodeLine{01088                             \textcolor{comment}{// client disconnected from nameserver after authentication}}
+\DoxyCodeLine{01089                             \textcolor{comment}{// to switch to frontend}}
+\DoxyCodeLine{01090                             \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01091                         \textcolor{keywordflow}{case} ChatState.Disconnecting:}
+\DoxyCodeLine{01092                             \textcolor{comment}{// expected disconnect}}
+\DoxyCodeLine{01093                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01094                         \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{01095                             \textcolor{comment}{// unexpected disconnect, we log warning and stacktrace}}
+\DoxyCodeLine{01096                             \textcolor{keywordtype}{string} stacktrace = \textcolor{keywordtype}{string}.Empty;}
+\DoxyCodeLine{01097 \textcolor{preprocessor}{                            \#if DEBUG \&\& !NETFX\_CORE}}
+\DoxyCodeLine{01098                             stacktrace = \textcolor{keyword}{new} System.Diagnostics.StackTrace(\textcolor{keyword}{true}).ToString();}
+\DoxyCodeLine{01099 \textcolor{preprocessor}{                            \#endif}}
+\DoxyCodeLine{01100                             this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Got a unexpected Disconnect in ChatState: \{0\}. Server: \{1\} Trace: \{2\}"{}}, \textcolor{keyword}{this}.State, \textcolor{keyword}{this}.chatPeer.ServerAddress, stacktrace));}
+\DoxyCodeLine{01101                             \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01102                     \}}
+\DoxyCodeLine{01103                     \textcolor{keywordflow}{if} (this.AuthValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{01104                     \{}
+\DoxyCodeLine{01105                         this.AuthValues.Token = \textcolor{keyword}{null}; \textcolor{comment}{// when leaving the server, invalidate the secret (but not the auth values)}}
+\DoxyCodeLine{01106                     \}}
+\DoxyCodeLine{01107                     this.State = ChatState.Disconnected;}
+\DoxyCodeLine{01108                     this.listener.OnChatStateChange(ChatState.Disconnected);}
+\DoxyCodeLine{01109                     this.listener.OnDisconnected();}
+\DoxyCodeLine{01110                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01111                 \textcolor{keywordflow}{case} StatusCode.DisconnectByServerUserLimit:}
+\DoxyCodeLine{01112                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}This connection was rejected due to the apps CCU limit."{}});}
+\DoxyCodeLine{01113                     this.Disconnect(ChatDisconnectCause.MaxCcuReached);}
+\DoxyCodeLine{01114                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01115                 \textcolor{keywordflow}{case} StatusCode.ExceptionOnConnect:}
+\DoxyCodeLine{01116                 \textcolor{keywordflow}{case} StatusCode.SecurityExceptionOnConnect:}
+\DoxyCodeLine{01117                 \textcolor{keywordflow}{case} StatusCode.EncryptionFailedToEstablish:}
+\DoxyCodeLine{01118                     this.DisconnectedCause = ChatDisconnectCause.ExceptionOnConnect;}
+\DoxyCodeLine{01119 }
+\DoxyCodeLine{01120                     \textcolor{comment}{// if enabled, the client can attempt to connect with another networking-\/protocol to check if that connects}}
+\DoxyCodeLine{01121                     \textcolor{keywordflow}{if} (this.EnableProtocolFallback \&\& this.State == ChatState.ConnectingToNameServer)}
+\DoxyCodeLine{01122                     \{}
+\DoxyCodeLine{01123                         this.State = ChatState.ConnectWithFallbackProtocol;}
+\DoxyCodeLine{01124                     \}}
+\DoxyCodeLine{01125                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01126                     \{}
+\DoxyCodeLine{01127                         this.Disconnect(ChatDisconnectCause.ExceptionOnConnect);}
+\DoxyCodeLine{01128                     \}}
+\DoxyCodeLine{01129 }
+\DoxyCodeLine{01130                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01131                 \textcolor{keywordflow}{case} StatusCode.Exception:}
+\DoxyCodeLine{01132                 \textcolor{keywordflow}{case} StatusCode.ExceptionOnReceive:}
+\DoxyCodeLine{01133                     this.Disconnect(ChatDisconnectCause.Exception);}
+\DoxyCodeLine{01134                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01135                 \textcolor{keywordflow}{case} StatusCode.DisconnectByServerTimeout:}
+\DoxyCodeLine{01136                     this.Disconnect(ChatDisconnectCause.ServerTimeout);}
+\DoxyCodeLine{01137                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01138                 \textcolor{keywordflow}{case} StatusCode.DisconnectByServerLogic:}
+\DoxyCodeLine{01139                     this.Disconnect(ChatDisconnectCause.DisconnectByServerLogic);}
+\DoxyCodeLine{01140                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01141                 \textcolor{keywordflow}{case} StatusCode.DisconnectByServerReasonUnknown:}
+\DoxyCodeLine{01142                     this.Disconnect(ChatDisconnectCause.DisconnectByServerReasonUnknown);}
+\DoxyCodeLine{01143                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01144                 \textcolor{keywordflow}{case} StatusCode.TimeoutDisconnect:}
+\DoxyCodeLine{01145                     this.DisconnectedCause = ChatDisconnectCause.ClientTimeout;}
+\DoxyCodeLine{01146 }
+\DoxyCodeLine{01147                     \textcolor{comment}{// if enabled, the client can attempt to connect with another networking-\/protocol to check if that connects}}
+\DoxyCodeLine{01148                     \textcolor{keywordflow}{if} (this.EnableProtocolFallback \&\& this.State == ChatState.ConnectingToNameServer)}
+\DoxyCodeLine{01149                     \{}
+\DoxyCodeLine{01150                         this.State = ChatState.ConnectWithFallbackProtocol;}
+\DoxyCodeLine{01151                     \}}
+\DoxyCodeLine{01152                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01153                     \{}
+\DoxyCodeLine{01154                         this.Disconnect(ChatDisconnectCause.ClientTimeout);}
+\DoxyCodeLine{01155                     \}}
+\DoxyCodeLine{01156                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01157             \}}
+\DoxyCodeLine{01158         \}}
+\DoxyCodeLine{01159 }
+\DoxyCodeLine{01160 \textcolor{preprocessor}{        \#if SDK\_V4}}
+\DoxyCodeLine{01161         \textcolor{keywordtype}{void} IPhotonPeerListener.OnMessage(\textcolor{keywordtype}{object} msg)}
+\DoxyCodeLine{01162         \{}
+\DoxyCodeLine{01163             \textcolor{keywordtype}{string} channelName = \textcolor{keyword}{null};}
+\DoxyCodeLine{01164             var receivedBytes = (\textcolor{keywordtype}{byte}[])msg;}
+\DoxyCodeLine{01165             var channelId = BitConverter.ToInt32(receivedBytes, 0);}
+\DoxyCodeLine{01166             var messageBytes = \textcolor{keyword}{new} \textcolor{keywordtype}{byte}[receivedBytes.Length -\/ 4];}
+\DoxyCodeLine{01167             Array.Copy(receivedBytes, 4, messageBytes, 0, receivedBytes.Length -\/ 4);}
+\DoxyCodeLine{01168 }
+\DoxyCodeLine{01169             \textcolor{keywordflow}{foreach} (var channel \textcolor{keywordflow}{in} this.PublicChannels)}
+\DoxyCodeLine{01170             \{}
+\DoxyCodeLine{01171                 \textcolor{keywordflow}{if} (channel.Value.ChannelID == channelId)}
+\DoxyCodeLine{01172                 \{}
+\DoxyCodeLine{01173                     channelName = channel.Key;}
+\DoxyCodeLine{01174                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01175                 \}}
+\DoxyCodeLine{01176             \}}
+\DoxyCodeLine{01177 }
+\DoxyCodeLine{01178             \textcolor{keywordflow}{if} (channelName != \textcolor{keyword}{null})}
+\DoxyCodeLine{01179             \{}
+\DoxyCodeLine{01180                 this.listener.DebugReturn(DebugLevel.ALL, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}got OnMessage in channel \{0\}"{}}, channelName));}
+\DoxyCodeLine{01181             \}}
+\DoxyCodeLine{01182             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01183             \{}
+\DoxyCodeLine{01184                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}got OnMessage in unknown channel \{0\}"{}}, channelId));}
+\DoxyCodeLine{01185             \}}
+\DoxyCodeLine{01186 }
+\DoxyCodeLine{01187             this.listener.OnReceiveBroadcastMessage(channelName, messageBytes);}
+\DoxyCodeLine{01188         \}}
+\DoxyCodeLine{01189 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{01190 }
+\DoxyCodeLine{01191 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01192 }
+\DoxyCodeLine{01193         \textcolor{keyword}{private} \textcolor{keywordtype}{void} TryAuthenticateOnNameServer()}
+\DoxyCodeLine{01194         \{}
+\DoxyCodeLine{01195             \textcolor{keywordflow}{if} (!this.didAuthenticate)}
+\DoxyCodeLine{01196             \{}
+\DoxyCodeLine{01197                 this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.ChatRegion, this.AuthValues);}
+\DoxyCodeLine{01198                 \textcolor{keywordflow}{if} (!this.didAuthenticate)}
+\DoxyCodeLine{01199                 \{}
+\DoxyCodeLine{01200                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01201                     \{}
+\DoxyCodeLine{01202                         this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Error calling OpAuthenticate! Did not work on NameServer. Check log output, AuthValues and if you're connected. State: \{0\}"{}}, \textcolor{keyword}{this}.State));}
+\DoxyCodeLine{01203                     \}}
+\DoxyCodeLine{01204                 \}}
+\DoxyCodeLine{01205             \}}
+\DoxyCodeLine{01206         \}}
+\DoxyCodeLine{01207 }
+\DoxyCodeLine{01208         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} SendChannelOperation(\textcolor{keywordtype}{string}[] channels, \textcolor{keywordtype}{byte} operation, \textcolor{keywordtype}{int} historyLength)}
+\DoxyCodeLine{01209         \{}
+\DoxyCodeLine{01210             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object> \{ \{ (byte)ChatParameterCode.Channels, channels \} \};}
+\DoxyCodeLine{01211 }
+\DoxyCodeLine{01212             \textcolor{keywordflow}{if} (historyLength != 0)}
+\DoxyCodeLine{01213             \{}
+\DoxyCodeLine{01214                 opParameters.Add((\textcolor{keywordtype}{byte})ChatParameterCode.HistoryLength, historyLength);}
+\DoxyCodeLine{01215             \}}
+\DoxyCodeLine{01216 }
+\DoxyCodeLine{01217             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(operation, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01218         \}}
+\DoxyCodeLine{01219 }
+\DoxyCodeLine{01220         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandlePrivateMessageEvent(EventData eventData)}
+\DoxyCodeLine{01221         \{}
+\DoxyCodeLine{01222             \textcolor{comment}{//Console.WriteLine(SupportClass.DictionaryToString(eventData.Parameters));}}
+\DoxyCodeLine{01223 }
+\DoxyCodeLine{01224             \textcolor{keywordtype}{object} message = (object)eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.Message];}
+\DoxyCodeLine{01225             \textcolor{keywordtype}{string} sender = (string)eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.Sender];}
+\DoxyCodeLine{01226             \textcolor{keywordtype}{int} msgId = (int)eventData.Parameters[ChatParameterCode.MsgId];}
+\DoxyCodeLine{01227 }
+\DoxyCodeLine{01228             \textcolor{keywordtype}{string} channelName;}
+\DoxyCodeLine{01229             if (this.UserId != \textcolor{keyword}{null} \&\& this.UserId.Equals(sender))}
+\DoxyCodeLine{01230             \{}
+\DoxyCodeLine{01231                 \textcolor{keywordtype}{string} target = (string)eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.UserId];}
+\DoxyCodeLine{01232                 channelName = this.GetPrivateChannelNameByUser(target);}
+\DoxyCodeLine{01233             \}}
+\DoxyCodeLine{01234             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01235             \{}
+\DoxyCodeLine{01236                 channelName = this.GetPrivateChannelNameByUser(sender);}
+\DoxyCodeLine{01237             \}}
+\DoxyCodeLine{01238 }
+\DoxyCodeLine{01239             ChatChannel channel;}
+\DoxyCodeLine{01240             \textcolor{keywordflow}{if} (!this.PrivateChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01241             \{}
+\DoxyCodeLine{01242                 channel = \textcolor{keyword}{new} ChatChannel(channelName);}
+\DoxyCodeLine{01243                 channel.IsPrivate = \textcolor{keyword}{true};}
+\DoxyCodeLine{01244                 channel.MessageLimit = this.MessageLimit;}
+\DoxyCodeLine{01245                 this.PrivateChannels.Add(channel.Name, channel);}
+\DoxyCodeLine{01246             \}}
+\DoxyCodeLine{01247 }
+\DoxyCodeLine{01248             channel.Add(sender, message, msgId);}
+\DoxyCodeLine{01249             this.listener.OnPrivateMessage(sender, message, channelName);}
+\DoxyCodeLine{01250         \}}
+\DoxyCodeLine{01251 }
+\DoxyCodeLine{01252         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleChatMessagesEvent(EventData eventData)}
+\DoxyCodeLine{01253         \{}
+\DoxyCodeLine{01254             \textcolor{keywordtype}{object}[] messages = (\textcolor{keywordtype}{object}[])eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.Messages];}
+\DoxyCodeLine{01255             \textcolor{keywordtype}{string}[] senders = (\textcolor{keywordtype}{string}[])eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.Senders];}
+\DoxyCodeLine{01256             \textcolor{keywordtype}{string} channelName = (string)eventData.Parameters[(\textcolor{keywordtype}{byte})ChatParameterCode.Channel];}
+\DoxyCodeLine{01257             \textcolor{keywordtype}{int} lastMsgId = (int)eventData.Parameters[ChatParameterCode.MsgId];}
+\DoxyCodeLine{01258 }
+\DoxyCodeLine{01259             ChatChannel channel;}
+\DoxyCodeLine{01260             if (!this.PublicChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01261             \{}
+\DoxyCodeLine{01262                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01263                 \{}
+\DoxyCodeLine{01264                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}Channel "{}} + channelName + \textcolor{stringliteral}{"{} for incoming message event not found."{}});}
+\DoxyCodeLine{01265                 \}}
+\DoxyCodeLine{01266                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01267             \}}
+\DoxyCodeLine{01268 }
+\DoxyCodeLine{01269             channel.Add(senders, messages, lastMsgId);}
+\DoxyCodeLine{01270             this.listener.OnGetMessages(channelName, senders, messages);}
+\DoxyCodeLine{01271         \}}
+\DoxyCodeLine{01272 }
+\DoxyCodeLine{01273         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleSubscribeEvent(EventData eventData)}
+\DoxyCodeLine{01274         \{}
+\DoxyCodeLine{01275             \textcolor{keywordtype}{string}[] channelsInResponse = (\textcolor{keywordtype}{string}[])eventData.Parameters[ChatParameterCode.Channels];}
+\DoxyCodeLine{01276             \textcolor{keywordtype}{bool}[] results = (\textcolor{keywordtype}{bool}[])eventData.Parameters[ChatParameterCode.SubscribeResults];}
+\DoxyCodeLine{01277             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < channelsInResponse.Length; i++)}
+\DoxyCodeLine{01278             \{}
+\DoxyCodeLine{01279                 \textcolor{keywordflow}{if} (results[i])}
+\DoxyCodeLine{01280                 \{}
+\DoxyCodeLine{01281                     \textcolor{keywordtype}{string} channelName = channelsInResponse[i];}
+\DoxyCodeLine{01282                     ChatChannel channel;}
+\DoxyCodeLine{01283                     \textcolor{keywordflow}{if} (!this.PublicChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01284                     \{}
+\DoxyCodeLine{01285                         channel = \textcolor{keyword}{new} ChatChannel(channelName);}
+\DoxyCodeLine{01286                         channel.MessageLimit = this.MessageLimit;}
+\DoxyCodeLine{01287                         this.PublicChannels.Add(channel.Name, channel);}
+\DoxyCodeLine{01288                     \}}
+\DoxyCodeLine{01289                     \textcolor{keywordtype}{object} temp;}
+\DoxyCodeLine{01290                     \textcolor{keywordflow}{if} (eventData.Parameters.TryGetValue(ChatParameterCode.Properties, out temp))}
+\DoxyCodeLine{01291                     \{}
+\DoxyCodeLine{01292                         Dictionary<object, object> channelProperties = temp as Dictionary<object, object>;}
+\DoxyCodeLine{01293                         channel.ReadChannelProperties(channelProperties);}
+\DoxyCodeLine{01294                     \}}
+\DoxyCodeLine{01295                     \textcolor{keywordflow}{if} (channel.PublishSubscribers) \textcolor{comment}{// or maybe remove check \& always add anyway?}}
+\DoxyCodeLine{01296                     \{}
+\DoxyCodeLine{01297                         channel.Subscribers.Add(this.UserId);}
+\DoxyCodeLine{01298                     \}}
+\DoxyCodeLine{01299                     \textcolor{keywordflow}{if} (eventData.Parameters.TryGetValue(ChatParameterCode.ChannelSubscribers, out temp))}
+\DoxyCodeLine{01300                     \{}
+\DoxyCodeLine{01301                         \textcolor{keywordtype}{string}[] subscribers = temp as \textcolor{keywordtype}{string}[];}
+\DoxyCodeLine{01302                         channel.AddSubscribers(subscribers);}
+\DoxyCodeLine{01303                     \}}
+\DoxyCodeLine{01304 \textcolor{preprocessor}{                    \#if CHAT\_EXTENDED}}
+\DoxyCodeLine{01305                     \textcolor{keywordflow}{if} (eventData.Parameters.TryGetValue(ChatParameterCode.UserProperties, out temp))}
+\DoxyCodeLine{01306                     \{}
+\DoxyCodeLine{01307                         Dictionary<string, Dictionary<object, object>> userProperties = temp as Dictionary<string, Dictionary<object, object>>;}
+\DoxyCodeLine{01308                         \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} userProperties)}
+\DoxyCodeLine{01309                         \{}
+\DoxyCodeLine{01310                             channel.ReadUserProperties(pair.Key, pair.Value);}
+\DoxyCodeLine{01311                         \}}
+\DoxyCodeLine{01312                     \}}
+\DoxyCodeLine{01313 \textcolor{preprocessor}{                    \#endif}}
+\DoxyCodeLine{01314                 \}}
+\DoxyCodeLine{01315             \}}
+\DoxyCodeLine{01316 }
+\DoxyCodeLine{01317             this.listener.OnSubscribed(channelsInResponse, results);}
+\DoxyCodeLine{01318         \}}
+\DoxyCodeLine{01319 }
+\DoxyCodeLine{01320 }
+\DoxyCodeLine{01321         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleUnsubscribeEvent(EventData eventData)}
+\DoxyCodeLine{01322         \{}
+\DoxyCodeLine{01323             \textcolor{keywordtype}{string}[] channelsInRequest = (\textcolor{keywordtype}{string}[])eventData[ChatParameterCode.Channels];}
+\DoxyCodeLine{01324             for (\textcolor{keywordtype}{int} i = 0; i < channelsInRequest.Length; i++)}
+\DoxyCodeLine{01325             \{}
+\DoxyCodeLine{01326                 \textcolor{keywordtype}{string} channelName = channelsInRequest[i];}
+\DoxyCodeLine{01327                 this.PublicChannels.Remove(channelName);}
+\DoxyCodeLine{01328                 this.PublicChannelsUnsubscribing.Remove(channelName);}
+\DoxyCodeLine{01329             \}}
+\DoxyCodeLine{01330 }
+\DoxyCodeLine{01331             this.listener.OnUnsubscribed(channelsInRequest);}
+\DoxyCodeLine{01332         \}}
+\DoxyCodeLine{01333 }
+\DoxyCodeLine{01334         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleAuthResponse(OperationResponse operationResponse)}
+\DoxyCodeLine{01335         \{}
+\DoxyCodeLine{01336             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{01337             \{}
+\DoxyCodeLine{01338                 this.listener.DebugReturn(DebugLevel.INFO, operationResponse.ToStringFull() + \textcolor{stringliteral}{"{} on: "{}} + \textcolor{keyword}{this}.chatPeer.NameServerAddress);}
+\DoxyCodeLine{01339             \}}
+\DoxyCodeLine{01340 }
+\DoxyCodeLine{01341             \textcolor{keywordflow}{if} (operationResponse.ReturnCode == 0)}
+\DoxyCodeLine{01342             \{}
+\DoxyCodeLine{01343                 \textcolor{keywordflow}{if} (this.State == ChatState.ConnectedToNameServer)}
+\DoxyCodeLine{01344                 \{}
+\DoxyCodeLine{01345                     this.State = ChatState.Authenticated;}
+\DoxyCodeLine{01346                     this.listener.OnChatStateChange(this.State);}
+\DoxyCodeLine{01347 }
+\DoxyCodeLine{01348                     \textcolor{keywordflow}{if} (operationResponse.Parameters.ContainsKey(ParameterCode.Secret))}
+\DoxyCodeLine{01349                     \{}
+\DoxyCodeLine{01350                         \textcolor{keywordflow}{if} (this.AuthValues == \textcolor{keyword}{null})}
+\DoxyCodeLine{01351                         \{}
+\DoxyCodeLine{01352                             this.AuthValues = \textcolor{keyword}{new} AuthenticationValues();}
+\DoxyCodeLine{01353                         \}}
+\DoxyCodeLine{01354                         this.AuthValues.Token = operationResponse[ParameterCode.Secret] as string;}
+\DoxyCodeLine{01355 }
+\DoxyCodeLine{01356                         this.FrontendAddress = (string)operationResponse[ParameterCode.Address];}
+\DoxyCodeLine{01357 }
+\DoxyCodeLine{01358                         \textcolor{comment}{// we disconnect and status handler starts to connect to front end}}
+\DoxyCodeLine{01359                         \textcolor{keyword}{this}.chatPeer.Disconnect();}
+\DoxyCodeLine{01360                     \}}
+\DoxyCodeLine{01361                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01362                     \{}
+\DoxyCodeLine{01363                         \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01364                         \{}
+\DoxyCodeLine{01365                             this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}No secret in authentication response."{}});}
+\DoxyCodeLine{01366                         \}}
+\DoxyCodeLine{01367                     \}}
+\DoxyCodeLine{01368                     \textcolor{keywordflow}{if} (operationResponse.Parameters.ContainsKey(ParameterCode.UserId))}
+\DoxyCodeLine{01369                     \{}
+\DoxyCodeLine{01370                         \textcolor{keywordtype}{string} incomingId = operationResponse.Parameters[ParameterCode.UserId] as string;}
+\DoxyCodeLine{01371                         \textcolor{keywordflow}{if} (!\textcolor{keywordtype}{string}.IsNullOrEmpty(incomingId))}
+\DoxyCodeLine{01372                         \{}
+\DoxyCodeLine{01373                             this.UserId = incomingId;}
+\DoxyCodeLine{01374                             this.listener.DebugReturn(DebugLevel.INFO, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Received your UserID from server. Updating local value to: \{0\}"{}}, \textcolor{keyword}{this}.UserId));}
+\DoxyCodeLine{01375                         \}}
+\DoxyCodeLine{01376                     \}}
+\DoxyCodeLine{01377                 \}}
+\DoxyCodeLine{01378                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (this.State == ChatState.ConnectingToFrontEnd)}
+\DoxyCodeLine{01379                 \{}
+\DoxyCodeLine{01380                     this.State = ChatState.ConnectedToFrontEnd;}
+\DoxyCodeLine{01381                     this.listener.OnChatStateChange(this.State);}
+\DoxyCodeLine{01382                     this.listener.OnConnected();}
+\DoxyCodeLine{01383                     \textcolor{keywordflow}{if} (statusToSetWhenConnected.HasValue)}
+\DoxyCodeLine{01384                     \{}
+\DoxyCodeLine{01385                         SetOnlineStatus(statusToSetWhenConnected.Value, messageToSetWhenConnected);}
+\DoxyCodeLine{01386                         statusToSetWhenConnected = \textcolor{keyword}{null};}
+\DoxyCodeLine{01387                     \}}
+\DoxyCodeLine{01388                 \}}
+\DoxyCodeLine{01389             \}}
+\DoxyCodeLine{01390             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01391             \{}
+\DoxyCodeLine{01392                 \textcolor{comment}{//this.listener.DebugReturn(DebugLevel.INFO, operationResponse.ToStringFull() + "{} NS: "{} + this.NameServerAddress + "{} FrontEnd: "{} + this.frontEndAddress);}}
+\DoxyCodeLine{01393 }
+\DoxyCodeLine{01394                 \textcolor{keywordflow}{switch} (operationResponse.ReturnCode)}
+\DoxyCodeLine{01395                 \{}
+\DoxyCodeLine{01396                     \textcolor{keywordflow}{case} ErrorCode.InvalidAuthentication:}
+\DoxyCodeLine{01397                         this.DisconnectedCause = ChatDisconnectCause.InvalidAuthentication;}
+\DoxyCodeLine{01398                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01399                     \textcolor{keywordflow}{case} ErrorCode.CustomAuthenticationFailed:}
+\DoxyCodeLine{01400                         this.DisconnectedCause = ChatDisconnectCause.CustomAuthenticationFailed;}
+\DoxyCodeLine{01401                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01402                     \textcolor{keywordflow}{case} ErrorCode.InvalidRegion:}
+\DoxyCodeLine{01403                         this.DisconnectedCause = ChatDisconnectCause.InvalidRegion;}
+\DoxyCodeLine{01404                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01405                     \textcolor{keywordflow}{case} ErrorCode.MaxCcuReached:}
+\DoxyCodeLine{01406                         this.DisconnectedCause = ChatDisconnectCause.MaxCcuReached;}
+\DoxyCodeLine{01407                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01408                     \textcolor{keywordflow}{case} ErrorCode.OperationNotAllowedInCurrentState:}
+\DoxyCodeLine{01409                         this.DisconnectedCause = ChatDisconnectCause.OperationNotAllowedInCurrentState;}
+\DoxyCodeLine{01410                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01411                     \textcolor{keywordflow}{case} ErrorCode.AuthenticationTicketExpired:}
+\DoxyCodeLine{01412                         this.DisconnectedCause = ChatDisconnectCause.AuthenticationTicketExpired;}
+\DoxyCodeLine{01413                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01414                 \}}
+\DoxyCodeLine{01415 }
+\DoxyCodeLine{01416                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01417                 \{}
+\DoxyCodeLine{01418                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\} ClientState: \{1\} ServerAddress: \{2\}"{}}, operationResponse.ToStringFull(), \textcolor{keyword}{this}.State, \textcolor{keyword}{this}.chatPeer.ServerAddress));}
+\DoxyCodeLine{01419                 \}}
+\DoxyCodeLine{01420 }
+\DoxyCodeLine{01421 }
+\DoxyCodeLine{01422                 this.Disconnect(this.DisconnectedCause);}
+\DoxyCodeLine{01423             \}}
+\DoxyCodeLine{01424         \}}
+\DoxyCodeLine{01425 }
+\DoxyCodeLine{01426         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleStatusUpdate(EventData eventData)}
+\DoxyCodeLine{01427         \{}
+\DoxyCodeLine{01428             \textcolor{keywordtype}{string} user = (string)eventData.Parameters[ChatParameterCode.Sender];}
+\DoxyCodeLine{01429             \textcolor{keywordtype}{int} status = (\textcolor{keywordtype}{int})eventData.Parameters[ChatParameterCode.Status];}
+\DoxyCodeLine{01430 }
+\DoxyCodeLine{01431             \textcolor{keywordtype}{object} message = \textcolor{keyword}{null};}
+\DoxyCodeLine{01432             \textcolor{keywordtype}{bool} gotMessage = eventData.Parameters.ContainsKey(ChatParameterCode.Message);}
+\DoxyCodeLine{01433             \textcolor{keywordflow}{if} (gotMessage)}
+\DoxyCodeLine{01434             \{}
+\DoxyCodeLine{01435                 message = eventData.Parameters[ChatParameterCode.Message];}
+\DoxyCodeLine{01436             \}}
+\DoxyCodeLine{01437 }
+\DoxyCodeLine{01438             this.listener.OnStatusUpdate(user, status, gotMessage, message);}
+\DoxyCodeLine{01439         \}}
+\DoxyCodeLine{01440 }
+\DoxyCodeLine{01441         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} ConnectToFrontEnd()}
+\DoxyCodeLine{01442         \{}
+\DoxyCodeLine{01443             this.State = ChatState.ConnectingToFrontEnd;}
+\DoxyCodeLine{01444 }
+\DoxyCodeLine{01445             \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.INFO)}
+\DoxyCodeLine{01446             \{}
+\DoxyCodeLine{01447                 this.listener.DebugReturn(DebugLevel.INFO, \textcolor{stringliteral}{"{}Connecting to frontend "{}} + \textcolor{keyword}{this}.FrontendAddress);}
+\DoxyCodeLine{01448             \}}
+\DoxyCodeLine{01449 }
+\DoxyCodeLine{01450 \textcolor{preprocessor}{            \#if UNITY\_WEBGL}}
+\DoxyCodeLine{01451             \textcolor{keywordflow}{if} (this.TransportProtocol == ConnectionProtocol.Tcp || \textcolor{keyword}{this}.TransportProtocol == ConnectionProtocol.Udp)}
+\DoxyCodeLine{01452             \{}
+\DoxyCodeLine{01453                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}WebGL requires WebSockets. Switching TransportProtocol to WebSocketSecure."{}});}
+\DoxyCodeLine{01454                 this.TransportProtocol = ConnectionProtocol.WebSocketSecure;}
+\DoxyCodeLine{01455             \}}
+\DoxyCodeLine{01456 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{01457 }
+\DoxyCodeLine{01458             \textcolor{keywordflow}{if} (!this.chatPeer.Connect(\textcolor{keyword}{this}.FrontendAddress, ChatAppName))}
+\DoxyCodeLine{01459             \{}
+\DoxyCodeLine{01460                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01461                 \{}
+\DoxyCodeLine{01462                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Connecting to frontend \{0\} failed."{}}, \textcolor{keyword}{this}.FrontendAddress));}
+\DoxyCodeLine{01463                 \}}
+\DoxyCodeLine{01464                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01465             \}}
+\DoxyCodeLine{01466 }
+\DoxyCodeLine{01467             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{01468         \}}
+\DoxyCodeLine{01469 }
+\DoxyCodeLine{01470         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} AuthenticateOnFrontEnd()}
+\DoxyCodeLine{01471         \{}
+\DoxyCodeLine{01472             \textcolor{keywordflow}{if} (this.AuthValues != \textcolor{keyword}{null})}
+\DoxyCodeLine{01473             \{}
+\DoxyCodeLine{01474                 \textcolor{keywordflow}{if} (this.AuthValues.Token == \textcolor{keyword}{null})}
+\DoxyCodeLine{01475                 \{}
+\DoxyCodeLine{01476                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01477                     \{}
+\DoxyCodeLine{01478                         this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Can't authenticate on front end server. Secret (AuthValues.Token) is not set"{}});}
+\DoxyCodeLine{01479                     \}}
+\DoxyCodeLine{01480                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01481                 \}}
+\DoxyCodeLine{01482                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01483                 \{}
+\DoxyCodeLine{01484                     Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object> \{ \{ (byte)ChatParameterCode.Secret, \textcolor{keyword}{this}.AuthValues.Token \} \};}
+\DoxyCodeLine{01485                     \textcolor{keywordflow}{if} (this.PrivateChatHistoryLength > -\/1)}
+\DoxyCodeLine{01486                     \{}
+\DoxyCodeLine{01487                         opParameters[(byte)ChatParameterCode.HistoryLength] = \textcolor{keyword}{this}.PrivateChatHistoryLength;}
+\DoxyCodeLine{01488                     \}}
+\DoxyCodeLine{01489 }
+\DoxyCodeLine{01490                     \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.Authenticate, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01491                 \}}
+\DoxyCodeLine{01492             \}}
+\DoxyCodeLine{01493             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01494             \{}
+\DoxyCodeLine{01495                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01496                 \{}
+\DoxyCodeLine{01497                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Can't authenticate on front end server. Authentication Values are not set"{}});}
+\DoxyCodeLine{01498                 \}}
+\DoxyCodeLine{01499                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01500             \}}
+\DoxyCodeLine{01501         \}}
+\DoxyCodeLine{01502 }
+\DoxyCodeLine{01503         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleUserUnsubscribedEvent(EventData eventData)}
+\DoxyCodeLine{01504         \{}
+\DoxyCodeLine{01505             \textcolor{keywordtype}{string} channelName = eventData.Parameters[ChatParameterCode.Channel] as string;}
+\DoxyCodeLine{01506             \textcolor{keywordtype}{string} userId = eventData.Parameters[ChatParameterCode.UserId] as string;}
+\DoxyCodeLine{01507             ChatChannel channel;}
+\DoxyCodeLine{01508             \textcolor{keywordflow}{if} (this.PublicChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01509             \{}
+\DoxyCodeLine{01510                 \textcolor{keywordflow}{if} (!channel.PublishSubscribers)}
+\DoxyCodeLine{01511                 \{}
+\DoxyCodeLine{01512                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01513                     \{}
+\DoxyCodeLine{01514                         this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} for incoming UserUnsubscribed (\(\backslash\)"{}\{1\}\(\backslash\)"{}) event does not have PublishSubscribers enabled."{}}, channelName, userId));}
+\DoxyCodeLine{01515                     \}}
+\DoxyCodeLine{01516                 \}}
+\DoxyCodeLine{01517                 \textcolor{keywordflow}{if} (!channel.Subscribers.Remove(userId)) \textcolor{comment}{// user not found!}}
+\DoxyCodeLine{01518                 \{}
+\DoxyCodeLine{01519                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01520                     \{}
+\DoxyCodeLine{01521                         this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} does not contain unsubscribed user \(\backslash\)"{}\{1\}\(\backslash\)"{}."{}}, channelName, userId));}
+\DoxyCodeLine{01522                     \}}
+\DoxyCodeLine{01523                 \}}
+\DoxyCodeLine{01524             \}}
+\DoxyCodeLine{01525             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01526             \{}
+\DoxyCodeLine{01527                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01528                 \{}
+\DoxyCodeLine{01529                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} not found for incoming UserUnsubscribed (\(\backslash\)"{}\{1\}\(\backslash\)"{}) event."{}}, channelName, userId));}
+\DoxyCodeLine{01530                 \}}
+\DoxyCodeLine{01531             \}}
+\DoxyCodeLine{01532             this.listener.OnUserUnsubscribed(channelName, userId);}
+\DoxyCodeLine{01533         \}}
+\DoxyCodeLine{01534 }
+\DoxyCodeLine{01535         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleUserSubscribedEvent(EventData eventData)}
+\DoxyCodeLine{01536         \{}
+\DoxyCodeLine{01537             \textcolor{comment}{//TODO: Handle user properties!}}
+\DoxyCodeLine{01538 }
+\DoxyCodeLine{01539             \textcolor{keywordtype}{string} channelName = eventData.Parameters[ChatParameterCode.Channel] as string;}
+\DoxyCodeLine{01540             \textcolor{keywordtype}{string} userId = eventData.Parameters[ChatParameterCode.UserId] as string;}
+\DoxyCodeLine{01541             ChatChannel channel;}
+\DoxyCodeLine{01542             \textcolor{keywordflow}{if} (this.PublicChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01543             \{}
+\DoxyCodeLine{01544                 \textcolor{keywordflow}{if} (!channel.PublishSubscribers)}
+\DoxyCodeLine{01545                 \{}
+\DoxyCodeLine{01546                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01547                     \{}
+\DoxyCodeLine{01548                         this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} for incoming UserSubscribed (\(\backslash\)"{}\{1\}\(\backslash\)"{}) event does not have PublishSubscribers enabled."{}}, channelName, userId));}
+\DoxyCodeLine{01549                     \}}
+\DoxyCodeLine{01550                 \}}
+\DoxyCodeLine{01551                 \textcolor{keywordflow}{if} (!channel.Subscribers.Add(userId)) \textcolor{comment}{// user came back from the dead ?}}
+\DoxyCodeLine{01552                 \{}
+\DoxyCodeLine{01553                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01554                     \{}
+\DoxyCodeLine{01555                         this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} already contains newly subscribed user \(\backslash\)"{}\{1\}\(\backslash\)"{}."{}}, channelName, userId));}
+\DoxyCodeLine{01556                     \}}
+\DoxyCodeLine{01557                 \}}
+\DoxyCodeLine{01558                 \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (channel.MaxSubscribers > 0 \&\& channel.Subscribers.Count > channel.MaxSubscribers)}
+\DoxyCodeLine{01559                 \{}
+\DoxyCodeLine{01560                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01561                     \{}
+\DoxyCodeLine{01562                         this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{}'s MaxSubscribers exceeded. count=\{1\} > MaxSubscribers=\{2\}."{}}, channelName, channel.Subscribers.Count, channel.MaxSubscribers));}
+\DoxyCodeLine{01563                     \}}
+\DoxyCodeLine{01564                 \}}
+\DoxyCodeLine{01565             \}}
+\DoxyCodeLine{01566             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01567             \{}
+\DoxyCodeLine{01568                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01569                 \{}
+\DoxyCodeLine{01570                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \(\backslash\)"{}\{0\}\(\backslash\)"{} not found for incoming UserSubscribed (\(\backslash\)"{}\{1\}\(\backslash\)"{}) event."{}}, channelName, userId));}
+\DoxyCodeLine{01571                 \}}
+\DoxyCodeLine{01572             \}}
+\DoxyCodeLine{01573             this.listener.OnUserSubscribed(channelName, userId);}
+\DoxyCodeLine{01574         \}}
+\DoxyCodeLine{01575 }
+\DoxyCodeLine{01576 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{01577 }
+\DoxyCodeLine{01586         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} Subscribe(\textcolor{keywordtype}{string} channel, \textcolor{keywordtype}{int} lastMsgId = 0, \textcolor{keywordtype}{int} messagesFromHistory = -\/1, ChannelCreationOptions creationOptions = \textcolor{keyword}{null})}
+\DoxyCodeLine{01587         \{}
+\DoxyCodeLine{01588             \textcolor{keywordflow}{if} (creationOptions == \textcolor{keyword}{null})}
+\DoxyCodeLine{01589             \{}
+\DoxyCodeLine{01590                 creationOptions = ChannelCreationOptions.Default;}
+\DoxyCodeLine{01591             \}}
+\DoxyCodeLine{01592             \textcolor{keywordtype}{int} maxSubscribers = creationOptions.MaxSubscribers;}
+\DoxyCodeLine{01593             \textcolor{keywordtype}{bool} publishSubscribers = creationOptions.PublishSubscribers;}
+\DoxyCodeLine{01594             \textcolor{keywordflow}{if} (maxSubscribers < 0)}
+\DoxyCodeLine{01595             \{}
+\DoxyCodeLine{01596                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01597                 \{}
+\DoxyCodeLine{01598                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}Cannot set MaxSubscribers < 0."{}});}
+\DoxyCodeLine{01599                 \}}
+\DoxyCodeLine{01600                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01601             \}}
+\DoxyCodeLine{01602             \textcolor{keywordflow}{if} (lastMsgId < 0)}
+\DoxyCodeLine{01603             \{}
+\DoxyCodeLine{01604                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01605                 \{}
+\DoxyCodeLine{01606                     this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}lastMsgId cannot be < 0."{}});}
+\DoxyCodeLine{01607                 \}}
+\DoxyCodeLine{01608                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01609             \}}
+\DoxyCodeLine{01610             \textcolor{keywordflow}{if} (messagesFromHistory < -\/1)}
+\DoxyCodeLine{01611             \{}
+\DoxyCodeLine{01612                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01613                 \{}
+\DoxyCodeLine{01614                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}messagesFromHistory < -\/1, setting it to -\/1"{}});}
+\DoxyCodeLine{01615                 \}}
+\DoxyCodeLine{01616                 messagesFromHistory = -\/1;}
+\DoxyCodeLine{01617             \}}
+\DoxyCodeLine{01618             \textcolor{keywordflow}{if} (lastMsgId > 0 \&\& messagesFromHistory == 0)}
+\DoxyCodeLine{01619             \{}
+\DoxyCodeLine{01620                 \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.WARNING)}
+\DoxyCodeLine{01621                 \{}
+\DoxyCodeLine{01622                     this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}lastMsgId will be ignored because messagesFromHistory == 0"{}});}
+\DoxyCodeLine{01623                 \}}
+\DoxyCodeLine{01624                 lastMsgId = 0;}
+\DoxyCodeLine{01625             \}}
+\DoxyCodeLine{01626             Dictionary<object, object> properties = \textcolor{keyword}{null};}
+\DoxyCodeLine{01627             \textcolor{keywordflow}{if} (publishSubscribers)}
+\DoxyCodeLine{01628             \{}
+\DoxyCodeLine{01629                 \textcolor{keywordflow}{if} (maxSubscribers > DefaultMaxSubscribers)}
+\DoxyCodeLine{01630                 \{}
+\DoxyCodeLine{01631                     \textcolor{keywordflow}{if} (this.DebugOut >= DebugLevel.ERROR)}
+\DoxyCodeLine{01632                     \{}
+\DoxyCodeLine{01633                         this.listener.DebugReturn(DebugLevel.ERROR,}
+\DoxyCodeLine{01634                             \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Cannot set MaxSubscribers > \{0\} when PublishSubscribers == true."{}}, DefaultMaxSubscribers));}
+\DoxyCodeLine{01635                     \}}
+\DoxyCodeLine{01636                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01637                 \}}
+\DoxyCodeLine{01638                 properties = \textcolor{keyword}{new} Dictionary<object, object>();}
+\DoxyCodeLine{01639                 properties[ChannelWellKnownProperties.PublishSubscribers] = \textcolor{keyword}{true};}
+\DoxyCodeLine{01640             \}}
+\DoxyCodeLine{01641             \textcolor{keywordflow}{if} (maxSubscribers > 0)}
+\DoxyCodeLine{01642             \{}
+\DoxyCodeLine{01643                 \textcolor{keywordflow}{if} (properties == \textcolor{keyword}{null})}
+\DoxyCodeLine{01644                 \{}
+\DoxyCodeLine{01645                     properties = \textcolor{keyword}{new} Dictionary<object, object>();}
+\DoxyCodeLine{01646                 \}}
+\DoxyCodeLine{01647                 properties[ChannelWellKnownProperties.MaxSubscribers] = maxSubscribers;}
+\DoxyCodeLine{01648             \}}
+\DoxyCodeLine{01649 \textcolor{preprocessor}{            \#if CHAT\_EXTENDED}}
+\DoxyCodeLine{01650             \textcolor{keywordflow}{if} (creationOptions.CustomProperties != \textcolor{keyword}{null} \&\& creationOptions.CustomProperties.Count > 0)}
+\DoxyCodeLine{01651             \{}
+\DoxyCodeLine{01652                 \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} creationOptions.CustomProperties)}
+\DoxyCodeLine{01653                 \{}
+\DoxyCodeLine{01654                     properties.Add(pair.Key, pair.Value);}
+\DoxyCodeLine{01655                 \}}
+\DoxyCodeLine{01656             \}}
+\DoxyCodeLine{01657 \textcolor{preprocessor}{            \#endif}}
+\DoxyCodeLine{01658             Dictionary<byte, object> opParameters = \textcolor{keyword}{new} Dictionary<byte, object> \{ \{ ChatParameterCode.Channels, \textcolor{keyword}{new}[] \{ channel \} \} \};}
+\DoxyCodeLine{01659             \textcolor{keywordflow}{if} (messagesFromHistory != 0)}
+\DoxyCodeLine{01660             \{}
+\DoxyCodeLine{01661                 opParameters.Add(ChatParameterCode.HistoryLength, messagesFromHistory);}
+\DoxyCodeLine{01662             \}}
+\DoxyCodeLine{01663             \textcolor{keywordflow}{if} (lastMsgId > 0)}
+\DoxyCodeLine{01664             \{}
+\DoxyCodeLine{01665                 opParameters.Add(ChatParameterCode.MsgIds, \textcolor{keyword}{new}[] \{ lastMsgId \});}
+\DoxyCodeLine{01666             \}}
+\DoxyCodeLine{01667             \textcolor{keywordflow}{if} (properties != \textcolor{keyword}{null} \&\& properties.Count > 0)}
+\DoxyCodeLine{01668             \{}
+\DoxyCodeLine{01669                 opParameters.Add(ChatParameterCode.Properties, properties);}
+\DoxyCodeLine{01670             \}}
+\DoxyCodeLine{01671 }
+\DoxyCodeLine{01672             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.Subscribe, opParameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01673         \}}
+\DoxyCodeLine{01674 }
+\DoxyCodeLine{01675 \textcolor{preprocessor}{        \#if CHAT\_EXTENDED}}
+\DoxyCodeLine{01676 }
+\DoxyCodeLine{01677         \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} SetChannelProperties(\textcolor{keywordtype}{string} channelName, Dictionary<object, object> channelProperties, Dictionary<object, object> expectedProperties = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} httpForward = \textcolor{keyword}{false})}
+\DoxyCodeLine{01678         \{}
+\DoxyCodeLine{01679             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{01680             \{}
+\DoxyCodeLine{01681                 this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}SetChannelProperties called while not connected to front end server."{}});}
+\DoxyCodeLine{01682                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01683             \}}
+\DoxyCodeLine{01684 }
+\DoxyCodeLine{01685             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(channelName) || channelProperties == \textcolor{keyword}{null} || channelProperties.Count == 0)}
+\DoxyCodeLine{01686             \{}
+\DoxyCodeLine{01687                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}SetChannelProperties parameters must be non-\/null and not empty."{}});}
+\DoxyCodeLine{01688                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01689             \}}
+\DoxyCodeLine{01690             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{01691                                                   \{}
+\DoxyCodeLine{01692                                                       \{ ChatParameterCode.Channel, channelName \},}
+\DoxyCodeLine{01693                                                       \{ ChatParameterCode.Properties, channelProperties \},}
+\DoxyCodeLine{01694                                                       \{ ChatParameterCode.Broadcast, \textcolor{keyword}{true} \}}
+\DoxyCodeLine{01695                                                   \};}
+\DoxyCodeLine{01696             \textcolor{keywordflow}{if} (httpForward)}
+\DoxyCodeLine{01697             \{}
+\DoxyCodeLine{01698                 parameters.Add(ChatParameterCode.WebFlags, HttpForwardWebFlag);}
+\DoxyCodeLine{01699             \}}
+\DoxyCodeLine{01700             \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count > 0)}
+\DoxyCodeLine{01701             \{}
+\DoxyCodeLine{01702                 parameters.Add(ChatParameterCode.ExpectedValues, expectedProperties);}
+\DoxyCodeLine{01703             \}}
+\DoxyCodeLine{01704             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.SetProperties, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01705         \}}
+\DoxyCodeLine{01706 }
+\DoxyCodeLine{01707         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SetCustomChannelProperties(\textcolor{keywordtype}{string} channelName, Dictionary<string, object> channelProperties, Dictionary<string, object> expectedProperties = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} httpForward = \textcolor{keyword}{false})}
+\DoxyCodeLine{01708         \{}
+\DoxyCodeLine{01709             \textcolor{keywordflow}{if} (channelProperties != \textcolor{keyword}{null} \&\& channelProperties.Count > 0)}
+\DoxyCodeLine{01710             \{}
+\DoxyCodeLine{01711                 Dictionary<object, object> properties = \textcolor{keyword}{new} Dictionary<object, object>(channelProperties.Count);}
+\DoxyCodeLine{01712                 \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} channelProperties)}
+\DoxyCodeLine{01713                 \{}
+\DoxyCodeLine{01714                     properties.Add(pair.Key, pair.Value);}
+\DoxyCodeLine{01715                 \}}
+\DoxyCodeLine{01716                 Dictionary<object, object> expected = \textcolor{keyword}{null};}
+\DoxyCodeLine{01717                 \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count > 0)}
+\DoxyCodeLine{01718                 \{}
+\DoxyCodeLine{01719                     expected = \textcolor{keyword}{new} Dictionary<object, object>(expectedProperties.Count);}
+\DoxyCodeLine{01720                     \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} expectedProperties)}
+\DoxyCodeLine{01721                     \{}
+\DoxyCodeLine{01722                         expected.Add(pair.Key, pair.Value);}
+\DoxyCodeLine{01723                     \}}
+\DoxyCodeLine{01724                 \}}
+\DoxyCodeLine{01725                 \textcolor{keywordflow}{return} this.SetChannelProperties(channelName, properties, expected, httpForward);}
+\DoxyCodeLine{01726             \}}
+\DoxyCodeLine{01727             \textcolor{keywordflow}{return} this.SetChannelProperties(channelName, \textcolor{keyword}{null});}
+\DoxyCodeLine{01728         \}}
+\DoxyCodeLine{01729 }
+\DoxyCodeLine{01730         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} SetCustomUserProperties(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{string} userId, Dictionary<string, object> userProperties, Dictionary<string, object> expectedProperties = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} httpForward = \textcolor{keyword}{false})}
+\DoxyCodeLine{01731         \{}
+\DoxyCodeLine{01732             \textcolor{keywordflow}{if} (userProperties != \textcolor{keyword}{null} \&\& userProperties.Count > 0)}
+\DoxyCodeLine{01733             \{}
+\DoxyCodeLine{01734                 Dictionary<object, object> properties = \textcolor{keyword}{new} Dictionary<object, object>(userProperties.Count);}
+\DoxyCodeLine{01735                 \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} userProperties)}
+\DoxyCodeLine{01736                 \{}
+\DoxyCodeLine{01737                     properties.Add(pair.Key, pair.Value);}
+\DoxyCodeLine{01738                 \}}
+\DoxyCodeLine{01739                 Dictionary<object, object> expected = \textcolor{keyword}{null};}
+\DoxyCodeLine{01740                 \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count > 0)}
+\DoxyCodeLine{01741                 \{}
+\DoxyCodeLine{01742                     expected = \textcolor{keyword}{new} Dictionary<object, object>(expectedProperties.Count);}
+\DoxyCodeLine{01743                     \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} expectedProperties)}
+\DoxyCodeLine{01744                     \{}
+\DoxyCodeLine{01745                         expected.Add(pair.Key, pair.Value);}
+\DoxyCodeLine{01746                     \}}
+\DoxyCodeLine{01747                 \}}
+\DoxyCodeLine{01748                 \textcolor{keywordflow}{return} this.SetUserProperties(channelName, userId, properties, expected, httpForward);}
+\DoxyCodeLine{01749             \}}
+\DoxyCodeLine{01750             \textcolor{keywordflow}{return} this.SetUserProperties(channelName, userId, \textcolor{keyword}{null});}
+\DoxyCodeLine{01751         \}}
+\DoxyCodeLine{01752 }
+\DoxyCodeLine{01753         \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} SetUserProperties(\textcolor{keywordtype}{string} channelName, \textcolor{keywordtype}{string} userId, Dictionary<object, object> channelProperties, Dictionary<object, object> expectedProperties = \textcolor{keyword}{null}, \textcolor{keywordtype}{bool} httpForward = \textcolor{keyword}{false})}
+\DoxyCodeLine{01754         \{}
+\DoxyCodeLine{01755             \textcolor{keywordflow}{if} (!this.CanChat)}
+\DoxyCodeLine{01756             \{}
+\DoxyCodeLine{01757                 this.listener.DebugReturn(DebugLevel.ERROR, \textcolor{stringliteral}{"{}SetUserProperties called while not connected to front end server."{}});}
+\DoxyCodeLine{01758                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01759             \}}
+\DoxyCodeLine{01760             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(channelName))}
+\DoxyCodeLine{01761             \{}
+\DoxyCodeLine{01762                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}SetUserProperties \(\backslash\)"{}channelName\(\backslash\)"{} parameter must be non-\/null and not empty."{}});}
+\DoxyCodeLine{01763                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01764             \}}
+\DoxyCodeLine{01765             \textcolor{keywordflow}{if} (channelProperties == \textcolor{keyword}{null} || channelProperties.Count == 0)}
+\DoxyCodeLine{01766             \{}
+\DoxyCodeLine{01767                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}SetUserProperties \(\backslash\)"{}channelProperties\(\backslash\)"{} parameter must be non-\/null and not empty."{}});}
+\DoxyCodeLine{01768                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01769             \}}
+\DoxyCodeLine{01770             \textcolor{keywordflow}{if} (\textcolor{keywordtype}{string}.IsNullOrEmpty(userId))}
+\DoxyCodeLine{01771             \{}
+\DoxyCodeLine{01772                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{stringliteral}{"{}SetUserProperties \(\backslash\)"{}userId\(\backslash\)"{} parameter must be non-\/null and not empty."{}});}
+\DoxyCodeLine{01773                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01774             \}}
+\DoxyCodeLine{01775             Dictionary<byte, object> parameters = \textcolor{keyword}{new} Dictionary<byte, object>}
+\DoxyCodeLine{01776                                                   \{}
+\DoxyCodeLine{01777                                                       \{ ChatParameterCode.Channel, channelName \},}
+\DoxyCodeLine{01778                                                       \{ ChatParameterCode.Properties, channelProperties \},}
+\DoxyCodeLine{01779                                                       \{ ChatParameterCode.UserId, userId \},}
+\DoxyCodeLine{01780                                                       \{ ChatParameterCode.Broadcast, \textcolor{keyword}{true} \}}
+\DoxyCodeLine{01781                                                   \};}
+\DoxyCodeLine{01782             \textcolor{keywordflow}{if} (httpForward)}
+\DoxyCodeLine{01783             \{}
+\DoxyCodeLine{01784                 parameters.Add(ChatParameterCode.WebFlags, HttpForwardWebFlag);}
+\DoxyCodeLine{01785             \}}
+\DoxyCodeLine{01786             \textcolor{keywordflow}{if} (expectedProperties != \textcolor{keyword}{null} \&\& expectedProperties.Count > 0)}
+\DoxyCodeLine{01787             \{}
+\DoxyCodeLine{01788                 parameters.Add(ChatParameterCode.ExpectedValues, expectedProperties);}
+\DoxyCodeLine{01789             \}}
+\DoxyCodeLine{01790             \textcolor{keywordflow}{return} this.chatPeer.SendOperation(ChatOperationCode.SetProperties, parameters, SendOptions.SendReliable);}
+\DoxyCodeLine{01791         \}}
+\DoxyCodeLine{01792 }
+\DoxyCodeLine{01793         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandlePropertiesChanged(EventData eventData)}
+\DoxyCodeLine{01794         \{}
+\DoxyCodeLine{01795             \textcolor{keywordtype}{string} channelName = eventData.Parameters[ChatParameterCode.Channel] as string;}
+\DoxyCodeLine{01796             ChatChannel channel;}
+\DoxyCodeLine{01797             \textcolor{keywordflow}{if} (!this.PublicChannels.TryGetValue(channelName, out channel))}
+\DoxyCodeLine{01798             \{}
+\DoxyCodeLine{01799                 this.listener.DebugReturn(DebugLevel.WARNING, \textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}Channel \{0\} for incoming ChannelPropertiesUpdated event not found."{}}, channelName));}
+\DoxyCodeLine{01800                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01801             \}}
+\DoxyCodeLine{01802             \textcolor{keywordtype}{string} senderId = eventData.Parameters[ChatParameterCode.Sender] as string;}
+\DoxyCodeLine{01803             Dictionary<object, object> changedProperties = eventData.Parameters[ChatParameterCode.Properties] as Dictionary<object, object>;}
+\DoxyCodeLine{01804             \textcolor{keywordtype}{object} temp;}
+\DoxyCodeLine{01805             \textcolor{keywordflow}{if} (eventData.Parameters.TryGetValue(ChatParameterCode.UserId, out temp))}
+\DoxyCodeLine{01806             \{}
+\DoxyCodeLine{01807                 \textcolor{keywordtype}{string} targetUserId = temp as string;}
+\DoxyCodeLine{01808                 channel.ReadUserProperties(targetUserId, changedProperties);}
+\DoxyCodeLine{01809                 this.listener.OnUserPropertiesChanged(channelName, targetUserId, senderId, changedProperties);}
+\DoxyCodeLine{01810             \}}
+\DoxyCodeLine{01811             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01812             \{}
+\DoxyCodeLine{01813                 channel.ReadChannelProperties(changedProperties);}
+\DoxyCodeLine{01814                 this.listener.OnChannelPropertiesChanged(channelName, senderId, changedProperties);}
+\DoxyCodeLine{01815             \}}
+\DoxyCodeLine{01816         \}}
+\DoxyCodeLine{01817 }
+\DoxyCodeLine{01818         \textcolor{keyword}{private} \textcolor{keywordtype}{void} HandleErrorInfoEvent(EventData eventData)}
+\DoxyCodeLine{01819         \{}
+\DoxyCodeLine{01820             \textcolor{keywordtype}{string} channel = eventData.Parameters[ChatParameterCode.Channel] as string;}
+\DoxyCodeLine{01821             \textcolor{keywordtype}{string} msg = eventData.Parameters[ChatParameterCode.DebugMessage] as string;}
+\DoxyCodeLine{01822             \textcolor{keywordtype}{object} data = eventData.Parameters[ChatParameterCode.DebugData];}
+\DoxyCodeLine{01823             this.listener.OnErrorInfo(channel, msg, data);}
+\DoxyCodeLine{01824         \}}
+\DoxyCodeLine{01825 }
+\DoxyCodeLine{01826 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{01827     \}}
+\DoxyCodeLine{01828 \}}
+
+\end{DoxyCode}

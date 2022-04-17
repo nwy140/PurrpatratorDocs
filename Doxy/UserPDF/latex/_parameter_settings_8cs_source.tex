@@ -1,0 +1,133 @@
+\doxysection{Parameter\+Settings.\+cs}
+\label{_parameter_settings_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncAnimator/Classes/ParameterSettings.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Components/SyncAnimator/Classes/ParameterSettings.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{00009 \textcolor{keyword}{using} Photon.Compression;}
+\DoxyCodeLine{00010 \textcolor{keyword}{using} Photon.Pun.UtilityScripts;}
+\DoxyCodeLine{00011 \textcolor{keyword}{using} Photon.Utilities;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013 \textcolor{keyword}{namespace }Photon.Pun.Simple.Internal}
+\DoxyCodeLine{00014 \{}
+\DoxyCodeLine{00018     [System.Serializable]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{class }ParameterSettings}
+\DoxyCodeLine{00020     \{}
+\DoxyCodeLine{00021         \textcolor{comment}{// store paramtype so we can check in editor to see if name got reused for a different type}}
+\DoxyCodeLine{00022         \textcolor{keyword}{public} \textcolor{keywordtype}{int} hash;}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} AnimatorControllerParameterType paramType;}
+\DoxyCodeLine{00024         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} include;}
+\DoxyCodeLine{00025         \textcolor{keyword}{public} ParameterInterpolation interpolate;}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} ParameterExtrapolation extrapolate;}
+\DoxyCodeLine{00027         \textcolor{keyword}{public} SmartVar defaultValue;}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00030         \textcolor{keyword}{public} LiteFloatCrusher fcrusher;}
+\DoxyCodeLine{00031         \textcolor{keyword}{public} LiteIntCrusher icrusher;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{comment}{// Constructor}}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} ParameterSettings(\textcolor{keywordtype}{int} hash, ParameterDefaults defs, ref \textcolor{keywordtype}{int} paramCount, AnimatorControllerParameterType paramType)}
+\DoxyCodeLine{00035         \{}
+\DoxyCodeLine{00036             this.hash = hash;}
+\DoxyCodeLine{00037             this.paramType = paramType;}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039             \textcolor{keywordflow}{switch} (paramType)}
+\DoxyCodeLine{00040             \{}
+\DoxyCodeLine{00041                 \textcolor{keywordflow}{case} AnimatorControllerParameterType.Float:}
+\DoxyCodeLine{00042                     include = defs.includeFloats;}
+\DoxyCodeLine{00043                     interpolate = defs.interpolateFloats;}
+\DoxyCodeLine{00044                     extrapolate = defs.extrapolateFloats;}
+\DoxyCodeLine{00045                     defaultValue = (float)defs.defaultFloat;}
+\DoxyCodeLine{00046                     fcrusher = \textcolor{keyword}{new} LiteFloatCrusher(LiteFloatCompressType.Half16, 0, 1, \textcolor{keyword}{true});}
+\DoxyCodeLine{00047                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00049                 \textcolor{keywordflow}{case} AnimatorControllerParameterType.Int:}
+\DoxyCodeLine{00050                     include = defs.includeInts;}
+\DoxyCodeLine{00051                     interpolate = defs.interpolateInts;}
+\DoxyCodeLine{00052                     extrapolate = defs.extrapolateInts;}
+\DoxyCodeLine{00053                     defaultValue = (int)defs.defaultInt;}
+\DoxyCodeLine{00054                     icrusher = \textcolor{keyword}{new} LiteIntCrusher();}
+\DoxyCodeLine{00055                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00056 }
+\DoxyCodeLine{00057                 \textcolor{keywordflow}{case} AnimatorControllerParameterType.Bool:}
+\DoxyCodeLine{00058                     include = defs.includeBools;}
+\DoxyCodeLine{00059                     interpolate = ParameterInterpolation.Hold;}
+\DoxyCodeLine{00060                     extrapolate = ParameterExtrapolation.Hold;}
+\DoxyCodeLine{00061                     defaultValue = (bool)defs.defaultBool;}
+\DoxyCodeLine{00062                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00064                 \textcolor{keywordflow}{case} AnimatorControllerParameterType.Trigger:}
+\DoxyCodeLine{00065                     include = defs.includeTriggers;}
+\DoxyCodeLine{00066                     interpolate = ParameterInterpolation.Default;}
+\DoxyCodeLine{00067                     extrapolate = ParameterExtrapolation.Default;}
+\DoxyCodeLine{00068                     defaultValue = (\textcolor{keywordtype}{bool})defs.defaultTrigger;}
+\DoxyCodeLine{00069                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00072                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00073             \}}
+\DoxyCodeLine{00074         \}}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<int> rebuiltHashes = \textcolor{keyword}{new} List<int>();}
+\DoxyCodeLine{00077         \textcolor{keyword}{private} \textcolor{keyword}{static} readonly List<ParameterSettings> rebuiltSettings = \textcolor{keyword}{new} List<ParameterSettings>();}
+\DoxyCodeLine{00078 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00079         \textcolor{keyword}{private} \textcolor{keyword}{static} List<string> reusableNameList = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00080 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00081         \textcolor{keyword}{public} \textcolor{keyword}{static} List<string> RebuildParamSettings(Animator a, ref ParameterSettings[] paraSettings, ref \textcolor{keywordtype}{int} paramCount, ParameterDefaults defs)}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00085             var ac = a.GetController();}
+\DoxyCodeLine{00086             var parms = ac.parameters;}
+\DoxyCodeLine{00087 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00088             var parms = a.parameters;}
+\DoxyCodeLine{00089 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00090             rebuiltHashes.Clear();}
+\DoxyCodeLine{00091             rebuiltSettings.Clear();}
+\DoxyCodeLine{00092 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00093             reusableNameList.Clear();}
+\DoxyCodeLine{00094 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095             \textcolor{keywordtype}{bool} hasChanged = \textcolor{keyword}{false};}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             paramCount = parms.Length;}
+\DoxyCodeLine{00098             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < paramCount; ++i)}
+\DoxyCodeLine{00099             \{}
+\DoxyCodeLine{00100                 var p = parms[i];}
+\DoxyCodeLine{00101 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00102                 reusableNameList.Add(p.name);}
+\DoxyCodeLine{00103 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00104                 var hash = p.nameHash;}
+\DoxyCodeLine{00105                 \textcolor{keywordtype}{int} pos = GetHashIndex(paraSettings, hash);}
+\DoxyCodeLine{00106                 \textcolor{keywordflow}{if} (pos != i)}
+\DoxyCodeLine{00107                     hasChanged = \textcolor{keyword}{true};}
+\DoxyCodeLine{00109                 rebuiltHashes.Add(hash);}
+\DoxyCodeLine{00110                 rebuiltSettings.Add((pos == -\/1) ? \textcolor{keyword}{new} ParameterSettings(hash, defs, ref paramCount, p.type) : paraSettings[pos]);}
+\DoxyCodeLine{00111             \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113             \textcolor{keywordflow}{if} (hasChanged)}
+\DoxyCodeLine{00114                 paraSettings = rebuiltSettings.ToArray();}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00117             \textcolor{keywordflow}{return} reusableNameList;}
+\DoxyCodeLine{00118 \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00120 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00121         \}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123         \textcolor{keyword}{private} \textcolor{keyword}{static} \textcolor{keywordtype}{int} GetHashIndex(ParameterSettings[] ps, \textcolor{keywordtype}{int} lookfor)}
+\DoxyCodeLine{00124         \{}
+\DoxyCodeLine{00125             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0, cnt = ps.Length; i < cnt; ++i)}
+\DoxyCodeLine{00126                 \textcolor{keywordflow}{if} (ps[i].hash == lookfor)}
+\DoxyCodeLine{00127                     \textcolor{keywordflow}{return} i;}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{return} -\/1;}
+\DoxyCodeLine{00129         \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131     \}}
+\DoxyCodeLine{00132 \}}
+
+\end{DoxyCode}

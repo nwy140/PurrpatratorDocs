@@ -1,0 +1,378 @@
+\doxysection{Lobby\+Main\+Panel.\+cs}
+\label{_lobby_main_panel_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Lobby/LobbyMainPanel.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoAsteroids/Scripts/Lobby/LobbyMainPanel.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} ExitGames.Client.Photon;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} Photon.Realtime;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00005 \textcolor{keyword}{using} UnityEngine.UI;}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{keyword}{namespace }Photon.Pun.Demo.Asteroids}
+\DoxyCodeLine{00008 \{}
+\DoxyCodeLine{00009     \textcolor{keyword}{public} \textcolor{keyword}{class }LobbyMainPanel : MonoBehaviourPunCallbacks}
+\DoxyCodeLine{00010     \{}
+\DoxyCodeLine{00011         [Header(\textcolor{stringliteral}{"{}Login Panel"{}})]}
+\DoxyCodeLine{00012         \textcolor{keyword}{public} GameObject LoginPanel;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014         \textcolor{keyword}{public} InputField PlayerNameInput;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016         [Header(\textcolor{stringliteral}{"{}Selection Panel"{}})]}
+\DoxyCodeLine{00017         \textcolor{keyword}{public} GameObject SelectionPanel;}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019         [Header(\textcolor{stringliteral}{"{}Create Room Panel"{}})]}
+\DoxyCodeLine{00020         \textcolor{keyword}{public} GameObject CreateRoomPanel;}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022         \textcolor{keyword}{public} InputField RoomNameInputField;}
+\DoxyCodeLine{00023         \textcolor{keyword}{public} InputField MaxPlayersInputField;}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         [Header(\textcolor{stringliteral}{"{}Join Random Room Panel"{}})]}
+\DoxyCodeLine{00026         \textcolor{keyword}{public} GameObject JoinRandomRoomPanel;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         [Header(\textcolor{stringliteral}{"{}Room List Panel"{}})]}
+\DoxyCodeLine{00029         \textcolor{keyword}{public} GameObject RoomListPanel;}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \textcolor{keyword}{public} GameObject RoomListContent;}
+\DoxyCodeLine{00032         \textcolor{keyword}{public} GameObject RoomListEntryPrefab;}
+\DoxyCodeLine{00033 }
+\DoxyCodeLine{00034         [Header(\textcolor{stringliteral}{"{}Inside Room Panel"{}})]}
+\DoxyCodeLine{00035         \textcolor{keyword}{public} GameObject InsideRoomPanel;}
+\DoxyCodeLine{00036 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} Button StartGameButton;}
+\DoxyCodeLine{00038         \textcolor{keyword}{public} GameObject PlayerListEntryPrefab;}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{keyword}{private} Dictionary<string, RoomInfo> cachedRoomList;}
+\DoxyCodeLine{00041         \textcolor{keyword}{private} Dictionary<string, GameObject> roomListEntries;}
+\DoxyCodeLine{00042         \textcolor{keyword}{private} Dictionary<int, GameObject> playerListEntries;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{00044 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             PhotonNetwork.AutomaticallySyncScene = \textcolor{keyword}{true};}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050             cachedRoomList = \textcolor{keyword}{new} Dictionary<string, RoomInfo>();}
+\DoxyCodeLine{00051             roomListEntries = \textcolor{keyword}{new} Dictionary<string, GameObject>();}
+\DoxyCodeLine{00052             }
+\DoxyCodeLine{00053             PlayerNameInput.text = \textcolor{stringliteral}{"{}Player "{}} + Random.Range(1000, 10000);}
+\DoxyCodeLine{00054         \}}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00057 }
+\DoxyCodeLine{00058 \textcolor{preprocessor}{        \#region PUN CALLBACKS}}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnConnectedToMaster()}
+\DoxyCodeLine{00061         \{}
+\DoxyCodeLine{00062             this.SetActivePanel(SelectionPanel.name);}
+\DoxyCodeLine{00063         \}}
+\DoxyCodeLine{00064 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnRoomListUpdate(List<RoomInfo> roomList)}
+\DoxyCodeLine{00066         \{}
+\DoxyCodeLine{00067             ClearRoomListView();}
+\DoxyCodeLine{00068 }
+\DoxyCodeLine{00069             UpdateCachedRoomList(roomList);}
+\DoxyCodeLine{00070             UpdateRoomListView();}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072 }
+\DoxyCodeLine{00073         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedLobby()}
+\DoxyCodeLine{00074         \{}
+\DoxyCodeLine{00075             \textcolor{comment}{// whenever this joins a new lobby, clear any previous room lists}}
+\DoxyCodeLine{00076             cachedRoomList.Clear();}
+\DoxyCodeLine{00077             ClearRoomListView();}
+\DoxyCodeLine{00078         \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         \textcolor{comment}{// note: when a client joins / creates a room, OnLeftLobby does not get called, even if the client was in a lobby before}}
+\DoxyCodeLine{00081         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftLobby()}
+\DoxyCodeLine{00082         \{}
+\DoxyCodeLine{00083             cachedRoomList.Clear();}
+\DoxyCodeLine{00084             ClearRoomListView();}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnCreateRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00088         \{}
+\DoxyCodeLine{00089             SetActivePanel(SelectionPanel.name);}
+\DoxyCodeLine{00090         \}}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRoomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00093         \{}
+\DoxyCodeLine{00094             SetActivePanel(SelectionPanel.name);}
+\DoxyCodeLine{00095         \}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinRandomFailed(\textcolor{keywordtype}{short} returnCode, \textcolor{keywordtype}{string} message)}
+\DoxyCodeLine{00098         \{}
+\DoxyCodeLine{00099             \textcolor{keywordtype}{string} roomName = \textcolor{stringliteral}{"{}Room "{}} + Random.Range(1000, 10000);}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{00101             RoomOptions options = \textcolor{keyword}{new} RoomOptions \{MaxPlayers = 8\};}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             PhotonNetwork.CreateRoom(roomName, options, \textcolor{keyword}{null});}
+\DoxyCodeLine{00104         \}}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00107         \{}
+\DoxyCodeLine{00108             \textcolor{comment}{// joining (or entering) a room invalidates any cached lobby room list (even if LeaveLobby was not called due to just joining a room)}}
+\DoxyCodeLine{00109             cachedRoomList.Clear();}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111 }
+\DoxyCodeLine{00112             SetActivePanel(InsideRoomPanel.name);}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114             \textcolor{keywordflow}{if} (playerListEntries == \textcolor{keyword}{null})}
+\DoxyCodeLine{00115             \{}
+\DoxyCodeLine{00116                 playerListEntries = \textcolor{keyword}{new} Dictionary<int, GameObject>();}
+\DoxyCodeLine{00117             \}}
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{00119             \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 GameObject entry = Instantiate(PlayerListEntryPrefab);}
+\DoxyCodeLine{00122                 entry.transform.SetParent(InsideRoomPanel.transform);}
+\DoxyCodeLine{00123                 entry.transform.localScale = Vector3.one;}
+\DoxyCodeLine{00124                 entry.GetComponent<PlayerListEntry>().Initialize(p.ActorNumber, p.NickName);}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126                 \textcolor{keywordtype}{object} isPlayerReady;}
+\DoxyCodeLine{00127                 \textcolor{keywordflow}{if} (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER\_READY, out isPlayerReady))}
+\DoxyCodeLine{00128                 \{}
+\DoxyCodeLine{00129                     entry.GetComponent<PlayerListEntry>().SetPlayerReady((\textcolor{keywordtype}{bool}) isPlayerReady);}
+\DoxyCodeLine{00130                 \}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132                 playerListEntries.Add(p.ActorNumber, entry);}
+\DoxyCodeLine{00133             \}}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135             StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137             Hashtable props = \textcolor{keyword}{new} Hashtable}
+\DoxyCodeLine{00138             \{}
+\DoxyCodeLine{00139                 \{AsteroidsGame.PLAYER\_LOADED\_LEVEL, \textcolor{keyword}{false}\}}
+\DoxyCodeLine{00140             \};}
+\DoxyCodeLine{00141             PhotonNetwork.LocalPlayer.SetCustomProperties(props);}
+\DoxyCodeLine{00142         \}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00144         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnLeftRoom()}
+\DoxyCodeLine{00145         \{}
+\DoxyCodeLine{00146             SetActivePanel(SelectionPanel.name);}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148             \textcolor{keywordflow}{foreach} (GameObject entry \textcolor{keywordflow}{in} playerListEntries.Values)}
+\DoxyCodeLine{00149             \{}
+\DoxyCodeLine{00150                 Destroy(entry.gameObject);}
+\DoxyCodeLine{00151             \}}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153             playerListEntries.Clear();}
+\DoxyCodeLine{00154             playerListEntries = \textcolor{keyword}{null};}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerEnteredRoom(Player newPlayer)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             GameObject entry = Instantiate(PlayerListEntryPrefab);}
+\DoxyCodeLine{00160             entry.transform.SetParent(InsideRoomPanel.transform);}
+\DoxyCodeLine{00161             entry.transform.localScale = Vector3.one;}
+\DoxyCodeLine{00162             entry.GetComponent<PlayerListEntry>().Initialize(newPlayer.ActorNumber, newPlayer.NickName);}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164             playerListEntries.Add(newPlayer.ActorNumber, entry);}
+\DoxyCodeLine{00165 }
+\DoxyCodeLine{00166             StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerLeftRoom(Player otherPlayer)}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171             Destroy(playerListEntries[otherPlayer.ActorNumber].gameObject);}
+\DoxyCodeLine{00172             playerListEntries.Remove(otherPlayer.ActorNumber);}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174             StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00175         \}}
+\DoxyCodeLine{00176 }
+\DoxyCodeLine{00177         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnMasterClientSwitched(Player newMasterClient)}
+\DoxyCodeLine{00178         \{}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (PhotonNetwork.LocalPlayer.ActorNumber == newMasterClient.ActorNumber)}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00182             \}}
+\DoxyCodeLine{00183         \}}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{keyword}{public} \textcolor{keyword}{override} \textcolor{keywordtype}{void} OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)}
+\DoxyCodeLine{00186         \{}
+\DoxyCodeLine{00187             \textcolor{keywordflow}{if} (playerListEntries == \textcolor{keyword}{null})}
+\DoxyCodeLine{00188             \{}
+\DoxyCodeLine{00189                 playerListEntries = \textcolor{keyword}{new} Dictionary<int, GameObject>();}
+\DoxyCodeLine{00190             \}}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             GameObject entry;}
+\DoxyCodeLine{00193             \textcolor{keywordflow}{if} (playerListEntries.TryGetValue(targetPlayer.ActorNumber, out entry))}
+\DoxyCodeLine{00194             \{}
+\DoxyCodeLine{00195                 \textcolor{keywordtype}{object} isPlayerReady;}
+\DoxyCodeLine{00196                 \textcolor{keywordflow}{if} (changedProps.TryGetValue(AsteroidsGame.PLAYER\_READY, out isPlayerReady))}
+\DoxyCodeLine{00197                 \{}
+\DoxyCodeLine{00198                     entry.GetComponent<PlayerListEntry>().SetPlayerReady((\textcolor{keywordtype}{bool}) isPlayerReady);}
+\DoxyCodeLine{00199                 \}}
+\DoxyCodeLine{00200             \}}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202             StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00203         \}}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00206 }
+\DoxyCodeLine{00207 \textcolor{preprocessor}{        \#region UI CALLBACKS}}
+\DoxyCodeLine{00208 }
+\DoxyCodeLine{00209         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnBackButtonClicked()}
+\DoxyCodeLine{00210         \{}
+\DoxyCodeLine{00211             \textcolor{keywordflow}{if} (PhotonNetwork.InLobby)}
+\DoxyCodeLine{00212             \{}
+\DoxyCodeLine{00213                 PhotonNetwork.LeaveLobby();}
+\DoxyCodeLine{00214             \}}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216             SetActivePanel(SelectionPanel.name);}
+\DoxyCodeLine{00217         \}}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnCreateRoomButtonClicked()}
+\DoxyCodeLine{00220         \{}
+\DoxyCodeLine{00221             \textcolor{keywordtype}{string} roomName = RoomNameInputField.text;}
+\DoxyCodeLine{00222             roomName = (roomName.Equals(\textcolor{keywordtype}{string}.Empty)) ? \textcolor{stringliteral}{"{}Room "{}} + Random.Range(1000, 10000) : roomName;}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224             \textcolor{keywordtype}{byte} maxPlayers;}
+\DoxyCodeLine{00225             \textcolor{keywordtype}{byte}.TryParse(MaxPlayersInputField.text, out maxPlayers);}
+\DoxyCodeLine{00226             maxPlayers = (byte) Mathf.Clamp(maxPlayers, 2, 8);}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228             RoomOptions options = \textcolor{keyword}{new} RoomOptions \{MaxPlayers = maxPlayers, PlayerTtl = 10000 \};}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230             PhotonNetwork.CreateRoom(roomName, options, \textcolor{keyword}{null});}
+\DoxyCodeLine{00231         \}}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnJoinRandomRoomButtonClicked()}
+\DoxyCodeLine{00234         \{}
+\DoxyCodeLine{00235             SetActivePanel(JoinRandomRoomPanel.name);}
+\DoxyCodeLine{00236 }
+\DoxyCodeLine{00237             PhotonNetwork.JoinRandomRoom();}
+\DoxyCodeLine{00238         \}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLeaveGameButtonClicked()}
+\DoxyCodeLine{00241         \{}
+\DoxyCodeLine{00242             PhotonNetwork.LeaveRoom();}
+\DoxyCodeLine{00243         \}}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnLoginButtonClicked()}
+\DoxyCodeLine{00246         \{}
+\DoxyCodeLine{00247             \textcolor{keywordtype}{string} playerName = PlayerNameInput.text;}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249             \textcolor{keywordflow}{if} (!playerName.Equals(\textcolor{stringliteral}{"{}"{}}))}
+\DoxyCodeLine{00250             \{}
+\DoxyCodeLine{00251                 PhotonNetwork.LocalPlayer.NickName = playerName;}
+\DoxyCodeLine{00252                 PhotonNetwork.ConnectUsingSettings();}
+\DoxyCodeLine{00253             \}}
+\DoxyCodeLine{00254             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00255             \{}
+\DoxyCodeLine{00256                 Debug.LogError(\textcolor{stringliteral}{"{}Player Name is invalid."{}});}
+\DoxyCodeLine{00257             \}}
+\DoxyCodeLine{00258         \}}
+\DoxyCodeLine{00259 }
+\DoxyCodeLine{00260         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnRoomListButtonClicked()}
+\DoxyCodeLine{00261         \{}
+\DoxyCodeLine{00262             \textcolor{keywordflow}{if} (!PhotonNetwork.InLobby)}
+\DoxyCodeLine{00263             \{}
+\DoxyCodeLine{00264                 PhotonNetwork.JoinLobby();}
+\DoxyCodeLine{00265             \}}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             SetActivePanel(RoomListPanel.name);}
+\DoxyCodeLine{00268         \}}
+\DoxyCodeLine{00269 }
+\DoxyCodeLine{00270         \textcolor{keyword}{public} \textcolor{keywordtype}{void} OnStartGameButtonClicked()}
+\DoxyCodeLine{00271         \{}
+\DoxyCodeLine{00272             PhotonNetwork.CurrentRoom.IsOpen = \textcolor{keyword}{false};}
+\DoxyCodeLine{00273             PhotonNetwork.CurrentRoom.IsVisible = \textcolor{keyword}{false};}
+\DoxyCodeLine{00274 }
+\DoxyCodeLine{00275             PhotonNetwork.LoadLevel(\textcolor{stringliteral}{"{}DemoAsteroids-\/GameScene"{}});}
+\DoxyCodeLine{00276         \}}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keyword}{private} \textcolor{keywordtype}{bool} CheckPlayersReady()}
+\DoxyCodeLine{00281         \{}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{if} (!PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00283             \{}
+\DoxyCodeLine{00284                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00285             \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287             \textcolor{keywordflow}{foreach} (Player p \textcolor{keywordflow}{in} PhotonNetwork.PlayerList)}
+\DoxyCodeLine{00288             \{}
+\DoxyCodeLine{00289                 \textcolor{keywordtype}{object} isPlayerReady;}
+\DoxyCodeLine{00290                 \textcolor{keywordflow}{if} (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER\_READY, out isPlayerReady))}
+\DoxyCodeLine{00291                 \{}
+\DoxyCodeLine{00292                     \textcolor{keywordflow}{if} (!(\textcolor{keywordtype}{bool}) isPlayerReady)}
+\DoxyCodeLine{00293                     \{}
+\DoxyCodeLine{00294                         \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00295                     \}}
+\DoxyCodeLine{00296                 \}}
+\DoxyCodeLine{00297                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00298                 \{}
+\DoxyCodeLine{00299                     \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00300                 \}}
+\DoxyCodeLine{00301             \}}
+\DoxyCodeLine{00302 }
+\DoxyCodeLine{00303             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00304         \}}
+\DoxyCodeLine{00305         }
+\DoxyCodeLine{00306         \textcolor{keyword}{private} \textcolor{keywordtype}{void} ClearRoomListView()}
+\DoxyCodeLine{00307         \{}
+\DoxyCodeLine{00308             \textcolor{keywordflow}{foreach} (GameObject entry \textcolor{keywordflow}{in} roomListEntries.Values)}
+\DoxyCodeLine{00309             \{}
+\DoxyCodeLine{00310                 Destroy(entry.gameObject);}
+\DoxyCodeLine{00311             \}}
+\DoxyCodeLine{00312 }
+\DoxyCodeLine{00313             roomListEntries.Clear();}
+\DoxyCodeLine{00314         \}}
+\DoxyCodeLine{00315 }
+\DoxyCodeLine{00316         \textcolor{keyword}{public} \textcolor{keywordtype}{void} LocalPlayerPropertiesUpdated()}
+\DoxyCodeLine{00317         \{}
+\DoxyCodeLine{00318             StartGameButton.gameObject.SetActive(CheckPlayersReady());}
+\DoxyCodeLine{00319         \}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321         \textcolor{keyword}{private} \textcolor{keywordtype}{void} SetActivePanel(\textcolor{keywordtype}{string} activePanel)}
+\DoxyCodeLine{00322         \{}
+\DoxyCodeLine{00323             LoginPanel.SetActive(activePanel.Equals(LoginPanel.name));}
+\DoxyCodeLine{00324             SelectionPanel.SetActive(activePanel.Equals(SelectionPanel.name));}
+\DoxyCodeLine{00325             CreateRoomPanel.SetActive(activePanel.Equals(CreateRoomPanel.name));}
+\DoxyCodeLine{00326             JoinRandomRoomPanel.SetActive(activePanel.Equals(JoinRandomRoomPanel.name));}
+\DoxyCodeLine{00327             RoomListPanel.SetActive(activePanel.Equals(RoomListPanel.name));    \textcolor{comment}{// UI should call OnRoomListButtonClicked() to activate this}}
+\DoxyCodeLine{00328             InsideRoomPanel.SetActive(activePanel.Equals(InsideRoomPanel.name));}
+\DoxyCodeLine{00329         \}}
+\DoxyCodeLine{00330 }
+\DoxyCodeLine{00331         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateCachedRoomList(List<RoomInfo> roomList)}
+\DoxyCodeLine{00332         \{}
+\DoxyCodeLine{00333             \textcolor{keywordflow}{foreach} (RoomInfo info \textcolor{keywordflow}{in} roomList)}
+\DoxyCodeLine{00334             \{}
+\DoxyCodeLine{00335                 \textcolor{comment}{// Remove room from cached room list if it got closed, became invisible or was marked as removed}}
+\DoxyCodeLine{00336                 \textcolor{keywordflow}{if} (!info.IsOpen || !info.IsVisible || info.RemovedFromList)}
+\DoxyCodeLine{00337                 \{}
+\DoxyCodeLine{00338                     \textcolor{keywordflow}{if} (cachedRoomList.ContainsKey(info.Name))}
+\DoxyCodeLine{00339                     \{}
+\DoxyCodeLine{00340                         cachedRoomList.Remove(info.Name);}
+\DoxyCodeLine{00341                     \}}
+\DoxyCodeLine{00342 }
+\DoxyCodeLine{00343                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00344                 \}}
+\DoxyCodeLine{00345 }
+\DoxyCodeLine{00346                 \textcolor{comment}{// Update cached room info}}
+\DoxyCodeLine{00347                 \textcolor{keywordflow}{if} (cachedRoomList.ContainsKey(info.Name))}
+\DoxyCodeLine{00348                 \{}
+\DoxyCodeLine{00349                     cachedRoomList[info.Name] = info;}
+\DoxyCodeLine{00350                 \}}
+\DoxyCodeLine{00351                 \textcolor{comment}{// Add new room info to cache}}
+\DoxyCodeLine{00352                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00353                 \{}
+\DoxyCodeLine{00354                     cachedRoomList.Add(info.Name, info);}
+\DoxyCodeLine{00355                 \}}
+\DoxyCodeLine{00356             \}}
+\DoxyCodeLine{00357         \}}
+\DoxyCodeLine{00358 }
+\DoxyCodeLine{00359         \textcolor{keyword}{private} \textcolor{keywordtype}{void} UpdateRoomListView()}
+\DoxyCodeLine{00360         \{}
+\DoxyCodeLine{00361             \textcolor{keywordflow}{foreach} (RoomInfo info \textcolor{keywordflow}{in} cachedRoomList.Values)}
+\DoxyCodeLine{00362             \{}
+\DoxyCodeLine{00363                 GameObject entry = Instantiate(RoomListEntryPrefab);}
+\DoxyCodeLine{00364                 entry.transform.SetParent(RoomListContent.transform);}
+\DoxyCodeLine{00365                 entry.transform.localScale = Vector3.one;}
+\DoxyCodeLine{00366                 entry.GetComponent<RoomListEntry>().Initialize(info.Name, (\textcolor{keywordtype}{byte})info.PlayerCount, info.MaxPlayers);}
+\DoxyCodeLine{00367 }
+\DoxyCodeLine{00368                 roomListEntries.Add(info.Name, entry);}
+\DoxyCodeLine{00369             \}}
+\DoxyCodeLine{00370         \}}
+\DoxyCodeLine{00371     \}}
+\DoxyCodeLine{00372 \}}
+
+\end{DoxyCode}

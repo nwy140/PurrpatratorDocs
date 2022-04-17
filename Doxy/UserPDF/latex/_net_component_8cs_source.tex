@@ -1,0 +1,229 @@
+\doxysection{Net\+Component.\+cs}
+\label{_net_component_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/NetComponent.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Core/NetComponent.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00009 \textcolor{keyword}{using} UnityEditor;}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{keyword}{namespace }Photon.Pun.Simple}
+\DoxyCodeLine{00013 \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00018     [HelpURL(Internal.SimpleDocsURLS.OVERVIEW\_PATH)]}
+\DoxyCodeLine{00019     \textcolor{keyword}{public} \textcolor{keyword}{abstract} \textcolor{keyword}{class }NetComponent : MonoBehaviour}
+\DoxyCodeLine{00020         , IOnJoinedRoom}
+\DoxyCodeLine{00021         , IOnAwake}
+\DoxyCodeLine{00022         , IOnStart}
+\DoxyCodeLine{00023         , IOnEnable}
+\DoxyCodeLine{00024         , IOnDisable}
+\DoxyCodeLine{00025         , IOnAuthorityChanged}
+\DoxyCodeLine{00026     \{}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00031         [HideInInspector] [SerializeField] \textcolor{keyword}{protected} \textcolor{keywordtype}{int} prefabInstanceId;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033         \textcolor{keyword}{protected} NetObject netObj;}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} NetObject NetObj \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} netObj; \} \}}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00036 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00037         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} AutoAddNetObj \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \} \}}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \textcolor{comment}{//protected SyncState syncState;}}
+\DoxyCodeLine{00041         \textcolor{comment}{//public SyncState SyncState \{ get \{ return syncState; \} \}}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} RigidbodyType RigidbodyType \{ \textcolor{keyword}{get}; \textcolor{keyword}{private} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ViewID}
+\DoxyCodeLine{00047         \{}
+\DoxyCodeLine{00048             \textcolor{keyword}{get}}
+\DoxyCodeLine{00049             \{}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{return} photonView.ViewID;}
+\DoxyCodeLine{00051             \}}
+\DoxyCodeLine{00052         \}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00054         \textcolor{keyword}{protected} PhotonView photonView;}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} PhotonView PhotonView \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} photonView; \} \}}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsMine \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} photonView.IsMine; \} \}}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ControllerActorNr \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} photonView.ControllerActorNr; \} \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Reset()}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00064             \textcolor{keywordflow}{if} (!Application.isPlaying)}
+\DoxyCodeLine{00065                 prefabInstanceId = GetInstanceID();}
+\DoxyCodeLine{00066             }
+\DoxyCodeLine{00067             GetOrAddNetObj();}
+\DoxyCodeLine{00068 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00069         \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071 }
+\DoxyCodeLine{00072         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnValidate()}
+\DoxyCodeLine{00073         \{}
+\DoxyCodeLine{00074 \textcolor{comment}{//\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00075 \textcolor{comment}{//            GetOrAddNetObj();}}
+\DoxyCodeLine{00076 \textcolor{comment}{//\#endif}}
+\DoxyCodeLine{00077         \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00084         \textcolor{keyword}{public} \textcolor{keywordtype}{void} GetOrAddNetObj()}
+\DoxyCodeLine{00085         \{}
+\DoxyCodeLine{00086             \textcolor{keywordflow}{if} (netObj)}
+\DoxyCodeLine{00087                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089             netObj = transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091             \textcolor{keywordflow}{if} (netObj == \textcolor{keyword}{null} \&\& AutoAddNetObj)}
+\DoxyCodeLine{00092             \{}
+\DoxyCodeLine{00093                 Debug.Log(\textcolor{stringliteral}{"{}No NetObject yet on "{}} + name + \textcolor{stringliteral}{"{}. Adding one to root now."{}});}
+\DoxyCodeLine{00094                 netObj = transform.root.gameObject.AddComponent<NetObject>();}
+\DoxyCodeLine{00095             \}}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnJoinedRoom()}
+\DoxyCodeLine{00101         \{}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104 }
+\DoxyCodeLine{00105         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00106         \{}
+\DoxyCodeLine{00107             \textcolor{comment}{// If this NetComponent doesn't have a NetObject, IOnAwake will not fire.}}
+\DoxyCodeLine{00108             \textcolor{keywordflow}{if} (!transform.GetParentComponent<NetObject>())}
+\DoxyCodeLine{00109                 OnAwakeInitialize(\textcolor{keyword}{false});}
+\DoxyCodeLine{00110         \}}
+\DoxyCodeLine{00116         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnAwake()}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             netObj = transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120             \textcolor{comment}{//if (netObj)}}
+\DoxyCodeLine{00121             \textcolor{comment}{//  syncState = netObj.GetComponent<SyncState>();}}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00123             EnsureComponentsDependenciesExist();}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125             OnAwakeInitialize(\textcolor{keyword}{true});}
+\DoxyCodeLine{00126         \}}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00132         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnAwakeInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00133         \{}
+\DoxyCodeLine{00134 }
+\DoxyCodeLine{00135         \}}
+\DoxyCodeLine{00136 }
+\DoxyCodeLine{00137         \textcolor{keyword}{protected} \textcolor{keyword}{virtual} NetObject EnsureComponentsDependenciesExist()}
+\DoxyCodeLine{00138         \{}
+\DoxyCodeLine{00139             \textcolor{keywordflow}{if} (!netObj)}
+\DoxyCodeLine{00140                 netObj = transform.GetParentComponent<NetObject>();}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142             \textcolor{keywordflow}{if} (netObj)}
+\DoxyCodeLine{00143             \{}
+\DoxyCodeLine{00144 }
+\DoxyCodeLine{00145                 photonView = netObj.GetComponent<PhotonView>();}
+\DoxyCodeLine{00146                 }
+\DoxyCodeLine{00147                 \textcolor{comment}{//if (this is IContactSystem)}}
+\DoxyCodeLine{00148                 \textcolor{comment}{//  if (ReferenceEquals(netObj.GetComponent<IContactTrigger>(), null))}}
+\DoxyCodeLine{00149                 \textcolor{comment}{//      netObj.gameObject.AddComponent<ContactTrigger>();}}
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151                 RigidbodyType = (netObj.Rb) ? RigidbodyType.RB : (netObj.Rb2D) ? RigidbodyType.RB2D : RigidbodyType.None;}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{return} netObj;}
+\DoxyCodeLine{00154             \}}
+\DoxyCodeLine{00155             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00156             \{}
+\DoxyCodeLine{00157                 Debug.LogError(\textcolor{stringliteral}{"{}NetComponent derived class cannot find a NetObject on '"{}} + transform.root.name + \textcolor{stringliteral}{"{}'."{}});}
+\DoxyCodeLine{00158                 \textcolor{keywordflow}{return} \textcolor{keyword}{null};}
+\DoxyCodeLine{00159             \}}
+\DoxyCodeLine{00160         \}}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Start()}
+\DoxyCodeLine{00164         \{}
+\DoxyCodeLine{00165             \textcolor{keywordflow}{if} (!netObj)}
+\DoxyCodeLine{00166                 OnStartInitialize(\textcolor{keyword}{false});}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnStart()}
+\DoxyCodeLine{00170         \{}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             OnStartInitialize(\textcolor{keyword}{true});}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00179         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnStartInitialize(\textcolor{keywordtype}{bool} isNetObject)}
+\DoxyCodeLine{00180         \{}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182         \}}
+\DoxyCodeLine{00183 }
+\DoxyCodeLine{00184         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPostEnable()}
+\DoxyCodeLine{00185         \{}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \}}
+\DoxyCodeLine{00188 }
+\DoxyCodeLine{00189         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnPostDisable()}
+\DoxyCodeLine{00190         \{}
+\DoxyCodeLine{00191             hadFirstAuthorityAssgn = \textcolor{keyword}{false};}
+\DoxyCodeLine{00192         \}}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194         \textcolor{keyword}{protected} \textcolor{keywordtype}{bool} hadFirstAuthorityAssgn;}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00200         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnAuthorityChanged(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} controllerChanged)}
+\DoxyCodeLine{00201         \{}
+\DoxyCodeLine{00202             \textcolor{keywordflow}{if} (!controllerChanged)}
+\DoxyCodeLine{00203                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205             \textcolor{keywordflow}{if} (!hadFirstAuthorityAssgn)}
+\DoxyCodeLine{00206             \{}
+\DoxyCodeLine{00207                 OnFirstAuthorityAssign(isMine, controllerChanged);}
+\DoxyCodeLine{00208                 hadFirstAuthorityAssgn = \textcolor{keyword}{true};}
+\DoxyCodeLine{00209             \}}
+\DoxyCodeLine{00210         \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212         \textcolor{keyword}{public} \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} OnFirstAuthorityAssign(\textcolor{keywordtype}{bool} isMine, \textcolor{keywordtype}{bool} asServer)}
+\DoxyCodeLine{00213         \{}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215         \}}
+\DoxyCodeLine{00216     \}}
+\DoxyCodeLine{00217 }
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219 \textcolor{preprocessor}{\#if UNITY\_EDITOR}}
+\DoxyCodeLine{00220     [CustomEditor(typeof(NetComponent), \textcolor{keyword}{true})]}
+\DoxyCodeLine{00221     [CanEditMultipleObjects]}
+\DoxyCodeLine{00222     \textcolor{keyword}{public} \textcolor{keyword}{class }NetComponentEditor : HeaderEditorBase}
+\DoxyCodeLine{00223     \{}
+\DoxyCodeLine{00224         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{bool} UseThinHeader}
+\DoxyCodeLine{00225         \{}
+\DoxyCodeLine{00226             \textcolor{keyword}{get}}
+\DoxyCodeLine{00227             \{}
+\DoxyCodeLine{00228                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00229             \}}
+\DoxyCodeLine{00230         \}}
+\DoxyCodeLine{00231 }
+\DoxyCodeLine{00232         \textcolor{keyword}{protected} \textcolor{keyword}{override} \textcolor{keywordtype}{string} TextTexturePath}
+\DoxyCodeLine{00233         \{}
+\DoxyCodeLine{00234             \textcolor{keyword}{get}}
+\DoxyCodeLine{00235             \{}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Header/NetComponentText"{}};}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238         \}}
+\DoxyCodeLine{00239 }
+\DoxyCodeLine{00240         \textcolor{comment}{//protected readonly System.Text.StringBuilder sb = new System.Text.StringBuilder();}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         \textcolor{comment}{//protected override string BackTexturePath}}
+\DoxyCodeLine{00243         \textcolor{comment}{//\{}}
+\DoxyCodeLine{00244         \textcolor{comment}{//    get \{ return "{}Header/GreenBack"{}; \}}}
+\DoxyCodeLine{00245         \textcolor{comment}{//\}}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247     \}}
+\DoxyCodeLine{00248 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250 \}}
+
+\end{DoxyCode}

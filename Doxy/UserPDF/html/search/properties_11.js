@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['rawvalue_0',['RawValue',['../struct_photon_1_1_compression_1_1_half_float_1_1_half.html#af83a4f32d18a4063627b0f37370cff7e',1,'Photon::Compression::HalfFloat::Half']]],
+  ['rb_1',['Rb',['../class_pickable_objects.html#a784b655b4fa6a2f1c31a92627e40c0c6',1,'PickableObjects.Rb()'],['../interface_photon_1_1_pun_1_1_simple_1_1_i_mountable.html#ad90a59968a31ad761f58bf7f7d6a25c8',1,'Photon.Pun.Simple.IMountable.Rb()'],['../class_photon_1_1_pun_1_1_simple_1_1_sync_state.html#a6eb6c8c032ecb8a975e35ddc8d41f855',1,'Photon.Pun.Simple.SyncState.Rb()'],['../class_photon_1_1_pun_1_1_simple_1_1_net_object.html#ada49d7fac0526ab253b62580f42b9ed1',1,'Photon.Pun.Simple.NetObject.Rb()']]],
+  ['rb2d_2',['Rb2d',['../interface_photon_1_1_pun_1_1_simple_1_1_i_mountable.html#a67b4f913615dcab5bc121c8fb9b0b5e7',1,'Photon.Pun.Simple.IMountable.Rb2d()'],['../class_photon_1_1_pun_1_1_simple_1_1_sync_state.html#a15699965d9f8fbc03a3cf6d72cdf2222',1,'Photon.Pun.Simple.SyncState.Rb2d()']]],
+  ['rb2d_3',['Rb2D',['../class_photon_1_1_pun_1_1_simple_1_1_net_object.html#aae24722b5382226cce495f45dd644b73',1,'Photon::Pun::Simple::NetObject']]],
+  ['readystate_4',['ReadyState',['../class_photon_1_1_pun_1_1_simple_1_1_sync_object.html#ad9a9cbfb10da06e2ef75424e94366cfa',1,'Photon::Pun::Simple::SyncObject']]],
+  ['readytosend_5',['ReadyToSend',['../class_photon_1_1_pun_1_1_simple_1_1_internal_1_1_net_msg_sends.html#a015c25435b9b6f8cbea5a4435668b359',1,'Photon::Pun::Simple::Internal::NetMsgSends']]],
+  ['redboxstyle_6',['RedBoxStyle',['../classemotitron_1_1_utilities_1_1_g_u_i_color_boxes.html#a15bbacf59dadafcf075a71071c0a7487',1,'emotitron::Utilities::GUIColorBoxes']]],
+  ['regendelayinticks_7',['RegenDelayInTicks',['../class_photon_1_1_pun_1_1_simple_1_1_vital_definition.html#a21cf7f5fc8175a7af9de343de6afae4e',1,'Photon::Pun::Simple::VitalDefinition']]],
+  ['regenpertick_8',['RegenPerTick',['../class_photon_1_1_pun_1_1_simple_1_1_vital_definition.html#aa17df0659de7aa2992eeb338c5a7c27d',1,'Photon::Pun::Simple::VitalDefinition']]],
+  ['remaining_9',['Remaining',['../class_photon_1_1_pun_1_1_simple_1_1_basic_inventory.html#a053663cfb87980916a1223234c4cd6c5',1,'Photon::Pun::Simple::BasicInventory']]],
+  ['remainingsecondsinturn_10',['RemainingSecondsInTurn',['../class_photon_1_1_pun_1_1_utility_scripts_1_1_pun_turn_manager.html#a46da7b693ff34fdd4c2c6a154bcdb6cd',1,'Photon::Pun::UtilityScripts::PunTurnManager']]],
+  ['resentreliablecommands_11',['ResentReliableCommands',['../class_photon_1_1_pun_1_1_photon_network.html#acb5a636cb8fdc446ae4607b2c8f0219c',1,'Photon::Pun::PhotonNetwork']]],
+  ['resimulatelatearrivals_12',['ResimulateLateArrivals',['../class_photon_1_1_pun_1_1_simple_1_1_net_object.html#ab0f269205b204fc7ea3435c327dfb3ba',1,'Photon::Pun::Simple::NetObject']]],
+  ['resultcode_13',['ResultCode',['../class_photon_1_1_realtime_1_1_web_rpc_response.html#ab8494181de6bdc9017954d228e4c5878',1,'Photon::Realtime::WebRpcResponse']]],
+  ['returncode_14',['ReturnCode',['../class_photon_1_1_realtime_1_1_web_rpc_response.html#a314f4c8ee274d4a2affd3b92d2405b46',1,'Photon::Realtime::WebRpcResponse']]],
+  ['richlabel_15',['RichLabel',['../class_photon_1_1_pun_1_1_photon_g_u_i.html#a841436b6a1e4a04837049db97e84c19e',1,'Photon::Pun::PhotonGUI']]],
+  ['rigidbodytype_16',['RigidbodyType',['../class_photon_1_1_pun_1_1_simple_1_1_net_component.html#a136f9532217f9a7d3706f11dad8df412',1,'Photon::Pun::Simple::NetComponent']]],
+  ['room_17',['Room',['../class_photon_1_1_realtime_1_1_friend_info.html#a1ec450f3041579880d2387a925f5d94f',1,'Photon::Realtime::FriendInfo']]],
+  ['roomscount_18',['RoomsCount',['../class_photon_1_1_realtime_1_1_load_balancing_client.html#ada4a7a036875727b55cbcd86aeab5462',1,'Photon::Realtime::LoadBalancingClient']]],
+  ['rootnode_19',['RootNode',['../class_photon_1_1_pun_1_1_utility_scripts_1_1_cell_tree.html#aed70578e655104581d15532cf434f9ad',1,'Photon::Pun::UtilityScripts::CellTree']]],
+  ['rot_20',['Rot',['../class_photon_1_1_pun_1_1_simple_1_1_sync_node_mover_1_1_node.html#ac032de1b91f54c793105664b8a0d62f5',1,'Photon::Pun::Simple::SyncNodeMover::Node']]],
+  ['rotcrusher_21',['RotCrusher',['../class_photon_1_1_compression_1_1_transform_crusher.html#a8db5e9edbb47a723dc7c3f8ddc293f56',1,'Photon::Compression::TransformCrusher']]],
+  ['rtt_22',['RTT',['../class_photon_1_1_pun_1_1_simple_1_1_net_master.html#ae246a88991c13735673d873abd50fb56',1,'Photon::Pun::Simple::NetMaster']]]
+];

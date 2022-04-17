@@ -1,0 +1,74 @@
+\doxysection{Copy\+Component.\+cs}
+\label{_copy_component_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Component/CopyComponent.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/Simple/Utilities/Component/CopyComponent.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <copyright>PhotonNetwork Framework for Unity -\/ Copyright (C) 2020 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <author>developer@exitgames.com</author>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{using} System;}
+\DoxyCodeLine{00007 \textcolor{keyword}{using} System.Reflection;}
+\DoxyCodeLine{00008 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00009 }
+\DoxyCodeLine{00010 \textcolor{keyword}{namespace }Photon.Pun.UtilityScripts}
+\DoxyCodeLine{00011 \{}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{static} \textcolor{keyword}{class }CopyComponent}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015         \textcolor{keyword}{public} \textcolor{keyword}{static} Component ComponentCopy(\textcolor{keyword}{this} Component original, GameObject destination)}
+\DoxyCodeLine{00016         \{}
+\DoxyCodeLine{00017             System.Type type = original.GetType();}
+\DoxyCodeLine{00018             Component copy = destination.AddComponent(type);}
+\DoxyCodeLine{00019             \textcolor{comment}{// Copied fields can be restricted with BindingFlags}}
+\DoxyCodeLine{00020             FieldInfo[] fields = type.GetFields();}
+\DoxyCodeLine{00021             \textcolor{keywordflow}{foreach} (System.Reflection.FieldInfo field in fields)}
+\DoxyCodeLine{00022             \{}
+\DoxyCodeLine{00023                 field.SetValue(copy, field.GetValue(original));}
+\DoxyCodeLine{00024             \}}
+\DoxyCodeLine{00025             \textcolor{keywordflow}{return} copy;}
+\DoxyCodeLine{00026         \}}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{public} \textcolor{keyword}{static} T GetCopyOf<T>(\textcolor{keyword}{this} T comp, T other) where T : Component}
+\DoxyCodeLine{00029         \{}
+\DoxyCodeLine{00030             \textcolor{keywordflow}{if} (comp == \textcolor{keyword}{null} || other == \textcolor{keyword}{null})}
+\DoxyCodeLine{00031                 \textcolor{keywordflow}{return} comp;}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             Type type = comp.GetType();}
+\DoxyCodeLine{00034             \textcolor{keywordflow}{if} (type != other.GetType()) \textcolor{keywordflow}{return} \textcolor{keyword}{null}; \textcolor{comment}{// type mis-\/match}}
+\DoxyCodeLine{00035             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Default | BindingFlags.DeclaredOnly;}
+\DoxyCodeLine{00036             PropertyInfo[] pinfos = type.GetProperties(flags);}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{foreach} (var pinfo \textcolor{keywordflow}{in} pinfos)}
+\DoxyCodeLine{00038             \{}
+\DoxyCodeLine{00039                 \textcolor{keywordflow}{if} (pinfo.CanWrite)}
+\DoxyCodeLine{00040                 \{}
+\DoxyCodeLine{00041                     \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00042                     \{}
+\DoxyCodeLine{00044                         \textcolor{keywordtype}{bool} isobsolete = Attribute.IsDefined(pinfo, typeof(System.ObsoleteAttribute));}
+\DoxyCodeLine{00045                         \textcolor{keywordflow}{if} (!isobsolete)}
+\DoxyCodeLine{00046                             pinfo.SetValue(comp, pinfo.GetValue(other, \textcolor{keyword}{null}), \textcolor{keyword}{null});}
+\DoxyCodeLine{00047                     \}}
+\DoxyCodeLine{00048                     \textcolor{keywordflow}{catch} \{ \} \textcolor{comment}{// In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.}}
+\DoxyCodeLine{00049                 \}}
+\DoxyCodeLine{00050             \}}
+\DoxyCodeLine{00051             FieldInfo[] finfos = type.GetFields(flags);}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{foreach} (var finfo \textcolor{keywordflow}{in} finfos)}
+\DoxyCodeLine{00053             \{}
+\DoxyCodeLine{00054                 finfo.SetValue(comp, finfo.GetValue(other));}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056             \textcolor{keywordflow}{return} comp as T;}
+\DoxyCodeLine{00057         \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{public} \textcolor{keyword}{static} T AddColliderCopy<T>(\textcolor{keyword}{this} GameObject go, T toAdd) where T : Collider}
+\DoxyCodeLine{00060         \{}
+\DoxyCodeLine{00061             T copy = go.AddComponent(toAdd.GetType()).GetCopyOf(toAdd) as T;}
+\DoxyCodeLine{00062             copy.sharedMaterial = toAdd.sharedMaterial;}
+\DoxyCodeLine{00063             \textcolor{comment}{// Not sure why this isn't copying.}}
+\DoxyCodeLine{00064             copy.isTrigger = toAdd.isTrigger;}
+\DoxyCodeLine{00065             \textcolor{keywordflow}{return} copy;}
+\DoxyCodeLine{00066         \}}
+\DoxyCodeLine{00067     \}}
+\DoxyCodeLine{00068 \}}
+\DoxyCodeLine{00069 }
+
+\end{DoxyCode}

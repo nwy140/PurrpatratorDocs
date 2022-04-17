@@ -1,0 +1,170 @@
+\doxysection{Chat\+Channel.\+cs}
+\label{_chat_channel_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatChannel.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonChat/Code/ChatChannel.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00002 \textcolor{comment}{// <summary>The Photon Chat Api enables clients to connect to a chat server and communicate with other clients.</summary>}}
+\DoxyCodeLine{00003 \textcolor{comment}{// <remarks>ChatClient is the main class of this api.</remarks>}}
+\DoxyCodeLine{00004 \textcolor{comment}{// <copyright company="{}Exit Games GmbH"{}>Photon Chat Api -\/ Copyright (C) 2014 Exit Games GmbH</copyright>}}
+\DoxyCodeLine{00005 \textcolor{comment}{// -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#if UNITY\_4\_7 || UNITY\_5 || UNITY\_5\_3\_OR\_NEWER}}
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#define SUPPORTED\_UNITY}}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{namespace }Photon.Chat}
+\DoxyCodeLine{00012 \{}
+\DoxyCodeLine{00013     \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00014     \textcolor{keyword}{using} System.Text;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{00016 \textcolor{preprocessor}{    \#if SUPPORTED\_UNITY || NETFX\_CORE}}
+\DoxyCodeLine{00017     \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00018     \textcolor{keyword}{using} SupportClass = ExitGames.Client.Photon.SupportClass;}
+\DoxyCodeLine{00019 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00031     \textcolor{keyword}{public} \textcolor{keyword}{class }ChatChannel}
+\DoxyCodeLine{00032     \{}
+\DoxyCodeLine{00034         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} Name;}
+\DoxyCodeLine{00035 }
+\DoxyCodeLine{00037         \textcolor{keyword}{public} readonly List<string> Senders = \textcolor{keyword}{new} List<string>();}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00040         \textcolor{keyword}{public} readonly List<object> Messages = \textcolor{keyword}{new} List<object>();}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00043         \textcolor{keyword}{public} \textcolor{keywordtype}{int} MessageLimit;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00046         \textcolor{keyword}{public} \textcolor{keywordtype}{int} ChannelID;}
+\DoxyCodeLine{00047 }
+\DoxyCodeLine{00049         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} IsPrivate \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{internal} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00050 }
+\DoxyCodeLine{00052         \textcolor{keyword}{public} \textcolor{keywordtype}{int} MessageCount \{ \textcolor{keyword}{get} \{ \textcolor{keywordflow}{return} this.Messages.Count; \} \}}
+\DoxyCodeLine{00053 }
+\DoxyCodeLine{00057         \textcolor{keyword}{public} \textcolor{keywordtype}{int} LastMsgId \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00058 }
+\DoxyCodeLine{00059         \textcolor{keyword}{private} Dictionary<object, object> properties;}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} PublishSubscribers \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00063 }
+\DoxyCodeLine{00065         \textcolor{keyword}{public} \textcolor{keywordtype}{int} MaxSubscribers \{ \textcolor{keyword}{get}; \textcolor{keyword}{protected} \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00068         \textcolor{keyword}{public} readonly HashSet<string> Subscribers = \textcolor{keyword}{new} HashSet<string>();}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00071         \textcolor{keyword}{public} ChatChannel(\textcolor{keywordtype}{string} name)}
+\DoxyCodeLine{00072         \{}
+\DoxyCodeLine{00073             this.Name = name;}
+\DoxyCodeLine{00074         \}}
+\DoxyCodeLine{00075         }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Add(\textcolor{keywordtype}{string} sender, \textcolor{keywordtype}{object} message, \textcolor{keywordtype}{int} msgId)}
+\DoxyCodeLine{00078         \{}
+\DoxyCodeLine{00079             this.Senders.Add(sender);}
+\DoxyCodeLine{00080             this.Messages.Add(message);}
+\DoxyCodeLine{00081             this.LastMsgId = msgId;}
+\DoxyCodeLine{00082             this.TruncateMessages();}
+\DoxyCodeLine{00083         \}}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00086         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Add(\textcolor{keywordtype}{string}[] senders, \textcolor{keywordtype}{object}[] messages, \textcolor{keywordtype}{int} lastMsgId)}
+\DoxyCodeLine{00087         \{}
+\DoxyCodeLine{00088             this.Senders.AddRange(senders);}
+\DoxyCodeLine{00089             this.Messages.AddRange(messages);}
+\DoxyCodeLine{00090             this.LastMsgId = lastMsgId;}
+\DoxyCodeLine{00091             this.TruncateMessages();}
+\DoxyCodeLine{00092         \}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00095         \textcolor{keyword}{public} \textcolor{keywordtype}{void} TruncateMessages()}
+\DoxyCodeLine{00096         \{}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (this.MessageLimit <= 0 || this.Messages.Count <= \textcolor{keyword}{this}.MessageLimit)}
+\DoxyCodeLine{00098             \{}
+\DoxyCodeLine{00099                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00100             \}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00102             \textcolor{keywordtype}{int} excessCount = this.Messages.Count -\/ this.MessageLimit;}
+\DoxyCodeLine{00103             this.Senders.RemoveRange(0, excessCount);}
+\DoxyCodeLine{00104             this.Messages.RemoveRange(0, excessCount);}
+\DoxyCodeLine{00105         \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00108         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ClearMessages()}
+\DoxyCodeLine{00109         \{}
+\DoxyCodeLine{00110             this.Senders.Clear();}
+\DoxyCodeLine{00111             this.Messages.Clear();}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00116         \textcolor{keyword}{public} \textcolor{keywordtype}{string} ToStringMessages()}
+\DoxyCodeLine{00117         \{}
+\DoxyCodeLine{00118             StringBuilder txt = \textcolor{keyword}{new} StringBuilder();}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < this.Messages.Count; i++)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 txt.AppendLine(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}\{0\}: \{1\}"{}}, this.Senders[i], this.Messages[i]));}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123             \textcolor{keywordflow}{return} txt.ToString();}
+\DoxyCodeLine{00124         \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126         \textcolor{keyword}{internal} \textcolor{keywordtype}{void} ReadChannelProperties(Dictionary<object, object> newProperties)}
+\DoxyCodeLine{00127         \{}
+\DoxyCodeLine{00128             \textcolor{keywordflow}{if} (newProperties != \textcolor{keyword}{null} \&\& newProperties.Count > 0)}
+\DoxyCodeLine{00129             \{}
+\DoxyCodeLine{00130                 \textcolor{keywordflow}{if} (this.properties == \textcolor{keyword}{null})}
+\DoxyCodeLine{00131                 \{}
+\DoxyCodeLine{00132                     this.properties = \textcolor{keyword}{new} Dictionary<object, object>(newProperties.Count);}
+\DoxyCodeLine{00133                 \}}
+\DoxyCodeLine{00134                 \textcolor{keywordflow}{foreach} (var pair \textcolor{keywordflow}{in} newProperties)}
+\DoxyCodeLine{00135                 \{}
+\DoxyCodeLine{00136                     \textcolor{keywordflow}{if} (pair.Value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00137                     \{}
+\DoxyCodeLine{00138                         this.properties.Remove(pair.Key);}
+\DoxyCodeLine{00139                     \}}
+\DoxyCodeLine{00140                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00141                     \{}
+\DoxyCodeLine{00142                         this.properties[pair.Key] = pair.Value;}
+\DoxyCodeLine{00143                     \}}
+\DoxyCodeLine{00144                 \}}
+\DoxyCodeLine{00145                 \textcolor{keywordtype}{object} temp;}
+\DoxyCodeLine{00146                 \textcolor{keywordflow}{if} (this.properties.TryGetValue(ChannelWellKnownProperties.PublishSubscribers, out temp))}
+\DoxyCodeLine{00147                 \{}
+\DoxyCodeLine{00148                     this.PublishSubscribers = (bool)temp;}
+\DoxyCodeLine{00149                 \}}
+\DoxyCodeLine{00150                 \textcolor{keywordflow}{if} (this.properties.TryGetValue(ChannelWellKnownProperties.MaxSubscribers, out temp))}
+\DoxyCodeLine{00151                 \{}
+\DoxyCodeLine{00152                     this.MaxSubscribers = (int)temp;}
+\DoxyCodeLine{00153                 \}}
+\DoxyCodeLine{00154             \}}
+\DoxyCodeLine{00155         \}}
+\DoxyCodeLine{00156 }
+\DoxyCodeLine{00157         \textcolor{keyword}{internal} \textcolor{keywordtype}{void} AddSubscribers(\textcolor{keywordtype}{string}[] users)}
+\DoxyCodeLine{00158         \{}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (users == \textcolor{keyword}{null})}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < users.Length; i++)}
+\DoxyCodeLine{00164             \{}
+\DoxyCodeLine{00165                 this.Subscribers.Add(users[i]);}
+\DoxyCodeLine{00166             \}}
+\DoxyCodeLine{00167         \}}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169 \textcolor{preprocessor}{        \#if CHAT\_EXTENDED}}
+\DoxyCodeLine{00170         \textcolor{keyword}{internal} \textcolor{keywordtype}{void} ReadUserProperties(\textcolor{keywordtype}{string} userId, Dictionary<object, object> changedProperties)}
+\DoxyCodeLine{00171         \{}
+\DoxyCodeLine{00172             \textcolor{keywordflow}{throw} \textcolor{keyword}{new} System.NotImplementedException();}
+\DoxyCodeLine{00173         \}}
+\DoxyCodeLine{00174         }
+\DoxyCodeLine{00175         \textcolor{keyword}{internal} \textcolor{keywordtype}{bool} TryGetChannelProperty<T>(\textcolor{keywordtype}{object} propertyKey, out T propertyValue)}
+\DoxyCodeLine{00176         \{}
+\DoxyCodeLine{00177             propertyValue = \textcolor{keywordflow}{default}(T);}
+\DoxyCodeLine{00178             \textcolor{keywordtype}{object} temp;}
+\DoxyCodeLine{00179             \textcolor{keywordflow}{if} (properties != \textcolor{keyword}{null} \&\& properties.TryGetValue(propertyKey, out temp) \&\& temp is T)}
+\DoxyCodeLine{00180             \{}
+\DoxyCodeLine{00181                 propertyValue = (T)temp;}
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00183             \}}
+\DoxyCodeLine{00184             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00185         \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187         \textcolor{keyword}{public} \textcolor{keywordtype}{bool} TryGetCustomChannelProperty<T>(\textcolor{keywordtype}{string} propertyKey, out T propertyValue)}
+\DoxyCodeLine{00188         \{}
+\DoxyCodeLine{00189             \textcolor{keywordflow}{return} this.TryGetChannelProperty(propertyKey, out propertyValue);}
+\DoxyCodeLine{00190         \}}
+\DoxyCodeLine{00191 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{00192     \}}
+\DoxyCodeLine{00193 \}}
+
+\end{DoxyCode}

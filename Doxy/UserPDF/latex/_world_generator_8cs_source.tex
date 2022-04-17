@@ -1,0 +1,250 @@
+\doxysection{World\+Generator.\+cs}
+\label{_world_generator_8cs_source}\index{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoProcedural/Scripts/WorldGenerator.cs@{C:/\_SSDSPEEDUP/2021/GPS/gps2\_purrpatrator/GPS2\_Purrpatrator/Assets/Photon/PhotonUnityNetworking/Demos/DemoProcedural/Scripts/WorldGenerator.cs}}
+\textbf{ Go to the documentation of this file.}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{keyword}{using} System.Collections;}
+\DoxyCodeLine{00002 \textcolor{keyword}{using} System.Collections.Generic;}
+\DoxyCodeLine{00003 \textcolor{keyword}{using} UnityEngine;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using} Hashtable = ExitGames.Client.Photon.Hashtable;}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }Photon.Pun.Demo.Procedural}
+\DoxyCodeLine{00007 \{}
+\DoxyCodeLine{00012     \textcolor{keyword}{public} \textcolor{keyword}{enum} WorldSize}
+\DoxyCodeLine{00013     \{}
+\DoxyCodeLine{00014         Tiny = 16,}
+\DoxyCodeLine{00015         Small = 32,}
+\DoxyCodeLine{00016         Medium = 64,}
+\DoxyCodeLine{00017         Large = 128}
+\DoxyCodeLine{00018     \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00024     \textcolor{keyword}{public} \textcolor{keyword}{enum} WorldType}
+\DoxyCodeLine{00025     \{}
+\DoxyCodeLine{00026         Flat = 4,}
+\DoxyCodeLine{00027         Standard = 8,}
+\DoxyCodeLine{00028         Mountain = 16}
+\DoxyCodeLine{00029     \}}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00036     \textcolor{keyword}{public} \textcolor{keyword}{enum} ClusterSize}
+\DoxyCodeLine{00037     \{}
+\DoxyCodeLine{00038         Small = 4,}
+\DoxyCodeLine{00039         Medium = 16,}
+\DoxyCodeLine{00040         Large = 64}
+\DoxyCodeLine{00041     \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00053     \textcolor{keyword}{public} \textcolor{keyword}{class }WorldGenerator : MonoBehaviour}
+\DoxyCodeLine{00054     \{}
+\DoxyCodeLine{00055         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} SeedPropertiesKey = \textcolor{stringliteral}{"{}Seed"{}};}
+\DoxyCodeLine{00056         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} WorldSizePropertiesKey = \textcolor{stringliteral}{"{}WorldSize"{}};}
+\DoxyCodeLine{00057         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} ClusterSizePropertiesKey = \textcolor{stringliteral}{"{}ClusterSize"{}};}
+\DoxyCodeLine{00058         \textcolor{keyword}{public} readonly \textcolor{keywordtype}{string} WorldTypePropertiesKey = \textcolor{stringliteral}{"{}WorldType"{}};}
+\DoxyCodeLine{00059 }
+\DoxyCodeLine{00060         \textcolor{keyword}{private} \textcolor{keyword}{static} WorldGenerator instance;}
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062         \textcolor{keyword}{public} \textcolor{keyword}{static} WorldGenerator Instance}
+\DoxyCodeLine{00063         \{}
+\DoxyCodeLine{00064             \textcolor{keyword}{get}}
+\DoxyCodeLine{00065             \{}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{if} (instance == \textcolor{keyword}{null})}
+\DoxyCodeLine{00067                 \{}
+\DoxyCodeLine{00068                     instance = FindObjectOfType<WorldGenerator>();}
+\DoxyCodeLine{00069                 \}}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{return} instance;}
+\DoxyCodeLine{00072             \}}
+\DoxyCodeLine{00073         \}}
+\DoxyCodeLine{00074 }
+\DoxyCodeLine{00075         \textcolor{keyword}{public} \textcolor{keywordtype}{int} Seed \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077         \textcolor{keyword}{public} WorldSize WorldSize \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00078 }
+\DoxyCodeLine{00079         \textcolor{keyword}{public} ClusterSize ClusterSize \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081         \textcolor{keyword}{public} WorldType WorldType \{ \textcolor{keyword}{get}; \textcolor{keyword}{set}; \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keyword}{private} Dictionary<int, GameObject> clusterList;}
+\DoxyCodeLine{00084 }
+\DoxyCodeLine{00085         \textcolor{keyword}{public} Material[] WorldMaterials;}
+\DoxyCodeLine{00086 }
+\DoxyCodeLine{00087 \textcolor{preprocessor}{        \#region UNITY}}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \textcolor{keyword}{public} \textcolor{keywordtype}{void} Awake()}
+\DoxyCodeLine{00090         \{}
+\DoxyCodeLine{00091             clusterList = \textcolor{keyword}{new} Dictionary<int, GameObject>();}
+\DoxyCodeLine{00092 }
+\DoxyCodeLine{00093             WorldSize = WorldSize.Tiny;}
+\DoxyCodeLine{00094             ClusterSize = ClusterSize.Small;}
+\DoxyCodeLine{00095             WorldType = WorldType.Standard;}
+\DoxyCodeLine{00096         \}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00099 }
+\DoxyCodeLine{00100 \textcolor{preprocessor}{        \#region CLASS FUNCTIONS}}
+\DoxyCodeLine{00101 }
+\DoxyCodeLine{00107         \textcolor{keyword}{public} \textcolor{keywordtype}{void} CreateWorld()}
+\DoxyCodeLine{00108         \{}
+\DoxyCodeLine{00109             StopAllCoroutines();}
+\DoxyCodeLine{00110             DestroyWorld();}
+\DoxyCodeLine{00111             StartCoroutine(GenerateWorld());}
+\DoxyCodeLine{00112         \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00117         \textcolor{keyword}{private} \textcolor{keywordtype}{void} DestroyWorld()}
+\DoxyCodeLine{00118         \{}
+\DoxyCodeLine{00119             \textcolor{keywordflow}{foreach} (GameObject cluster \textcolor{keywordflow}{in} clusterList.Values)}
+\DoxyCodeLine{00120             \{}
+\DoxyCodeLine{00121                 Cluster clusterComponent = cluster.GetComponent<Cluster>();}
+\DoxyCodeLine{00122                 clusterComponent.DestroyCluster();}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124                 Destroy(cluster);}
+\DoxyCodeLine{00125             \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127             clusterList.Clear();}
+\DoxyCodeLine{00128         \}}
+\DoxyCodeLine{00129 }
+\DoxyCodeLine{00134         \textcolor{keyword}{public} \textcolor{keywordtype}{void} ConfirmAndUpdateProperties()}
+\DoxyCodeLine{00135         \{}
+\DoxyCodeLine{00136             \textcolor{keywordflow}{if} (!PhotonNetwork.IsMasterClient)}
+\DoxyCodeLine{00137             \{}
+\DoxyCodeLine{00138                 \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00139             \}}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141             Hashtable properties = \textcolor{keyword}{new} Hashtable}
+\DoxyCodeLine{00142             \{}
+\DoxyCodeLine{00143                 \{SeedPropertiesKey, Seed\},}
+\DoxyCodeLine{00144                 \{WorldSizePropertiesKey, (int) WorldSize\},}
+\DoxyCodeLine{00145                 \{ClusterSizePropertiesKey, (int) ClusterSize\},}
+\DoxyCodeLine{00146                 \{WorldTypePropertiesKey, (int) WorldType\}}
+\DoxyCodeLine{00147             \};}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149             PhotonNetwork.CurrentRoom.SetCustomProperties(properties);}
+\DoxyCodeLine{00150         \}}
+\DoxyCodeLine{00151 }
+\DoxyCodeLine{00155         \textcolor{keyword}{public} \textcolor{keywordtype}{void} DecreaseBlockHeight(\textcolor{keywordtype}{int} clusterId, \textcolor{keywordtype}{int} blockId)}
+\DoxyCodeLine{00156         \{}
+\DoxyCodeLine{00157             Cluster c = clusterList[clusterId].GetComponent<Cluster>();}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (c != \textcolor{keyword}{null})}
+\DoxyCodeLine{00160             \{}
+\DoxyCodeLine{00161                 c.DecreaseBlockHeight(blockId);}
+\DoxyCodeLine{00162             \}}
+\DoxyCodeLine{00163         \}}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00168         \textcolor{keyword}{public} \textcolor{keywordtype}{void} IncreaseBlockHeight(\textcolor{keywordtype}{int} clusterId, \textcolor{keywordtype}{int} blockId)}
+\DoxyCodeLine{00169         \{}
+\DoxyCodeLine{00170             Cluster c = clusterList[clusterId].GetComponent<Cluster>();}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172             \textcolor{keywordflow}{if} (c != \textcolor{keyword}{null})}
+\DoxyCodeLine{00173             \{}
+\DoxyCodeLine{00174                 c.IncreaseBlockHeight(blockId);}
+\DoxyCodeLine{00175             \}}
+\DoxyCodeLine{00176         \}}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180 \textcolor{preprocessor}{        \#region COROUTINES}}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00186         \textcolor{keyword}{private} IEnumerator GenerateWorld()}
+\DoxyCodeLine{00187         \{}
+\DoxyCodeLine{00188             Debug.Log(\textcolor{keywordtype}{string}.Format(\textcolor{stringliteral}{"{}<b>Procedural Demo</b>: Creating world using Seed: \{0\}, World Size: \{1\}, Cluster Size: \{2\} and World Type: \{3\}"{}}, Seed, WorldSize, ClusterSize, WorldType));}
+\DoxyCodeLine{00189 }
+\DoxyCodeLine{00190             Simplex.Noise.Seed = Seed;}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192             \textcolor{keywordtype}{int} clusterId = 0;}
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194             \textcolor{comment}{// Instantiating all necessary clusters at their target position}}
+\DoxyCodeLine{00195             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} x = 0; x < (int) WorldSize; x += (int) Mathf.Sqrt((\textcolor{keywordtype}{int}) ClusterSize))}
+\DoxyCodeLine{00196             \{}
+\DoxyCodeLine{00197                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} z = 0; z < (int) WorldSize; z += (int) Mathf.Sqrt((\textcolor{keywordtype}{int}) ClusterSize))}
+\DoxyCodeLine{00198                 \{}
+\DoxyCodeLine{00199                     GameObject cluster = \textcolor{keyword}{new} GameObject();}
+\DoxyCodeLine{00200                     cluster.name = \textcolor{stringliteral}{"{}Cluster "{}} + clusterId;}
+\DoxyCodeLine{00201 }
+\DoxyCodeLine{00202                     cluster.transform.SetParent(transform);}
+\DoxyCodeLine{00203                     cluster.transform.position = \textcolor{keyword}{new} Vector3(x, 0.0f, z);}
+\DoxyCodeLine{00204 }
+\DoxyCodeLine{00205                     Cluster clusterComponent = cluster.AddComponent<Cluster>();}
+\DoxyCodeLine{00206                     clusterComponent.ClusterId = clusterId;}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208                     clusterList.Add(clusterId++, cluster);}
+\DoxyCodeLine{00209                 \}}
+\DoxyCodeLine{00210             \}}
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212             yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForEndOfFrame();}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214             \textcolor{comment}{// Instantiating all necessary blocks as a child of a certain cluster}}
+\DoxyCodeLine{00215             \textcolor{keywordflow}{foreach} (GameObject cluster \textcolor{keywordflow}{in} clusterList.Values)}
+\DoxyCodeLine{00216             \{}
+\DoxyCodeLine{00217                 Vector3 clusterPosition = cluster.transform.position;}
+\DoxyCodeLine{00218 }
+\DoxyCodeLine{00219                 \textcolor{keywordtype}{int} blockId = 0;}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} x = 0; x < (int) Mathf.Sqrt((\textcolor{keywordtype}{int}) ClusterSize); ++x)}
+\DoxyCodeLine{00222                 \{}
+\DoxyCodeLine{00223                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} z = 0; z < (int) Mathf.Sqrt((\textcolor{keywordtype}{int}) ClusterSize); ++z)}
+\DoxyCodeLine{00224                     \{}
+\DoxyCodeLine{00225                         \textcolor{keywordtype}{float} noiseValue = Simplex.Noise.CalcPixel2D((\textcolor{keywordtype}{int}) clusterPosition.x + x, (int) clusterPosition.z + z, 0.02f);}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227                         \textcolor{keywordtype}{int} height = (int) noiseValue / (\textcolor{keywordtype}{int}) (256.0f / (float) WorldType);}
+\DoxyCodeLine{00228                         \textcolor{keywordtype}{int} materialIndex = (int) noiseValue / (\textcolor{keywordtype}{int}) (256.0f / WorldMaterials.Length);}
+\DoxyCodeLine{00229 }
+\DoxyCodeLine{00230                         GameObject block = GameObject.CreatePrimitive(PrimitiveType.Cube);}
+\DoxyCodeLine{00231                         block.name = \textcolor{stringliteral}{"{}Block "{}} + blockId;}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233                         block.transform.SetParent(cluster.transform);}
+\DoxyCodeLine{00234                         block.transform.localScale = \textcolor{keyword}{new} Vector3(1.0f, height, 1.0f);}
+\DoxyCodeLine{00235                         block.transform.position = \textcolor{keyword}{new} Vector3(clusterPosition.x + x, height / 2.0f, clusterPosition.z + z);}
+\DoxyCodeLine{00236                         block.GetComponent<MeshRenderer>().material = WorldMaterials[materialIndex];}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238                         Block blockComponent = block.AddComponent<Block>();}
+\DoxyCodeLine{00239                         blockComponent.BlockId = blockId;}
+\DoxyCodeLine{00240                         blockComponent.ClusterId = cluster.GetComponent<Cluster>().ClusterId;}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242                         cluster.GetComponent<Cluster>().AddBlock(blockId++, block);}
+\DoxyCodeLine{00243                     \}}
+\DoxyCodeLine{00244                 \}}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{00246                 yield \textcolor{keywordflow}{return} \textcolor{keyword}{new} WaitForEndOfFrame();}
+\DoxyCodeLine{00247             \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249             \textcolor{comment}{// Applying modifications made to the world when joining the room later or while it is created}}
+\DoxyCodeLine{00250             \textcolor{keywordflow}{foreach} (DictionaryEntry entry \textcolor{keywordflow}{in} PhotonNetwork.CurrentRoom.CustomProperties)}
+\DoxyCodeLine{00251             \{}
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{if} (entry.Value == \textcolor{keyword}{null})}
+\DoxyCodeLine{00253                 \{}
+\DoxyCodeLine{00254                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00255                 \}}
+\DoxyCodeLine{00256 }
+\DoxyCodeLine{00257                 \textcolor{keywordtype}{string} key = entry.Key.ToString();}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259                 \textcolor{keywordflow}{if} ((key == SeedPropertiesKey) || (key == WorldSizePropertiesKey) || (key == ClusterSizePropertiesKey) || (key == WorldTypePropertiesKey))}
+\DoxyCodeLine{00260                 \{}
+\DoxyCodeLine{00261                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00262                 \}}
+\DoxyCodeLine{00263 }
+\DoxyCodeLine{00264                 \textcolor{keywordtype}{int} indexOfBlank = key.IndexOf(\textcolor{charliteral}{' '});}
+\DoxyCodeLine{00265                 key = key.Substring(indexOfBlank + 1, (key.Length -\/ (indexOfBlank + 1)));}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267                 \textcolor{keywordtype}{int}.TryParse(key, out clusterId);}
+\DoxyCodeLine{00268 }
+\DoxyCodeLine{00269                 GameObject cluster;}
+\DoxyCodeLine{00270                 \textcolor{keywordflow}{if} (clusterList.TryGetValue(clusterId, out cluster))}
+\DoxyCodeLine{00271                 \{}
+\DoxyCodeLine{00272                     Cluster c = cluster.GetComponent<Cluster>();}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274                     \textcolor{keywordflow}{if} (c != \textcolor{keyword}{null})}
+\DoxyCodeLine{00275                     \{}
+\DoxyCodeLine{00276                         Dictionary<int, float> clusterModifications = (Dictionary<int, float>) entry.Value;}
+\DoxyCodeLine{00277 }
+\DoxyCodeLine{00278                         foreach (KeyValuePair<int, float> pair in clusterModifications)}
+\DoxyCodeLine{00279                         \{}
+\DoxyCodeLine{00280                             c.SetBlockHeightRemote(pair.Key, pair.Value);}
+\DoxyCodeLine{00281                         \}}
+\DoxyCodeLine{00282                     \}}
+\DoxyCodeLine{00283                 \}}
+\DoxyCodeLine{00284             \}}
+\DoxyCodeLine{00285         \}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287 \textcolor{preprocessor}{        \#endregion}}
+\DoxyCodeLine{00288     \}}
+\DoxyCodeLine{00289 \}}
+
+\end{DoxyCode}
